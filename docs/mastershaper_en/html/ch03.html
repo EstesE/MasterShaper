@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /><title>Chapter 3. Installation</title><link rel="stylesheet" href="styleguibo.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.69.1" /><link rel="start" href="index.html" title="MasterShaper Documentation 0.4x" /><link rel="up" href="index.html" title="MasterShaper Documentation 0.4x" /><link rel="prev" href="ch02.html" title="Chapter 2. Definitions and Terms" /><link rel="next" href="ch04.html" title="Chapter 4. Configuration" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 3. Installation</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch04.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="installation"></a>Chapter 3. Installation</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch03.html#id2524920">3.1. Package</a></span></dt><dt><span class="sect1"><a href="ch03.html#id2525272">3.2. Procedure</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch03.html#id2525285">3.2.1. Create a new MySQL database. </a></span></dt><dt><span class="sect2"><a href="ch03.html#id2525313">3.2.2. Extract the MasterShaper package</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2525350">3.2.3. Install jpgraph</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2525370">3.2.4. Install phplayersmenu</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2525390">3.2.5. Install PHP-Pear Modules</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2525416">3.2.6. MasterShaper Installer</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2525454">3.2.7. Prepare IMQ</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2525484">3.2.8. sudo Configuration</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch03.html#id2525547">3.3. Security</a></span></dt><dt><span class="sect1"><a href="ch03.html#id2525622">3.4. Statistic collector tc_collector.pl</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524920"></a>3.1. Package</h2></div></div></div><p>
+	The MasterShaper Installer consists the following files and directories:
+      </p><p>
+	</p><div class="itemizedlist"><ul type="disc"><li><p>INSTALL	...	install notes</p></li><li><p>README	...	non relevant ReadMe</p></li><li><p>LICENSE	...	relevant GPL2 license</p></li><li><p>UPGRADE	...	some upgrade informations</p></li><li><p>docs		...	documentation in OpenDocument format</p></li><li><p>htdocs		...	document root, php files, perl files,...</p></li><li><p>tools		...	runlevel init script,...</p></li></ul></div><p>
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525272"></a>3.2. Procedure</h2></div></div></div><p>
+	Some steps in the installation procedure need knowledge of some basic MySQL commands and actions. If you are not familiar with MySQL consider some helpful tools like phpMyAdmin (http://www.phpmyadmin.net/) to get the database ready for MasterShaper.
+      </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2525285"></a>3.2.1. Create a new MySQL database. </h3></div></div></div><p>
+	  This command will create the example database db_shaper:
+	</p><p>
+	  </p><pre class="screen">
+create database db_shaper</pre><p>
+	</p><p>
+	  It's a good idea to create a new database user to access this database and don't make the database connect with the MySQL-root user - checkout the MySQL documentation how to add additional MySQL users (GRANT ACCESS to ...).
+	</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2525313"></a>3.2.2. Extract the MasterShaper package</h3></div></div></div><p>
+	  Extract the mastershaper_x.xx.tar.gz file which you had downloaded from MasterShaper website to some temporary directory:
+	</p><p>
+	  </p><pre class="screen">
+mkdir /tmp/shaper
+cd /tmp/shaper
+tar zxfv (PATH_WHERE_FILE_IS_LOCATED)/mastershaper_x.xx.tar.gz</pre><p>
+	</p><p>
+	  Move MasterShaper into webservers document root. Move the content of the htdocs-directory (PHP scripts, images, ...) as it is below your document root of your web server (like /var/www/shaper) so MasterShaper is reachable via browser: <a href="http://server/shaper/" target="_top">http://server/shaper/</a>
+	</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2525350"></a>3.2.3. Install jpgraph</h3></div></div></div><p>
+	  Download jpgraph from <a href="http://www.aditus.nu/jpgraph/" target="_top">http://www.aditus.nu/jpgraph/</a> into the MasterShaper directory. Extract the tar.gz file and make a symbolic link from "jpgraph-x.xx" directory to "jpgraph" (you could also rename jpgraph-x.xx to jpgraph).
+	</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2525370"></a>3.2.4. Install phplayersmenu</h3></div></div></div><p>
+	  Download phplayersmenu from <a href="http://phplayersmenu.sourceforge.net/" target="_top">http://phplayersmenu.sourceforge.net/</a> into the MasterShaper directory. Extract and make a symbolic link from "phplayersmenu-x.x.x" to "phplayersmenu" (you could also rename phplayersmenu-x.xx to phplayersmenu).
+	</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2525390"></a>3.2.5. Install PHP-Pear Modules</h3></div></div></div><p>
+	  If the necessary PHP-PEAR modules aren't installed, do the following:
+	</p><p>
+	  </p><pre class="screen">
+pear install DB Net_IPv4</pre><p>
+	</p><p>
+	  to install them. Some distributions (like SuSE) provide this packages via RPMs.
+	</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2525416"></a>3.2.6. MasterShaper Installer</h3></div></div></div><p>
+	  Open a browser and enter the URL for MasterShaper (ex. <a href="http://server/shaper/" target="_top">http://server/shaper/</a>).
+	</p><div class="figure"><a id="id2525433"></a><p class="title"><b>Figure 3.1. Mastershaper installer</b></p><div><img src="images/mastershaper_installation.png" alt="Mastershaper installer" /></div></div><p>
+	  It will automatically forwarded you to the MasterShaper Installer. Specify the parameters as shown up in the Installer and click through the installation steps. In case of troubles, the Installer should tell you were the problems are.
+	</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2525454"></a>3.2.7. Prepare IMQ</h3></div></div></div><p>
+	  If you are using IMQ you need some iptables rules to get the traffic to the IMQ interfaces (EXT_DEV means your interface where you want to shape traffic):
+	</p><p>
+	  </p><pre class="screen">
+ip link set imq0 up
+ip link set imq1 up
+
+iptables -t mangle -I PREROUTING -i ${EXT_DEV} -j IMQ --todev 0
+iptables -t mangle -I POSTROUTING -o ${EXT_DEV} -j IMQ --todev 1</pre><p>
+	</p><p>
+	  This rules aren't set by MasterShaper. So make sure that they are available when you start shaping.
+	</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="id2525484"></a>3.2.8. sudo Configuration</h3></div></div></div><p>
+	  Mostly your web server isn't running with root privileges and so it hasn't permissions to talk with the kernel and load the ruleset (tc or iptables). To activate the rules MasterShaper uses the scripts shaper_loader.sh, a little shell script, which handles both tc- and also iptables-rules. To gain this script root privileges open the sudo config file <span class="bold"><strong>/etc/sudoers</strong></span> and add the line
+	</p><p>
+	  </p><pre class="screen">
+USER	ALL= NOPASSWD: PATH/shaper_loader.sh</pre><p>
+	</p><p>
+	  where USER is the running user of your web server (www-data, apache, ...) and PATH is the full (absolute!) file system path to your MasterShaper installation (<span class="bold"><strong>/var/www/shaper</strong></span>). A great percentage of errors happen of course incorrectly configured sudo! You can test if you have prepared sudo successfully if the following command run by USER in MasterShaper's main directory don't return anything:
+	</p><p>
+	  </p><pre class="screen">
+sudo ./shaper_loader.sh cleanup</pre><p>
+	</p><p>
+	  Don't forget that your system must meet some requirements for traffic shaping with MasterShaper. Take a look at 1.2 Requirements.
+	</p></div></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525547"></a>3.3. Security</h2></div></div></div><p>
+      The database connection parameters are stored in the configuration files <span class="bold"><strong>config.dat</strong></span> in MasterShaper's web path directory (ex. <span class="bold"><strong>/var/www/shaper/config.dat</strong></span>).
+    </p><p>
+      This is a critical file because it contains plain text passwords.
+      <span class="bold"><strong>Access to this File must be prohibited!</strong></span>
+    </p><p>
+      The MasterShaper Installation Package includes an <span class="bold"><strong>.htaccess</strong></span> file in the htdocs directory, which limits the access to the config.dat file.
+    </p><p>
+      Double check if this file is in its location and if your web server is configured probably to support .htaccess. If not referrer to your web server documentation how to limit access to a file in the webserver configuration (for Apache's httpd this is possible with the FILE directive).
+    </p><p>
+      Make sure, that it's not possible to download this file via web browser:
+      <a href="http://server/shaper/config.dat" target="_top">http://server/shaper/config.dat</a>
+    </p><p>
+      Every time MasterShaper Installer finish it's job it tries do limit the access to the index.php file in the setup directory. If you see an error message, MasterShaper can't change file permissions, so please take care that the MasterShaper Installer is not public available from the Internet - it shows up plain text passwords!
+    </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525622"></a>3.4. Statistic collector tc_collector.pl</h2></div></div></div><p>
+      tc_collector.pl is a little Perl application which collects traffic statistics from the tc utility.
+    </p><p>
+      Cause there is no usable mechanism to get the current pipes distributions, it collects the total amount of bytes transferred within 10 seconds intervals and calculate a kilobits per second average from these values.
+    </p><p>
+Run the tc_collector by calling:
+    </p><p>
+      </p><pre class="screen">
+./tc_collector.pl</pre><p>
+    </p><p>
+      It will start collecting transfer rates from the tc binary and record them into MySQL database. It will get it's configuration also from config.dat - no adaptation to the Perl is needed.
+    </p><p>
+      If you call it with:
+    </p><p>
+      </p><pre class="screen">
+	tc_collector.pl -d</pre><p>
+    </p><p>
+      it will fork into background and run daemonized.
+    </p><p>
+      If you are expecting troubles with tc_collector.pl call the script with the parameter "-v3" and check what it's currently collecting.
+    </p><p>
+      <span class="bold"><strong>Without tc_collector.pl you will get no monitoring statistics</strong></span> and the graphs in the web interface will not work!
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 2. Definitions and Terms </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 4. Configuration</td></tr></table></div></body></html>

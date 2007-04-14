@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /><title>Chapitre 3. Installation</title><link rel="stylesheet" href="styleguibo.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.69.1" /><link rel="start" href="index.html" title="Documentation MasterShaper 0.4x" /><link rel="up" href="index.html" title="Documentation MasterShaper 0.4x" /><link rel="prev" href="ch02.html" title="Chapitre 2. Définition et terminologie" /><link rel="next" href="ch04.html" title="Chapitre 4. Configuration" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapitre 3. Installation</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02.html">Précédent</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch04.html">Suivant</a></td></tr></table><hr /></div><div class="chapter" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title"><a id="installation"></a>Chapitre 3. Installation</h2></div></div></div><div class="toc"><p><b>Table des matières</b></p><dl><dt><span class="sect1"><a href="ch03.html#id2524952">3.1. Les sources</a></span></dt><dt><span class="sect1"><a href="ch03.html#id2525007">3.2. Procédure d'installation</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch03.html#id2525029">3.2.1. la base MySQL</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2526824">3.2.2. Les sources</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2526880">3.2.3. Installation de jpgraph</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2526919">3.2.4. Installation de phplayersmenu</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2526957">3.2.5. Installation du module PHP-Pear</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2526980">3.2.6. L'installeur MasterShaper</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2527006">3.2.7. Prepare IMQ</a></span></dt><dt><span class="sect2"><a href="ch03.html#id2527061">3.2.8. Configuration de sudo</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch03.html#id2527160">3.3. Sécurité</a></span></dt><dt><span class="sect1"><a href="ch03.html#id2527227">3.4. Collecte de Statistique via le script tc_collector.pl</a></span></dt></dl></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524952"></a>3.1. Les sources</h2></div></div></div><p>
+      Les source compresser de MasterShaper sont organisées comme suit:
+      </p><p>
+      </p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>INSTALL</strong></span>: notes sur l'installtion</p></li><li><p><span class="bold"><strong>README</strong></span>: le fameux ReadMe</p></li><li><p><span class="bold"><strong>LICENSE</strong></span>: licence GPL2</p></li><li><p><span class="bold"><strong>UPGRADE</strong></span>: intructions de mise à jour/update</p></li><li><p><span class="bold"><strong>docs</strong></span>: la documentation au format OpenDocument</p></li><li><p><span class="bold"><strong>htdocs</strong></span>: document root, les fichiers php, les scripts perl, ...</p></li><li><p><span class="bold"><strong>tools</strong></span>: runlevel init script,...</p></li></ul></div><p>
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525007"></a>3.2. Procédure d'installation</h2></div></div></div><p>
+	Les étapes de l'installation nécessite quelques connaissances à propos de MySQL. Si vous n'etes pas familirisé avec MySQL vous pouvez utiliser des outils d'administration tel que phpMyAdmin (<a href="http://www.phpmyadmin.net/" target="_top">http://www.phpmyadmin.net/</a>).
+      </p><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2525029"></a>3.2.1. la base MySQL</h3></div></div></div><p>
+	  Il faut tout d'abord créer une base de données pour mastershaper
+	</p><pre class="screen">
+mysql&gt; create database db_shaper;
+mysql&gt; GRANT ALL PRIVILEGES ON db_shaper.* TO 'shaper'@'localhost'
+    -&gt; IDENTIFIED BY 'shaper_pass' WITH GRANT OPTION;
+mysql&gt; FLUSH PRIVILEGES;</pre><p>Nous avons créer un utilisateur <span class="bold"><strong>shaper</strong></span> qui a tous les accès à la database <span class="bold"><strong>db_haper</strong></span>. Pour plus de documentation sur la gestion des droits sous MySQL allez voir la documentation: <a href="http://dev.mysql.com/doc/refman/5.0/en/grant.html" target="_top">http://dev.mysql.com/doc/refman/5.0/en/grant.html</a>
+	</p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526824"></a>3.2.2. Les sources</h3></div></div></div><p>
+	  Il faut décompresser les sources de MasterShaper, le fichier <span class="bold"><strong>mastershaper_x.xx.tar.gz</strong></span> que vous avez télécharger du site web:
+	</p><p>
+</p><pre class="screen">
+mkdir /tmp/shaper
+cd /tmp/shaper
+tar zxfv (PATH_WHERE_FILE_IS_LOCATED)/mastershaper_x.xx.tar.gz</pre><p>
+      </p><p>
+	Maintenant il faut déplacer Mastershaper dans le <span class="bold"><strong>documentroot</strong></span> de votre serveur web (<span class="bold"><strong>/var/www/shaper</strong></span>). L'interface de Mastershaper doit etre accessible via cette url: <a href="http://server/shaper/" target="_top">http://server/shaper/</a>.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526880"></a>3.2.3. Installation de jpgraph</h3></div></div></div><p>
+	Téléchargez <span class="bold"><strong>jpgraph</strong></span> à partir de <a href="http://www.aditus.nu/jpgraph/" target="_top">http://www.aditus.nu/jpgraph/</a> dans le répertoire de Mastershaper. Décompresser le tar.gz et faites un lien symbolique de <span class="bold"><strong>jpgraph-x.xx</strong></span> vers <span class="bold"><strong>jpgraph</strong></span>.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526919"></a>3.2.4. Installation de phplayersmenu</h3></div></div></div><p>
+	Téléchargez <span class="bold"><strong>phplayersmenu</strong></span> à partir de <a href="http://phplayersmenu.sourceforge.net/" target="_top">http://phplayersmenu.sourceforge.net/</a>.  Décompresser le tar.gz et faites un lien symbolique de <span class="bold"><strong>phplayersmenu-x.x.x</strong></span> vers <span class="bold"><strong>phplayersmenu</strong></span>.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526957"></a>3.2.5. Installation du module PHP-Pear</h3></div></div></div><p>
+	Si les modules PHP-PEAR nécessaires ne sont pas installés faites ceci:
+      </p><p>
+	</p><pre class="screen">pear install DB Net_IPv4</pre><p>
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526980"></a>3.2.6. L'installeur MasterShaper</h3></div></div></div><p>
+	Ouvrez un navigateur web à l'adresse suivante: <a href="http://server/shaper/" target="_top">http://server/shaper/</a>. Cela va automatiquement vous transférer vers la page de l'installeur MasterShaper. Il vous suffit d'adapter la configuration et de suivre les étapes pas à pas. En cas de problème l'installeur devrait vous dire comment le résoudre.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2527006"></a>3.2.7. Prepare IMQ</h3></div></div></div><p>
+	Si vous utilisez <span class="bold"><strong>IMQ </strong></span> vous avez besoin de quelques règles <span class="bold"><strong>iptables</strong></span> supplémentaire, pour orienter le traffic vers les interfaces <span class="bold"><strong>IMQ</strong></span>. Dans l'exemple ci-dessous, EXT_DEV défini l'interface sur laquelle vous voulez faire du controle de flux.
+      </p><p>
+</p><pre class="screen">
+ip link set imq0 up
+ip link set imq1 up
+
+iptables -t mangle -I PREROUTING -i ${EXT_DEV} -j IMQ --todev 0
+iptables -t mangle -I POSTROUTING -o ${EXT_DEV} -j IMQ --todev 1</pre><p>
+      </p><p>
+	Ces règles ne sont pas mises en place par Mastershaper. Donc soyez bien sur qu'elles sont présentes lorsque vous démarrer le control de flux.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2527061"></a>3.2.8. Configuration de sudo</h3></div></div></div><p>
+	La pluspart des serveurx web ne tournent pas sous l'utilisateur <span class="bold"><strong>root</strong></span>, et donc n'ont pas la permission de "disctuer avec le kernel et de charger des règles via <span class="bold"><strong>tc</strong></span> ou <span class="bold"><strong>iptables</strong></span>.
+	Pour activer ses régles Mastershaper utilise le script <span class="bold"><strong>shaper_loader.sh</strong></span>, un script shell, qui permet de gérer les règles <span class="bold"><strong>tc</strong></span> et <span class="bold"><strong>iptables</strong></span>. Nous avons besoin de lancer ce script en mode super-utilisateur, pour cela il suffit de modifier le fichier de configuration <span class="bold"><strong>/etc/sudoers</strong></span> comme ci-dessous:
+	</p><p>
+	  </p><pre class="screen">
+USER	ALL= NOPASSWD: PATH/shaper_loader.sh</pre><p>
+	</p><p>
+	"USER" doit etre l'utilisateur sous lequel tourne le serveur Web (www-data, apache, ...) et "PATH" et le chemin complet vers Mastershaper. La pluspart des erreurs reportées sont dus a une mauvaise configuration de <span class="bold"><strong>sudo</strong></span>. Pour tester votre configuration:
+      </p><p>
+	</p><pre class="screen">sudo ./shaper_loader.sh cleanup</pre><p>
+      </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2527160"></a>3.3. Sécurité</h2></div></div></div><p>
+      Les paramètres de la connexion à la base de donnée sont stockés dans le fichier de configuration <span class="bold"><strong>config.dat</strong></span>, dans le répertoire de Mastershaper (ex. <span class="bold"><strong>/var/www/shaper/config.dat</strong></span>). 
+    </p><p>
+    Ce fichier est critique, car il contient le mot de passe d'accés à votre base de donnée <span class="bold"><strong>db_shaper</strong></span> en clair. L'accès de ce fichier doit donc etre interdit !
+    </p><p>
+      The MasterShaper Installation Package includes an .htaccess file in the htdocs directory, which limits the access to the config.dat file. 
+      Double check if this file is in its location and if your web server is configured probably to support .htaccess. If not referrer to your web server documentation how to limit access to a file in the webserver configuration (for Apache's httpd this is possible with the FILE directive).
+      Make sure, that it's not possible to download this file via web browser:
+      <a href="http://server/shaper/config.dat" target="_top">http://server/shaper/config.dat</a>
+      Every time MasterShaper Installer finish it's job it tries do limit the access to the index.php file in the setup directory. If you see an error message, MasterShaper can't change file permissions, so please take care that the MasterShaper Installer is not public available from the Internet - it shows up plain text passwords!
+    </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2527227"></a>3.4. Collecte de Statistique via le script tc_collector.pl</h2></div></div></div><p>
+      tc_collector.pl is a little Perl application which collects traffic statistics from the tc utility.
+      Cause there is no usable mechanism to get the current pipes distributions, it collects the total amount of bytes transferred within 10 seconds intervals and calculate a kilobits per second average from these values.
+      Run the tc_collector by calling:
+    </p><p>
+      </p><pre class="screen">./tc_collector.pl</pre><p>
+    </p><p>
+      It will start collecting transfer rates from the tc binary and record them into MySQL database. It will get it's configuration also from config.dat - no adaptation to the Perl is needed.
+      If you call it with
+    </p><p>
+      </p><pre class="screen">tc_collector.pl -d</pre><p>
+    </p><p>
+      it will fork into background and run daemonized.
+      If you are expecting troubles with tc_collector.pl call the script with the parameter "-v3" and check what it's currently collecting.
+      Without tc_collector.pl you will get no monitoring statistics and the graphs in the web interface will not work!
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02.html">Précédent</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch04.html">Suivant</a></td></tr><tr><td width="40%" align="left" valign="top">Chapitre 2. Définition et terminologie </td><td width="20%" align="center"><a accesskey="h" href="index.html">Sommaire</a></td><td width="40%" align="right" valign="top"> Chapitre 4. Configuration</td></tr></table></div></body></html>

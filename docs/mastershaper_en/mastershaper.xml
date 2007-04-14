@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//FR"
+"/usr/share/sgml/docbook/xml-dtd-4.2/docbookx.dtd" [
+<!ENTITY intro SYSTEM "introduction.xml">
+<!ENTITY def SYSTEM "definition.xml">
+<!ENTITY inst SYSTEM "installation.xml">
+<!ENTITY conf SYSTEM "configuration.xml">
+<!ENTITY ex SYSTEM "example.xml">
+<!ENTITY lic SYSTEM "license.xml">
+]>
+<!-- juste un commentaire -->
+<book lang="en">
+  <title>MasterShaper Documentation 0.4x</title>
+  <subtitle>QoS and shaping management</subtitle>
+  <bookinfo>
+    <authorgroup>
+      <author>
+	<firstname>author: Andreas Unterkircher</firstname>
+	<email>andreas.unterkircher _@_ netshadow.at</email>
+      </author>
+      <author>
+	<firstname>docbook conversion: Antoine Giniès</firstname>
+	<email>aginies _@_ gmail.com</email>
+      </author>
+    </authorgroup>
+
+    <revhistory>
+      <revision>
+	<revnumber>0.1</revnumber>
+	<date>2005</date>
+	<authorinitials>au</authorinitials>
+	<revremark>documentation en</revremark>
+      </revision>
+    </revhistory>
+    <pubdate>2005-2006</pubdate>
+  </bookinfo>
+  &intro;
+  &def;
+  &inst;
+  &conf;
+  &ex;
+  &lic;
+</book>

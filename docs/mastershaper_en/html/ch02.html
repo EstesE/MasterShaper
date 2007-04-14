@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /><title>Chapter 2. Definitions and Terms</title><link rel="stylesheet" href="styleguibo.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.69.1" /><link rel="start" href="index.html" title="MasterShaper Documentation 0.4x" /><link rel="up" href="index.html" title="MasterShaper Documentation 0.4x" /><link rel="prev" href="ch01.html" title="Chapter 1. Introduction" /><link rel="next" href="ch03.html" title="Chapter 3. Installation" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 2. Definitions and Terms</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch01.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch03.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="definition"></a>Chapter 2. Definitions and Terms</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch02.html#id2523511">2.1. Bandwidth</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2523523">2.2. Protocols</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2476104">2.3. Ports</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2524374">2.4. Targets</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2524400">2.5. Service Levels</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2524425">2.6. Filters</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2524557">2.7. layer7 Protocol matching</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2524596">2.8. Chains</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2524671">2.9. Pipes</a></span></dt><dt><span class="sect1"><a href="ch02.html#id2524695">2.10. Bridge or Router</a></span></dt></dl></div><p>The MasterShaper uses some terms to define the shaping rules.</p><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2523511"></a>2.1. Bandwidth</h2></div></div></div><p>
+	Bandwidth mean the network speed of your link. MasterShaper always uses speed definitions in kbit per second (kbit/s).
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2523523"></a>2.2. Protocols</h2></div></div></div><p>
+	You often meet protocols in network environments. In our current time you will often meet IP-Traffic (TCP/UDP) or ICMP-Traffic (ping) - but there are many other protocols like ESP and AH for IPSec, GRE for GRE-Packet-Tunnelling or Router-Protocols like IGMP available.
+      </p><p>
+	Each protocol has a unique number which is assigned by IANA: <a href="http://www.iana.org/assignments/protocol-numbers" target="_top">http://www.iana.org/assignments/protocol-numbers</a>
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2476104"></a>2.3. Ports</h2></div></div></div><p>
+	Ports reflect the common port numbers for TCP- and UDP-traffic (HTTP/80, IMAP/143,...).
+	During installation you can instruct MasterShaper Installer to fill the ports table with all ports assigned by IANA: <a href="http://www.iana.org/assignments/port-numbers" target="_top">http://www.iana.org/assignments/port-numbers</a>
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524374"></a>2.4. Targets</h2></div></div></div><p>
+	Targets means IP-Addresses or MAC-Addresses.
+	IP-Addresses can be specified as single host (1.1.1.1), network address (10.0.0.0/8) or ip-range (1.1.1.1-1.1.1.9).
+      </p><p>
+	Multiple targets can be grouped together as target groups.
+      </p><p>
+	Think about when you are able to match on MAC-Addresses! You only see MAC-Addresses in your local attached networked. You can't match on MAC-Addresses from machines which are behind routers or in other subnets. This is Ethernet design and has nothing to do with Linux or other system capabilities.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524400"></a>2.5. Service Levels</h2></div></div></div><p>
+	Service Levels mean predefined bandwidth limits.
+      </p><p>
+	Here you define detailed parameters for HTB, HFSC or CBQ classifiers. For CBQ you can specify rate and priority. In addition you can define ceil and burst with HTB for incoming and outgoing traffic (asymmetric lines). For HFSC it's possible to specify the maximum delay of network packets.
+      </p><p>
+	Here you also specify the Queuing Discipline which should be used. This parameter is only used for pipes. Service Levels which are assigned to Chains will ignore this setting.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524425"></a>2.6. Filters</h2></div></div></div><p>
+	Filters represent methods to match your traffic against defined rules. For example you can define, that a filter "Web-Traffic" match the HTTP- and HTTPS-ports 80/tcp and 443/tcp. Furthermore you can match on TOS-Flags, TCP-Flags, IPP2P, layer7, Time, packet length, ...
+      </p><p>
+	The availability of filter-functions depends on which matching-system you use. MasterShaper supports tc-filter and iptables. While tc-filter is fast and already integrated in the iproute2 package, iptables is a additional subsystem which supports many fancy match-methods. If you don't need the features iptables offers simply rely on tc-filter.
+      </p><p>
+To find out, if your iptables installation supports all MasterShaper features, check out if the necessary match-modules are available in the iptables modules directory (usually /lib/iptables)
+      </p><p>
+	</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>libipt_TOS.so</strong></span>: for TOS matching</p></li><li><p><span class="bold"><strong>libipt_tcp.so</strong></span>: for TCP-Flag matching</p></li><li><p><span class="bold"><strong>libipt_ipp2p.so</strong></span>: for IP-P2P matching (<a href="http://www.ipp2p.org" target="_top">http://www.ipp2p.org</a>)</p></li><li><p><span class="bold"><strong>libipt_time.so</strong></span>: for time matching</p></li><li><p><span class="bold"><strong>libipt_length.so</strong></span>: for packet length matching</p></li><li><p><span class="bold"><strong>libipt_layer7.so</strong></span>: for layer7 protocol matching (<a href="http://l7-filter.sf.net" target="_top">http://l7-filter.sf.net</a>)</p></li><li><p><span class="bold"><strong>libipt_helper.so</strong></span>: for ftp data channel matching</p></li><li><p><span class="bold"><strong>libipt_conntrack.so</strong></span>:	for ftp data channel matching</p></li></ul></div><p>
+      </p><p>
+	MasterShaper isn't currently checking if all these modules are available. If you get some errors when loading the iptables-matching ruleset, check if all modules are in place first!
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524557"></a>2.7. layer7 Protocol matching</h2></div></div></div><p>
+	With V0.32 layer7 protocol matching support (<a href="http://l7-filter.sf.net" target="_top">http://l7-filter.sf.net</a>) has been integrated into MasterShaper.
+      </p><p>
+	With Option "<span class="bold"><strong>Update L7 Protocols</strong></span>" MasterShaper will get the available protocol match names (.pat files in <span class="bold"><strong>/etc/l7-protocols</strong></span>) and save them in the database. If you update your l7-filter installation you have to run this update process in MasterShaper again to get new supported protocols into MasterShaper configuration.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524596"></a>2.8. Chains</h2></div></div></div><p>
+	Chains are building traffic channels. Each chain has an assigned service level - the maximum available bandwidth within this channel. If you have only one chain, this service level is normally equal to your line speed (2048/1024kbit/s for example).
+      </p><p>
+	In addition each chain has a fall-back service level - any traffic, which is not matched through a pipe definition can only use the bandwidth of the fall-back service level. So MasterShaper makes sure that no unknown traffic can't eat up your whole bandwidth.
+      </p><p>
+	To get the traffic into the chains, the network traffic will be matched by target definitions. The order of the chain rules are important - the first match win, not that one which is the exactest.
+      </p><p>
+	So if you have two chains with the following targets (in this order):
+      </p><pre class="screen">
+192.168.1.0/24
+192.168.1.1</pre><p>
+	traffic to/from 192.168.1.1 will be matched by the chain with the 192.168.1.0/24 target and not by the chain with the 192.168.1.1 target.
+      </p><p>
+	If you won't specify IP addresses for targets, you can also use the "<span class="bold"><strong>any</strong></span>" entry in the chain setup.
+      </p><p>
+	It's also possible to define a chain which completely ignores the QoS settings. This is sometimes useful if you have traffic which should not be touched by any shaper settings (LAN ó DMZ). Chains which are ignoring QoS setting are not recorded through <span class="bold"><strong>tc_collector.pl</strong></span> and aren't shown in monitoring graphs.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524671"></a>2.9. Pipes</h2></div></div></div><p>
+	Pipes bring chains, filters and service levels together. In addition you can specify the direction of the pipes (incoming, outgoing). Here you also assign a service level, which regulate the bandwidth usage of this pipe.
+      </p><p>
+	The current bandwidth distribution between pipes can be displayed over <span class="bold"><strong>Monitoring Pipes</strong></span>.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524695"></a>2.10. Bridge or Router</h2></div></div></div><p>
+	A bridge is a transparent network device. For example - normally you have connected your main router (Cisco, Nortel, ...) directly to your network switch. Now you connect the router on the first interface of the bridge. The second interface of the bridge is connected to your network switch. The bridge acts totally invisible for any connections between the router and your network. But you are capable to affect the network flow on both interfaces of the bridge. More informations about setting up a Linux bridge can be found here: <a href="http://linux-net.osdl.org/index.php/Bridge" target="_top">http://linux-net.osdl.org/index.php/Bridge</a>
+      </p><p>
+	A router connects two different networks together (like 192.168.191.0/24 and 172.16.2.0/24). None of the clients in different subnets know about any other clients on the other networks. They only know how to send packets to other networks (via default gateway, route, ...). The router knows - according his routing table - where to send these packets.
+      </p><p>
+	Packet handling - exactly matching the network interfaces - is a bit different between routers and bridges so you have to tell MasterShaper in which mode it has to act. If you want to shape on a single machine you have to select the router mode.
+	</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 1. Introduction </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 3. Installation</td></tr></table></div></body></html>

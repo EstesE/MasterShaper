@@ -1,0 +1,191 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+  <chapter id="installation" lang="en">
+    <title>Installation</title>
+    <sect1>
+      <title>Package</title>
+      <para>
+	The MasterShaper Installer consists the following files and directories:
+      </para>
+      <para>
+	<itemizedlist>
+	  <listitem><para>INSTALL	...	install notes</para></listitem>
+	  <listitem><para>README	...	non relevant ReadMe</para></listitem>
+	  <listitem><para>LICENSE	...	relevant GPL2 license</para></listitem>
+	  <listitem><para>UPGRADE	...	some upgrade informations</para></listitem>
+	  <listitem><para>docs		...	documentation in OpenDocument format</para></listitem>
+	  <listitem><para>htdocs		...	document root, php files, perl files,...</para></listitem>
+	  <listitem><para>tools		...	runlevel init script,...</para></listitem>
+	</itemizedlist>
+      </para>
+    </sect1>
+    <sect1>
+      <title>Procedure</title>
+      <para>
+	Some steps in the installation procedure need knowledge of some basic MySQL commands and actions. If you are not familiar with MySQL consider some helpful tools like phpMyAdmin (http://www.phpmyadmin.net/) to get the database ready for MasterShaper.
+      </para>
+      <sect2>
+	<title>Create a new MySQL database. </title>
+	<para>
+	  This command will create the example database db_shaper:
+	</para>
+	<para>
+	  <screen>
+create database db_shaper</screen>
+	</para>
+	<para>
+	  It's a good idea to create a new database user to access this database and don't make the database connect with the MySQL-root user - checkout the MySQL documentation how to add additional MySQL users (GRANT ACCESS to ...).
+	</para>
+      </sect2>
+      <sect2>
+	<title>Extract the MasterShaper package</title>
+	<para>
+	  Extract the mastershaper_x.xx.tar.gz file which you had downloaded from MasterShaper website to some temporary directory:
+	</para>
+	<para>
+	  <screen>
+mkdir /tmp/shaper
+cd /tmp/shaper
+tar zxfv (PATH_WHERE_FILE_IS_LOCATED)/mastershaper_x.xx.tar.gz</screen>
+	</para>
+	<para>
+	  Move MasterShaper into webservers document root. Move the content of the htdocs-directory (PHP scripts, images, ...) as it is below your document root of your web server (like /var/www/shaper) so MasterShaper is reachable via browser: <ulink url="http://server/shaper/">http://server/shaper/</ulink>
+	</para>
+      </sect2>
+      <sect2>
+	<title>Install jpgraph</title>
+	<para>
+	  Download jpgraph from <ulink url="http://www.aditus.nu/jpgraph/">http://www.aditus.nu/jpgraph/</ulink> into the MasterShaper directory. Extract the tar.gz file and make a symbolic link from "jpgraph-x.xx" directory to "jpgraph" (you could also rename jpgraph-x.xx to jpgraph).
+	</para>
+      </sect2>
+      <sect2>
+	<title>Install phplayersmenu</title>
+	<para>
+	  Download phplayersmenu from <ulink url="http://phplayersmenu.sourceforge.net/">http://phplayersmenu.sourceforge.net/</ulink> into the MasterShaper directory. Extract and make a symbolic link from "phplayersmenu-x.x.x" to "phplayersmenu" (you could also rename phplayersmenu-x.xx to phplayersmenu).
+	</para>
+      </sect2>
+      <sect2>
+	<title>Install PHP-Pear Modules</title>
+	<para>
+	  If the necessary PHP-PEAR modules aren't installed, do the following:
+	</para>
+	<para>
+	  <screen>
+pear install DB Net_IPv4</screen>
+	</para>
+	<para>
+	  to install them. Some distributions (like SuSE) provide this packages via RPMs.
+	</para>
+      </sect2>
+      <sect2>
+	<title>MasterShaper Installer</title>
+	<para>
+	  Open a browser and enter the URL for MasterShaper (ex. <ulink url="http://server/shaper/">http://server/shaper/</ulink>).
+	</para>
+	<figure><title>Mastershaper installer</title><graphic format="PNG" fileref="images/mastershaper_installation.png"/></figure>
+	<para>
+	  It will automatically forwarded you to the MasterShaper Installer. Specify the parameters as shown up in the Installer and click through the installation steps. In case of troubles, the Installer should tell you were the problems are.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Prepare IMQ</title>
+	<para>
+	  If you are using IMQ you need some iptables rules to get the traffic to the IMQ interfaces (EXT_DEV means your interface where you want to shape traffic):
+	</para>
+	<para>
+	  <screen>
+ip link set imq0 up
+ip link set imq1 up
+
+iptables -t mangle -I PREROUTING -i ${EXT_DEV} -j IMQ --todev 0
+iptables -t mangle -I POSTROUTING -o ${EXT_DEV} -j IMQ --todev 1</screen>
+	</para>
+	<para>
+	  This rules aren't set by MasterShaper. So make sure that they are available when you start shaping.
+	</para>
+      </sect2>
+      <sect2>
+	<title>sudo Configuration</title>
+	<para>
+	  Mostly your web server isn't running with root privileges and so it hasn't permissions to talk with the kernel and load the ruleset (tc or iptables). To activate the rules MasterShaper uses the scripts shaper_loader.sh, a little shell script, which handles both tc- and also iptables-rules. To gain this script root privileges open the sudo config file <emphasis role="bold">/etc/sudoers</emphasis> and add the line
+	</para>
+	<para>
+	  <screen>
+USER	ALL= NOPASSWD: PATH/shaper_loader.sh</screen>
+	</para>
+	<para>
+	  where USER is the running user of your web server (www-data, apache, ...) and PATH is the full (absolute!) file system path to your MasterShaper installation (<emphasis role="bold">/var/www/shaper</emphasis>). A great percentage of errors happen of course incorrectly configured sudo! You can test if you have prepared sudo successfully if the following command run by USER in MasterShaper's main directory don't return anything:
+	</para>
+	<para>
+	  <screen>
+sudo ./shaper_loader.sh cleanup</screen>
+	</para>
+	<para>
+	  Don't forget that your system must meet some requirements for traffic shaping with MasterShaper. Take a look at 1.2 Requirements.
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+    <title>Security</title>
+    <para>
+      The database connection parameters are stored in the configuration files <emphasis role="bold">config.dat</emphasis> in MasterShaper's web path directory (ex. <emphasis role="bold">/var/www/shaper/config.dat</emphasis>).
+    </para>
+    <para>
+      This is a critical file because it contains plain text passwords.
+      <emphasis role="bold">Access to this File must be prohibited!</emphasis>
+    </para>
+    <para>
+      The MasterShaper Installation Package includes an <emphasis role="bold">.htaccess</emphasis> file in the htdocs directory, which limits the access to the config.dat file.
+    </para>
+    <para>
+      Double check if this file is in its location and if your web server is configured probably to support .htaccess. If not referrer to your web server documentation how to limit access to a file in the webserver configuration (for Apache's httpd this is possible with the FILE directive).
+    </para>
+    <para>
+      Make sure, that it's not possible to download this file via web browser:
+      <ulink url="http://server/shaper/config.dat">http://server/shaper/config.dat</ulink>
+    </para>
+    <para>
+      Every time MasterShaper Installer finish it's job it tries do limit the access to the index.php file in the setup directory. If you see an error message, MasterShaper can't change file permissions, so please take care that the MasterShaper Installer is not public available from the Internet - it shows up plain text passwords!
+    </para>
+  </sect1>
+  <sect1>
+    <title>Statistic collector tc_collector.pl</title>
+    <para>
+      tc_collector.pl is a little Perl application which collects traffic statistics from the tc utility.
+    </para>
+    <para>
+      Cause there is no usable mechanism to get the current pipes distributions, it collects the total amount of bytes transferred within 10 seconds intervals and calculate a kilobits per second average from these values.
+    </para>
+    <para>
+Run the tc_collector by calling:
+    </para>
+    <para>
+      <screen>
+./tc_collector.pl</screen>
+    </para>
+    <para>
+      It will start collecting transfer rates from the tc binary and record them into MySQL database. It will get it's configuration also from config.dat - no adaptation to the Perl is needed.
+    </para>
+    <para>
+      If you call it with:
+    </para>
+    <para>
+      <screen>
+	tc_collector.pl -d</screen>
+    </para>
+    <para>
+      it will fork into background and run daemonized.
+    </para>
+    <para>
+      If you are expecting troubles with tc_collector.pl call the script with the parameter "-v3" and check what it's currently collecting.
+    </para>
+    <para>
+      <emphasis role="bold">Without tc_collector.pl you will get no monitoring statistics</emphasis> and the graphs in the web interface will not work!
+    </para>
+  </sect1>
+  </chapter>
+<!-- Keep this comment at the end of the file
+Local Variables:
+mode: xml
+sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+End:
+-->

@@ -1,0 +1,199 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+  <chapter id="usage" lang="fr">
+    <title>Définition et terminologie</title>
+    <para>MasterShaper utilise des termes techniques pour définir les règles de gestion du traffic.</para>
+    <sect1>
+      <title>Bande passante</title>
+      <para>
+	La bande passante définit la vitesse de votre ligne. MasterShaper utilise toujours une définition de la BP en Kbit par seconde (<emphasis role="bold">kbit/s</emphasis>).
+      </para>
+    </sect1>
+    <sect1>
+      <title>Protocoles</title>
+      <para>
+	Le terme protocol est toujours présent dans les environnements réseaux. Nous rencontrerons se terme le plus souvent pour parler de traffic IP (<emphasis role="bold">TCP/UDP</emphasis>) ou de traffic <emphasis role="bold">ICMP</emphasis> (ping), mais il en existe de nombreux autres tels que: ESP et AH pour IPSec, GRE pour GRE-Packet-Tunnelling ou Router-Protocols comme IGMP.
+	Chaque protocol possède un numéro unique assigné par l'IANA:
+	<ulink url="http://www.iana.org/assignments/protocol-numbers">http://www.iana.org/assignments/protocol-numbers</ulink>
+      </para>
+    </sect1>
+    <sect1>
+      <title>Ports</title>
+      <para>
+	Les ports refletent le port utilisé pour le traffic <emphasis role="bold">TCP</emphasis> et <emphasis role="bold">UDP</emphasis> (<emphasis role="bold">HTTP/80</emphasis>, <emphasis role="bold">IMAP/143</emphasis>,...).
+	Pendant l'installtion vous pouvez spécifier à MasterShaper de compléter sa base des ports connus par ceux assignés par l'IANA:
+	<ulink url="http://www.iana.org/assignments/port-numbers">http://www.iana.org/assignments/port-numbers</ulink>
+      </para>
+    </sect1>
+    <sect1>
+      <title>Cible (Targets)</title>
+      <para>
+	La cible (souvent une machine de destination) désigne l'addresse IP ou l'addresse MAC.
+	L'addresse IP peut etre spécifier pour une machine unique (1.1.1.1), un adresse réseau (10.0.0.0/8) ou une plage d'adrresse (1.1.1.1-1.1.1.9). Des cibles multiples peuvent etre regroupés en "groupe cible".
+      </para>
+      <para>
+	Dans le cas de la reconnaissance d'une machine par MAC address, faites bien attention ! La MAC addresse est seulement visible sur votre LAN. Vous ne pouvez pas reconnaitre une machine qui se situe derriere un routeur ou sur un autre sous-réseau.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Classes (class)</title>
+      <para>
+	Un gestionnaire de mise en file d'attente peut avoir beaucoup de classes, chacune d'elles étant internes au gestionnaire.
+	Chacune de ces classes peut contenir un gestionnaire de mise en file d'attente réel.
+	Les classes permettent de repartir un flux réseaux dans d'autres classes ayant différents comportement
+	ce qui réparti ainsi les flux dans un arbre.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Classificateur</title>
+      <para>
+	Chaque gestionnaire de mise en file d'attente basé sur des classes a besoin de déterminer vers
+	quelles classes il doit envoyer un paquet. Ceci est réalisé en utilisant le classificateur.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Cell</title>
+      <para>La durée de transmission d'un paquet n'augmente pas nécessairement de manière linéaire en fonction de sa taille.
+	Par exemple, un paquet de 800 octets peut être transmis en exactement autant de temps qu'un paquet de 806 octets.
+	Ceci détermine la granularité. Cette valeur est généralement positionnée à 8, et doit être une puissance de deux.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Burst</title>
+      <para>
+	Taille du seau, en octets. C'est la quantité maximale, en octets, de jetons dont on disposera simultanément.
+	En général, plus les débits de mise en forme sont importants, plus le tampon doit être grand.
+	Pour 10 Mbit/s sur plateforme Intel, vous avez besoin d'un tampon d'au moins 10 kilo-octets si vous
+	voulez atteindre la limitation configurée !
+	Si votre tampon est trop petit, les paquets pourront être rejetés car il arrive plus de jetons par
+	top d'horloge que ne peut en contenir le tampon.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Maxburst</title>
+      <para>
+	Ce nombre de paquets est utilisé pour calculer maxidle de telle sorte que quand avgidle est égal à maxidle,
+	le nombre de paquets moyens peut être envoyé en rafale avant que avgidle ne retombe à 0. Augmentez-le pour
+	être plus tolérant vis à vis des rafales de données.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Minburst</title>
+      <para>
+	<emphasis role="bold">CBQ</emphasis> doit bloquer le débit dans le cas d'un dépassement de limite.
+	La solution idéale est de le faire pendant exactement le temps d'inutilisation calculé, puis de laisser
+	passer un paquet. Cependant, les noyaux UNIX ont généralement du mal à prévoir des événements plus courts
+	que 10 ms, il vaut donc mieux limiter le débit pendant une période plus longue, puis envoyer <emphasis role="bold">minburst</emphasis>
+	paquets d'un seul coup et dormir pendant une durée de <emphasis role="bold">minburst</emphasis>.
+	Le temps d'attente est appelé <emphasis role="bold">offtime</emphasis>. De plus grandes valeurs de <emphasis role="bold">minburst</emphasis> mènent à une mise en forme
+	plus précise dans le long terme, mais provoquent de plus grandes rafales de données pendant des périodes de quelques millisecondes.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Niveau de service (Service Levels)</title>
+      <para>
+	Un niveau de service signifie une pré-définition de la limite d'une bande passante.
+	C'est ici que vous paramétrer en détail les classificateurs <emphasis role="bold">HTB</emphasis>, <emphasis role="bold">HFSC</emphasis> et <emphasis role="bold">CBQ</emphasis>. Pour <emphasis role="bold">CBQ</emphasis> ont peut définir le débit et la priorité. Avec <emphasis role="bold">HTB</emphasis> on en plus paramétrer le "<emphasis role="bold">ceil</emphasis>" et le "<emphasis role="bold">burst</emphasis>" pour le traffic entrant et sortant (pour les lignes asymétriques). Et enfin pour <emphasis role="bold">HFSC</emphasis> il est possible de spécifier un délai maximum pour un packet.
+      </para>
+      <para>
+	Avec MasterShaper vous pouvez définir quel type de "<emphasis role="bold">Queuing Discipline</emphasis>" vous voulez utiliser. La <emphasis role="bold">Queuing discipline</emphasis> (Qdisc) est un méthode (Algorithme) de géstion d'une queue.
+	Ce paramètre est uniquement utilisé pour les tunnels (pipes). Les niveaux de services qui sont assignés par des chaines (chains) l'ignore. Le <emphasis role="bold">Scheduling</emphasis> est une méthode d'ordonnancement des paquets. Cela permet de placer certains types de paquets à avant d'autres afin qu'il soient envoyés en premier.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Mise en forme (Shaping)</title>
+      <para>
+	Le processus qui consiste à retarder l'émission des paquets sortants pour avoir un trafic conforme
+	à un débit maximum configuré. La mise en forme est réalisée sur <emphasis role="bold">egress</emphasis>.
+	Familièrement, rejeter des paquets pour ralentir le trafic est également souvent appelé Mise en forme.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Filtres (Filters)</title>
+      <para>
+	Un filtre représente une méthode pour reconnaitre votre traffic défini par vos règles. Par example vous pouvez définir un "filtre traffic Web" qui reconnaitra <emphasis role="bold">HTTP</emphasis> et <emphasis role="bold">HTTPS</emphasis> sur les ports <emphasis role="bold">80/tcp</emphasis> et <emphasis role="bold">443/tcp</emphasis>. De plus vous pouvez filtrer sur des "marquages" <emphasis role="bold">ToS</emphasis> (ToS-flags), <emphasis role="bold">TCP</emphasis>, <emphasis role="bold">IPP2P</emphasis>, couche7, temps, longueur des packets..... Les filtres sont utilisés par les Qdisc utilisant des classes pour selectionner dans quelle classe un paquet va être enfilé.
+	La classification peut être réalisée en utilisant des filtres.
+      </para>
+      <para>
+	La disponibilité de certains filtres dépends de la méthode de reconnaissance que vous utilisez. MasterShaper supporte les filtres <emphasis role="bold">tc</emphasis> et les filtres <emphasis role="bold">iptables</emphasis>. Alors que les filtres <emphasis role="bold">tc</emphasis> sont rapides et déja intégrés à <emphasis role="bold">iproute2</emphasis>, <emphasis role="bold">iptables</emphasis> est un système additionnel avec une meilleure méthode de reconnaissance. Si vous ne désirez pas toutes ses fonctionnalitées, iptables peut simplement servir de relai pour sur les filtres <emphasis role="bold">tc</emphasis>.
+      </para>
+      <para>
+	Pour savoir si votre version de iptables supporte toutes les fonctionnalitées de MasterShaper, il suffit de regarder si tous les <emphasis role="bold">modules</emphasis> de reconnaissance sont présents (dans le répertoire <emphasis role="bold">/lib/iptables</emphasis>):
+      </para>
+<screen>
+libipt_TOS.so 		for TOS matching
+libipt_tcp.so 		for TCP-Flag matching
+libipt_ipp2p.so		for IP-P2P matching (http://www.ipp2p.org)
+libipt_time.so 		for time matching
+libipt_length.so	for packet length matching
+libipt_layer7.so	for layer7 protocol matching (http://l7-filter.sf.net)
+libipt_helper.so	for ftp data channel matching
+libipt_conntrack.so 	for ftp data channel matching</screen>
+      <para>
+	MasterShaper ne regarde pas si tous ces modules sont disponibles. Si vous rencontrez des erreurs en chargeant des règles de reconnaissances iptables, vérifiez d'abord que les modules sont disponibles.
+      </para>
+    </sect1>
+
+    <sect1>
+      <title>reconnaissance sur la couche 7 (layer7 protocol matching)</title>
+      <para>
+	Depuis la version 0.32 MasterShaper supporte la reconnaissance sur la couche numéro 7 du modèle OSI (layer7 protocol matching support, <ulink url="http://l7-filter.sf.net">http://l7-filter.sf.net</ulink>).
+	L'option "<emphasis role="bold">Update L7 Protocols</emphasis>" permet à MasterShaper de récupérer tous les protocols de reconnaissance de <emphasis role="bold">layer7</emphasis> disponibles (les fichiers .pat dans le répertoire /etc/l7-protocols), et de les sauvegarder dans la base de données. Si vous updatez l7-filter, il faudra de nouveau relancer le processus d'update pour pouvoir avoir le support des nouveaux protocols.
+    </para>
+    </sect1>
+
+    <sect1>
+      <title>Chaines (Chains)</title>
+      <para>
+	Les Chaines fabriquent des canneaux de traffic réseaux. Chaque chaine a un niveau de service assigné - la bande passante maximale appartenant au canal. Si vous n'avez qu'une seule chaine, le niveau de service est égal à la vitesse de votre ligne: (<emphasis role="bold">2048/1024kbit/s</emphasis> par exemple).
+      </para>
+      <para>
+	Chaque chaine possede aussi un service en mode dégradé - tout traffic qui n'est pas reconnu par un tunnel peut uniquement utilisé la bande passante di niveau de service dégradé. MasterShaper s'assure donc que tout traffic non reconnu n'utilisera pas toute la bande passante.
+      </para>
+      <para>
+	Pour avoir le traffic dans les chaines, le traffic réseau sera reconnu par les cibles définis. L'ordre des chaines est important - c'est la première règle qui est reconnu qui est prise en compte, et non celle qui corresponds exactement.
+	Donc si vous avez deux chaines avec les cibles suivantes (dans l'ordre):
+      </para>
+      <screen>
+192.168.1.0/24
+192.168.1.1</screen>
+
+      <para>
+	Le traffic de/vers <emphasis role="bold">192.168.1.1</emphasis> sera reconnu par la chaine <emphasis role="bold">192.168.1.0/24</emphasis> et non par la chaine <emphasis role="bold">192.168.1.1</emphasis>.
+      </para>
+      <para>
+	Si vous ne voulez pas spécifier l'addresse IP d'un machine cible, vous pouvez utiliser l'entrée "<emphasis role="bold">any</emphasis>" dans la configuration des chaines.
+      </para>
+      <para>
+	Il est possible de définir des chaines qui ignorent complétement la configuration <emphasis role="bold">QoS</emphasis>. Cela est peut etre pratique si vous avez du traffic réseau qui ne doit pas etre affecté par des regles de controle de flux (<emphasis role="bold">LAN</emphasis> ou <emphasis role="bold">DMZ</emphasis>). Les chaines qui ignorent la <emphasis role="bold">QoS</emphasis> ne sont pas monitorées.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Tunnels (pipes)</title>
+      <para>
+	Les tunnels assemblent les chaines, les filtres et les niveaux de services. On peut définir le sens d'un tunnel (entrant ou sortant).
+	On peut assigner un niveau de service à un tunnel, qui en régulera l'utilisation de la bande passante.
+      </para>
+      <para>
+	L'utilisation instantanée de la bande passante d'un tunnel peut etre visaulisé via l'outil "Monitoring Pipes".
+      </para>
+    </sect1>
+    <sect1>
+      <title>Pont ou routeur (Bridge or Router)</title>
+      <para>
+	Un pont est un équipement réseau transparent. Par example - normallement vous avez connecté votre routeur principal (Cisco, Nortel, ...) directement sur votre swith réseau. Avec un pont vous vous connectez au router sur la première interface. La seconde interface est connecté sur votre switch réseau. Le pont est transparent est totallement transparent/invisible pour toutes les connections entre le routeur et votre réseau. Mais maintenant vous etes capable d'affecter le flux réseau sur les deux interfaces du pont. Pour retrouver plus d'information sur la mise en place d'un pont sous Linux vous pouvez aller consulter la documentation:
+	<ulink url="http://linux-net.osdl.org/index.php/Bridge">http://linux-net.osdl.org/index.php/Bridge</ulink>
+      </para>
+      <para>
+	Un routeur connecte deux réseaux différents entre eux (comme <emphasis role="bold">192.168.191.0/24</emphasis> et <emphasis role="bold">172.16.2.0/24</emphasis>). Aucunes des machines clientes sur les deux sous réseaux non connaissances d'un autre client sur l'autre sous réseau. Elles savent uniquement comment envoyés des paquets vers l'autre réseau (via la passerelle par défaut, la route, ....). Le routeur sait par sa table de routage ou acheminé les paquets.
+      </para>
+      <para>
+	Packet handling - reconnaissance exact de l'interface réseau - est un peu différent entre les routeur et les ponts. Il faut donc préciser à MasterShaper dans quel mode agir. Si vous voulez controler le traffic sur une seule machine, il faut choisir le mode routeur.
+      </para>
+    </sect1>
+  </chapter>
+  <!-- Keep this comment at the end of the file
+Local Variables:
+mode: xml
+sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+End:
+-->

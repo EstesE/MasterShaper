@@ -1,0 +1,119 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+  <chapter id="example" lang="fr">
+    <title>Examples de configuration</title>
+    <sect1>
+      <title>sur un Serveur Web</title>
+      <sect2>
+	<title>Guide pas à pas</title>
+	<para>
+	  Un serveur Web standard (Linux, Apache, MySQL, PHP) avec un serveur FTP, connécté avec une ligne DSL synchrone 2Mbits/s (PPPOE)
+	    sur l'interface ethernet. Adresse IP: 1.1.1.1. On garantira un débit pour SSH (TCP/22), qui pourra utiliser toute la bande passante si elle est disponible. Ce traffic aura une priorité haute. Le traffic HTTP aura un traffic fixé à 1024kbit/s, mais il pourra aussi utiliser toute la bande passante si elle est diponible. Le traffic FTP aura un débit de 512kbit/s (ou tout si la BP est disponible). Tous les autres traffics auront un traffic de 256kbit/s et ne pourront pas utiliser une bande passante supérieur à 768kbit/s.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Implementation</title>
+	<para>
+	  <orderedlist>
+	    <listitem><para>Go to Settings"Options and define the inbound and outbound bandwidth. Specify HTB as Queuing Discipline. Select iptables as Traffic Filter.</para></listitem>
+	    <listitem><para>Créer a service level with a input et output rate definition which is equal the maximum bandwidth (2048/2048/kbit/s). </para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 64kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to high.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 1024kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to normal.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 512kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to normal.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 256kbit/s and enter 768kbit/s as ceil parameter. Set the priority to low.</para></listitem>
+	    <listitem><para>Take a look on the ports-listing if you can find "http",  "https", "ftp", "ftp-data" and "ssh". If not available, create new port definitions for these filters.</para></listitem>
+	    <listitem><para>Créer a target for the address 1.1.1.1.</para></listitem>
+	    <listitem><para>Créer a filter "Web-Traffic". Select protocol TCP, assign the ports "http" et "https". </para></listitem>
+	    <listitem><para>Créer a filter "FTP-Traffic". Select protocol TCP, assign the ports "ftp" et "ftp-data". Select "Match FTP data channel".</para></listitem>
+	    <listitem><para>Créer a filter "SSH-Traffic". Select protocol TCP, assign the port "ssh". </para></listitem>
+	    <listitem><para>Créer a new chain. The service level for this chain is the 2048kbit/s level. For fall-back use the service level with the rate of 256kbit/s. On "Affecting" choose as source "any", as target 1.1.1.1 and select both directions.</para></listitem>
+	    <listitem><para>Créer a pipe. Choose the created chain, select the filter "Web-Traffic", the service level with the rate of 1024kbit/s and choose both directions.</para></listitem>
+	    <listitem><para>Créer a pipe. Choose the created chain, select the filter "FTP-Traffic", the service level with the rate of 512kbit/s and choose both directions.</para></listitem>
+	    <listitem><para>Créer a pipe. Choose the created chain, select the filter "SSH-Traffic", the service level with the rate of 64kbit/s and choose both directions.</para></listitem>
+	    <listitem><para>Click "Overview" and take a look on your MasterShaper configuration.</para></listitem>
+	    <listitem><para>Select Rules" Load and activate your new ruleset.</para></listitem>
+	  </orderedlist>
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>Sur une passerelle</title>
+      <sect2>
+	<title>Guidelines</title>
+	  <para>
+	  A standard Linux-based Internet router with a mail server and pop3/imap access.
+	  Connected trough Ethernet with a synchronous 2Mbit/s link. IP 1.1.1.1.
+	  For remote control of the clients (rdp, vnc, radmin) and SSH (TCP/22) 128kbit/s should always be guaranteed. It should have a high priority.
+	  Mailing (SMTP, POP3, IMAP) should not block the whole bandwidth. Guaranteed 256kbit/s. A Maximum of 1024kbit/s. Lowest Priority
+	  HTTP et FTP should have 512kbit/s available but can use the whole bandwidth if available.
+	  All other traffic become 256kbit/s and can't use more then 768kbit/s.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Implementation</title>
+	<para>
+	  <orderedlist>
+	    <listitem><para>Go to Settings"Options and define the inbound and outbound bandwidth. Specify HTB as Queuing Discipline.</para></listitem>
+	    <listitem><para>Créer a service level with a input et output rate definition which is equal the maximum bandwidth (2048/2048/kbit/s). </para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 128kbit/s and enter 2048kbit/s as ceil parameter - for both directions. Set the priority to high.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 256kbit/s and enter 1024kbit/s as ceil parameter - for both directions. Set the priority to low.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 512kbit/s and enter 2048kbit/s as ceil parameter - for both directions. Set the priority to normal.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 256kbit/s and enter 768kbit/s as ceil parameter - for both directions. Set the priority to lowest.</para></listitem>
+	    <listitem><para>Take a look on the ports - listing if you can find "http",  "https", "ftp", "ftp-data", "ssh", "rdp", "vnc", "radmin". If not available, create new port definitions for this filters.</para></listitem>
+	    <listitem><para>Créer a target for the address 1.1.1.1.</para></listitem>
+	    <listitem><para>Créer a filter "Web-Traffic". Select protocol TCP, assign the ports "http", "https" and "ftp".</para></listitem>
+	    <listitem><para>Créer a filter "Mail-Traffic". Select protocol TCP, assign the ports "smtp", "pop3" and "imap".</para></listitem>
+	    <listitem><para>Créer a filter "Remote-Control". Select protocol TCP, assign the port "ssh", "rdp", "vnc" and "radmin".</para></listitem>
+	    <listitem><para>Créer a new chain. The service level for this chain is the 2048kbit/s level. For fall-back use the service level with the rate of 256kbit/s and lowest priority. On "Affecting" choose as source "any", as target 1.1.1.1 and select both directions.</para></listitem>
+	    <listitem><para>Créer a pipe. Choose the created chain, select the filter "Web-Traffic", the service level with the rate of 512kbit/s and choose both directions.</para></listitem>
+	    <listitem><para>Créer a pipe. Choose the created chain, select the filter "Mail-Traffic", the service level with the rate of 1024kbit/s and choose both directions.</para></listitem>
+	    <listitem><para>Créer a pipe. Choose the created chain, select the filter "Remote Control", the service level with the rate of 128kbit/s and choose both directions.</para></listitem>
+	    <listitem><para>Click "Overview" and take a look on your MasterShaper configuration.</para></listitem>
+	    <listitem><para>Select Rules"Reload now and activate your new ruleset.</para></listitem>
+	  </orderedlist>
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>Shaping per department</title>
+      <sect2>
+	<title>Guidelines</title>
+	<para>
+	  A standard Linux-based internet router which manage the internet access of 4 departments.
+	  The router uses IMQ in BB mode on the external interface, so you see LAN addresses on the outgoing IMQ device before NAT.
+	  Connected trough Ethernet with a synchronous 2Mbit/s link. IP 1.1.1.1.
+	  The internal networks of the departments are 172.16.1.0/26, 172.16.1.64/26, 172.16.1.128/26, 172.16.1.196/26.
+	  Each department has guaranteed 512kbit/s but can lend unused bandwidth from other departments.
+	  Departments are using VoIP from a SIP-Provider and so connecting to a SIP-server. Low Latency has to be guaranteed for this service.
+	  HTTP et FTP should have 128kbit/s and maximal use 256 of the bandwidth. Priority low.
+	  All other traffic become 64kbit/s and can't use more then 196kbit/s.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Implementation</title>
+	<para>
+	  <orderedlist>
+	    <listitem><para>Go to Settings"Options and define the inbound and outbound bandwidth. Specify HFSC as Queuing Discipline.</para></listitem>
+	    <listitem><para>Créer 4 targets - each one with the assigned subnets of the departments.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 512kbit/s and enter 2048kbit/s as max parameter</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 256kbit/s and enter 100ms for max delay.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 128kbit/s and enter 256kbit/s as max parameter.</para></listitem>
+	    <listitem><para>Créer a service level which has a rate of 64kbit/s and enter 196kbit/s as max parameter.</para></listitem>
+	    <listitem><para>Take a look at the ports - listing if you can find "http",  "https", "ftp", "ftp-data". Check out, on which port-range you connect to the SIP-Provider and create a port definition for this.</para></listitem>
+	    <listitem><para>Créer a filter "VoIP-Traffic". Select protocol UDP, assign the ports "voip".</para></listitem>
+	    <listitem><para>Créer a filter "Web-Traffic". Select protocol TCP, assign the ports "http", "https", "ftp" and "ftp-data".</para></listitem>
+	    <listitem><para>Créer 4 new chains. The service level for this chains is the 512kbit/s level. For fall-back use the service level with the rate of 64kbit/s. On "Affecting" choose as source "any" and as target on of your defined department targets and select both directions.</para></listitem>
+	    <listitem><para>Créer 4 pipes. Choose the created department chains, select the filter "VoIP-Traffic", the service level with the rate of 256kbit/s and choose both directions.</para></listitem>
+	    <listitem><para>Créer 4 pipes. Choose the created department chains, select the filter "Web-Traffic", the service level with the rate of 128kbit/s and choose both directions.</para></listitem>
+	    <listitem><para>Click "Overview" and take a look on your MasterShaper configuration.</para></listitem>
+	    <listitem><para>Select Rules"Reload now and activate your new ruleset.</para></listitem>
+	  </orderedlist>
+	</para>
+      </sect2>
+    </sect1>
+  </chapter>
+<!-- Keep this comment at the end of the file
+Local Variables:
+mode: xml
+sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+End:
+-->

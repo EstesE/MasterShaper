@@ -1,0 +1,4 @@
+<Files "config.dat">
+	order allow,deny
+	deny from all
+</Files>

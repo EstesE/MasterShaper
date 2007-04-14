@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//FR"
+"/usr/share/sgml/docbook/xml-dtd-4.2/docbookx.dtd" [
+<!ENTITY intro SYSTEM "introduction.xml">
+<!ENTITY def SYSTEM "definition.xml">
+<!ENTITY inst SYSTEM "installation.xml">
+<!ENTITY conf SYSTEM "configuration.xml">
+<!ENTITY ex SYSTEM "example.xml">
+<!ENTITY lic SYSTEM "licence.xml">
+]>
+<!-- juste un commentaire -->
+<book lang="fr">
+  <title>Documentation MasterShaper 0.4x</title>
+  <subtitle>Outil de management QoS et controle de Flux</subtitle>
+  <bookinfo>
+    <authorgroup>
+      <author>
+	<firstname>version originale: Andreas Unterkircher</firstname>
+	<email>andreas.unterkircher _@_ netshadow.at</email>
+      </author>
+      <author>
+	<firstname>traduction française + ajout : Antoine Giniès</firstname>
+	<email>aginies _@_ gmail.com</email>
+      </author>
+    </authorgroup>
+
+    <revhistory>
+      <revision>
+	<revnumber>0.2</revnumber>
+	<date>Mars 2006</date>
+	<authorinitials>ag</authorinitials>
+	<revremark>traduction française, mise au format docbook</revremark>
+      </revision>
+      <revision>
+	<revnumber>0.1</revnumber>
+	<date>2005</date>
+	<authorinitials>au</authorinitials>
+	<revremark>documentation en</revremark>
+      </revision>
+    </revhistory>
+    <pubdate>2005-2006</pubdate>
+  </bookinfo>
+  &intro;
+  &def;
+  &inst;
+  &conf;
+  &ex;
+  &lic;
+</book>

@@ -1,0 +1,142 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+  <chapter id="definition" lang="en">
+    <title>Definitions and Terms</title>
+    <para>The MasterShaper uses some terms to define the shaping rules.</para>
+    <sect1>
+      <title>Bandwidth</title>
+      <para>
+	Bandwidth mean the network speed of your link. MasterShaper always uses speed definitions in kbit per second (kbit/s).
+      </para>
+    </sect1>
+    <sect1>
+      <title>Protocols</title>
+      <para>
+	You often meet protocols in network environments. In our current time you will often meet IP-Traffic (TCP/UDP) or ICMP-Traffic (ping) - but there are many other protocols like ESP and AH for IPSec, GRE for GRE-Packet-Tunnelling or Router-Protocols like IGMP available.
+      </para>
+      <para>
+	Each protocol has a unique number which is assigned by IANA: <ulink url="http://www.iana.org/assignments/protocol-numbers">http://www.iana.org/assignments/protocol-numbers</ulink>
+      </para>
+    </sect1>
+    <sect1>
+      <title>Ports</title>
+      <para>
+	Ports reflect the common port numbers for TCP- and UDP-traffic (HTTP/80, IMAP/143,...).
+	During installation you can instruct MasterShaper Installer to fill the ports table with all ports assigned by IANA: <ulink url="http://www.iana.org/assignments/port-numbers">http://www.iana.org/assignments/port-numbers</ulink>
+      </para>
+    </sect1>
+    <sect1>
+      <title>Targets</title>
+      <para>
+	Targets means IP-Addresses or MAC-Addresses.
+	IP-Addresses can be specified as single host (1.1.1.1), network address (10.0.0.0/8) or ip-range (1.1.1.1-1.1.1.9).
+      </para>
+      <para>
+	Multiple targets can be grouped together as target groups.
+      </para>
+      <para>
+	Think about when you are able to match on MAC-Addresses! You only see MAC-Addresses in your local attached networked. You can't match on MAC-Addresses from machines which are behind routers or in other subnets. This is Ethernet design and has nothing to do with Linux or other system capabilities.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Service Levels</title>
+      <para>
+	Service Levels mean predefined bandwidth limits.
+      </para>
+      <para>
+	Here you define detailed parameters for HTB, HFSC or CBQ classifiers. For CBQ you can specify rate and priority. In addition you can define ceil and burst with HTB for incoming and outgoing traffic (asymmetric lines). For HFSC it's possible to specify the maximum delay of network packets.
+      </para>
+      <para>
+	Here you also specify the Queuing Discipline which should be used. This parameter is only used for pipes. Service Levels which are assigned to Chains will ignore this setting.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Filters</title>
+      <para>
+	Filters represent methods to match your traffic against defined rules. For example you can define, that a filter "Web-Traffic" match the HTTP- and HTTPS-ports 80/tcp and 443/tcp. Furthermore you can match on TOS-Flags, TCP-Flags, IPP2P, layer7, Time, packet length, ...
+      </para>
+      <para>
+	The availability of filter-functions depends on which matching-system you use. MasterShaper supports tc-filter and iptables. While tc-filter is fast and already integrated in the iproute2 package, iptables is a additional subsystem which supports many fancy match-methods. If you don't need the features iptables offers simply rely on tc-filter.
+      </para>
+      <para>
+To find out, if your iptables installation supports all MasterShaper features, check out if the necessary match-modules are available in the iptables modules directory (usually /lib/iptables)
+      </para>
+      <para>
+	<itemizedlist>
+	  <listitem><para><emphasis role="bold">libipt_TOS.so</emphasis>: for TOS matching</para></listitem>
+	  <listitem><para><emphasis role="bold">libipt_tcp.so</emphasis>: for TCP-Flag matching</para></listitem>
+	  <listitem><para><emphasis role="bold">libipt_ipp2p.so</emphasis>: for IP-P2P matching (<ulink url="http://www.ipp2p.org">http://www.ipp2p.org</ulink>)</para></listitem>
+	  <listitem><para><emphasis role="bold">libipt_time.so</emphasis>: for time matching</para></listitem>
+	  <listitem><para><emphasis role="bold">libipt_length.so</emphasis>: for packet length matching</para></listitem>
+	  <listitem><para><emphasis role="bold">libipt_layer7.so</emphasis>: for layer7 protocol matching (<ulink url="http://l7-filter.sf.net">http://l7-filter.sf.net</ulink>)</para></listitem>
+	  <listitem><para><emphasis role="bold">libipt_helper.so</emphasis>: for ftp data channel matching</para></listitem>
+	  <listitem><para><emphasis role="bold">libipt_conntrack.so</emphasis>:	for ftp data channel matching</para></listitem>
+	</itemizedlist>
+      </para>
+      <para>
+	MasterShaper isn't currently checking if all these modules are available. If you get some errors when loading the iptables-matching ruleset, check if all modules are in place first!
+      </para>
+    </sect1>
+    <sect1>
+      <title>layer7 Protocol matching</title>
+      <para>
+	With V0.32 layer7 protocol matching support (<ulink url="http://l7-filter.sf.net">http://l7-filter.sf.net</ulink>) has been integrated into MasterShaper.
+      </para>
+      <para>
+	With Option "<emphasis role="bold">Update L7 Protocols</emphasis>" MasterShaper will get the available protocol match names (.pat files in <emphasis role="bold">/etc/l7-protocols</emphasis>) and save them in the database. If you update your l7-filter installation you have to run this update process in MasterShaper again to get new supported protocols into MasterShaper configuration.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Chains</title>
+      <para>
+	Chains are building traffic channels. Each chain has an assigned service level - the maximum available bandwidth within this channel. If you have only one chain, this service level is normally equal to your line speed (2048/1024kbit/s for example).
+      </para>
+      <para>
+	In addition each chain has a fall-back service level - any traffic, which is not matched through a pipe definition can only use the bandwidth of the fall-back service level. So MasterShaper makes sure that no unknown traffic can't eat up your whole bandwidth.
+      </para>
+      <para>
+	To get the traffic into the chains, the network traffic will be matched by target definitions. The order of the chain rules are important - the first match win, not that one which is the exactest.
+      </para>
+      <para>
+	So if you have two chains with the following targets (in this order):
+      </para>
+      <screen>
+192.168.1.0/24
+192.168.1.1</screen>
+      <para>
+	traffic to/from 192.168.1.1 will be matched by the chain with the 192.168.1.0/24 target and not by the chain with the 192.168.1.1 target.
+      </para>
+      <para>
+	If you won't specify IP addresses for targets, you can also use the "<emphasis role="bold">any</emphasis>" entry in the chain setup.
+      </para>
+      <para>
+	It's also possible to define a chain which completely ignores the QoS settings. This is sometimes useful if you have traffic which should not be touched by any shaper settings (LAN ó DMZ). Chains which are ignoring QoS setting are not recorded through <emphasis role="bold">tc_collector.pl</emphasis> and aren't shown in monitoring graphs.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Pipes</title>
+      <para>
+	Pipes bring chains, filters and service levels together. In addition you can specify the direction of the pipes (incoming, outgoing). Here you also assign a service level, which regulate the bandwidth usage of this pipe.
+      </para>
+      <para>
+	The current bandwidth distribution between pipes can be displayed over <emphasis role="bold">Monitoring Pipes</emphasis>.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Bridge or Router</title>
+      <para>
+	A bridge is a transparent network device. For example - normally you have connected your main router (Cisco, Nortel, ...) directly to your network switch. Now you connect the router on the first interface of the bridge. The second interface of the bridge is connected to your network switch. The bridge acts totally invisible for any connections between the router and your network. But you are capable to affect the network flow on both interfaces of the bridge. More informations about setting up a Linux bridge can be found here: <ulink url="http://linux-net.osdl.org/index.php/Bridge">http://linux-net.osdl.org/index.php/Bridge</ulink>
+      </para>
+      <para>
+	A router connects two different networks together (like 192.168.191.0/24 and 172.16.2.0/24). None of the clients in different subnets know about any other clients on the other networks. They only know how to send packets to other networks (via default gateway, route, ...). The router knows - according his routing table - where to send these packets.
+      </para>
+      <para>
+	Packet handling - exactly matching the network interfaces - is a bit different between routers and bridges so you have to tell MasterShaper in which mode it has to act. If you want to shape on a single machine you have to select the router mode.
+	</para>
+    </sect1>
+  </chapter>
+<!-- Keep this comment at the end of the file
+Local Variables:
+mode: xml
+sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+End:
+-->

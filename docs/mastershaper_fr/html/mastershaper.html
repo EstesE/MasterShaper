@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /><title>Documentation MasterShaper 0.4x</title><link rel="stylesheet" href="styleguibo.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.69.1" /><link rel="start" href="#id2251312" title="Documentation MasterShaper 0.4x" /><link rel="next" href="#introduction.xml" title="Chapitre 1. Introduction" /></head><body><div class="book" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h1 class="title"><a id="id2251312"></a>Documentation MasterShaper 0.4x</h1></div><div><h2 class="subtitle">Outil de management QoS et controle de Flux</h2></div><div><div class="authorgroup"><div class="author"><h3 class="author"><span class="firstname">version originale: Andreas Unterkircher</span></h3><code class="email">&lt;<a href="mailto:andreas.unterkircher _@_ netshadow.at">andreas.unterkircher _@_ netshadow.at</a>&gt;</code></div><div class="author"><h3 class="author"><span class="firstname">traduction française + ajout : Antoine Giniès</span></h3><code class="email">&lt;<a href="mailto:aginies _@_ gmail.com">aginies _@_ gmail.com</a>&gt;</code></div></div></div><div><p class="pubdate">2005-2006</p></div><div><div class="revhistory"><table border="1" width="100%" summary="Revision history"><tr><th align="left" valign="top" colspan="3"><b>Historique des versions</b></th></tr><tr><td align="left">Version 0.2</td><td align="left">Mars 2006</td><td align="left">ag</td></tr><tr><td align="left" colspan="3">traduction française, mise au format docbook</td></tr><tr><td align="left">Version 0.1</td><td align="left">2005</td><td align="left">au</td></tr><tr><td align="left" colspan="3">documentation en</td></tr></table></div></div></div><hr /></div><div class="chapter" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title"><a id="introduction.xml"></a>Chapitre 1. Introduction</h2></div></div></div><div class="toc"><dl><dt><span class="sect1"><a href="#id2475771">1.1. Mastershaper</a></span></dt><dt><span class="sect1"><a href="#id2477222">1.2. Logiciels nécessaires</a></span></dt><dt><span class="sect1"><a href="#id2476520">1.3. IMQ-Devices - Pourquoi faire ?</a></span></dt><dt><span class="sect1"><a href="#id2523854">1.4. Classification et règles de mise en attente</a></span></dt><dt><span class="sect1"><a href="#id2524224">1.5. Support, Idées et améliorations</a></span></dt></dl></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2475771"></a>1.1. Mastershaper</h2></div></div></div><p>
+	Mastershaper est une interface web pour les outils Linux de gestion de
+	traffic réseau. Il fournit une interface web convivial pour gérer la
+	Qualité de Service (<span class="bold"><strong>QoS</strong></span>), disponibles pour les kernels Linux 2.4 et 2.6.
+	L'utilisateur peut définir ses propres règles pour gérer les flux
+	réseaux, et visualiser des informations via des statistiques graphiques sur
+	l'utilisation de la bande passante, et le controle de flux en cours.
+	On peut donc controller la taille du flux sortant, limiter la bande passante,
+	mais aussi réguler les taux d'un trafic ou pour améliorer les performances d'un réseau.
+      </p><p>
+	Le but de Mastershaper est de permettre aux utilisateurs non familliers
+	avec la gestion de flux réseau et la <span class="bold"><strong>QoS</strong></span>, de mettre en place une telle
+	solution, sans pour autant etre des experts Linux.
+      </p><p>
+	Cet outil est comparable à des outils commerciaux tel que Allot's
+	Netenforcer (<a href="http://www.allot.com/html/products_netenforcer.shtm" target="_top">http://www.allot.com/html/products_netenforcer.shtm</a>)
+	ou Packeteers shaper (<a href="http://www.packeteer.com/" target="_top">http://www.packeteer.com/</a>).
+      </p><p>
+	Aujourd'hui il ne s'agit que d'un outil de gestion de flux. Il
+	n'inclut pas un outils d'analyse de traffic comme ses équivalents
+	commerciaux.
+	Il ne permet pas de visualiser ce qui se passe sur votre réseau,
+	mais uniquement ce qui traverse votre réseau en fonction de vos filtres.
+      </p><p>
+	MasterShaper peut etre utiliser sur une simple machine, un routeur ou
+	un pont.
+	</p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2477222"></a>1.2. Logiciels nécessaires</h2></div></div></div><p>
+	</p><div class="itemizedlist"><ul type="disc"><li><p>Un Kernel Linux version 2.4 ou 2.6.x (<a href="http://www.kernel.org" target="_top">http://www.kernel.org</a>)</p></li><li><p><span class="bold"><strong>iproute2</strong></span> qui contient la commande tc (<a href="http://developer.osdl.org/dev/iproute2/" target="_top">http://developer.osdl.org/dev/iproute2/</a>)</p></li><li><p><span class="bold"><strong>IMQ-Devices</strong></span> (pour controller plus efficacement les flux entrants/sortants, <a href="http://www.linuximq.net" target="_top">http://www.linuximq.net</a>)</p></li><li><p>Un serveur Web avec le support PHP (Apache2, mod_php4/mod_php5, <a href="http://httpd.apache.org" target="_top">http://httpd.apache.org</a>)</p></li><li><p><span class="bold"><strong>PHP4/5</strong></span> avec le support JPEG, libgd et MySQL (PHP5, <a href="http://www.php.net" target="_top">http://www.php.net</a>)</p></li><li><p>Une base de donnée <span class="bold"><strong>MySQL</strong></span> (MySQL 4.1 ou MySQL 5.0, <a href="http://www.mysql.com" target="_top">http://www.mysql.com</a>)</p></li><li><p><span class="bold"><strong>PHP</strong></span> pear modules DB et Net_IPv4</p></li><li><p><span class="bold"><strong>Perl5</strong></span> avec l'interface DBD (DBI-MySQL)</p></li><li><p><span class="bold"><strong>phplayersmenu</strong></span> (sourceforge project, <a href="http://phplayersmenu.sourceforge.net" target="_top">http://phplayersmenu.sourceforge.net</a>)</p></li><li><p><span class="bold"><strong>jpgraph</strong></span> (<a href="http://www.aditus.nu/jpgraph/" target="_top">http://www.aditus.nu/jpgraph/</a>)</p></li><li><p>Un navigateur Web (avec le support DHTML et JavaScript, <a href="http://www.mozilla.org/products/firefox/" target="_top">http://www.mozilla.org/products/firefox/</a>)</p></li><li><p>La commande <span class="bold"><strong>sudo</strong></span></p></li></ul></div><p>
+	</p><p>
+	<span class="bold"><strong>Attention</strong></span>: les fonctionnalités de Mastershaper dépendent des capacités
+	  de votre systeme. Certaines fonctionnalitées du kernel 2.6.x n'ont pas
+	  été porté sur le kernel 2.4.x et donc ne peuvent pas etre utilisé sur
+	  un kernel 2.4. Si vous avez d'anciennes versions d'iptables et
+	d'<span class="bold"><strong>iproute2</strong></span> vous pourrez rencontrer queleques difficultées avec
+	  quelques fonctionnalitées. Avant de reporter le moindre problèmes,
+	  veuillez vérifier si de nouvelles versions sont disponibles et mettez
+	  à jour si nécessaires.
+	</p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2476520"></a>1.3. IMQ-Devices - Pourquoi faire ?</h2></div></div></div><p>
+	  Tout d'abord il faut comprendre que les outils <span class="bold"><strong>tc</strong></span> sont écrit pour gérer le traffic sortant (outbound traffic /egress). Avec le traffic sortant nous disposons d'une large panel d'options pour gérer notre flux. Les fonctions de gestions de flux entrant sont beaucoup plus limitées et rudimentaires, et donc offrent moins d'options.
+	</p><p>
+	Le problème avec le traffic entrant (qui arrive donc sur notre carte réseau), c'est qu'il est déja arrivé sur notre interface réseau, et qu'il consomme donc déja de la bande passante. Il ne nous reste donc plus que la possbilité de "dropper" (ignorer un paquet lorsque la queue est pleine) les packets arrivant rapidement ou d'allonger le delai pour renvoyer notre acquittement (<span class="bold"><strong>ACK</strong></span>), en espérant que l'expéditeur baissera son débit d'envoi de packets (La pluspart des stacks IP fonctionnenent désormais comme cela).
+	</p><p>
+	  Dans tous les cas, si vous etes du mauvais coté du flux réseau, le controle du traffic entrant sera toujours moins efficace que celui du traffic sortant. Quoi qu'en disent les solutions commerciales de gestion de flux réseau, il y aura toujours le meme probleme qu'avec une solution QoS Linux. La solution idéale est de réguler le traffic sur des deux cotés.
+	</p><p>
+	  La signification de <span class="bold"><strong>IMQ-Devices</strong></span> est "Périphérique intermédiaire de mise en attente" (Intermediate Queueing Device) <a href="http://www.linuximq.net" target="_top">http://www.linuximq.net</a>. Il a été spéciallement écrit pour gérer ce type de probléme. Avec des règles iptables le traffic entrant et sortant sera redirigé sur ce périphérique. L'avantage c'est que l'on peut désormais utiliser des règles de gestion de traffic sortant de notre réseau sur le traffic entrant.
+	</p><p>
+	Pour pouvoir utiliser les périphériques <span class="bold"><strong>IMQ</strong></span>, il faut patcher le kernel et l'outil iptables. Vous trouverez suffisement de documentation sur internet (en utilisant google par exemple) pour que cela ne soit pas expliqué dans cette documentation:
+	  </p><div class="itemizedlist"><ul type="disc"><li><p><a href="http://www.linuximq.net/faq.html" target="_top">http://www.linuximq.net/faq.html</a></p></li><li><p><a href="http://wiki.nix.hu/cgi-bin/twiki/view/IMQ/ImqFaq" target="_top">http://wiki.nix.hu/cgi-bin/twiki/view/IMQ/ImqFaq</a></p></li></ul></div><p>
+	</p><p>
+	Si vous voulez utiliser <span class="bold"><strong>IMQ</strong></span> sur votre interface externe (ici ppp0), vous avez juste à taper cette comande:
+	</p><pre class="screen">
+ip link set imq0 up
+ip link set imq1 up
+iptables -t mangle -I PREROUTING -i ppp0 -j IMQ --to-dev 0
+iptables -t mangle -I POSTROUTING -o ppp0 -j IMQ --to-dev 1</pre><p>
+	Maintenant vous pouvez utiliser les interfaces <span class="bold"><strong>IMQ</strong></span> pour l'entrant (ex: imq0) et le sortant (ex: imq1) dans les options Mastershaper.
+	  N'oubliez pas qu'il faut patcher votre kernel et iptables pour que cela soit fonctionnel (CONFIG_IMQ et CONFIG_IP_NF_TARGET_IMQ)
+	</p><p>
+	<span class="bold"><strong>Avertissement</strong></span>: vous ne pouvez pas utiliser la reconnaissance des packets <span class="bold"><strong>iptables</strong></span> sur les interfaces <span class="bold"><strong>IMQ</strong></span>. Vous devez utiliser les filtres <span class="bold"><strong>tc</strong></span>. <span class="bold"><strong>Iptables</strong></span> est incapable de reconnaitre un packet sur une interface <span class="bold"><strong>IMQ</strong></span>.
+	</p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2523854"></a>1.4. Classification et règles de mise en attente</h2></div></div></div><p>
+	Depuis la version 0.30 MasterShaper supporte 3 classificateurs (disponible dans le kernel 2.6):
+      </p><p>
+	</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>HTB</strong></span> (Hierarchical Token Bucket) <a href="http://luxik.cdi.cz/~devik/qos/htb/" target="_top">http://luxik.cdi.cz/~devik/qos/htb/</a></p></li><li><p><span class="bold"><strong>HFSC</strong></span> (Hierarchical Fair Service Curve) <a href="http://www.cs.cmu.edu/~hzhang/HFSC/main.html" target="_top">http://www.cs.cmu.edu/~hzhang/HFSC/main.html</a></p></li><li><p><span class="bold"><strong>CBQ</strong></span> (Class Based Queueing) <a href="http://www.icir.org/floyd/cbq.html" target="_top">http://www.icir.org/floyd/cbq.html</a></p></li></ul></div><p>
+      </p><p>
+	<span class="bold"><strong>CBQ</strong></span> est un gestionnaire de mise en file d'attente basé sur des classes. <span class="bold"><strong>CBQ</strong></span> sert également à la mise en forme de trafic.
+      </p><p>
+	<span class="bold"><strong>HTB</strong></span> travaille comme <span class="bold"><strong>CBQ</strong></span>, mais il n'a pas recourt à des calculs de temps d'inoccupation pour la mise en forme. A la place, c'est un Token Bucket Filter basé sur des classes, d'où son nom.
+	<span class="bold"><strong>HTB</strong></span> permet de garantir un bande passante minimum pour une certaine classe de traffic. Il permet de définir une bande passante maximale, qu'une classe peut hérité d'une autre si la bande passante n'est pas utilisé. On peut définir des niveaux de "burst" et priorisé les classes <span class="bold"><strong>HTB</strong></span>. Les priorités les plus hautes obtiennent le plus de bande passante.
+      </p><p>
+	<span class="bold"><strong>HFSC</strong></span> permet de garantir un délai maximum pour les packets. C'est important pour des applications temps réel comme la Voix sur IP (VoIP), ou le délai et le jitter ont un mauvais impact sur la qualité. Avec <span class="bold"><strong>HFSC</strong></span> on peut définir un bande passante minimum pour chaque classe, et une bande passante maximale qui peut etre utilisé pour cette classe. Une des limitations de <span class="bold"><strong>HFSC</strong></span> est qu'il est impossible de dessiner la bande passante et les graphiques des chaines. Seul les graphiques de type tunnel focntionne.
+      </p><p>
+	La gestion <span class="bold"><strong>CBQ</strong></span> est plus lente que celle via <span class="bold"><strong>HTB</strong></span>, mais elle offre moins d'options de control du traffic. MasterShaper supporte <span class="bold"><strong>CBQ</strong></span> dans le cas ou <span class="bold"><strong>HTB</strong></span> n'est pas disponible.
+      </p><p>
+	Vincent Perrier a effectué quelques tests de comparaison entre <span class="bold"><strong>HTB</strong></span> et <span class="bold"><strong>HFSC</strong></span>. Allez regarder sur sa page web: <a href="http://www.rawsoft.org/example_of_use.html" target="_top">http://www.rawsoft.org/example_of_use.html</a>. 
+      </p><p>
+	Le comportement par défaut de MasterShaper est <span class="bold"><strong>HTB</strong></span>. Vous pouvez facillement le changer via l'interface web: "Settings " Options " Queuing Discipline"
+      </p><p>
+	La version 0.42 de MasterShaper est capable d'utiliser plusieurs type de gestion de queue différentes règles de mise en attente (Queuing Disciplines), alors qu'auparavent seule <span class="bold"><strong>SFQ</strong></span> était supporté. Cette "Queuing Disciplines" est utilisé lorsque que les packets quittent l'interface pour obetnir une ditribution équitable de la bande passante pour les différents traffics.
+      </p><p>
+	MasterShaper supporte désormais:
+      </p><p>
+	</p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>SFQ</strong></span> (Stochastic Fairness Queueing, in 2.6 kernel)</p></li><li><p><span class="bold"><strong>ESFQ</strong></span> (Enhanced Stochastic Fairness Queueing, <a href="http://fatooh.org/esfq-2.6/" target="_top">http://fatooh.org/esfq-2.6/</a>)</p></li><li><p><span class="bold"><strong>HFSC</strong></span> (Hierarchical Fair Service Curve, in 2.6 kernel)</p></li><li><p><span class="bold"><strong>NETEM</strong></span> (Network Emulator, in 2.6 kernel, <a href="http://linux-net.osdl.org/index.php/Netem" target="_top">http://linux-net.osdl.org/index.php/Netem</a></p></li></ul></div><p>
+      </p><p>
+	<span class="bold"><strong>NETEM</strong></span> est capable d'émuler des conditions réels de réseau tel que: le délai, la perte de packet, la duplication ou le ré-ordonencement. MasterShaper est seulement un GUI pour entrer les paramètres <span class="bold"><strong>NETEM</strong></span>. Souvenez-vous que cela peut affecter les connections sur lequel tourne MasterShaper. Il faut un kernel avec le support <span class="bold"><strong>NETEM</strong></span> (CONFIG_NET_SCH_NETEM) et une nouvelle version de <span class="bold"><strong>iproute2</strong></span> (<a href="http://linux-net.osdl.org/index.php/Iproute2" target="_top">http://linux-net.osdl.org/index.php/Iproute2</a> pour pouvoir utiliser toutes les options disponibles.
+      </p><p>
+	Tous ces classificateurs et règles de mise en attente ont differents "appendages" pour faire leurs jobs. Si vous voulez en savoir plus sur la théorie, allez voir la documentation sur leurs pages web respectives. Cette documentation n'explique qu'une infime partie des nombreuses possibilitées offertes.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2524224"></a>1.5. Support, Idées et améliorations</h2></div></div></div><p>
+	Dans le cas ou vous rencontrez des problèmes pour configurer MasterShaper, allez faire un tour sur le forum de la page web de MasterShaper pour voir s'il n'a pas été déja résolu - svp - utilisez l'outil de recherche du forum avant de faire un nouveau post.
+	Si vous avez des idées pour améliorer MasterShaper n'hésitez pas à les poster dans la section "Feature Request et Inspirations" dans les forum de support.
+      </p></div></div><div class="chapter" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title"><a id="usage"></a>Chapitre 2. Définition et terminologie</h2></div></div></div><div class="toc"><dl><dt><span class="sect1"><a href="#id2523573">2.1. Bande passante</a></span></dt><dt><span class="sect1"><a href="#id2523592">2.2. Protocoles</a></span></dt><dt><span class="sect1"><a href="#id2525182">2.3. Ports</a></span></dt><dt><span class="sect1"><a href="#id2525229">2.4. Cible (Targets)</a></span></dt><dt><span class="sect1"><a href="#id2525261">2.5. Classes (class)</a></span></dt><dt><span class="sect1"><a href="#id2525284">2.6. Classificateur</a></span></dt><dt><span class="sect1"><a href="#id2525301">2.7. Cell</a></span></dt><dt><span class="sect1"><a href="#id2525321">2.8. Burst</a></span></dt><dt><span class="sect1"><a href="#id2525342">2.9. Maxburst</a></span></dt><dt><span class="sect1"><a href="#id2525362">2.10. Minburst</a></span></dt><dt><span class="sect1"><a href="#id2525421">2.11. Niveau de service (Service Levels)</a></span></dt><dt><span class="sect1"><a href="#id2525526">2.12. Mise en forme (Shaping)</a></span></dt><dt><span class="sect1"><a href="#id2525552">2.13. Filtres (Filters)</a></span></dt><dt><span class="sect1"><a href="#id2525713">2.14. reconnaissance sur la couche 7 (layer7 protocol matching)</a></span></dt><dt><span class="sect1"><a href="#id2525758">2.15. Chaines (Chains)</a></span></dt><dt><span class="sect1"><a href="#id2525887">2.16. Tunnels (pipes)</a></span></dt><dt><span class="sect1"><a href="#id2525913">2.17. Pont ou routeur (Bridge or Router)</a></span></dt></dl></div><p>MasterShaper utilise des termes techniques pour définir les règles de gestion du traffic.</p><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2523573"></a>2.1. Bande passante</h2></div></div></div><p>
+	La bande passante définit la vitesse de votre ligne. MasterShaper utilise toujours une définition de la BP en Kbit par seconde (<span class="bold"><strong>kbit/s</strong></span>).
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2523592"></a>2.2. Protocoles</h2></div></div></div><p>
+	Le terme protocol est toujours présent dans les environnements réseaux. Nous rencontrerons se terme le plus souvent pour parler de traffic IP (<span class="bold"><strong>TCP/UDP</strong></span>) ou de traffic <span class="bold"><strong>ICMP</strong></span> (ping), mais il en existe de nombreux autres tels que: ESP et AH pour IPSec, GRE pour GRE-Packet-Tunnelling ou Router-Protocols comme IGMP.
+	Chaque protocol possède un numéro unique assigné par l'IANA:
+	<a href="http://www.iana.org/assignments/protocol-numbers" target="_top">http://www.iana.org/assignments/protocol-numbers</a>
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525182"></a>2.3. Ports</h2></div></div></div><p>
+	Les ports refletent le port utilisé pour le traffic <span class="bold"><strong>TCP</strong></span> et <span class="bold"><strong>UDP</strong></span> (<span class="bold"><strong>HTTP/80</strong></span>, <span class="bold"><strong>IMAP/143</strong></span>,...).
+	Pendant l'installtion vous pouvez spécifier à MasterShaper de compléter sa base des ports connus par ceux assignés par l'IANA:
+	<a href="http://www.iana.org/assignments/port-numbers" target="_top">http://www.iana.org/assignments/port-numbers</a>
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525229"></a>2.4. Cible (Targets)</h2></div></div></div><p>
+	La cible (souvent une machine de destination) désigne l'addresse IP ou l'addresse MAC.
+	L'addresse IP peut etre spécifier pour une machine unique (1.1.1.1), un adresse réseau (10.0.0.0/8) ou une plage d'adrresse (1.1.1.1-1.1.1.9). Des cibles multiples peuvent etre regroupés en "groupe cible".
+      </p><p>
+	Dans le cas de la reconnaissance d'une machine par MAC address, faites bien attention ! La MAC addresse est seulement visible sur votre LAN. Vous ne pouvez pas reconnaitre une machine qui se situe derriere un routeur ou sur un autre sous-réseau.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525261"></a>2.5. Classes (class)</h2></div></div></div><p>
+	Un gestionnaire de mise en file d'attente peut avoir beaucoup de classes, chacune d'elles étant internes au gestionnaire.
+	Chacune de ces classes peut contenir un gestionnaire de mise en file d'attente réel.
+	Les classes permettent de repartir un flux réseaux dans d'autres classes ayant différents comportement
+	ce qui réparti ainsi les flux dans un arbre.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525284"></a>2.6. Classificateur</h2></div></div></div><p>
+	Chaque gestionnaire de mise en file d'attente basé sur des classes a besoin de déterminer vers
+	quelles classes il doit envoyer un paquet. Ceci est réalisé en utilisant le classificateur.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525301"></a>2.7. Cell</h2></div></div></div><p>La durée de transmission d'un paquet n'augmente pas nécessairement de manière linéaire en fonction de sa taille.
+	Par exemple, un paquet de 800 octets peut être transmis en exactement autant de temps qu'un paquet de 806 octets.
+	Ceci détermine la granularité. Cette valeur est généralement positionnée à 8, et doit être une puissance de deux.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525321"></a>2.8. Burst</h2></div></div></div><p>
+	Taille du seau, en octets. C'est la quantité maximale, en octets, de jetons dont on disposera simultanément.
+	En général, plus les débits de mise en forme sont importants, plus le tampon doit être grand.
+	Pour 10 Mbit/s sur plateforme Intel, vous avez besoin d'un tampon d'au moins 10 kilo-octets si vous
+	voulez atteindre la limitation configurée !
+	Si votre tampon est trop petit, les paquets pourront être rejetés car il arrive plus de jetons par
+	top d'horloge que ne peut en contenir le tampon.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525342"></a>2.9. Maxburst</h2></div></div></div><p>
+	Ce nombre de paquets est utilisé pour calculer maxidle de telle sorte que quand avgidle est égal à maxidle,
+	le nombre de paquets moyens peut être envoyé en rafale avant que avgidle ne retombe à 0. Augmentez-le pour
+	être plus tolérant vis à vis des rafales de données.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525362"></a>2.10. Minburst</h2></div></div></div><p>
+	<span class="bold"><strong>CBQ</strong></span> doit bloquer le débit dans le cas d'un dépassement de limite.
+	La solution idéale est de le faire pendant exactement le temps d'inutilisation calculé, puis de laisser
+	passer un paquet. Cependant, les noyaux UNIX ont généralement du mal à prévoir des événements plus courts
+	que 10 ms, il vaut donc mieux limiter le débit pendant une période plus longue, puis envoyer <span class="bold"><strong>minburst</strong></span>
+	paquets d'un seul coup et dormir pendant une durée de <span class="bold"><strong>minburst</strong></span>.
+	Le temps d'attente est appelé <span class="bold"><strong>offtime</strong></span>. De plus grandes valeurs de <span class="bold"><strong>minburst</strong></span> mènent à une mise en forme
+	plus précise dans le long terme, mais provoquent de plus grandes rafales de données pendant des périodes de quelques millisecondes.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525421"></a>2.11. Niveau de service (Service Levels)</h2></div></div></div><p>
+	Un niveau de service signifie une pré-définition de la limite d'une bande passante.
+	C'est ici que vous paramétrer en détail les classificateurs <span class="bold"><strong>HTB</strong></span>, <span class="bold"><strong>HFSC</strong></span> et <span class="bold"><strong>CBQ</strong></span>. Pour <span class="bold"><strong>CBQ</strong></span> ont peut définir le débit et la priorité. Avec <span class="bold"><strong>HTB</strong></span> on en plus paramétrer le "<span class="bold"><strong>ceil</strong></span>" et le "<span class="bold"><strong>burst</strong></span>" pour le traffic entrant et sortant (pour les lignes asymétriques). Et enfin pour <span class="bold"><strong>HFSC</strong></span> il est possible de spécifier un délai maximum pour un packet.
+      </p><p>
+	Avec MasterShaper vous pouvez définir quel type de "<span class="bold"><strong>Queuing Discipline</strong></span>" vous voulez utiliser. La <span class="bold"><strong>Queuing discipline</strong></span> (Qdisc) est un méthode (Algorithme) de géstion d'une queue.
+	Ce paramètre est uniquement utilisé pour les tunnels (pipes). Les niveaux de services qui sont assignés par des chaines (chains) l'ignore. Le <span class="bold"><strong>Scheduling</strong></span> est une méthode d'ordonnancement des paquets. Cela permet de placer certains types de paquets à avant d'autres afin qu'il soient envoyés en premier.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525526"></a>2.12. Mise en forme (Shaping)</h2></div></div></div><p>
+	Le processus qui consiste à retarder l'émission des paquets sortants pour avoir un trafic conforme
+	à un débit maximum configuré. La mise en forme est réalisée sur <span class="bold"><strong>egress</strong></span>.
+	Familièrement, rejeter des paquets pour ralentir le trafic est également souvent appelé Mise en forme.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525552"></a>2.13. Filtres (Filters)</h2></div></div></div><p>
+	Un filtre représente une méthode pour reconnaitre votre traffic défini par vos règles. Par example vous pouvez définir un "filtre traffic Web" qui reconnaitra <span class="bold"><strong>HTTP</strong></span> et <span class="bold"><strong>HTTPS</strong></span> sur les ports <span class="bold"><strong>80/tcp</strong></span> et <span class="bold"><strong>443/tcp</strong></span>. De plus vous pouvez filtrer sur des "marquages" <span class="bold"><strong>ToS</strong></span> (ToS-flags), <span class="bold"><strong>TCP</strong></span>, <span class="bold"><strong>IPP2P</strong></span>, couche7, temps, longueur des packets..... Les filtres sont utilisés par les Qdisc utilisant des classes pour selectionner dans quelle classe un paquet va être enfilé.
+	La classification peut être réalisée en utilisant des filtres.
+      </p><p>
+	La disponibilité de certains filtres dépends de la méthode de reconnaissance que vous utilisez. MasterShaper supporte les filtres <span class="bold"><strong>tc</strong></span> et les filtres <span class="bold"><strong>iptables</strong></span>. Alors que les filtres <span class="bold"><strong>tc</strong></span> sont rapides et déja intégrés à <span class="bold"><strong>iproute2</strong></span>, <span class="bold"><strong>iptables</strong></span> est un système additionnel avec une meilleure méthode de reconnaissance. Si vous ne désirez pas toutes ses fonctionnalitées, iptables peut simplement servir de relai pour sur les filtres <span class="bold"><strong>tc</strong></span>.
+      </p><p>
+	Pour savoir si votre version de iptables supporte toutes les fonctionnalitées de MasterShaper, il suffit de regarder si tous les <span class="bold"><strong>modules</strong></span> de reconnaissance sont présents (dans le répertoire <span class="bold"><strong>/lib/iptables</strong></span>):
+      </p><pre class="screen">
+libipt_TOS.so 		for TOS matching
+libipt_tcp.so 		for TCP-Flag matching
+libipt_ipp2p.so		for IP-P2P matching (http://www.ipp2p.org)
+libipt_time.so 		for time matching
+libipt_length.so	for packet length matching
+libipt_layer7.so	for layer7 protocol matching (http://l7-filter.sf.net)
+libipt_helper.so	for ftp data channel matching
+libipt_conntrack.so 	for ftp data channel matching</pre><p>
+	MasterShaper ne regarde pas si tous ces modules sont disponibles. Si vous rencontrez des erreurs en chargeant des règles de reconnaissances iptables, vérifiez d'abord que les modules sont disponibles.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525713"></a>2.14. reconnaissance sur la couche 7 (layer7 protocol matching)</h2></div></div></div><p>
+	Depuis la version 0.32 MasterShaper supporte la reconnaissance sur la couche numéro 7 du modèle OSI (layer7 protocol matching support, <a href="http://l7-filter.sf.net" target="_top">http://l7-filter.sf.net</a>).
+	L'option "<span class="bold"><strong>Update L7 Protocols</strong></span>" permet à MasterShaper de récupérer tous les protocols de reconnaissance de <span class="bold"><strong>layer7</strong></span> disponibles (les fichiers .pat dans le répertoire /etc/l7-protocols), et de les sauvegarder dans la base de données. Si vous updatez l7-filter, il faudra de nouveau relancer le processus d'update pour pouvoir avoir le support des nouveaux protocols.
+    </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525758"></a>2.15. Chaines (Chains)</h2></div></div></div><p>
+	Les Chaines fabriquent des canneaux de traffic réseaux. Chaque chaine a un niveau de service assigné - la bande passante maximale appartenant au canal. Si vous n'avez qu'une seule chaine, le niveau de service est égal à la vitesse de votre ligne: (<span class="bold"><strong>2048/1024kbit/s</strong></span> par exemple).
+      </p><p>
+	Chaque chaine possede aussi un service en mode dégradé - tout traffic qui n'est pas reconnu par un tunnel peut uniquement utilisé la bande passante di niveau de service dégradé. MasterShaper s'assure don que tout traffic non reconnu n'utilisera pas toute la bande passante.
+      </p><p>
+	Pour avoir le traffic dans les chaines, le traffic réseau sera reconnu par les cibles définis. L'ordre des chaines est important - c'est la première règle qui est reconnu qui est prise en compte, et non celle qui corresponds exactement.
+	Donc si vous avez deux chaines avec les cibles suivantes (dans l'ordre):
+      </p><pre class="screen">
+192.168.1.0/24
+192.168.1.1</pre><p>
+	Le traffic de/vers <span class="bold"><strong>192.168.1.1</strong></span> sera reconnu par la chaine <span class="bold"><strong>192.168.1.0/24</strong></span> et non par la chaine <span class="bold"><strong>192.168.1.1</strong></span>.
+      </p><p>
+	Si vous ne voulez pas spécifier l'addresse IP d'un machine cible, vous pouvez utiliser l'entrée "<span class="bold"><strong>any</strong></span>" dans la configuration des chaines.
+      </p><p>
+	Il est possible de définir des chaines qui ignorent complétement la configuration <span class="bold"><strong>QoS</strong></span>. Cela est peut etre pratique si vous avez du traffic réseau qui ne doit pas etre affecté par des regles de controle de flux (<span class="bold"><strong>LAN</strong></span> ou <span class="bold"><strong>DMZ</strong></span>). Les chaines qui ignorent la <span class="bold"><strong>QoS</strong></span> ne sont pas monitorées.
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525887"></a>2.16. Tunnels (pipes)</h2></div></div></div><p>
+	Les tunnels assemblent les chaines, les filtres et les niveaux de services. On peut définir le sens d'un tunnel (entrant ou sortant).
+	On peut assigner un niveau de service à un tunnel, qui en régulera l'utilisation de la bande passante.
+      </p><p>
+	L'utilisation instantanée de la bande passante d'un tunnel peut etre visaulisé via l'outil "Monitoring Pipes".
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525913"></a>2.17. Pont ou routeur (Bridge or Router)</h2></div></div></div><p>
+	Un pont est un équipement réseau transparent. Par example - normallement vous avez connecté votre routeur principal (Cisco, Nortel, ...) directement sur votre swith réseau. Avec un pont vous vous connectez au router sur la première interface. La seconde interface est connecté sur votre switch réseau. Le pont est transparent est totallement transparent/invisible pour toutes les connections entre le routeur et votre réseau. Mais maintenant vous etes capable d'affecter le flux réseau sur les deux interfaces du pont. Pour retrouver plus d'information sur la mise en place d'un pont sous Linux vous pouvez aller consulter la documentation:
+	<a href="http://linux-net.osdl.org/index.php/Bridge" target="_top">http://linux-net.osdl.org/index.php/Bridge</a>
+      </p><p>
+	Un routeur connecte deux réseaux différents entre eux (comme <span class="bold"><strong>192.168.191.0/24</strong></span> et <span class="bold"><strong>172.16.2.0/24</strong></span>). Aucunes des machines clientes sur les deux sous réseaux non connaissances d'un autre client sur l'autre sous réseau. Elles savent uniquement comment envoyés des paquets vers l'autre réseau (via la passerelle par défaut, la route, ....). Le routeur sait par sa table de routage ou acheminé les paquets.
+      </p><p>
+	Packet handling - reconnaissance exact de l'interface réseau - est un peu différent entre les routeur et les ponts. Il faut donc préciser à MasterShaper dans quel mode agir. Si vous voulez controler le traffic sur une seule machine, il faut choisir le mode routeur.
+      </p></div></div><div class="chapter" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title"><a id="installation"></a>Chapitre 3. Installation</h2></div></div></div><div class="toc"><dl><dt><span class="sect1"><a href="#id2525074">3.1. Les sources</a></span></dt><dt><span class="sect1"><a href="#id2525128">3.2. Procédure d'installation</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2525151">3.2.1. la base MySQL</a></span></dt><dt><span class="sect2"><a href="#id2526946">3.2.2. Les sources</a></span></dt><dt><span class="sect2"><a href="#id2527001">3.2.3. Installation de jpgraph</a></span></dt><dt><span class="sect2"><a href="#id2527040">3.2.4. Installation de phplayersmenu</a></span></dt><dt><span class="sect2"><a href="#id2527079">3.2.5. Installation du module PHP-Pear</a></span></dt><dt><span class="sect2"><a href="#id2527102">3.2.6. L'installeur MasterShaper</a></span></dt><dt><span class="sect2"><a href="#id2527128">3.2.7. Prepare IMQ</a></span></dt><dt><span class="sect2"><a href="#id2527183">3.2.8. Configuration de sudo</a></span></dt></dl></dd><dt><span class="sect1"><a href="#id2527282">3.3. Sécurité</a></span></dt><dt><span class="sect1"><a href="#id2527348">3.4. Collecte de Statistique via le script tc_collector.pl</a></span></dt></dl></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525074"></a>3.1. Les sources</h2></div></div></div><p>
+      Les source compresser de MasterShaper sont organisées comme suit:
+      </p><p>
+      </p><div class="itemizedlist"><ul type="disc"><li><p><span class="bold"><strong>INSTALL</strong></span>: notes sur l'installtion</p></li><li><p><span class="bold"><strong>README</strong></span>: le fameux ReadMe</p></li><li><p><span class="bold"><strong>LICENSE</strong></span>: licence GPL2</p></li><li><p><span class="bold"><strong>UPGRADE</strong></span>: intructions de mise à jour/update</p></li><li><p><span class="bold"><strong>docs</strong></span>: la documentation au format OpenDocument</p></li><li><p><span class="bold"><strong>htdocs</strong></span>: document root, les fichiers php, les scripts perl, ...</p></li><li><p><span class="bold"><strong>tools</strong></span>: runlevel init script,...</p></li></ul></div><p>
+      </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2525128"></a>3.2. Procédure d'installation</h2></div></div></div><p>
+	Les étapes de l'installation nécessite quelques connaissances à propos de MySQL. Si vous n'etes pas familirisé avec MySQL vous pouvez utiliser des outils d'administration tel que phpMyAdmin (<a href="http://www.phpmyadmin.net/" target="_top">http://www.phpmyadmin.net/</a>).
+      </p><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2525151"></a>3.2.1. la base MySQL</h3></div></div></div><p>
+	  Il faut tout d'abord créer une base de données pour mastershaper
+	</p><pre class="screen">
+mysql&gt; create database db_shaper;
+mysql&gt; GRANT ALL PRIVILEGES ON db_shaper.* TO 'shaper'@'localhost'
+    -&gt; IDENTIFIED BY 'shaper_pass' WITH GRANT OPTION;
+mysql&gt; FLUSH PRIVILEGES;</pre><p>Nous avons créer un utilisateur <span class="bold"><strong>shaper</strong></span> qui a tous les accès à la database <span class="bold"><strong>db_haper</strong></span>. Pour plus de documentation sur la gestion des droits sous MySQL allez voir la documentation: <a href="http://dev.mysql.com/doc/refman/5.0/en/grant.html" target="_top">http://dev.mysql.com/doc/refman/5.0/en/grant.html</a>
+	</p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526946"></a>3.2.2. Les sources</h3></div></div></div><p>
+	  Il faut décompresser les sources de MasterShaper, le fichier <span class="bold"><strong>mastershaper_x.xx.tar.gz</strong></span> que vous avez télécharger du site web:
+	</p><p>
+</p><pre class="screen">
+mkdir /tmp/shaper
+cd /tmp/shaper
+tar zxfv (PATH_WHERE_FILE_IS_LOCATED)/mastershaper_x.xx.tar.gz</pre><p>
+      </p><p>
+	Maintenant il faut déplacer Mastershaper dans le <span class="bold"><strong>documentroot</strong></span> de votre serveur web (<span class="bold"><strong>/var/www/shaper</strong></span>). L'interface de Mastershaper doit etre accessible via cette url: <a href="http://server/shaper/" target="_top">http://server/shaper/</a>.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2527001"></a>3.2.3. Installation de jpgraph</h3></div></div></div><p>
+	Téléchargez <span class="bold"><strong>jpgraph</strong></span> à partir de <a href="http://www.aditus.nu/jpgraph/" target="_top">http://www.aditus.nu/jpgraph/</a> dans le répertoire de Mastershaper. Décompresser le tar.gz et faites un lien symbolique de <span class="bold"><strong>jpgraph-x.xx</strong></span> vers <span class="bold"><strong>jpgraph</strong></span>.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2527040"></a>3.2.4. Installation de phplayersmenu</h3></div></div></div><p>
+	Téléchargez <span class="bold"><strong>phplayersmenu</strong></span> à partir de <a href="http://phplayersmenu.sourceforge.net/" target="_top">http://phplayersmenu.sourceforge.net/</a>.  Décompresser le tar.gz et faites un lien symbolique de <span class="bold"><strong>phplayersmenu-x.x.x</strong></span> vers <span class="bold"><strong>phplayersmenu</strong></span>.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2527079"></a>3.2.5. Installation du module PHP-Pear</h3></div></div></div><p>
+	Si les modules PHP-PEAR nécessaires ne sont pas installés faites ceci:
+      </p><p>
+	</p><pre class="screen">pear install DB Net_IPv4</pre><p>
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2527102"></a>3.2.6. L'installeur MasterShaper</h3></div></div></div><p>
+	Ouvrez un navigateur web à l'adresse suivante: <a href="http://server/shaper/" target="_top">http://server/shaper/</a>. Cela va automatiquement vous transférer vers la page de l'installeur MasterShaper. Il vous suffit d'adapter la configuration et de suivre les étapes pas à pas. En cas de problème l'installeur devrait vous dire comment le résoudre.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2527128"></a>3.2.7. Prepare IMQ</h3></div></div></div><p>
+	Si vous utilisez <span class="bold"><strong>IMQ </strong></span> vous avez besoin de quelques règles <span class="bold"><strong>iptables</strong></span> supplémentaire, pour orienter le traffic vers les interfaces <span class="bold"><strong>IMQ</strong></span>. Dans l'exemple ci-dessous, EXT_DEV défini l'interface sur laquelle vous voulez faire du controle de flux.
+      </p><p>
+</p><pre class="screen">
+ip link set imq0 up
+ip link set imq1 up
+
+iptables -t mangle -I PREROUTING -i ${EXT_DEV} -j IMQ --todev 0
+iptables -t mangle -I POSTROUTING -o ${EXT_DEV} -j IMQ --todev 1</pre><p>
+      </p><p>
+	Ces règles ne sont pas mises en place par Mastershaper. Donc soyez bien sur qu'elles sont présentes lorsque vous démarrer le control de flux.
+      </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2527183"></a>3.2.8. Configuration de sudo</h3></div></div></div><p>
+	La pluspart des serveurx web ne tournent pas sous l'utilisateur <span class="bold"><strong>root</strong></span>, et donc n'ont pas la permission de "disctuer avec le kernel et de charger des règles via <span class="bold"><strong>tc</strong></span> ou <span class="bold"><strong>iptables</strong></span>.
+	Pour activer ses régles Mastershaper utilise le script <span class="bold"><strong>shaper_loader.sh</strong></span>, un script shell, qui permet de gérer les règles <span class="bold"><strong>tc</strong></span> et <span class="bold"><strong>iptables</strong></span>. Nous avons besoin de lancer ce script en mode super-utilisateur, pour cela il suffit de modifier le fichier de configuration <span class="bold"><strong>/etc/sudoers</strong></span> comme ci-dessous:
+	</p><p>
+	  </p><pre class="screen">
+USER	ALL= NOPASSWD: PATH/shaper_loader.sh</pre><p>
+	</p><p>
+	"USER" doit etre l'utilisateur sous lequel tourne le serveur Web (www-data, apache, ...) et "PATH" et le chemin complet vers Mastershaper. La pluspart des erreurs reportées sont dus a une mauvaise configuration de <span class="bold"><strong>sudo</strong></span>. Pour tester votre configuration:
+      </p><p>
+	</p><pre class="screen">sudo ./shaper_loader.sh cleanup</pre><p>
+      </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2527282"></a>3.3. Sécurité</h2></div></div></div><p>
+      Les paramètres de la connexion à la base de donnée sont stockés dans le fichier de configuration <span class="bold"><strong>config.dat</strong></span>, dans le répertoire de Mastershaper (ex. <span class="bold"><strong>/var/www/shaper/config.dat</strong></span>). 
+    </p><p>
+    Ce fichier est critique, car il contient le mot de passe d'accés à votre base de donnée <span class="bold"><strong>db_shaper</strong></span> en clair. L'accès de ce fichier doit donc etre interdit !
+    </p><p>
+      The MasterShaper Installation Package includes an .htaccess file in the htdocs directory, which limits the access to the config.dat file. 
+      Double check if this file is in its location and if your web server is configured probably to support .htaccess. If not referrer to your web server documentation how to limit access to a file in the webserver configuration (for Apache's httpd this is possible with the FILE directive).
+      Make sure, that it's not possible to download this file via web browser:
+      <a href="http://server/shaper/config.dat" target="_top">http://server/shaper/config.dat</a>
+      Every time MasterShaper Installer finish it's job it tries do limit the access to the index.php file in the setup directory. If you see an error message, MasterShaper can't change file permissions, so please take care that the MasterShaper Installer is not public available from the Internet - it shows up plain text passwords!
+    </p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2527348"></a>3.4. Collecte de Statistique via le script tc_collector.pl</h2></div></div></div><p>
+      tc_collector.pl is a little Perl application which collects traffic statistics from the tc utility.
+      Cause there is no usable mechanism to get the current pipes distributions, it collects the total amount of bytes transferred within 10 seconds intervals and calculate a kilobits per second average from these values.
+      Run the tc_collector by calling:
+    </p><p>
+      </p><pre class="screen">./tc_collector.pl</pre><p>
+    </p><p>
+      It will start collecting transfer rates from the tc binary and record them into MySQL database. It will get it's configuration also from config.dat - no adaptation to the Perl is needed.
+      If you call it with
+    </p><p>
+      </p><pre class="screen">tc_collector.pl -d</pre><p>
+    </p><p>
+      it will fork into background and run daemonized.
+      If you are expecting troubles with tc_collector.pl call the script with the parameter "-v3" and check what it's currently collecting.
+      Without tc_collector.pl you will get no monitoring statistics and the graphs in the web interface will not work!
+    </p></div></div><div class="chapter" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title"><a id="configuration"></a>Chapitre 4. Configuration</h2></div></div></div><div class="toc"><dl><dt><span class="sect1"><a href="#id2526592">4.1. Paramètres</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2526598">4.1.1. Options</a></span></dt><dt><span class="sect2"><a href="#id2526607">4.1.2. Utilisateurs (users)</a></span></dt><dt><span class="sect2"><a href="#id2526618">4.1.3. Cible (target)</a></span></dt></dl></dd><dt><span class="sect1"><a href="#id2528129">4.2. Manage</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2528134">4.2.1. Niveau de service</a></span></dt><dt><span class="sect2"><a href="#id2528148">4.2.2. Filtre</a></span></dt><dt><span class="sect2"><a href="#id2528162">4.2.3. Chaine (chains)</a></span></dt><dt><span class="sect2"><a href="#id2528180">4.2.4. Tunnel (pipes)</a></span></dt></dl></dd><dt><span class="sect1"><a href="#id2528195">4.3. Monitoring</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2528201">4.3.1. Chains, Pipes and Bandwidth</a></span></dt></dl></dd><dt><span class="sect1"><a href="#id2528219">4.4. Overview</a></span></dt><dt><span class="sect1"><a href="#id2528234">4.5. Rules</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2528239">4.5.1. Load</a></span></dt></dl></dd><dt><span class="sect1"><a href="#id2528263">4.6. shaper_loader.sh</a></span></dt><dt><span class="sect1"><a href="#id2528282">4.7. Outils</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2528287">4.7.1. Runlevel-Init-Script</a></span></dt></dl></dd><dt><span class="sect1"><a href="#id2528308">4.8. Shaping Examples</a></span></dt><dd><dl><dt><span class="sect2"><a href="#id2528313">4.8.1. Shaping on a Web-Server</a></span></dt><dd><dl><dt><span class="sect3"><a href="#id2528319">4.8.1.1. Guidelines</a></span></dt><dt><span class="sect3"><a href="#id2528339">4.8.1.2. Implementation</a></span></dt></dl></dd><dt><span class="sect2"><a href="#id2528386">4.8.2. Shaping on a gateway</a></span></dt><dd><dl><dt><span class="sect3"><a href="#id2528392">4.8.2.1. Guidelines</a></span></dt><dt><span class="sect3"><a href="#id2528413">4.8.2.2. Implementation</a></span></dt></dl></dd><dt><span class="sect2"><a href="#id2528500">4.8.3. Shaping per department</a></span></dt><dd><dl><dt><span class="sect3"><a href="#id2528506">4.8.3.1. Guidelines</a></span></dt><dt><span class="sect3"><a href="#id2528530">4.8.3.2. Implementation</a></span></dt></dl></dd></dl></dd></dl></div><p>
+      La plus part des options sont documentés dans l'interface d'adminstration. Ce document n'est donc qu'une aide sommaire.
+    </p><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2526592"></a>4.1. Paramètres</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526598"></a>4.1.1. Options</h3></div></div></div><p>
+In this view you configure:
+
+Bandwidth
+
+This bandwidth is essential for the init class and should be as high as the maximum speed of the specified interfaces (Ethernet, DSL, ...).
+
+Interfaces
+
+Also you need to specify the incoming and outgoing interfaces on which the shaping will happen. Either configured as router or bridge you enter here the physical interfaces of your shaping device. If you are using IMQ you have to tell MasterShaper via the IMQ-Option.
+
+MS Options
+
+Further more you can define a special preferred handling of ACK packets and other small packets. You have to create a service level first to handle this packets.
+
+Configure a Classifier et Queueing Discipline that fit your needing. More informations about queuing disciplines can be found in the chapter 1.4.Classifiers et Queuing Disciplines
+
+Choose between tc-filter et or iptables-matching. tc-filter is included in the iproute2 package and is very fast. iptables on the other side is widely used, many additional modules (ipp2p, layer-7, ...) are available and is very stable. iptables consumes a bit more additional cpu et memory for matching packets. If you don't need the features of iptables simple rely on tc-filter. 
+
+You have to tell MasterShaper if it is running on a router or bridge. This setting is very important if you are using iptables-matching because MasterShaper has to adept the iptables rules in bridge mode to match the physically interfaces (physdev) of a bridge.
+
+New since V0.40 is an integrated User-Management. To use this feature you have to activate the authentication mechanism. It's now possible to gain users access to selective functions of MasterShaper. It's possible now to create only a user which has access to the monitoring graphs but can not change any settings. In the next versions a finer granulation of permissions will be implemented, so users can have the permissions to change pipes et filters settings within their own chains.
+	</p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526607"></a>4.1.2. Utilisateurs (users)</h3></div></div></div><p>
+	  If you have a fresh MasterShaper installation the initial user is "admin" and password "changeme".
+
+If you have upgraded from a previous version and activated the authentication before created a new user, you will be locked out of MasterShaper because there is no user available to login. In this case delete the option "authentication" from the MySQL table shaper_settings via SQL commands or via some GUI's (phpMyAdmin, http://www.phpmyadmin.net).
+	</p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526618"></a>4.1.3. Cible (target)</h3></div></div></div><p>
+	  If you want to shape traffic for specific IP addresses or MAC addresses, you define them here. These definitions will then be used in the chains setup. Several target-definitions can be grouped together to a target-group for easier usage in chains.
+	  If you have a dynamic external IP address, you don't need to specify anything here and use "any ó any" in the chain setup.
+	</p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528129"></a>4.2. Manage</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528134"></a>4.2.1. Niveau de service</h3></div></div></div><p>
+	    Here you specify service levels. Service Levels are used in Chains, Pipes and in Options-View. Each service level has a Classifier and a Queuing Discipline (Classifiers et Queuing Disciplines).
+	    </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528148"></a>4.2.2. Filtre</h3></div></div></div><p>
+In this view you manage your filter definitions. Filters are traffic match mechanisms which classifies your traffic so it get divided up into the correct pipes. 
+
+Which sort of filters you create here is dependent on the "Traffic filter" option.
+	  </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528162"></a>4.2.3. Chaine (chains)</h3></div></div></div><p>
+	    Here you manage your chain rulesets. Chains are necessary to match the traffic against targets. If the target definition match your network traffic, the network flow will be redirected into this chain so it can be matched by the following pipe definitions.
+	    A chain needs to get defined a total amount of bandwidth and a fall-back service level. Any traffic which comes into this chain and don't get matched by any pipe definitions will fall into the fall-back service level.
+	  </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528180"></a>4.2.4. Tunnel (pipes)</h3></div></div></div><p>
+	    Pipes are assigned to chains and match filter-definitions against the network traffic which virtually flows through this chains. Pipes also manage how much bandwidth a service (matched by filters) can really consume.
+	  </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528195"></a>4.3. Monitoring</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528201"></a>4.3.1. Chains, Pipes and Bandwidth</h3></div></div></div><p>
+	  If Mastershaper's rules are loaded correctly and tc_collector.pl is active MasterShaper will draw fancy graphs:
+Chains
+This view will show you the current bandwidth distribution between chains.
+Pipes 
+This view will show you the current bandwidth distribution of pipes. Also available is a dropdown box where you can switch between chains.
+Bandwidth
+This view will present the total inbound and outbound bandwidth.
+	  </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528219"></a>4.4. Overview</h2></div></div></div><p>
+	  These view presents a good overview through your ruleset. 
+Disabled chain, pipes or filter definitions are not shown up here.
+Don't forget - the first matching chain will get the traffic. 
+
+You can change the chain- et pipe-positions with the purple and turquoise arrows.
+	</p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528234"></a>4.5. Rules</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528239"></a>4.5.1. Load</h3></div></div></div><p>
+This will make a bulk load of all MasterShaper rules. After every configuration change the rules have to be reloaded. From the technical view MasterShaper will first unload all rules and then load the new configuration.
+
+
+If you see a green check - everything is OK and rules are enabled. If you see a red X and some error messages then try to load the ruleset by Rules " Load (debug).
+ 2.4.5.2 Load (debug)
+
+This will load the ruleset rule by rule and return every error a rule makes.
+
+ 2.4.5.3 Show
+
+Show will displays you every command which would get loaded when enabling MasterShaper. This includes tc commands as well iptables commands (if iptables-matching is used).
+
+ 2.4.5.4 Unload
+
+This will disable MasterShaper's shaping functionality (if loaded).
+	  </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528263"></a>4.6. shaper_loader.sh</h2></div></div></div><p>
+	  With MasterShaper V0.31 a new rules-loader script was introduced. This was necessary because a script has to be able to totally clean-up any residues from MasterShaper iptables rules. This is done by the shaper_loader.sh script now. 
+	  
+	  Also it loads the tc- and iptables-ruleset so this is the only script now which needs root privileges (sudo). This will also speedup activating iptables ruleset because sudo hasn't to be accessed for every rule.
+
+	  Follow the installation procedures!
+	</p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528282"></a>4.7. Outils</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528287"></a>4.7.1. Runlevel-Init-Script</h3></div></div></div><p>
+	    If you extract the MasterShaper install archive (tar.bz2), you will find a file called mastershaper.init in the tools-directory.
+	    It's a first version of a runlevel init script. If you want to be able, that the shaper settings will be immediate loaded after a reboot you can use this file in the runlevel scripts.
+	    You can also use this file as an ip-up script for the pppd daemon. You have the adept the MasterShaper path with the variable PATH_TO_MS in the script. This script has to be called with root privileges.
+	  </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528308"></a>4.8. Shaping Examples</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528313"></a>4.8.1. Shaping on a Web-Server</h3></div></div></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528319"></a>4.8.1.1. Guidelines</h4></div></div></div><p>
+	      A standard LAMP-Web-Server (Linux, Apache, MySQL, PHP) with an FTP-Server.
+	      Connected trough DSL (PPPOE) on Ethernet with a synchronous 2Mbit/s link. IP 1.1.1.1.
+	      64kbit/s should always be guaranteed to SSH (TCP/22) but can use the whole bandwidth if available. It should have a high priority.
+	      HTTP should have a fixed rated at 1024kbit/s but can use the whole bandwidth if available.
+	      FTP should have 512kbit/s available but can use the whole bandwidth if available.
+	      All other traffic become 256kbit/s and can't use more then 768kbit/s.
+	    </p></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528339"></a>4.8.1.2. Implementation</h4></div></div></div><p>
+	      1.Go to Settings"Options and define the inbound and outbound bandwidth. Specify HTB as Queuing Discipline. Select iptables as Traffic Filter.
+	      2.Create a service level with a input et output rate definition which is equal the maximum bandwidth (2048/2048/kbit/s). 
+	      3.Create a service level which has a rate of 64kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to high.
+	      4.Create a service level which has a rate of 1024kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to normal.
+	      5.Create a service level which has a rate of 512kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to normal.
+	      6.Create a service level which has a rate of 256kbit/s and enter 768kbit/s as ceil parameter. Set the priority to low.
+	      7.Take a look on the ports-listing if you can find "http",  "https", "ftp", "ftp-data" and "ssh". If not available, create new port definitions for these filters.
+	      8.Create a target for the address 1.1.1.1.
+	      9.Create a filter "Web-Traffic". Select protocol TCP, assign the ports "http" et "https". 
+	      10.Create a filter "FTP-Traffic". Select protocol TCP, assign the ports "ftp" et "ftp-data". Select "Match FTP data channel".
+	      11.Create a filter "SSH-Traffic". Select protocol TCP, assign the port "ssh". 
+	      12.Create a new chain. The service level for this chain is the 2048kbit/s level. For fall-back use the service level with the rate of 256kbit/s. On "Affecting" choose as source "any", as target 1.1.1.1 and select both directions.
+	      13.Create a pipe. Choose the created chain, select the filter "Web-Traffic", the service level with the rate of 1024kbit/s and choose both directions.
+	      14.Create a pipe. Choose the created chain, select the filter "FTP-Traffic", the service level with the rate of 512kbit/s and choose both directions.
+	      15.Create a pipe. Choose the created chain, select the filter "SSH-Traffic", the service level with the rate of 64kbit/s and choose both directions.
+	      16.Click "Overview" and take a look on your MasterShaper configuration.
+	      17.Select Rules" Load and activate your new ruleset.
+	      </p></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528386"></a>4.8.2. Shaping on a gateway</h3></div></div></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528392"></a>4.8.2.1. Guidelines</h4></div></div></div><p>
+	      A standard Linux-based Internet router with a mail server and pop3/imap access.
+	      Connected trough Ethernet with a synchronous 2Mbit/s link. IP 1.1.1.1.
+	      For remote control of the clients (rdp, vnc, radmin) and SSH (TCP/22) 128kbit/s should always be guaranteed. It should have a high priority.
+	      Mailing (SMTP, POP3, IMAP) should not block the whole bandwidth. Guaranteed 256kbit/s. A Maximum of 1024kbit/s. Lowest Priority
+	      HTTP et FTP should have 512kbit/s available but can use the whole bandwidth if available.
+	      All other traffic become 256kbit/s and can't use more then 768kbit/s.
+	    </p></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528413"></a>4.8.2.2. Implementation</h4></div></div></div><p>
+	      1.Go to Settings"Options and define the inbound and outbound bandwidth. Specify HTB as Queuing Discipline.
+	      2.Create a service level with a input et output rate definition which is equal the maximum bandwidth (2048/2048/kbit/s). 
+	      3.Create a service level which has a rate of 128kbit/s and enter 2048kbit/s as ceil parameter - for both directions. Set the priority to high.
+	      4.Create a service level which has a rate of 256kbit/s and enter 1024kbit/s as ceil parameter - for both directions. Set the priority to low.
+	      5.Create a service level which has a rate of 512kbit/s and enter 2048kbit/s as ceil parameter - for both directions. Set the priority to normal.
+	      6.Create a service level which has a rate of 256kbit/s and enter 768kbit/s as ceil parameter - for both directions. Set the priority to lowest.
+	      7.Take a look on the ports - listing if you can find "http",  "https", "ftp", "ftp-data", "ssh", "rdp", "vnc", "radmin". If not available, create new port definitions for this filters.
+	      8.Create a target for the address 1.1.1.1.
+	      9.Create a filter "Web-Traffic". Select protocol TCP, assign the ports "http", "https" and "ftp".
+	      10.Create a filter "Mail-Traffic". Select protocol TCP, assign the ports "smtp", "pop3" and "imap".
+	      11.Create a filter "Remote-Control". Select protocol TCP, assign the port "ssh", "rdp", "vnc" and "radmin".
+12.Create a new chain. The service level for this chain is the 2048kbit/s level. For fall-back use the service level with the rate of 256kbit/s and lowest priority. On "Affecting" choose as source "any", as target 1.1.1.1 and select both directions.
+	      13.Create a pipe. Choose the created chain, select the filter "Web-Traffic", the service level with the rate of 512kbit/s and choose both directions.
+	      14.Create a pipe. Choose the created chain, select the filter "Mail-Traffic", the service level with the rate of 1024kbit/s and choose both directions.
+15.Create a pipe. Choose the created chain, select the filter "Remote Control", the service level with the rate of 128kbit/s and choose both directions.
+	      16.Click "Overview" and take a look on your MasterShaper configuration.
+	      17.Select Rules"Reload now and activate your new ruleset.
+	      </p></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528500"></a>4.8.3. Shaping per department</h3></div></div></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528506"></a>4.8.3.1. Guidelines</h4></div></div></div><p>
+	      A standard Linux-based internet router which manage the internet access of 4 departments.
+	      The router uses IMQ in BB mode on the external interface, so you see LAN addresses on the outgoing IMQ device before NAT.
+	      Connected trough Ethernet with a synchronous 2Mbit/s link. IP 1.1.1.1.
+	      The internal networks of the departments are 172.16.1.0/26, 172.16.1.64/26, 172.16.1.128/26, 172.16.1.196/26.
+	      Each department has guaranteed 512kbit/s but can lend unused bandwidth from other departments.
+	      Departments are using VoIP from a SIP-Provider and so connecting to a SIP-server. Low Latency has to be guaranteed for this service.
+	      HTTP et FTP should have 128kbit/s and maximal use 256 of the bandwidth. Priority low.
+	      All other traffic become 64kbit/s and can't use more then 196kbit/s.
+	    </p></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528530"></a>4.8.3.2. Implementation</h4></div></div></div><p>
+	      1.Go to Settings"Options and define the inbound and outbound bandwidth. Specify HFSC as Queuing Discipline.
+	      2.Create 4 targets - each one with the assigned subnets of the departments.
+	      3.Create a service level which has a rate of 512kbit/s and enter 2048kbit/s as max parameter
+	      4.Create a service level which has a rate of 256kbit/s and enter 100ms for max delay.
+	      5.Create a service level which has a rate of 128kbit/s and enter 256kbit/s as max parameter.
+	      6.Create a service level which has a rate of 64kbit/s and enter 196kbit/s as max parameter.
+	      7.Take a look at the ports - listing if you can find "http",  "https", "ftp", "ftp-data". Check out, on which port-range you connect to the SIP-Provider and create a port definition for this.
+	      8.Create a filter "VoIP-Traffic". Select protocol UDP, assign the ports "voip".
+	      9.Create a filter "Web-Traffic". Select protocol TCP, assign the ports "http", "https", "ftp" and "ftp-data".
+	      10.Create 4 new chains. The service level for this chains is the 512kbit/s level. For fall-back use the service level with the rate of 64kbit/s. On "Affecting" choose as source "any" and as target on of your defined department targets and select both directions.
+	      11.Create 4 pipes. Choose the created department chains, select the filter "VoIP-Traffic", the service level with the rate of 256kbit/s and choose both directions.
+	      12.Create 4 pipes. Choose the created department chains, select the filter "Web-Traffic", the service level with the rate of 128kbit/s and choose both directions.
+	      13.Click "Overview" and take a look on your MasterShaper configuration.
+	      14.Select Rules"Reload now and activate your new ruleset.
+	    </p></div></div></div></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="licence"></a>Chapter 5. License</h2></div></div></div><p>
+      MasterShaper is licensed by GNU General Public License (GPL) Version 2. All rights reserved by author Andreas Unterkircher (andreas.unterkircher@netshadow.at), http://www.mastershaper.org.
+    </p></div></div></body></html>

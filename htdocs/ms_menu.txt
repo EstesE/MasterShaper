@@ -1,0 +1,32 @@
+.|Overview|index.php?mode=99|MasterShaper Ruleset Overview|home.gif
+.|Manage||Manage MasterShaper configuration|arrow_right.gif
+..|Chains|index.php?mode=1|Manage chains|flag_blue.gif
+..|Filters|index.php?mode=8|Manage filters|flag_green.gif
+..|Pipes|index.php?mode=2|Manage pipes|flag_pink.gif
+.|Settings||Settings|arrow_right.gif
+..|Targets|index.php?mode=4|Manage IP targets|flag_purple.gif
+..|Ports|index.php?mode=9|Manage ports|flag_orange.gif
+..|Protocols|index.php?mode=10|Manage protocols|flag_red.gif
+..|Service Levels|index.php?mode=3|Manage service levels|flag_yellow.gif
+..|Options|index.php?mode=6|Modify MasterShaper options|options.gif
+..|Users|index.php?mode=16|MasterShaper Users|ms_users_14.gif
+..|Interfaces|index.php?mode=17|Manage Network Interfaces|ms_nic_14.gif
+..|Network Paths|index.php?mode=18|Manage Network Paths|ms_nic_14.gif
+.|Monitoring||MasterShaper monitoring|chart_pie.gif
+..|Chains|index.php?mode=5&amp;show=chains|Chains usage|flag_blue.gif
+..|Pipes|index.php?mode=5&amp;show=pipes|Pipes distribution|flag_pink.gif
+..|Bandwidth|index.php?mode=5&amp;show=bandwidth|Bandwidth usage|bandwidth.gif
+.|Rules|||arrow_right.gif
+..|Show|index.php?mode=7&amp;screen=1|Show tc rules|show.gif
+..|Load|index.php?mode=7&amp;screen=2|Load tc rules now|enable.gif
+..|Load (debug)|index.php?mode=7&amp;screen=3|Load tc rules line by line|enable.gif
+..|Unload|index.php?mode=7&amp;screen=4|Unload tc rules|disable.gif
+.|Other||Informations|arrow_right.gif
+..|Save Configuration|index.php?mode=12|Save the current ruleset|disk.gif
+..|Restore Configuration|index.php?mode=13|Restore ruleset from file|restore.gif
+..|Reset Configuration|index.php?mode=14|Delete all user definied settings|reset.gif
+..|Update L7 Protocols|index.php?mode=15|Update Layer7 Protocols definitions|update.gif
+..|||
+..|Documentation (PDF)|http://www.mastershaper.org/MasterShaper_documentation.pdf||page_white_acrobat.gif
+..|Support (Forum)|http://www.mastershaper.org/forum/||ms_users_14.gif
+..|About|index.php?mode=11||home.gif

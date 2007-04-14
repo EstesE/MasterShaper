@@ -1,0 +1,188 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<chapter id="configuration" lang="fr">
+  <title>Configuration</title>
+    <para>
+      La plus part des options sont documentées dans l'interface d'adminstration. Ce document n'est donc qu'une aide sommaire.
+    </para>
+    <sect1>
+      <title>Paramètres</title>
+
+      <sect2>
+	<title>Options</title>
+	<para>
+	  Dans cette vue vous pouvez configurer:
+	</para>
+	<sect3>
+	  <title>Bande passante (Bandwidth)</title>
+	  <para>
+	    La bande passante est essentiel pour la calsse <emphasis role="bold">init</emphasis> et devrait etre la vitesse maximale de l'interface (Ethernet, DSL, ...).
+	  </para>
+	</sect3>
+	<sect3>
+	  <title>Interfaces</title>
+	  <para>
+	    Vous devez spécifier l'inerface du trffic entrant, et l'interface du traffic sortant, que vous soyez sur un routeur ou un pont. Si vous utilisez un périphérique IMQ, il faut le précisez via l'option <emphasis role="bold">IMQ-options</emphasis>.
+	  </para>
+	</sect3>
+	<sect3>
+	  <title>MS Options</title>
+	  <para>
+	    Premierement vous pouvez définir une manière spéciale de traiter les packets <emphasis role="bold">ACK</emphasis> et les petits packets. Vous devez créer un niveau de service pour les traiter.
+	  </para>
+	  <para>
+	    Ensuite il faut configurer des classificateurs et un règle de mise en attente (Queueing Discipline) qui correspondra à vos besoins. Plus d'information est disponible dans le chapitre 1.4.
+	  </para>
+	  <para>
+	    Il faut choisir entre la reconnaissance via tc ou via iptables. Le filtres tc inclu dans iproute2 sont très rapides. Les filtres iptables sont plus utilisés, car il a plus de modules (ipp2p, layer-7, ...) et est très stables. Iptables consomment plus de mémoire et de CPU pour reconnaitres les packets. Si vous n'avez pas l'utilité de toutes ces fcontionnalitées, utilisé simplement les filtre tc.
+	  </para>
+	  <para>
+	    Vous devez informer MasterShaper si vous etes sur un pont ou un routeur. Ce paramètres est très important si vous utilisez la reconnaissance du traffic via iptables, parceque MasterShaper doit adapter ses règles iptables sur un routeur pour exactement reconnaitre l'interface physique du routeur.
+	  </para>
+	  <para>
+	    Depuis la version 0.40, Mastershaper supporte la gestion des utilisateurs. Pour pouvooir utiliser cette fonctionnalité, vous devez d'abord actvier le module d'authetification. Vous pouvez alors définir des accès spécifiques aux fonctionnalitées de mastershaper à différents utilisateurs. On peut donc ainsi créer un utlisateur Mastershaper qui peut avoir accès graphiques, mais qui ne pourra changer aucun paramètres. Dans les prochaines versions une configuration plus fines des permissions sera possibles.
+	  </para>
+	</sect3>
+      </sect2>
+      <sect2>
+	<title>Utilisateurs (users)</title>
+	<para>
+	  Si vous venez juste d'installer MasterShaper, l'utilisateur initial est <emphasis role="bold">admin</emphasis> et le mot de passe <emphasis role="bold">changeme</emphasis>.
+	</para>
+	<para>
+	  Si vous mettez à jour depuis une version précédente, et que vous activez l'authentification avant de créer un nouvel utilisateur, vous serez bloqué car il n'y aura pas d'utilisateur existant pour pouvoir vous logger. Dans ce cas il faut effacer l'option <emphasis role="bold">authentification</emphasis> dans la table <emphasis role="bold">shaper_settings</emphasis> de Mysql, via des commandes SQL, ou via une interface graphique du style phpMyAdmin (<ulink url="http://www.phpmyadmin.net">http://www.phpmyadmin.net</ulink>.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Cible (target)</title>
+	<para>
+	  Si vous voulez controllez le traffic sur une IP spécifique ou une MAC adresse, vous pouvez les définir ici. Ces définitions seront ensuite utilisé lors de la configuration des chaines (chains). Plusieurs cibles peuvent etre regroupé dans un "groupe cible" pour en faciliter l'usage dans les chaines. Si vous avez une adresse externe IP dynamique, vous n'avez pas besoin de spécifier autres chose que <emphasis role="bold">any to any</emphasis> dans la configuration des chaines.
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>Manage</title>
+      <sect2>
+	<title>Niveau de service</title>
+	<para>
+	  C'est ici que l'on spécifie le niveau de service. Le niveau de service est utilisé par les chaines (chains) , les tunnels (pipes) et les options des vues. Chaque niveau de service possède un classificateur et un méthode de file d'attente (Classifiers et Queuing Disciplines).
+	</para>
+      </sect2>
+      <sect2>
+	<title>Filtre</title>
+	<para>
+	  Dans cette vue on peut configurer la définition des filtres. Les filtres sont des méchanismes de reconnaissance de traffic qui classifie votre traffic, il est donc orienté et divisé vers les bons tunnels.
+	</para>
+	<para>
+	  Le type de filtre que vous créez est dépendant de l'option <emphasis role="bold">filtre de traffic</emphasis>.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Chaines (chains)</title>
+	<para>
+	  Cette options permet de modifier les règles des chaines. Les chaines sont nécessaires pour reconnaitre le traffic réseau vers les cibles.
+	  Si les cibles désignées sont reconnus dans traffic réseau, le flux réseau sera alors redirigé vers cette chaine, et il pourra alors etre géré par un tunnels (pipe).
+	</para>
+	<para>
+	  Une chaine a besoin de connaitre la bande passante maximale utilisable, et un niveau de service de secours (service en mode dégradé). Tout traffic qui arrive aux chaines et qui n'est pas reconnu par un tunnel (cad qui ne corresponds à aucune définition d'un tunnel), tombera dans le niveau de service de secours.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Tunnel (pipes)</title>
+	<para>
+	  Pipes are assigned to chains and match filter-definitions against the network traffic which virtually flows through this chains. Pipes also manage how much bandwidth a service (matched by filters) can really consume.
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>Surveillance (Monitoring)</title>
+      <sect2>
+	<title>Chaines, Tunnels et Bande passante</title>
+	<para>
+	  Si les règles Mastershaper ce sont chargés correctement, et que le script <emphasis role="bold">tc_collector.pl</emphasis> est actif
+	  alors Mastershaper dessinera de nombreux graphiques.
+	</para>
+	<para>
+	  <emphasis role="bold">Chaines</emphasis>: cela dessinera la bande passante utilisée entre les différentes chaines
+	</para>
+	<para>
+	  <emphasis role="bold">Tunnels</emphasis>:  cela dessinera la bande passante utilisé des tunnels.
+	</para>
+	<para>
+	  <emphasis role="bold">Bande passante</emphasis>: cette vue représente la totalité de la bande passante entrante et sortante.
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>Vue générale (Overview)</title>
+      <para>
+	Cette vue vous propose une vue générale de vos règles.
+	Les chaines (chains), les tunnels (pipes) et les filtres désactivés ne sont pas visible sur cette vue.
+	N'oubliez pas que c'est la première régle qui est reconnu qui traite le traffic.
+      </para>
+      <para>
+	Vous pouvez changer l'ordre des chaines (chains) et des tunnels (pipes) en cliquant sur les flèches violettes et turquoises.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Règles (Rules)</title>
+      <sect2>
+	<title>Chargement des règles (Load)</title>
+	<para>
+	  Cels chargera l'ensemble des règles Mastershaper.
+	  Après chaque changement de configuration toutes les règles doivent etre rechargés. D'un point de vue technique les règles seront tout d'abord déchargées, et ensuite elles seront chargées.
+	</para>
+	<para>
+	  Si un voyant vert apparait c'est que tout c'est bien déroulé lors du chargement des règles, dans le cas contraire un LED rouge apparaitra, il vous faudra alors essayé de chargés les règles MasterShaper en mode debug pour trouver le problème.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Chargement des règles en mode debug (Load debug)</title>
+	<para>
+	  Cela chargera les règles une par une, et vous retournera l'erreur en cas de problème.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Visualisation (Show)</title>
+	<para>
+	  Le panneau visualisation permet de visualiser chaque commande qui sera chargé lorsque que l'on active MasterShaper. Cela inclu les commandes <emphasis role="bold">tc</emphasis> et <emphasis role="bold">iptables</emphasis> (y compris les regles de reconnaissance de traffic iptables si elles sont utilisées).
+	</para>
+      </sect2>
+      <sect2>
+	<title>(Unload)</title>
+	<para>
+	  Cela désactivera le controle du flux (si préalablement chargé).
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>shaper_loader.sh</title>
+      <para>
+	A partir de la version 0.31 de MasterShaper il y a un nouveau script de chargement des règles.
+	Cela a été nécessaire car le script doit etre capable de complétement retiré les règles Iptables de Mastershaper.
+	Ceci est désormais effectué par le script <emphasis role="bold">shaper_loader.sh</emphasis>
+      </para>
+      <para>
+	Ce script charge désormais les règles <emphasis role="bold">tc</emphasis> et <emphasis role="bold">iptables</emphasis>, il est donc nécessaire de lancer ce script en utilisateur root. Cela accélere la mise en place des règles iptables, car désormais <emphasis role="bold">sudo</emphasis> n'est pas éxécuté pour chaques règles.
+      </para>
+      <para>
+	Suivez les procédures d'installation !
+      </para>
+    </sect1>
+
+    <sect1>
+      <title>Outils</title>
+      <sect2>
+	<title>Runlevel-Init-Script</title>
+	<para>
+	  Si vous utilisez la version de Mastershaper via un tarball (tar.bz2), vous trouverez un fichier nommé <emphasis role="bold">mastershaper.init</emphasis> dans le répertoire <emphasis role="bold">tools</emphasis>. C'est un version de base d'un script d'<emphasis role="bold">init</emphasis>. Si vous voulez activer le chargement des règles de Mastershaper juste après le reboot, vous pouvez utiliser ce script.
+	  Vous pouvez aussi utiliser ce script lors du lancement des <emphasis role="bold">ip-up</emphasis> scripts du démon <emphasis role="bold">pppd</emphasis>. Il faut que vous pensiez à ajuster la variable <emphasis role="bold">PATH_TO_MS</emphasis> dans ce script. Ce script doit nécessairement etre lancer en tant que root.
+	</para>
+      </sect2>
+    </sect1>
+  </chapter>
+<!-- Keep this comment at the end of the file
+Local Variables:
+mode: xml
+sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+End:
+-->

@@ -1,0 +1,17 @@
+Following coding style shall be used:
+
+function name() {
+
+}
+
+while, for, if ... {
+
+}
+
+one tab = 3 spaces
+vim: set expandtab softtabstop=3 tabstop=3 shiftwidth=3
+
+
+comments
+: one line //
+: several lines /* */

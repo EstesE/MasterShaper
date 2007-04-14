@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /><title>Chapter 1. Introduction</title><link rel="stylesheet" href="styleguibo.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.69.1" /><link rel="start" href="index.html" title="MasterShaper Documentation 0.4x" /><link rel="up" href="index.html" title="MasterShaper Documentation 0.4x" /><link rel="prev" href="index.html" title="MasterShaper Documentation 0.4x" /><link rel="next" href="ch02.html" title="Chapter 2. Definitions and Terms" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 1. Introduction</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch02.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="introduction"></a>Chapter 1. Introduction</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ch01.html#id2475722">1.1. MasterShaper</a></span></dt><dt><span class="sect1"><a href="ch01.html#id2477061">1.2. Requirements</a></span></dt><dt><span class="sect1"><a href="ch01.html#id2476278">1.3. IMQ-Devices - What for?</a></span></dt><dt><span class="sect1"><a href="ch01.html#id2476380">1.4. Classifiers and Queuing Disciplines</a></span></dt><dt><span class="sect1"><a href="ch01.html#id2523707">1.5. Support, Ideas and Improvements</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2475722"></a>1.1. MasterShaper</h2></div></div></div><p>
+	The MasterShaper is a web interface for Linux network traffic utilities. It provides an "easy2use" web interface around the Quality of Service (QoS) functions available in the Linux 2.4 and 2.6 kernel series. Users can define their own rulesets for handling network flow and also get feedback through graphical statistics about current bandwidth usage and shaping situation.
+      </p><p>
+	Mastershaper's goal is to make traffic shaping possible for users who know about networking and the traffic shaping capabilities, but have not much experience with Linux, scripting and other  tools needed to do this job.
+      </p><p>
+	In the end, the shaping features should be comparable with commercial shaping products like Allot's Netenforcer (<a href="http://www.allot.com/html/products_netenforcer.shtm" target="_top">http://www.allot.com/html/products_netenforcer.shtm</a>) or Packeteers shaper  (<a href="http://www.packeteer.com/" target="_top">http://www.packeteer.com/</a>).
+      </p><p>
+	Currently it's only a shaper utility. It's doesn't include a network traffic analyser like the commercial products. It will not display what's going on your network. It will only display the things happens according your ruleset.
+      </p><p>
+	MasterShaper can be used on a single machine, router or on a transparent bridge.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2477061"></a>1.2. Requirements</h2></div></div></div><p>
+	</p><div class="itemizedlist"><ul type="disc"><li><p>Linux kernel version 2.4 or 2.6.x (<a href="" target="_top"></a>)</p></li><li><p>iproute2 which contains the tc command (<a href="http://developer.osdl.org/dev/iproute2/" target="_top">http://developer.osdl.org/dev/iproute2/</a>)</p></li><li><p>IMQ-Devices (If you want to shape inbound traffic, <a href="http://www.linuximq.net" target="_top">http://www.linuximq.net</a>)</p></li><li><p>Web-Server with PHP support (Apache2, mod_php4, <a href="http://httpd.apache.org" target="_top">http://httpd.apache.org)</a></p></li><li><p>PHP4 with JPEG, libgd and MySQL support (not tested yet with PHP5, <a href="http://www.php.net" target="_top">http://www.php.net</a>)</p></li><li><p>MySQL database (MySQL 4.1 or MySQL 5.0, <a href="http://www.mysql.com" target="_top">http://www.mysql.com</a>)</p></li><li><p>PHP pear modules DB and Net_IPv4</p></li><li><p>phplayersmenu (sourceforge project, <a href="http://phplayersmenu.sourceforge.net" target="_top">http://phplayersmenu.sourceforge.net</a>)</p></li><li><p>jpgraph (<a href="http://www.aditus.nu/jpgraph/" target="_top">http://www.aditus.nu/jpgraph/</a>)</p></li><li><p>Web-Browser (with DHTML- and JavaScript-Support, <a href="http://www.mozilla.org/products/firefox/" target="_top">http://www.mozilla.org/products/firefox/</a>)</p></li><li><p>sudo</p></li></ul></div><p>
+      </p><p>
+	Be aware that the functionality MasterShaper represents is dependent on the availability of features on your system. Some features of the 2.6.x kernels are not back-ported to 2.4.x kernels and so can't be used under 2.4. Also if you have outdated versions of iptables or iproute2 you will discover problems with some features. Before report problems check if newer versions are available and upgrade first.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2476278"></a>1.3. IMQ-Devices - What for?</h2></div></div></div><p>
+	Primarily tc-utilities are arranged for outbound traffic (egress). With outbound traffic you have a lot of options to shape your network traffic. The built-in ingress functions are not so powerful and rudimentary - so you have much less possibilities to control your incoming traffic.
+      </p><p>
+	The problem on ingress shaping is, that traffic which arrives on your network card interface, is already on the line and consumes bandwidth. You only have the possibility to drop fast incoming packets or delaying sending acknowledge (ACK) packets and hope that the sender will slow down sending rate (most IP stacks act in this way).
+      </p><p>
+	However - in this case you are sitting on the wrong side of the network flow and ingress shaping is less effective then egress shaping. Whatever a supplier of commercial shaping products is telling you - they have all the same problem like the solutions with Linux QoS utilities. The ideal solution is to shape on both sides.
+      </p><p>
+	Meanwhile IMQ-Devices - Intermediate Queueing Device <a href="http://www.linuximq.net" target="_top">http://www.linuximq.net</a> - have been arranged to fit this needing. With iptables rules incoming and outgoing traffic will be forward to the queueing devices. The advantage of this - you can use "outgoing traffic rules" on ingress traffic.
+      </p><p>
+	To use the IMQ devices you have to patch your kernel and iptables. You will find enough howto's for this in the Internet (use google) - so it will not be explained here.
+      </p><p>
+	<a href="http://www.linuximq.net/faq.html" target="_top">http://www.linuximq.net/faq.html</a>
+	<a href="http://wiki.nix.hu/cgi-bin/twiki/view/IMQ/ImqFaq" target="_top">http://wiki.nix.hu/cgi-bin/twiki/view/IMQ/ImqFaq</a>
+      </p><p>
+	If you want to use IMQ for your external interface (lets say it ppp0), then the IMQ usage can be enabled with:
+      </p><pre class="screen">
+ip link set imq0 up
+ip link set imq1 up
+
+iptables -t mangle -I PREROUTING -i ppp0 -j IMQ --to-dev 0
+iptables -t mangle -I POSTROUTING -o ppp0 -j IMQ --to-dev 1</pre><p>
+	Now you can use the IMQ devices as incoming (ex. imq0) and outgoing (ex. imq1) device in the MasterShaper options.
+      </p><p>
+	Don't forget - For IMQ usage you have to patch kernel AND iptables! For your kernel you need the  options CONFIG_IMQ AND CONFIG_IP_NF_TARGET_IMQ.
+      </p><p>
+	Be aware that you can NOT use Mastershaper's iptables-matching on IMQ devices! With IMQ device you can only use tc-filter. iptables isn't capable to match packets appearing on a IMQ device.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2476380"></a>1.4. Classifiers and Queuing Disciplines</h2></div></div></div><p>
+	  Since V0.30 MasterShaper supports three Classifiers (available in 2.6 kernel):
+      </p><p>
+	</p><div class="itemizedlist"><ul type="disc"><li><p>HTB (Hierarchical Token Bucket) <a href="http://luxik.cdi.cz/~devik/qos/htb/" target="_top">http://luxik.cdi.cz/~devik/qos/htb/</a></p></li><li><p>HFSC (Hierarchical Fair Service Curve), <a href="http://www.cs.cmu.edu/~hzhang/HFSC/main.html" target="_top">http://www.cs.cmu.edu/~hzhang/HFSC/main.html</a></p></li><li><p>CBQ (Class Based Queueing), <a href="http://www.icir.org/floyd/cbq.html" target="_top">http://www.icir.org/floyd/cbq.html</a></p></li></ul></div><p>
+      </p><p>
+	HTB is capable of supporting a guaranteed minimum bandwidth for a traffic class. Furthermore it let you define the maximum bandwidth, which a class can lend from other classes, if the bandwidth is unused. You can define burst levels and priorization of HTB class. Priorization only affects how much unused bandwidth a class can lend from other classes - higher priorities will gain more bandwidth. 
+	  </p><p>
+	HFSC is capable of supporting a guaranteed maximum delay of network packets. This is important for real time applications like "Voice over IP" (VoIP), where delays and jitter have a bad impact on speech quality. Also with HFSC you can define a minimum guaranteed bandwidth for each class, and a maximum bandwidth which can be used by this class. A limitation of HFSC (doesn't update statistics of parent classes) makes it impossible to draw bandwidth and chain graphs. So only pipe graphs are working with HFSC.
+      </p><p>
+	CBQ exists much longer then HTB but has less powerful options for traffic control. MasterShaper support CBQ in case HTB is not available.
+      </p><p>
+	Vincent Perrier has made some tests HTB versus HFSC. Take a look on his homepage:<a href="http://www.rawsoft.org/example_of_use.html" target="_top">http://www.rawsoft.org/example_of_use.html</a>
+      </p><p>
+	Mastershaper's default behaviour is HTB. You can change this in the MasterShaper web interface:
+      </p><p>
+	Settings "<span class="bold"><strong>Options Queuing Discipline</strong></span>"
+      </p><p>
+	With V0.42 MasterShaper is able to use different Queuing Disciplines (before only SFQ was used). This Queuing Disciplines are used when packets leaving an interface to obtain an fairly distribution of bandwidth between traffic.
+      </p><p>
+	Currently supported are:
+      </p><p>
+	</p><div class="itemizedlist"><ul type="disc"><li><p>SFQ (Stochastic Fairness Queueing, in 2.6 kernel)</p></li><li><p>ESFQ (Enhanced Stochastic Fairness Queueing, <a href="http://fatooh.org/esfq-2.6/" target="_top">http://fatooh.org/esfq-2.6/</a>)</p></li><li><p>HFSC (Hierarchical Fair Service Curve, in 2.6 kernel)</p></li><li><p>NETEM (Network Emulator, in 2.6 kernel, <a href="http://linux-net.osdl.org/index.php/Netem" target="_top">http://linux-net.osdl.org/index.php/Netem</a></p></li></ul></div><p>
+      </p><p>
+	NETEM is capable of emulating "<span class="bold"><strong>real network conditions</strong></span>" like delay, jitter, packet loss, duplication and reordering. MasterShaper is only acting is a GUI to enter the NETEM parameters. Remember that this can also affect your connection to the server which runs MasterShaper. NETEM needs support in kernel (CONFIG_NET_SCH_NETEM) and a newer version of iproute2 (<a href="http://linux-net.osdl.org/index.php/Iproute2" target="_top">http://linux-net.osdl.org/index.php/Iproute2</a>) package to support every NETEM option.
+      </p><p>
+	All of these Classifiers and Queuing Disciplines have different appendages to do their job. If you want to know more about the theory of these schedulers, please refer to their documentations or home pages in the web. This would blow up this documentation, so only some features will be highlighted here.
+      </p></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2523707"></a>1.5. Support, Ideas and Improvements</h2></div></div></div><p>
+	In case you have problems setting up MasterShaper take a look into the support forum on Mastershaper's homepage if your problems are already known - so please - use the SEARCH functionalities first before make a new post:
+      </p><p>
+	<a href="http://www.mastershaper.org" target="_top">http://www.mastershaper.org</a>
+      </p><p>
+	If you have ideas or other improvements proposals don't hesitate to post them into the "Feature Request and Inspirations" thread in the support forum.
+      </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">MasterShaper Documentation 0.4x </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Definitions and Terms</td></tr></table></div></body></html>

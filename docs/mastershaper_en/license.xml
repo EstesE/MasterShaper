@@ -1,0 +1,13 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<chapter id="licence" lang="en">
+    <title>License</title>
+    <para>
+      MasterShaper is licensed by GNU General Public License (GPL) Version 2. All rights reserved by author Andreas Unterkircher (andreas.unterkircher@netshadow.at), http://www.mastershaper.org.
+    </para>
+  </chapter>
+<!-- Keep this comment at the end of the file
+Local Variables:
+mode: xml
+sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+End:
+-->

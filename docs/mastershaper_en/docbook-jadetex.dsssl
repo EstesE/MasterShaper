@@ -1,0 +1,450 @@
+<!DOCTYPE style-sheet PUBLIC "-//James Clark//DTD DSSSL Style Sheet//EN" [
+<!ENTITY dbstyle SYSTEM "/usr/share/sgml/docbook/dsssl-stylesheets/print/docbook.dsl" CDATA DSSSL>
+]>
+
+<!--
+;; This customization layer is inspired from:
+;;
+;;#######################################################################
+;;#                                                                     #
+;;#                 The GNOME Documentation Project's                   #
+;;#                  Custion DocBook Stylesheet Layer                   #
+;;#                    by Dave Mason dcm@redhat.com                     #
+;;#            Based on Norman Walsh's Modular Stylesheets              #
+;;#                                                                     #
+;;#            This is intended as a drop-in replacement for            #
+;;#            the cygnus-both.dsl file in DocBook Tools.               #
+;;#           Just copy it to the location dbtools created              #
+;;#                   and rename it cygnus-both.dsl                     #
+;;#                                                                     #
+;;#                       This is Version 1.0-4                         #
+;;#                  patched to fix RTF output (#49677)                 #
+;;#                patched to work with docbook-dsssl-1.72              #
+;;#                 patched for ADDRESS output (#50605)                 #
+;;#                      removed comment and remark                     #
+;;#                      disabled use-id-as-filename                    #
+;;#               don't define %graphic-default-extension%              #
+;;#######################################################################
+-->
+
+<style-sheet>
+<style-specification use="docbook">
+<style-specification-body>
+
+;;#######################################################################
+;; Change the parameters below at your envy...
+;;#######################################################################
+
+;;======================================
+;;General Options
+;;======================================
+
+;;Do you want to print on both sides of the paper?
+(define %two-side% #f)
+
+;;Do you want enumerated sections? (E.g, 1.1, 1.1.1, 1.2, etc.)
+(define %section-autolabel% #t)
+
+;;Show URL links? If the text of the link and the URL are identical,
+;;the parenthetical URL is suppressed.
+(define %show-ulinks% #t)
+
+;; footnotes at the bottom of each page (and not chapter)
+(define bop-footnotes #t)
+
+;Make Ulinks footnotes to stop bleeding in the edges - this increases
+;'jade --> print' time tremendously keep this in mind before
+;complaining!
+(define %footnote-ulinks% #t)
+
+(define %no-shade-screen% #f)
+
+;;Tex Backend on
+(define tex-backend #t)
+
+;;Define Line Spacing
+(define %line-spacing-factor% 1.1)
+
+;;Define the Paragraph Style
+;;(define para-style
+;;  (style
+;;   font-size: %bf-size%
+;;   color: *blue*
+;;   font-weight: 'medium
+;;   font-posture: 'upright
+;;   font-family-name: %body-font-family%
+;;   line-spacing: (* %bf-size% %line-spacing-factor%)))
+
+(define ($object-titles-after$)
+  (list (normalize "figure")))
+
+;;======================================
+;;Book Options
+;;======================================
+
+;;Do you want a title page for a Book?
+(define %generate-book-titlepage% #t)
+
+;;Do you want a separate page for the title?
+(define %generate-book-titlepage-on-separate-page% #f)
+
+;;Generate Book TOC?
+(define %generate-book-toc% #t)
+
+;;What depth should the TOC generate?
+;;!Only top level of appendixes!
+(define (toc-depth nd)
+  (if (string=? (gi nd) (normalize "book"))
+      3
+      (if (string=? (gi nd) (normalize "appendix"))
+        0
+        1)))
+
+;;Do you want a TOC for the element part?
+(define %generate-part-toc% #f)
+
+;;Do you want the part toc on the part titlepage or separate?
+;(define %generate-part-toc-on-titlepage%
+; #t)
+
+;;Generate Part Title Page?
+(define %generate-part-titlepage% #f)
+
+;;Do you want the Part intro on the part title page?
+(define %generate-partintro-on-titlepage% #f)
+
+;;What elements should have a LOT?
+(define ($generate-book-lot-list$)
+  (list (normalize "equation")))
+
+;;Do you want chapters enumerated?
+(define %chapter-autolabel% #t)
+
+;;Do you want Chapter's and Appendix's 
+;;to have automatic labels?
+(define %chap-app-running-head-autolabel% #f)
+
+;;======================================
+;;Article Options
+;;======================================
+
+;;Do you want a title page for an Article?
+(define %generate-article-titlepage%
+ #t)
+
+;;Generate Article TOC?
+(define %generate-article-toc% 
+ #t)
+
+;;Do you want a separate page for the title?
+(define %generate-article-titlepage-on-separate-page%
+ #t)
+
+;;Do you want the article toc on the titlepage or separate?
+(define %generate-article-toc-on-titlepage%
+ #t)
+
+;;Do you want to start new page numbers with each article?
+(define %article-page-number-restart%
+ #f)
+
+;;Titlepage Separate?
+(define (chunk-skip-first-element-list)
+  '())
+
+;;Titlepage Not Separate
+;(define (chunk-skip-first-element-list)
+;  (list (normalize "sect1")
+;	(normalize "section")))
+
+;;======================================
+;;Columns
+;;======================================
+
+;;How many columns do you want?
+(define %page-n-columns% 1)
+
+;;How much space between columns?
+(define %page-column-sep% 0.2in)
+
+;;How many Columns on the titlepage?
+(define %titlepage-n-columns% 1)
+
+;;Balance columns?
+(define %page-balance-colums% #t)
+
+;;======================================
+;;Fonts
+;;======================================
+
+;;Defines the general size of the text in the document. normal(10),
+;;presbyopic(12), and large-type(24). 
+(define %visual-acuity% "normal")
+
+;;What font would you like for titles?
+(define %title-font-family% "Helvetica")
+
+;;What font would you like for the body?
+(define %body-font-family% "Palatino")
+
+;;What font would you like for mono-seq?
+(define %mono-font-family% "Courier New")
+
+;;If the base fontsize is 10pt, and '%hsize-bump-factor%' is
+;; 1.2, hsize 1 is 12pt, hsize 2 is 14.4pt, hsize 3 is 17.28pt, etc
+(define %hsize-bump-factor% 
+ 1.1)
+
+;;What size do you want the body fonts?
+(define %bf-size%
+ (case %visual-acuity%
+    (("tiny") 8pt)
+    (("normal") 10pt)
+    (("presbyopic") 12pt)
+    (("large-type") 24pt)))
+
+(define-unit em %bf-size%)
+
+;;======================================
+;;Margins
+;;======================================
+
+(define %left-right-margin% 2pi)
+
+;;How much indentation for the body?
+(define %body-start-indent% 1pt)
+
+;;How big is the left margin? (relative to physical page)
+(define %left-margin% 2pi) ;white-paper-column
+
+;;How big is the right margin? (relative to physical page)
+(define %right-margin% 2pi) ;white-paper-column
+
+;;How big do you want the margin at the top?
+(define %top-margin%
+(if (equal? %visual-acuity% "large-type")
+      7.5pi
+      6pi))
+
+;;How big do you want the margin at the bottom?
+(define %bottom-margin% 
+ (if (equal? %visual-acuity% "large-type")
+      7.5pi 
+      6pi))
+
+;;Define the text width. (Change the elements in the formula rather
+;;than the formula itself)
+;(define %text-width% (- %page-width% (* %left-right-margin% 2)))
+(define %text-width%  (- %page-width% (+ %left-margin% %right-margin%)))
+
+;;Define the body width. (Change the elements in the formula rather
+;;than the formula itself)
+(define %body-width% (- %text-width% %body-start-indent%))
+
+;;Define distance between paragraphs
+(define %para-sep% (/ %bf-size% 2.0))
+
+;;Define distance between block elements (figures, tables, etc.).
+(define %block-sep% (* %para-sep% 2.0))
+
+;;Indent block elements?
+(define %block-start-indent% 0pt)
+;0pt
+
+;;======================================
+;;Admon Graphics
+;;======================================
+
+;;Do you want admon graohics on?
+(define %admon-graphics% #t)
+
+;;Where are the admon graphics?
+(define %admon-graphics-path% "images/")
+
+;;======================================
+;;Quadding
+;;======================================
+
+;;What quadding do you want by default; start, center, justify, or end?
+(define %default-quadding% 'justify)
+
+;;What quadding for component titles(Chapter, Appendix, etc)?
+(define %component-title-quadding% 'start)
+
+;;What quadding for section titles?
+(define %section-title-quadding% 'start)
+
+;;What quadding for section sub-titles?
+(define %section-subtitle-quadding% 'start)
+
+;;What quadding for article title?
+(define %article-title-quadding% 'center)
+
+;;What quadding for article sub-titles?
+(define %article-subtitle-quadding% 'center)
+
+;;What quadding for division subtitles?
+(define %division-subtitle-quadding% 'start)
+
+;;What quadding for component subtitles?
+(define %component-subtitle-quadding% 'start)
+
+(define box-start-indent .25in)
+(define box-end-indent 5in)
+
+;;======================================
+;;Paper Options
+;;======================================
+
+;;What size paper do you need? A4, A5, USletter or USlandscape?
+(define %paper-type%
+ "A4")
+
+;;Now define those paper types' width
+(define %page-width%
+ (case %paper-type%
+    (("A4") 210mm)
+    (("A5") 148.5mm)
+    (("USletter") 8.5in)
+    (("USlandscape") 11in)))
+
+;;Now define those paper types' height
+(define %page-height%
+ (case %paper-type%
+    (("A4") 297mm)
+    (("A5") 210mm)
+    (("USletter") 11in)
+    (("USlandscape") 8.5in)))
+
+;;Callouts are confusing in Postscript... fix them.
+(define %callout-fancy-bug% #t)
+
+(define *rgb-color-space*
+  (color-space "ISO/IEC 10179:1996//Color-Space Family::Device RGB"))
+(define *bluet*
+  (color *rgb-color-space* (/ 16 255)  (/ 73 255)  (/ 148 255)))
+(define *grey*
+  (color *rgb-color-space* (/ 231 255)  (/ 231 255)  (/ 231 255)))
+(define *bluec*
+  (color *rgb-color-space* (/ 74 255) (/ 97 255) (/ 173 255)))
+(define *black*
+  (color *rgb-color-space* 0 0 0))
+(define *white*
+  (color *rgb-color-space* 1 1 1))
+
+(element (book title)
+  (make sequence
+    color: *black*
+    )
+  )
+
+(element (chapter title)
+  (make paragraph
+    end-indent: 0.3cm
+    quadding: 'center
+    (make box
+      font-size: 16pt
+      font-weight: 'bold
+      background-color: *bluet*
+      color: *white*
+      )
+    (empty-sosofo)
+    )
+  )
+
+(element (title)
+  (make paragraph
+    end-indent: 0.3cm
+    (make box
+      font-size: 13pt
+      font-posture: 'oblique
+      background-color: *bluec*
+      color: *white*
+      )
+    (empty-sosofo)
+    )
+  )
+
+(element (para)
+  (make sequence
+    (make paragraph
+      space-before: 0.3cm
+      font-size: 10pt
+      color: *black*
+      )
+    (empty-sosofo)
+    )
+  )
+
+(element (itemizedlist)
+  (make box
+    background-color: *grey*
+    color: *black*
+    )
+  )
+
+(element (orderedlist)
+  (make box
+    background-color: *grey*
+    color: *black*
+    )
+  )
+
+;;======================================
+;;Non-printing Elements
+;;======================================
+;;(element TITLEABBREV (empty-sosofo))
+;;(element SUBTITLE (empty-sosofo))
+;;(element SETINFO (empty-sosofo))
+;;(element BOOKINFO (empty-sosofo))
+;;(element BIBLIOENTRY (empty-sosofo))
+;;(element BIBLIOMISC (empty-sosofo))
+;;(element BOOKBIBLIO (empty-sosofo))
+;;(element SERIESINFO (empty-sosofo))
+;;(element DOCINFO (empty-sosofo))
+;;(element ARTHEADER (empty-sosofo))
+;;(element revhistory (empty-sosofo))
+;;(element ADDRESS (empty-sosofo))
+
+;;Show comment element?
+(define %show-comments%
+  #t)
+
+;;======================================
+;;Formalpara titles
+;;======================================
+
+
+;;Change the way Formal Paragraph titles are displayed. The commented
+;;out section will run the titles in the paragraphs. 
+(element (formalpara title)
+  ;(make sequence
+  ;font-weight: 'bold
+  ;($runinhead$))
+  ($lowtitle$ 5 7))
+
+;;======================================
+;;Inlines
+;;======================================
+
+(element application ($mono-seq$))
+(element command ($bold-seq$))
+(element filename ($mono-seq$))
+(element function ($mono-seq$))
+(element guibutton ($bold-seq$))
+(element guiicon ($bold-seq$))
+(element guilabel ($italic-seq$))
+(element guimenu ($bold-seq$))
+(element guimenuitem ($bold-seq$))
+(element hardware ($bold-mono-seq$))
+(element keycap ($bold-seq$))
+(element literal ($mono-seq$))
+(element parameter ($italic-mono-seq$))
+(element prompt ($mono-seq$))
+(element symbol ($charseq$))
+(element emphasis ($italic-seq$))
+
+</style-specification-body>
+</style-specification>
+<external-specification id="docbook" document="dbstyle">
+</style-sheet>

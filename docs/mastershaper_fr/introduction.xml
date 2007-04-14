@@ -1,0 +1,172 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+  <chapter id="introduction" lang="fr">
+    <title>Introduction</title>
+    <sect1>
+      <title>Mastershaper</title>
+      <para>
+	Mastershaper est une interface web pour les outils Linux de gestion de
+	traffic réseau. Il fournit une interface web convivial pour gérer la
+	Qualité de Service (<emphasis role="bold">QoS</emphasis>), disponibles pour les kernels Linux 2.4 et 2.6.
+	L'utilisateur peut définir ses propres règles pour gérer les flux
+	réseaux, et visualiser des informations via des statistiques graphiques sur
+	l'utilisation de la bande passante, et le controle de flux en cours.
+	On peut donc controller la taille du flux sortant, limiter la bande passante,
+	mais aussi réguler les taux d'un trafic ou pour améliorer les performances d'un réseau.
+      </para>
+      <para>
+	Le but de Mastershaper est de permettre aux utilisateurs non familliers
+	avec la gestion de flux réseau et la <emphasis role="bold">QoS</emphasis>, de mettre en place une telle
+	solution, sans pour autant etre des experts Linux.
+      </para>
+      <para>
+	Cet outil est comparable à des outils commerciaux tel que Allot's
+	Netenforcer (<ulink url="http://www.allot.com/html/products_netenforcer.shtm">http://www.allot.com/html/products_netenforcer.shtm</ulink>)
+	ou Packeteers shaper (<ulink url="http://www.packeteer.com/">http://www.packeteer.com/</ulink>).
+      </para>
+      <para>
+	Aujourd'hui il ne s'agit que d'un outil de gestion de flux. Il
+	n'inclut pas un outils d'analyse de traffic comme ses équivalents
+	commerciaux.
+	Il ne permet pas de visualiser ce qui se passe sur votre réseau,
+	mais uniquement ce qui traverse votre réseau en fonction de vos filtres.
+      </para>
+      <para>
+	MasterShaper peut etre utiliser sur une simple machine, un routeur ou
+	un pont.
+	</para>
+    </sect1>
+    <sect1>
+      <title>Logiciels nécessaires</title>
+      <para>
+	<itemizedlist>
+	  <listitem><para>Un Kernel Linux version 2.4 ou 2.6.x (<ulink url="http://www.kernel.org">http://www.kernel.org</ulink>)</para></listitem>
+	  <listitem><para><emphasis role="bold">iproute2</emphasis> qui contient la commande tc (<ulink url="http://developer.osdl.org/dev/iproute2/">http://developer.osdl.org/dev/iproute2/</ulink>)</para></listitem>
+	  <listitem><para><emphasis role="bold">IMQ-Devices</emphasis> (pour controller plus efficacement les flux entrants/sortants, <ulink url="http://www.linuximq.net">http://www.linuximq.net</ulink>)</para></listitem>
+	  <listitem><para>Un serveur Web avec le support PHP (Apache2, mod_php4/mod_php5, <ulink url="http://httpd.apache.org">http://httpd.apache.org</ulink>)</para></listitem>
+	  <listitem><para><emphasis role="bold">PHP4/5</emphasis> avec le support JPEG, libgd et MySQL (PHP5, <ulink url="http://www.php.net">http://www.php.net</ulink>)</para></listitem>
+	  <listitem><para>Une base de donnée <emphasis role="bold">MySQL</emphasis> (MySQL 4.1 ou MySQL 5.0, <ulink url="http://www.mysql.com">http://www.mysql.com</ulink>)</para></listitem>
+	  <listitem><para><emphasis role="bold">PHP</emphasis> pear modules DB et Net_IPv4</para></listitem>
+	  <listitem><para><emphasis role="bold">Perl5</emphasis> avec l'interface DBD (DBI-MySQL)</para></listitem>
+	  <listitem><para><emphasis role="bold">phplayersmenu</emphasis> (sourceforge project, <ulink url="http://phplayersmenu.sourceforge.net">http://phplayersmenu.sourceforge.net</ulink>)</para></listitem>
+	  <listitem><para><emphasis role="bold">jpgraph</emphasis> (<ulink url="http://www.aditus.nu/jpgraph/">http://www.aditus.nu/jpgraph/</ulink>)</para></listitem>
+	  <listitem><para>Un navigateur Web (avec le support DHTML et JavaScript, <ulink url="http://www.mozilla.org/products/firefox/">http://www.mozilla.org/products/firefox/</ulink>)</para></listitem>
+	  <listitem><para>La commande <emphasis role="bold">sudo</emphasis></para></listitem>
+	  </itemizedlist>
+	</para>
+	<para>
+	<emphasis role="bold">Attention</emphasis>: les fonctionnalités de Mastershaper dépendent des capacités
+	  de votre systeme. Certaines fonctionnalitées du kernel 2.6.x n'ont pas
+	  été porté sur le kernel 2.4.x et donc ne peuvent pas etre utilisé sur
+	  un kernel 2.4. Si vous avez d'anciennes versions d'iptables et
+	d'<emphasis role="bold">iproute2</emphasis> vous pourrez rencontrer queleques difficultées avec
+	  quelques fonctionnalitées. Avant de reporter le moindre problèmes,
+	  veuillez vérifier si de nouvelles versions sont disponibles et mettez
+	  à jour si nécessaires.
+	</para>
+      </sect1>
+      <sect1>
+	<title>IMQ-Devices - Pourquoi faire ?</title>
+	<para>
+	  Tout d'abord il faut comprendre que les outils <emphasis role="bold">tc</emphasis> sont écrit pour gérer le traffic sortant (outbound traffic /egress). Avec le traffic sortant nous disposons d'une large panel d'options pour gérer notre flux. Les fonctions de gestions de flux entrant sont beaucoup plus limitées et rudimentaires, et donc offrent moins d'options.
+	</para>
+      <para>
+	Le problème avec le traffic entrant (qui arrive donc sur notre carte réseau), c'est qu'il est déja arrivé sur notre interface réseau, et qu'il consomme donc déja de la bande passante. Il ne nous reste donc plus que la possbilité de "dropper" (ignorer un paquet lorsque la queue est pleine) les packets arrivant rapidement ou d'allonger le delai pour renvoyer notre acquittement (<emphasis role="bold">ACK</emphasis>), en espérant que l'expéditeur baissera son débit d'envoi de packets (La pluspart des stacks IP fonctionnenent désormais comme cela).
+	</para>
+	<para>
+	  Dans tous les cas, si vous etes du mauvais coté du flux réseau, le controle du traffic entrant sera toujours moins efficace que celui du traffic sortant. Quoi qu'en disent les solutions commerciales de gestion de flux réseau, il y aura toujours le meme probleme qu'avec une solution QoS Linux. La solution idéale est de réguler le traffic sur des deux cotés.
+	</para>
+	<para>
+	  La signification de <emphasis role="bold">IMQ-Devices</emphasis> est "Périphérique intermédiaire de mise en attente" (Intermediate Queueing Device) <ulink url="http://www.linuximq.net">http://www.linuximq.net</ulink>. Il a été spéciallement écrit pour gérer ce type de probléme. Avec des règles iptables le traffic entrant et sortant sera redirigé sur ce périphérique. L'avantage c'est que l'on peut désormais utiliser des règles de gestion de traffic sortant de notre réseau sur le traffic entrant.
+	</para>
+	<para>
+	Pour pouvoir utiliser les périphériques <emphasis role="bold">IMQ</emphasis>, il faut patcher le kernel et l'outil iptables. Vous trouverez suffisement de documentation sur internet (en utilisant google par exemple) pour que cela ne soit pas expliqué dans cette documentation:
+	  <itemizedlist>
+	    <listitem><para><ulink url="http://www.linuximq.net/faq.html">http://www.linuximq.net/faq.html</ulink></para></listitem>
+	    <listitem><para><ulink url="http://wiki.nix.hu/cgi-bin/twiki/view/IMQ/ImqFaq">http://wiki.nix.hu/cgi-bin/twiki/view/IMQ/ImqFaq</ulink></para></listitem>
+	  </itemizedlist>
+	</para>
+	<para>
+	Si vous voulez utiliser <emphasis role="bold">IMQ</emphasis> sur votre interface externe (ici ppp0), vous avez juste à taper cette comande:
+	</para>
+	<screen>
+ip link set imq0 up
+ip link set imq1 up
+iptables -t mangle -I PREROUTING -i ppp0 -j IMQ --to-dev 0
+iptables -t mangle -I POSTROUTING -o ppp0 -j IMQ --to-dev 1</screen>
+	<para>
+	Maintenant vous pouvez utiliser les interfaces <emphasis role="bold">IMQ</emphasis> pour l'entrant (ex: imq0) et le sortant (ex: imq1) dans les options Mastershaper.
+	  N'oubliez pas qu'il faut patcher votre kernel et iptables pour que cela soit fonctionnel (CONFIG_IMQ et CONFIG_IP_NF_TARGET_IMQ)
+	</para>
+	<para>
+	<emphasis role="bold">Avertissement</emphasis>: vous ne pouvez pas utiliser la reconnaissance des packets <emphasis role="bold">iptables</emphasis> sur les interfaces <emphasis role="bold">IMQ</emphasis>. Vous devez utiliser les filtres <emphasis role="bold">tc</emphasis>. <emphasis role="bold">Iptables</emphasis> est incapable de reconnaitre un packet sur une interface <emphasis role="bold">IMQ</emphasis>.
+	</para>
+      </sect1>
+
+    <sect1>
+      <title>Classification et règles de mise en attente</title>
+      <para>
+	Depuis la version 0.30 MasterShaper supporte 3 classificateurs (disponible dans le kernel 2.6):
+      </para>
+      <para>
+	<itemizedlist>
+	  <listitem><para><emphasis role="bold">HTB</emphasis> (Hierarchical Token Bucket) <ulink url="http://luxik.cdi.cz/~devik/qos/htb/">http://luxik.cdi.cz/~devik/qos/htb/</ulink></para></listitem>
+	  <listitem><para><emphasis role="bold">HFSC</emphasis> (Hierarchical Fair Service Curve) <ulink url="http://www.cs.cmu.edu/~hzhang/HFSC/main.html">http://www.cs.cmu.edu/~hzhang/HFSC/main.html</ulink></para></listitem>
+	  <listitem><para><emphasis role="bold">CBQ</emphasis> (Class Based Queueing) <ulink url="http://www.icir.org/floyd/cbq.html">http://www.icir.org/floyd/cbq.html</ulink></para></listitem>
+	</itemizedlist>
+      </para>
+      <para>
+	<emphasis role="bold">CBQ</emphasis> est un gestionnaire de mise en file d'attente basé sur des classes. <emphasis role="bold">CBQ</emphasis> sert également à la mise en forme de trafic.
+      </para>
+      <para>
+	<emphasis role="bold">HTB</emphasis> travaille comme <emphasis role="bold">CBQ</emphasis>, mais il n'a pas recourt à des calculs de temps d'inoccupation pour la mise en forme. A la place, c'est un Token Bucket Filter basé sur des classes, d'où son nom.
+	<emphasis role="bold">HTB</emphasis> permet de garantir un bande passante minimum pour une certaine classe de traffic. Il permet de définir une bande passante maximale, qu'une classe peut hérité d'une autre si la bande passante n'est pas utilisé. On peut définir des niveaux de "burst" et priorisé les classes <emphasis role="bold">HTB</emphasis>. Les priorités les plus hautes obtiennent le plus de bande passante.
+      </para>
+      <para>
+	<emphasis role="bold">HFSC</emphasis> permet de garantir un délai maximum pour les packets. C'est important pour des applications temps réel comme la Voix sur IP (VoIP), ou le délai et le jitter ont un mauvais impact sur la qualité. Avec <emphasis role="bold">HFSC</emphasis> on peut définir un bande passante minimum pour chaque classe, et une bande passante maximale qui peut etre utilisé pour cette classe. Une des limitations de <emphasis role="bold">HFSC</emphasis> est qu'il est impossible de dessiner la bande passante et les graphiques des chaines. Seul les graphiques de type tunnel focntionne.
+      </para>
+      <para>
+	La gestion <emphasis role="bold">CBQ</emphasis> est plus lente que celle via <emphasis role="bold">HTB</emphasis>, mais elle offre moins d'options de control du traffic. MasterShaper supporte <emphasis role="bold">CBQ</emphasis> dans le cas ou <emphasis role="bold">HTB</emphasis> n'est pas disponible.
+      </para>
+
+      <para>
+	Vincent Perrier a effectué quelques tests de comparaison entre <emphasis role="bold">HTB</emphasis> et <emphasis role="bold">HFSC</emphasis>. Allez regarder sur sa page web: <ulink url="http://www.rawsoft.org/example_of_use.html">http://www.rawsoft.org/example_of_use.html</ulink>. 
+      </para>
+      <para>
+	Le comportement par défaut de MasterShaper est <emphasis role="bold">HTB</emphasis>. Vous pouvez facillement le changer via l'interface web: "Settings " Options " Queuing Discipline"
+      </para>
+      <para>
+	La version 0.42 de MasterShaper est capable d'utiliser plusieurs type de gestion de queue différentes règles de mise en attente (Queuing Disciplines), alors qu'auparavent seule <emphasis role="bold">SFQ</emphasis> était supporté. Cette "Queuing Disciplines" est utilisé lorsque que les packets quittent l'interface pour obetnir une ditribution équitable de la bande passante pour les différents traffics.
+      </para>
+      <para>
+	MasterShaper supporte désormais:
+      </para>
+      <para>
+	<itemizedlist>
+	  <listitem><para><emphasis role="bold">SFQ</emphasis> (Stochastic Fairness Queueing, in 2.6 kernel)</para></listitem>
+	  <listitem><para><emphasis role="bold">ESFQ</emphasis> (Enhanced Stochastic Fairness Queueing, <ulink url="http://fatooh.org/esfq-2.6/">http://fatooh.org/esfq-2.6/</ulink>)</para></listitem>
+	  <listitem><para><emphasis role="bold">HFSC</emphasis> (Hierarchical Fair Service Curve, in 2.6 kernel)</para></listitem>
+	  <listitem><para><emphasis role="bold">NETEM</emphasis> (Network Emulator, in 2.6 kernel, <ulink url="http://linux-net.osdl.org/index.php/Netem">http://linux-net.osdl.org/index.php/Netem</ulink></para></listitem>
+	</itemizedlist>
+      </para>
+
+      <para>
+	<emphasis role="bold">NETEM</emphasis> est capable d'émuler des conditions réels de réseau tel que: le délai, la perte de packet, la duplication ou le ré-ordonencement. MasterShaper est seulement un GUI pour entrer les paramètres <emphasis role="bold">NETEM</emphasis>. Souvenez-vous que cela peut affecter les connections sur lequel tourne MasterShaper. Il faut un kernel avec le support <emphasis role="bold">NETEM</emphasis> (CONFIG_NET_SCH_NETEM) et une nouvelle version de <emphasis role="bold">iproute2</emphasis> (<ulink url="http://linux-net.osdl.org/index.php/Iproute2">http://linux-net.osdl.org/index.php/Iproute2</ulink> pour pouvoir utiliser toutes les options disponibles.
+      </para>
+      <para>
+	Tous ces classificateurs et règles de mise en attente ont differents "appendages" pour faire leurs jobs. Si vous voulez en savoir plus sur la théorie, allez voir la documentation sur leurs pages web respectives. Cette documentation n'explique qu'une infime partie des nombreuses possibilitées offertes.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Support, Idées et améliorations</title>
+      <para>
+	Dans le cas ou vous rencontrez des problèmes pour configurer MasterShaper, allez faire un tour sur le forum de la page web de MasterShaper pour voir s'il n'a pas été déja résolu - svp - utilisez l'outil de recherche du forum avant de faire un nouveau post.
+	Si vous avez des idées pour améliorer MasterShaper n'hésitez pas à les poster dans la section "Feature Request et Inspirations" dans les forum de support.
+      </para>
+    </sect1>
+  </chapter>
+  <!-- Keep this comment at the end of the file
+Local Variables:
+mode: xml
+sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+End:
+-->

@@ -1,0 +1,169 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+  <chapter id="installation" lang="fr">
+    <title>Installation</title>
+    <sect1>
+      <title>Les sources</title>
+      <para>
+      Les source compresser de MasterShaper sont organisées comme suit:
+      </para>
+      <para>
+      <itemizedlist>
+	<listitem><para><emphasis role="bold">INSTALL</emphasis>: notes sur l'installtion</para></listitem>
+	<listitem><para><emphasis role="bold">README</emphasis>: le fameux ReadMe</para></listitem>
+	<listitem><para><emphasis role="bold">LICENSE</emphasis>: licence GPL2</para></listitem>
+	<listitem><para><emphasis role="bold">UPGRADE</emphasis>: intructions de mise à jour/update</para></listitem>
+	<listitem><para><emphasis role="bold">docs</emphasis>: la documentation au format OpenDocument</para></listitem>
+	<listitem><para><emphasis role="bold">htdocs</emphasis>: document root, les fichiers php, les scripts perl, ...</para></listitem>
+	<listitem><para><emphasis role="bold">tools</emphasis>: runlevel init script,...</para></listitem>
+      </itemizedlist>
+      </para>
+    </sect1>
+    <sect1>
+      <title>Procédure d'installation</title>
+      <para>
+	Les étapes de l'installation nécessite quelques connaissances à propos de MySQL. Si vous n'etes pas familirisé avec MySQL vous pouvez utiliser des outils d'administration tel que phpMyAdmin (<ulink url="http://www.phpmyadmin.net/">http://www.phpmyadmin.net/</ulink>).
+      </para>
+      <sect2>
+	<title>la base MySQL</title>
+	<para>
+	  Il faut tout d'abord créer une base de données pour mastershaper
+	</para>
+	<screen>
+mysql> create database db_shaper;
+mysql> GRANT ALL PRIVILEGES ON db_shaper.* TO 'shaper'@'localhost'
+    -> IDENTIFIED BY 'shaper_pass' WITH GRANT OPTION;
+mysql> FLUSH PRIVILEGES;</screen>
+
+	<para>Nous avons créer un utilisateur <emphasis role="bold">shaper</emphasis> qui a tous les accès à la database <emphasis role="bold">db_haper</emphasis>. Pour plus de documentation sur la gestion des droits sous MySQL allez voir la documentation: <ulink url="http://dev.mysql.com/doc/refman/5.0/en/grant.html">http://dev.mysql.com/doc/refman/5.0/en/grant.html</ulink>
+	</para>
+      </sect2>
+      <sect2>
+	<title>Les sources</title>
+	<para>
+	  Il faut décompresser les sources de MasterShaper, le fichier <emphasis role="bold">mastershaper_x.xx.tar.gz</emphasis> que vous avez télécharger du site web:
+	</para>
+	<para>
+<screen>
+mkdir /tmp/shaper
+cd /tmp/shaper
+tar zxfv (PATH_WHERE_FILE_IS_LOCATED)/mastershaper_x.xx.tar.gz</screen>
+      </para>
+      <para>
+	Maintenant il faut déplacer Mastershaper dans le <emphasis role="bold">documentroot</emphasis> de votre serveur web (<emphasis role="bold">/var/www/shaper</emphasis>). L'interface de Mastershaper doit etre accessible via cette url: <ulink url="http://server/shaper/">http://server/shaper/</ulink>.
+      </para>
+      </sect2>
+
+    <sect2>
+      <title>Installation de jpgraph</title>
+      <para>
+	Téléchargez <emphasis role="bold">jpgraph</emphasis> à partir de <ulink url="http://www.aditus.nu/jpgraph/">http://www.aditus.nu/jpgraph/</ulink> dans le répertoire de Mastershaper. Décompresser le tar.gz et faites un lien symbolique de <emphasis role="bold">jpgraph-x.xx</emphasis> vers <emphasis role="bold">jpgraph</emphasis>.
+      </para>
+    </sect2>
+    <sect2>
+	<title>Installation de phplayersmenu</title>
+      <para>
+	Téléchargez <emphasis role="bold">phplayersmenu</emphasis> à partir de <ulink url="http://phplayersmenu.sourceforge.net/">http://phplayersmenu.sourceforge.net/</ulink>.  Décompresser le tar.gz et faites un lien symbolique de <emphasis role="bold">phplayersmenu-x.x.x</emphasis> vers <emphasis role="bold">phplayersmenu</emphasis>.
+      </para>
+    </sect2>
+    <sect2>
+      <title>Installation du module PHP-Pear</title>
+      <para>
+	Si les modules PHP-PEAR nécessaires ne sont pas installés faites ceci:
+      </para>
+      <para>
+	<screen>pear install DB Net_IPv4</screen>
+      </para>
+    </sect2>
+    <sect2>
+      <title>L'installeur MasterShaper</title>
+      <para>
+	Ouvrez un navigateur web à l'adresse suivante: <ulink url="http://server/shaper/">http://server/shaper/</ulink>. Cela va automatiquement vous transférer vers la page de l'installeur MasterShaper. Il vous suffit d'adapter la configuration et de suivre les étapes pas à pas. En cas de problème l'installeur devrait vous dire comment le résoudre.
+      </para>
+      </sect2>
+    <sect2>
+      <title>Prepare IMQ</title>
+      <para>
+	Si vous utilisez <emphasis role="bold">IMQ </emphasis> vous avez besoin de quelques règles <emphasis role="bold">iptables</emphasis> supplémentaire, pour orienter le traffic vers les interfaces <emphasis role="bold">IMQ</emphasis>. Dans l'exemple ci-dessous, EXT_DEV défini l'interface sur laquelle vous voulez faire du controle de flux.
+      </para>
+      <para>
+<screen>
+ip link set imq0 up
+ip link set imq1 up
+
+iptables -t mangle -I PREROUTING -i ${EXT_DEV} -j IMQ --todev 0
+iptables -t mangle -I POSTROUTING -o ${EXT_DEV} -j IMQ --todev 1</screen>
+      </para>
+      <para>
+	Ces règles ne sont pas mises en place par Mastershaper. Donc soyez bien sur qu'elles sont présentes lorsque vous démarrer le control de flux.
+      </para>
+    </sect2>
+    <sect2>
+      <title>Configuration de sudo</title>
+      <para>
+	La pluspart des serveurx web ne tournent pas sous l'utilisateur <emphasis role="bold">root</emphasis>, et donc n'ont pas la permission de "disctuer avec le kernel et de charger des règles via <emphasis role="bold">tc</emphasis> ou <emphasis role="bold">iptables</emphasis>.
+	Pour activer ses régles Mastershaper utilise le script <emphasis role="bold">shaper_loader.sh</emphasis>, un script shell, qui permet de gérer les règles <emphasis role="bold">tc</emphasis> et <emphasis role="bold">iptables</emphasis>. Nous avons besoin de lancer ce script en mode super-utilisateur, pour cela il suffit de modifier le fichier de configuration <emphasis role="bold">/etc/sudoers</emphasis> comme ci-dessous:
+	</para>
+	<para>
+	  <screen>
+USER	ALL= NOPASSWD: PATH/shaper_loader.sh</screen>
+	</para>
+	<para>
+	"USER" doit etre l'utilisateur sous lequel tourne le serveur Web (www-data, apache, ...) et "PATH" et le chemin complet vers Mastershaper. La pluspart des erreurs reportées sont dus a une mauvaise configuration de <emphasis role="bold">sudo</emphasis>. Pour tester votre configuration:
+      </para>
+      <para>
+	<screen>sudo ./shaper_loader.sh cleanup</screen>
+      </para>
+    </sect2>
+  </sect1>
+  <sect1>
+      <title>Sécurité</title>
+    <para>
+      Les paramètres de la connexion à la base de donnée sont stockés dans le fichier de configuration <emphasis role="bold">config.dat</emphasis>, dans le répertoire de Mastershaper (ex. <emphasis role="bold">/var/www/shaper/config.dat</emphasis>). 
+    </para>
+    <para>
+    Ce fichier est critique, car il contient le mot de passe d'accés à votre base de donnée <emphasis role="bold">db_shaper</emphasis> en clair. L'accès de ce fichier doit donc etre interdit !
+    </para>
+    <para>
+      L'installation de Mastershaper inclu auss un fichier <emphasis role="bold">.htaccess</emphasis> dans le répertoire <emphasis role="bold">htdocs</emphasis> qui limite l'accès au fichier <emphasis role="bold">config.dat</emphasis>. Il faut impérativement vérifié que ce fichier est présent, et si votre serveur web est configuré pour supporter les <emphasis role="bold">.htaccess</emphasis>. SI ce n'est pas le cas regardez dans la docutmentation de vstre serveur web pour restreindre l'accès à certains fichiers (pour le servuer web apache, cela est possible avec la directive FILE).
+    </para>
+    <para>Soyez sur que vous ne pouvez pas télécharger ce fichier:
+    <ulink url="http://server/shaper/config.dat">http://server/shaper/config.dat</ulink>
+    </para>
+    <para>
+      A chque fin d'installation de MAstershaper via l'interface web, l'accès est limité au seul fichier <emphasis role="bold">index.php</emphasis>. Si une message d'erreur apparait, c'est que Mastershaper ne peut pas changer les permissions sur les fichiers, il vous faut donc vérifier que l'installeur Mastershaper n'est pas disponible publiquement, car il pourrait dévoiulé des mots de passe non chiffrés !
+    </para>
+  </sect1>
+  <sect1>
+    <title>Collecte de Statistique via le script tc_collector.pl</title>
+    <para>
+      <emphasis role="bold">tc_collector.pl</emphasis> est un script perl qui collecte les statistiques du traffic via l'outil <emphasis role="bold">tc</emphasis>.
+      Il n'y a pas de méchanisme simple pour récupérer sur l, il collecte donc la somme totale des bytes transférés durant les 10 dernieres secondes, et calcul alors une moyenne en Kilobits/seconde pour chque valeurs.
+      Cause there is no usable mechanism to get the current pipes distributions, it collects the total amount of bytes transferred within 10 seconds intervals and calculate a kilobits per second average from these values.
+    </para>
+    <para>
+      Lancez le script <emphasis role="bold">tc_collector</emphasis> par cette commande:
+      Run the tc_collector by calling:
+    </para>
+    <para>
+      <screen>./tc_collector.pl</screen>
+    </para>
+    <para>
+      It will start collecting transfer rates from the tc binary and record them into MySQL database. It will get it's configuration also from config.dat - no adaptation to the Perl is needed.
+      If you call it with
+    </para>
+    <para>
+      <screen>tc_collector.pl -d</screen>
+    </para>
+    <para>
+      it will fork into background and run daemonized.
+      If you are expecting troubles with tc_collector.pl call the script with the parameter "-v3" and check what it's currently collecting.
+      Without tc_collector.pl you will get no monitoring statistics and the graphs in the web interface will not work!
+    </para>
+  </sect1>
+  </chapter>
+  <!-- Keep this comment at the end of the file
+  Local Variables:
+mode: xml
+sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+End:
+-->

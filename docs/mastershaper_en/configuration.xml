@@ -1,0 +1,202 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+  <chapter id="configuration" lang="en">
+    <title>Configuration</title>
+    <sect1>
+      <title>Introduction</title>
+      <para>
+	Mostly all options are plenty documented within the web interface. So this document only include short summaries.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Settings</title>
+      <sect2>
+	<title>Options</title>
+	<figure><title>Options view</title><graphic format="PNG" fileref="images/mastershaper_options.png"/></figure>
+	<para>
+	  In this view you configure:
+	</para>
+	<sect3>
+	  <title>Bandwidth</title>
+	  <para>
+	    This bandwidth is essential for the init class and should be as high as the maximum speed of the specified interfaces (Ethernet, DSL, ...).
+	  </para>
+	</sect3>
+	<sect3>
+	  <title>Interfaces</title>
+	  <para>
+	    Also you need to specify the incoming and outgoing interfaces on which the shaping will happen. Either configured as router or bridge you enter here the physical interfaces of your shaping device. If you are using IMQ you have to tell MasterShaper via the IMQ-Option.
+	  </para>
+	</sect3>
+	<sect3>
+	  <title>MS Options</title>
+	  <para>
+	    Further more you can define a special preferred handling of ACK packets and other small packets. You have to create a service level first to handle this packets.
+	  </para>
+	  <para>
+	    Configure a Classifier and Queueing Discipline that fit your needing. More informations about queuing disciplines can be found in the chapter <xref linkend="classqueue"/>.
+	  </para>
+	  <para>
+	    Choose between tc-filter and or iptables-matching. tc-filter is included in the iproute2 package and is very fast. iptables on the other side is widely used, many additional modules (ipp2p, layer-7, ...) are available and is very stable. iptables consumes a bit more additional cpu and memory for matching packets. If you don't need the features of iptables simple rely on tc-filter.
+	  </para>
+	  <para>
+	    You have to tell MasterShaper if it is running on a router or bridge. This setting is very important if you are using iptables-matching because MasterShaper has to adept the iptables rules in bridge mode to match the physically interfaces (physdev) of a bridge.
+	  </para>
+	  <para>
+	    New since V0.40 is an integrated User-Management. To use this feature you have to activate the authentication mechanism. It's now possible to gain users access to selective functions of MasterShaper. It's possible now to create only a user which has access to the monitoring graphs but can not change any settings. In the next versions a finer granulation of permissions will be implemented, so users can have the permissions to change pipes and filters settings within their own chains.
+	  </para>
+	</sect3>
+      </sect2>
+      <sect2>
+	<title>Users</title>
+	<figure><title>Users view</title><graphic format="PNG" fileref="images/mastershaper_users.png"/></figure>
+	<para>
+	  If you have a fresh MasterShaper installation the initial user is "admin" and password "changeme".
+	</para>
+	<para>
+	  If you have upgraded from a previous version and activated the authentication before created a new user, you will be locked out of MasterShaper because there is no user available to login. In this case delete the option "authentication" from the MySQL table shaper_settings via SQL commands or via some GUI's (phpMyAdmin, <ulink url="http://www.phpmyadmin.net">http://www.phpmyadmin.net</ulink>).
+	</para>
+      </sect2>
+      <sect2>
+	<title>Targets</title>
+	<figure><title>Targets view</title><graphic format="PNG" fileref="images/mastershaper_targets.png"/></figure>
+	<para>
+	  If you want to shape traffic for specific IP addresses or MAC addresses, you define them here. These definitions will then be used in the chains setup. Several target-definitions can be grouped together to a target-group for easier usage in chains.
+	</para>
+	<para>
+	  If you have a dynamic external IP address, you don't need to specify anything here and use "any ó any" in the chain setup.
+	</para>
+      </sect2>
+    </sect1>
+
+    <sect1>
+      <title>Manage</title>
+      <sect2>
+	<title>Service Levels</title>
+	<figure><title>Service levels view</title><graphic format="PNG" fileref="images/mastershaper_service_levels.png"/></figure>
+	<para>
+	  Here you specify service levels. Service Levels are used in Chains, Pipes and in Options-View. Each service level has a Classifier and a Queuing Discipline (Classifiers and Queuing Disciplines).
+	</para>
+      </sect2>
+      <sect2>
+	<title>Filters</title>
+	<figure><title>Filters view</title><graphic format="PNG" fileref="images/mastershaper_filters.png"/></figure>
+	<para>
+	  In this view you manage your filter definitions. Filters are traffic match mechanisms which classifies your traffic so it get divided up into the correct pipes.
+	</para>
+	<para>
+	  Which sort of filters you create here is dependent on the "<emphasis role="bold">Traffic filter</emphasis>" option.
+	  </para>
+	</sect2>
+	<sect2>
+	  <title>Chains</title>
+	<figure><title>Chains view</title><graphic format="PNG" fileref="images/mastershaper_manage_chains.png"/></figure>
+	  <para>
+      Here you manage your chain rulesets. Chains are necessary to match the traffic against targets. If the target definition match your network traffic, the network flow will be redirected into this chain so it can be matched by the following pipe definitions.
+	</para>
+	<para>
+	  A chain needs to get defined a total amount of bandwidth and a fall-back service level. Any traffic which comes into this chain and don't get matched by any pipe definitions will fall into the fall-back service level.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Pipes</title>
+	<figure><title>Pipes view</title><graphic format="PNG" fileref="images/mastershaper_pipes.png"/></figure>
+	<para>
+	  Pipes are assigned to chains and match filter-definitions against the network traffic which virtually flows through this chains. Pipes also manage how much bandwidth a service (matched by filters) can really consume.
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>Monitoring</title>
+      <figure><title>Monitoring view</title><graphic format="PNG" fileref="images/mastershaper_monitoring.png"/></figure>
+      <sect2>
+	<title>Chains, Pipes and Bandwidth</title>
+	<para>
+	  If Mastershaper's rules are loaded correctly and tc_collector.pl is active MasterShaper will draw fancy graphs:
+	</para>
+	<para>
+	  <emphasis role="bold">Chains</emphasis>: this view will show you the current bandwidth distribution between chains.
+	</para>
+	<para>
+	  <emphasis role="bold">Pipes</emphasis>: this view will show you the current bandwidth distribution of pipes. Also available is a dropdown box where you can switch between chains.
+	</para>
+	<para>
+	  <emphasis role="bold">Bandwidth</emphasis>: this view will present the total inbound and outbound bandwidth.
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+	<title>Overview</title>
+      <figure><title>Overview</title><graphic format="PNG" fileref="images/mastershaper_overview.png"/></figure>
+	<para>
+	These view presents a good overview through your ruleset.
+      </para>
+      <para>
+	Disabled chain, pipes or filter definitions are not shown up here.
+	Don't forget - the first matching chain will get the traffic.
+      </para>
+      <para>
+	You can change the chain- and pipe-positions with the purple and turquoise arrows.
+      </para>
+    </sect1>
+    <sect1>
+      <title>Rules</title>
+      <sect2>
+	<title>Load</title>
+	<figure><title>Load view</title><graphic format="PNG" fileref="images/mastershaper_load.png"/></figure>
+	<para>
+	  This will make a bulk load of all MasterShaper rules. After every configuration change the rules have to be reloaded. From the technical view MasterShaper will first unload all rules and then load the new configuration.
+	</para>
+	<para>
+	  If you see a green check - everything is OK and rules are enabled. If you see a red X and some error messages then try to load the ruleset by Rules " Load (debug).
+	</para>
+      </sect2>
+      <sect2>
+	<title>Load (debug)</title>
+	<figure><title>Load view</title><graphic format="PNG" fileref="images/mastershaper_load_debug.png"/></figure>
+	<para>
+	  This will load the ruleset rule by rule and return every error a rule makes.
+	</para>
+      </sect2>
+      <sect2>
+	<title>Show</title>
+	<para>
+	  Show will displays you every command which would get loaded when enabling MasterShaper. This includes tc commands as well iptables commands (if iptables-matching is used).
+	</para>
+      </sect2>
+      <sect2>
+	<title>Unload</title>
+	<para>
+	  This will disable MasterShaper's shaping functionality (if loaded).
+	</para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>shaper_loader.sh</title>
+      <para>
+	With MasterShaper V0.31 a new rules-loader script was introduced. This was necessary because a script has to be able to totally clean-up any residues from MasterShaper iptables rules. This is done by the shaper_loader.sh script now.
+      </para>
+      <para>
+	Also it loads the tc- and iptables-ruleset so this is the only script now which needs root privileges (sudo). This will also speedup activating iptables ruleset because sudo hasn't to be accessed for every rule.
+      </para>
+      <para>
+	<emphasis role="bold">Follow the installation procedures!</emphasis>
+      </para>
+    </sect1>
+    <sect1>
+      <title>Tools</title>
+      <sect2>
+	<title>Runlevel-Init-Script</title>
+	<para>
+	  If you extract the MasterShaper install archive (tar.bz2), you will find a file called mastershaper.init in the tools-directory.
+	  It's a first version of a runlevel init script. If you want to be able, that the shaper settings will be immediate loaded after a reboot you can use this file in the runlevel scripts.
+	  You can also use this file as an ip-up script for the pppd daemon. You have the adept the MasterShaper path with the variable PATH_TO_MS in the script. This script has to be called with root privileges.
+	</para>
+      </sect2>
+    </sect1>
+  </chapter>
+  <!-- Keep this comment at the end of the file
+  Local Variables:
+  mode: xml
+  sgml-parent-document: ("./mastershaper.xml" "legalnotice")
+  End:
+  -->

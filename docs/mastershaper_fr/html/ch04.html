@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" /><title>Chapitre 4. Configuration</title><link rel="stylesheet" href="styleguibo.css" type="text/css" /><meta name="generator" content="DocBook XSL Stylesheets V1.69.1" /><link rel="start" href="index.html" title="Documentation MasterShaper 0.4x" /><link rel="up" href="index.html" title="Documentation MasterShaper 0.4x" /><link rel="prev" href="ch03.html" title="Chapitre 3. Installation" /><link rel="next" href="ch05.html" title="Chapter 5. License" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapitre 4. Configuration</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03.html">Précédent</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch05.html">Suivant</a></td></tr></table><hr /></div><div class="chapter" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title"><a id="configuration"></a>Chapitre 4. Configuration</h2></div></div></div><div class="toc"><p><b>Table des matières</b></p><dl><dt><span class="sect1"><a href="ch04.html#id2526470">4.1. Paramètres</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch04.html#id2526476">4.1.1. Options</a></span></dt><dt><span class="sect2"><a href="ch04.html#id2526486">4.1.2. Utilisateurs (users)</a></span></dt><dt><span class="sect2"><a href="ch04.html#id2526496">4.1.3. Cible (target)</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch04.html#id2528007">4.2. Manage</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch04.html#id2528012">4.2.1. Niveau de service</a></span></dt><dt><span class="sect2"><a href="ch04.html#id2528026">4.2.2. Filtre</a></span></dt><dt><span class="sect2"><a href="ch04.html#id2528040">4.2.3. Chaine (chains)</a></span></dt><dt><span class="sect2"><a href="ch04.html#id2528058">4.2.4. Tunnel (pipes)</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch04.html#id2528073">4.3. Monitoring</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch04.html#id2528079">4.3.1. Chains, Pipes and Bandwidth</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch04.html#id2528097">4.4. Overview</a></span></dt><dt><span class="sect1"><a href="ch04.html#id2528112">4.5. Rules</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch04.html#id2528118">4.5.1. Load</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch04.html#id2528142">4.6. shaper_loader.sh</a></span></dt><dt><span class="sect1"><a href="ch04.html#id2528160">4.7. Outils</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch04.html#id2528166">4.7.1. Runlevel-Init-Script</a></span></dt></dl></dd><dt><span class="sect1"><a href="ch04.html#id2528186">4.8. Shaping Examples</a></span></dt><dd><dl><dt><span class="sect2"><a href="ch04.html#id2528192">4.8.1. Shaping on a Web-Server</a></span></dt><dd><dl><dt><span class="sect3"><a href="ch04.html#id2528197">4.8.1.1. Guidelines</a></span></dt><dt><span class="sect3"><a href="ch04.html#id2528217">4.8.1.2. Implementation</a></span></dt></dl></dd><dt><span class="sect2"><a href="ch04.html#id2528265">4.8.2. Shaping on a gateway</a></span></dt><dd><dl><dt><span class="sect3"><a href="ch04.html#id2528271">4.8.2.1. Guidelines</a></span></dt><dt><span class="sect3"><a href="ch04.html#id2528291">4.8.2.2. Implementation</a></span></dt></dl></dd><dt><span class="sect2"><a href="ch04.html#id2528378">4.8.3. Shaping per department</a></span></dt><dd><dl><dt><span class="sect3"><a href="ch04.html#id2528384">4.8.3.1. Guidelines</a></span></dt><dt><span class="sect3"><a href="ch04.html#id2528408">4.8.3.2. Implementation</a></span></dt></dl></dd></dl></dd></dl></div><p>
+      La plus part des options sont documentés dans l'interface d'adminstration. Ce document n'est donc qu'une aide sommaire.
+    </p><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2526470"></a>4.1. Paramètres</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526476"></a>4.1.1. Options</h3></div></div></div><p>
+In this view you configure:
+
+Bandwidth
+
+This bandwidth is essential for the init class and should be as high as the maximum speed of the specified interfaces (Ethernet, DSL, ...).
+
+Interfaces
+
+Also you need to specify the incoming and outgoing interfaces on which the shaping will happen. Either configured as router or bridge you enter here the physical interfaces of your shaping device. If you are using IMQ you have to tell MasterShaper via the IMQ-Option.
+
+MS Options
+
+Further more you can define a special preferred handling of ACK packets and other small packets. You have to create a service level first to handle this packets.
+
+Configure a Classifier et Queueing Discipline that fit your needing. More informations about queuing disciplines can be found in the chapter 1.4.Classifiers et Queuing Disciplines
+
+Choose between tc-filter et or iptables-matching. tc-filter is included in the iproute2 package and is very fast. iptables on the other side is widely used, many additional modules (ipp2p, layer-7, ...) are available and is very stable. iptables consumes a bit more additional cpu et memory for matching packets. If you don't need the features of iptables simple rely on tc-filter. 
+
+You have to tell MasterShaper if it is running on a router or bridge. This setting is very important if you are using iptables-matching because MasterShaper has to adept the iptables rules in bridge mode to match the physically interfaces (physdev) of a bridge.
+
+New since V0.40 is an integrated User-Management. To use this feature you have to activate the authentication mechanism. It's now possible to gain users access to selective functions of MasterShaper. It's possible now to create only a user which has access to the monitoring graphs but can not change any settings. In the next versions a finer granulation of permissions will be implemented, so users can have the permissions to change pipes et filters settings within their own chains.
+	</p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526486"></a>4.1.2. Utilisateurs (users)</h3></div></div></div><p>
+	  If you have a fresh MasterShaper installation the initial user is "admin" and password "changeme".
+
+If you have upgraded from a previous version and activated the authentication before created a new user, you will be locked out of MasterShaper because there is no user available to login. In this case delete the option "authentication" from the MySQL table shaper_settings via SQL commands or via some GUI's (phpMyAdmin, http://www.phpmyadmin.net).
+	</p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2526496"></a>4.1.3. Cible (target)</h3></div></div></div><p>
+	  If you want to shape traffic for specific IP addresses or MAC addresses, you define them here. These definitions will then be used in the chains setup. Several target-definitions can be grouped together to a target-group for easier usage in chains.
+	  If you have a dynamic external IP address, you don't need to specify anything here and use "any ó any" in the chain setup.
+	</p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528007"></a>4.2. Manage</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528012"></a>4.2.1. Niveau de service</h3></div></div></div><p>
+	    Here you specify service levels. Service Levels are used in Chains, Pipes and in Options-View. Each service level has a Classifier and a Queuing Discipline (Classifiers et Queuing Disciplines).
+	    </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528026"></a>4.2.2. Filtre</h3></div></div></div><p>
+In this view you manage your filter definitions. Filters are traffic match mechanisms which classifies your traffic so it get divided up into the correct pipes. 
+
+Which sort of filters you create here is dependent on the "Traffic filter" option.
+	  </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528040"></a>4.2.3. Chaine (chains)</h3></div></div></div><p>
+	    Here you manage your chain rulesets. Chains are necessary to match the traffic against targets. If the target definition match your network traffic, the network flow will be redirected into this chain so it can be matched by the following pipe definitions.
+	    A chain needs to get defined a total amount of bandwidth and a fall-back service level. Any traffic which comes into this chain and don't get matched by any pipe definitions will fall into the fall-back service level.
+	  </p></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528058"></a>4.2.4. Tunnel (pipes)</h3></div></div></div><p>
+	    Pipes are assigned to chains and match filter-definitions against the network traffic which virtually flows through this chains. Pipes also manage how much bandwidth a service (matched by filters) can really consume.
+	  </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528073"></a>4.3. Monitoring</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528079"></a>4.3.1. Chains, Pipes and Bandwidth</h3></div></div></div><p>
+	  If Mastershaper's rules are loaded correctly and tc_collector.pl is active MasterShaper will draw fancy graphs:
+Chains
+This view will show you the current bandwidth distribution between chains.
+Pipes 
+This view will show you the current bandwidth distribution of pipes. Also available is a dropdown box where you can switch between chains.
+Bandwidth
+This view will present the total inbound and outbound bandwidth.
+	  </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528097"></a>4.4. Overview</h2></div></div></div><p>
+	  These view presents a good overview through your ruleset. 
+Disabled chain, pipes or filter definitions are not shown up here.
+Don't forget - the first matching chain will get the traffic. 
+
+You can change the chain- et pipe-positions with the purple and turquoise arrows.
+	</p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528112"></a>4.5. Rules</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528118"></a>4.5.1. Load</h3></div></div></div><p>
+This will make a bulk load of all MasterShaper rules. After every configuration change the rules have to be reloaded. From the technical view MasterShaper will first unload all rules and then load the new configuration.
+
+
+If you see a green check - everything is OK and rules are enabled. If you see a red X and some error messages then try to load the ruleset by Rules " Load (debug).
+ 2.4.5.2 Load (debug)
+
+This will load the ruleset rule by rule and return every error a rule makes.
+
+ 2.4.5.3 Show
+
+Show will displays you every command which would get loaded when enabling MasterShaper. This includes tc commands as well iptables commands (if iptables-matching is used).
+
+ 2.4.5.4 Unload
+
+This will disable MasterShaper's shaping functionality (if loaded).
+	  </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528142"></a>4.6. shaper_loader.sh</h2></div></div></div><p>
+	  With MasterShaper V0.31 a new rules-loader script was introduced. This was necessary because a script has to be able to totally clean-up any residues from MasterShaper iptables rules. This is done by the shaper_loader.sh script now. 
+	  
+	  Also it loads the tc- and iptables-ruleset so this is the only script now which needs root privileges (sudo). This will also speedup activating iptables ruleset because sudo hasn't to be accessed for every rule.
+
+	  Follow the installation procedures!
+	</p></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528160"></a>4.7. Outils</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528166"></a>4.7.1. Runlevel-Init-Script</h3></div></div></div><p>
+	    If you extract the MasterShaper install archive (tar.bz2), you will find a file called mastershaper.init in the tools-directory.
+	    It's a first version of a runlevel init script. If you want to be able, that the shaper settings will be immediate loaded after a reboot you can use this file in the runlevel scripts.
+	    You can also use this file as an ip-up script for the pppd daemon. You have the adept the MasterShaper path with the variable PATH_TO_MS in the script. This script has to be called with root privileges.
+	  </p></div></div><div class="sect1" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="id2528186"></a>4.8. Shaping Examples</h2></div></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528192"></a>4.8.1. Shaping on a Web-Server</h3></div></div></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528197"></a>4.8.1.1. Guidelines</h4></div></div></div><p>
+	      A standard LAMP-Web-Server (Linux, Apache, MySQL, PHP) with an FTP-Server.
+	      Connected trough DSL (PPPOE) on Ethernet with a synchronous 2Mbit/s link. IP 1.1.1.1.
+	      64kbit/s should always be guaranteed to SSH (TCP/22) but can use the whole bandwidth if available. It should have a high priority.
+	      HTTP should have a fixed rated at 1024kbit/s but can use the whole bandwidth if available.
+	      FTP should have 512kbit/s available but can use the whole bandwidth if available.
+	      All other traffic become 256kbit/s and can't use more then 768kbit/s.
+	    </p></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528217"></a>4.8.1.2. Implementation</h4></div></div></div><p>
+	      1.Go to Settings"Options and define the inbound and outbound bandwidth. Specify HTB as Queuing Discipline. Select iptables as Traffic Filter.
+	      2.Create a service level with a input et output rate definition which is equal the maximum bandwidth (2048/2048/kbit/s). 
+	      3.Create a service level which has a rate of 64kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to high.
+	      4.Create a service level which has a rate of 1024kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to normal.
+	      5.Create a service level which has a rate of 512kbit/s and enter 2048kbit/s as ceil parameter. Set the priority to normal.
+	      6.Create a service level which has a rate of 256kbit/s and enter 768kbit/s as ceil parameter. Set the priority to low.
+	      7.Take a look on the ports-listing if you can find "http",  "https", "ftp", "ftp-data" and "ssh". If not available, create new port definitions for these filters.
+	      8.Create a target for the address 1.1.1.1.
+	      9.Create a filter "Web-Traffic". Select protocol TCP, assign the ports "http" et "https". 
+	      10.Create a filter "FTP-Traffic". Select protocol TCP, assign the ports "ftp" et "ftp-data". Select "Match FTP data channel".
+	      11.Create a filter "SSH-Traffic". Select protocol TCP, assign the port "ssh". 
+	      12.Create a new chain. The service level for this chain is the 2048kbit/s level. For fall-back use the service level with the rate of 256kbit/s. On "Affecting" choose as source "any", as target 1.1.1.1 and select both directions.
+	      13.Create a pipe. Choose the created chain, select the filter "Web-Traffic", the service level with the rate of 1024kbit/s and choose both directions.
+	      14.Create a pipe. Choose the created chain, select the filter "FTP-Traffic", the service level with the rate of 512kbit/s and choose both directions.
+	      15.Create a pipe. Choose the created chain, select the filter "SSH-Traffic", the service level with the rate of 64kbit/s and choose both directions.
+	      16.Click "Overview" and take a look on your MasterShaper configuration.
+	      17.Select Rules" Load and activate your new ruleset.
+	      </p></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528265"></a>4.8.2. Shaping on a gateway</h3></div></div></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528271"></a>4.8.2.1. Guidelines</h4></div></div></div><p>
+	      A standard Linux-based Internet router with a mail server and pop3/imap access.
+	      Connected trough Ethernet with a synchronous 2Mbit/s link. IP 1.1.1.1.
+	      For remote control of the clients (rdp, vnc, radmin) and SSH (TCP/22) 128kbit/s should always be guaranteed. It should have a high priority.
+	      Mailing (SMTP, POP3, IMAP) should not block the whole bandwidth. Guaranteed 256kbit/s. A Maximum of 1024kbit/s. Lowest Priority
+	      HTTP et FTP should have 512kbit/s available but can use the whole bandwidth if available.
+	      All other traffic become 256kbit/s and can't use more then 768kbit/s.
+	    </p></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528291"></a>4.8.2.2. Implementation</h4></div></div></div><p>
+	      1.Go to Settings"Options and define the inbound and outbound bandwidth. Specify HTB as Queuing Discipline.
+	      2.Create a service level with a input et output rate definition which is equal the maximum bandwidth (2048/2048/kbit/s). 
+	      3.Create a service level which has a rate of 128kbit/s and enter 2048kbit/s as ceil parameter - for both directions. Set the priority to high.
+	      4.Create a service level which has a rate of 256kbit/s and enter 1024kbit/s as ceil parameter - for both directions. Set the priority to low.
+	      5.Create a service level which has a rate of 512kbit/s and enter 2048kbit/s as ceil parameter - for both directions. Set the priority to normal.
+	      6.Create a service level which has a rate of 256kbit/s and enter 768kbit/s as ceil parameter - for both directions. Set the priority to lowest.
+	      7.Take a look on the ports - listing if you can find "http",  "https", "ftp", "ftp-data", "ssh", "rdp", "vnc", "radmin". If not available, create new port definitions for this filters.
+	      8.Create a target for the address 1.1.1.1.
+	      9.Create a filter "Web-Traffic". Select protocol TCP, assign the ports "http", "https" and "ftp".
+	      10.Create a filter "Mail-Traffic". Select protocol TCP, assign the ports "smtp", "pop3" and "imap".
+	      11.Create a filter "Remote-Control". Select protocol TCP, assign the port "ssh", "rdp", "vnc" and "radmin".
+12.Create a new chain. The service level for this chain is the 2048kbit/s level. For fall-back use the service level with the rate of 256kbit/s and lowest priority. On "Affecting" choose as source "any", as target 1.1.1.1 and select both directions.
+	      13.Create a pipe. Choose the created chain, select the filter "Web-Traffic", the service level with the rate of 512kbit/s and choose both directions.
+	      14.Create a pipe. Choose the created chain, select the filter "Mail-Traffic", the service level with the rate of 1024kbit/s and choose both directions.
+15.Create a pipe. Choose the created chain, select the filter "Remote Control", the service level with the rate of 128kbit/s and choose both directions.
+	      16.Click "Overview" and take a look on your MasterShaper configuration.
+	      17.Select Rules"Reload now and activate your new ruleset.
+	      </p></div></div><div class="sect2" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h3 class="title"><a id="id2528378"></a>4.8.3. Shaping per department</h3></div></div></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528384"></a>4.8.3.1. Guidelines</h4></div></div></div><p>
+	      A standard Linux-based internet router which manage the internet access of 4 departments.
+	      The router uses IMQ in BB mode on the external interface, so you see LAN addresses on the outgoing IMQ device before NAT.
+	      Connected trough Ethernet with a synchronous 2Mbit/s link. IP 1.1.1.1.
+	      The internal networks of the departments are 172.16.1.0/26, 172.16.1.64/26, 172.16.1.128/26, 172.16.1.196/26.
+	      Each department has guaranteed 512kbit/s but can lend unused bandwidth from other departments.
+	      Departments are using VoIP from a SIP-Provider and so connecting to a SIP-server. Low Latency has to be guaranteed for this service.
+	      HTTP et FTP should have 128kbit/s and maximal use 256 of the bandwidth. Priority low.
+	      All other traffic become 64kbit/s and can't use more then 196kbit/s.
+	    </p></div><div class="sect3" lang="fr" xml:lang="fr"><div class="titlepage"><div><div><h4 class="title"><a id="id2528408"></a>4.8.3.2. Implementation</h4></div></div></div><p>
+	      1.Go to Settings"Options and define the inbound and outbound bandwidth. Specify HFSC as Queuing Discipline.
+	      2.Create 4 targets - each one with the assigned subnets of the departments.
+	      3.Create a service level which has a rate of 512kbit/s and enter 2048kbit/s as max parameter
+	      4.Create a service level which has a rate of 256kbit/s and enter 100ms for max delay.
+	      5.Create a service level which has a rate of 128kbit/s and enter 256kbit/s as max parameter.
+	      6.Create a service level which has a rate of 64kbit/s and enter 196kbit/s as max parameter.
+	      7.Take a look at the ports - listing if you can find "http",  "https", "ftp", "ftp-data". Check out, on which port-range you connect to the SIP-Provider and create a port definition for this.
+	      8.Create a filter "VoIP-Traffic". Select protocol UDP, assign the ports "voip".
+	      9.Create a filter "Web-Traffic". Select protocol TCP, assign the ports "http", "https", "ftp" and "ftp-data".
+	      10.Create 4 new chains. The service level for this chains is the 512kbit/s level. For fall-back use the service level with the rate of 64kbit/s. On "Affecting" choose as source "any" and as target on of your defined department targets and select both directions.
+	      11.Create 4 pipes. Choose the created department chains, select the filter "VoIP-Traffic", the service level with the rate of 256kbit/s and choose both directions.
+	      12.Create 4 pipes. Choose the created department chains, select the filter "Web-Traffic", the service level with the rate of 128kbit/s and choose both directions.
+	      13.Click "Overview" and take a look on your MasterShaper configuration.
+	      14.Select Rules"Reload now and activate your new ruleset.
+	    </p></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03.html">Précédent</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch05.html">Suivant</a></td></tr><tr><td width="40%" align="left" valign="top">Chapitre 3. Installation </td><td width="20%" align="center"><a accesskey="h" href="index.html">Sommaire</a></td><td width="40%" align="right" valign="top"> Chapter 5. License</td></tr></table></div></body></html>

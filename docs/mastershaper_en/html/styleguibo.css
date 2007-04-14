@@ -1,0 +1,296 @@
+/* Documentation specific changes */
+
+span.guilabel {
+	padding: 0px, 1px, 0px, 1px;
+	margin: 1px;
+	background: #e6e6e6;
+	border-style: none;
+}
+
+span.guimenu, span.guimenuitem, .guibutton {
+	padding: 0px, 1px, 0px, 1px;
+	margin: 1px;
+	border-top: 1px solid #eeeeee;
+	border-right: 2px solid #cccccc;
+	border-bottom: 2px solid #cccccc;
+	border-left: 1px solid #eeeeee;
+	background: #f5f5f5;
+}
+
+span.accel {
+  text-decoration: underline;
+}
+
+pre.screen { background-color: #E0E0E0; }
+pre.programlisting { background-color: #E0E0E0; }
+
+/* Colours borrowed from Firefox's keyboard shortcuts table */
+.keycap, .keysym {
+	padding: 0px, 1px, 0px, 1px;
+	margin: 1px;
+	border-top: 1px solid #eedddd;
+	border-right: 2px solid #bbaaaa;
+	border-bottom: 2px solid #bbaaaa;
+	border-left: 1px solid #eeeedd;
+	background: #faf6f6;
+	font-family: Courier, monospaced, mono;
+}
+
+
+/* Mandrakesoft.com website default */
+
+BODY {
+  background-color: #ffffff;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333333;
+}
+
+.plinks {
+  background-color: #ffffff;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #333333;
+}
+
+TD {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  color: #333333;
+}
+
+FORM {
+  display: inline;
+}
+
+A:link {
+  text-decoration: none;
+  color: #21449c;
+}
+
+A:visited {
+  text-decoration: none;
+  color: #21449c;
+}
+
+A:hover {
+  text-decoration: underline;
+  color: #21449c;
+}
+
+A:active {
+  text-decoration: underline;
+  color: #21449c;
+}
+
+INPUT, SELECT {
+  font-size: 15px;
+}
+
+A.News {
+  font-size: 13px;
+  color: #333333;
+}
+
+h1 {
+  font-family: Arial, sans-serif;
+  font-size: 23px;
+  font-weight: bold;
+  color: #000000;
+}
+
+h2 {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #21449c;
+  display: inline;
+}
+
+h3 {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: italic;
+  color: #11649b;
+  padding: 25px;
+  display: inline;
+}
+
+h4 {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  padding: 45px;
+  display: inline;
+}
+
+h3.div {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  padding: 45px;
+  display: inline;
+}
+
+
+#MainTable {
+  width: 900px;
+}
+
+
+#ContentTable {
+  width: 719px;
+}
+
+.SelectedLinks {
+  color: #333333;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 3px;
+  background-color: #eeeeee;
+}
+
+
+.Footer {
+  font-size: 14px;
+  padding: 3px;
+  background-color: #eeeeee;
+}
+
+
+.BoxTitle  {
+  font-size: 15px;
+  color: #333333;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  font-weight: bold;
+}
+
+.BoxContent {
+  font-size: 13px;
+  color: #333333;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.SelectList {
+  background-color: #ffffff;
+  color: #333333;
+  border-style: none;
+}
+
+.InputText {
+  font-size: 15px;
+  border-style: solid;
+  background-color: #ffffff;
+  border-color: #cccccc;
+}
+
+A.FocusTitle {
+  color: #999999;
+  font-weight: bold;
+  font-size: 15px;
+  font-decoration: none;
+}
+
+.HomeLink, A.HomeLink {
+  color: #21449c;
+  font-size: 15px;
+}
+
+.HomeNewsDate {
+  color: #21449c;
+  font-size: 13px;
+}
+
+.text { 
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  color : #333333;
+}
+
+.texte { 
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  color : #333333;
+}
+
+.text4form {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  color: #333333;
+}
+
+
+.titre1 {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: bold;
+  color: #21449c;
+}
+
+.titre2 {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: bold;
+  color: #21449c;
+  display: inline;
+}
+
+.titre3 {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: bold;
+  color: #333333;
+}
+
+.textbox {
+  font-family: Arial, sans-serif;
+  text-align: left;
+  font-size: 15px;
+  color: #000000;
+}
+
+.newsdate {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  color: #000000;
+}
+
+.date {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: normal;
+  color: #333333;
+}
+
+.note {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #333366;
+}
+
+.inzedark {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.titrinzedark {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.TitreHome1 {
+	font-family: Arial, sans-serif;
+    	font-size: 21px;
+      	font-weight: bold;
+        color: #acacac;
+	}
+
+.TitreHome2 	{
+		font-family: Arial, sans-serif;
+		font-size: 18px;
+		font-weight: bold;
+		color: #21449c;
+		}
