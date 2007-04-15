@@ -35,6 +35,9 @@ define("IF_NOT_USED", -1);
 define("MS_PRE", 10);
 define("MS_POST", 13);
 
+define("DBG_INFO", 1);
+define("DBG_FULL", 2);
+
 class MSRULESET {
 
    var $db;
@@ -43,9 +46,10 @@ class MSRULESET {
    var $classes;
    var $filters;
    var $interfaces;
+   var $verbosity;
 
-   /* Class */
-   function MSRULESET()
+   /* constructor */
+   function __construct()
    {
       $this->ms      = new MS(VERSION, 1);
       $this->db      = $this->ms->db;
@@ -56,25 +60,15 @@ class MSRULESET {
       $this->classes    = Array();
       $this->filters    = Array();
       $this->interfaces = Array();
+      $this->verbosity  = 0;
 
-   } // MSRULESET()
-
-   /* constructor */
-   function __construct()
-   {
-
-      $shortoptions = "h";
+      $shortoptions = "cdhrsuv:";
       $longoptions = array("help");
 
       $opts = $this->getOptions(null, $shortoptions, $longoptions);
+      $this->check_cmdline_opts($opts);
 
-      if(isset($opts['h'])) {
-
-      }
-
-      print_r($opts);
-
-   }
+   } // __construct()
 
    /* get console options */
    function getOptions($default_opt, $shortoptions, $longoptions)
@@ -108,34 +102,103 @@ class MSRULESET {
 
       return $opts;
 
-   } // __construct()
+   } // getOptions()
 
-   /* This function prepares the rule setup according configuration and calls tc with a batchjob */
-   function enableConfig($state = 0)
+   function check_cmdline_opts($opts)
+   {
+      /* show help */
+      if(isset($opts['h'])) {
+
+   print "tc_collector.pl - MasterShaper tc statistic collector
+(c) Andreas Unterkircher <unki\@netshadow.at>
+http://www.mastershaper.org
+
+./shaper_ruleset.php <options>
+
+ -D  ... fork into background
+ -h  ... this help text
+ -vx ... verbose level (INFO, DEBUG)
+ -c  ... collect statistics only (no ruleset will be reloaded automatically)
+ -r  ... load ruleset and exit
+ -d  ... debug ruleset and exit
+ -u  ... unload ruleset and exit
+
+";
+
+         exit(0);
+      }
+
+      if(isset($opts['D'])) {
+         $this->daemonize();
+      }
+
+      if(isset($opts['v'])) {
+         $this->verbosity = $opts['v'];
+      }
+
+      if(isset($opts['c'])) {
+         $stats_only = 1;
+      }
+
+      if(isset($opts['s'])) {
+         $this->show_ruleset();
+         exit(0);
+      }
+
+      if(isset($opts['r'])) {
+         $this->load_ruleset();
+         exit(0);
+      }
+
+      if(isset($opts['d'])) {
+         $this->load_ruleset(debug);
+         exit(0);
+      }
+
+      if(isset($opts['u'])) {
+         $this->unload_ruleset();
+         exit(0);
+      }
+
+
+   } // check_cmdline_opts()
+
+   function show_ruleset($state = 0)
    {
       $retval = 0;
 
       $this->initRules();
       $this->showIt();
-	   return;
 
+   } // show_ruleset()
+
+   function load_ruleset($debug = 0)
+   {
       /* Load ruleset */
       $this->initRules();
-      $retval = $this->doIt();
-      $this->ms->setOption("reload_timestamp", mktime());
 
-      $this->initRules();
-      $retval = $this->doItLineByLine();
-      if(!$retval)
-      $this->ms->setOption("reload_timestamp", mktime());
+      if(!$debug != 0) 
+         $retval = $this->doIt();
+      else
+         $retval = $this->doItLineByLine();
 
-      $this->delActiveInterfaceQdiscs();
-      $this->delIptablesRules();
-      $this->ms->setShaperStatus(false);
+      $this->ms->setOption("reload_timestamp", mktime());
 
       return $retval;
 
-   } // enableConfig()
+   } // load_ruleset();
+
+   function unload_ruleset()
+   {
+      $this->debug(DBG_INFO, "Unloading ruleset...");
+      $this->delActiveInterfaceQdiscs();
+      $this->delIptablesRules();
+      $this->ms->setShaperStatus(false);
+      $this->debug(DBG_INFO, "finished");
+
+      return $retval;
+
+   } // unload_ruleset()
 
    function iptInitRules()
    {
@@ -194,78 +257,68 @@ class MSRULESET {
 
    function initRules()
    {
-
       /* The most tc_ids will change, so we delete the current known tc_ids */
       $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."tc_ids");
 
       /* Initial iptables rules */
       if($this->ms->getOption("filter") == "ipt") 
-	 $this->iptInitRules();
+         $this->iptInitRules();
 
       $netpaths = $this->getActiveNetpaths(); 
 
       while($netpath = $netpaths->fetchRow()) {
-
          $have_if2 = true;
          $do_nothing = false;
 
-	 if(!isset($this->interfaces[$netpath->netpath_if1])) 
-	    $this->interfaces[$netpath->netpath_if1] = new MSINTERFACE($netpath->netpath_if1, $this->db, $this->ms);
-	 if(!isset($this->interfaces[$netpath->netpath_if2])) 
-	    $this->interfaces[$netpath->netpath_if2] = new MSINTERFACE($netpath->netpath_if2, $this->db, $this->ms);
+         if(!isset($this->interfaces[$netpath->netpath_if1])) 
+            $this->interfaces[$netpath->netpath_if1] = new MSINTERFACE($netpath->netpath_if1, $this->db, $this->ms);
 
          /* get interface 2 parameters (if available) */
-	 if($netpath->netpath_if2 == IF_NOT_USED)
-	    $have_if2 = false;
+         if(!isset($this->interfaces[$netpath->netpath_if2])) 
+            $this->interfaces[$netpath->netpath_if2] = new MSINTERFACE($netpath->netpath_if2, $this->db, $this->ms);
 
-	 /* If a interface on this network path is inactive, ignore it completely */
-	 if($this->interfaces[$netpath->netpath_if1]->isActive() != "Y")
-	    $do_nothing = true;  
-	 if($have_if2 && $this->interfaces[$netpath->netpath_if2]->isActive() != "Y") 
-	    $do_nothing = true;  
+         if($netpath->netpath_if2 == IF_NOT_USED)
+            $have_if2 = false;
+
+         /* If a interface within this network path is inactive, ignore it completely */
+         if($this->interfaces[$netpath->netpath_if1]->isActive() != "Y")
+            $do_nothing = true;  
+         if($have_if2 && $this->interfaces[$netpath->netpath_if2]->isActive() != "Y") 
+            $do_nothing = true;  
 
          if(!$do_nothing) {
+            $this->addRuleComment(MS_PRE, "Rules for Network Path ". $netpath->netpath_name);
 
-	    $this->addRuleComment(MS_PRE, "Rules for Network Path ". $netpath->netpath_name);
+            /*
+               tc structure
 
-	    /* tc structure
+                  1: root qdisc
+                   1:1 root class (dev. bandwidth limit)
+                   1:2
+                   1:3
+                   1:4
+            */
 
-	       1: root qdisc
-		1:1 root class (dev. bandwidth limit)
-		 1:2
-		 1:3
-		 1:4
+            /* only initialize the interface if it isn't already (proably through another network path) */
+            if(!$this->interfaces[$netpath->netpath_if1]->getStatus()) {
+               $this->interfaces[$netpath->netpath_if1]->Initialize("in");
+            }
 
-	    */
-
-	    /* only initialize the interface if it isn't already */
-	    if(!$this->interfaces[$netpath->netpath_if1]->getStatus()) {
-	    
-	       $this->interfaces[$netpath->netpath_if1]->Initialize("in");
-
-	    }
-
-	    /* only initialize the interface if it isn't already */
-	    if($have_if2 && !$this->interfaces[$netpath->netpath_if2]->getStatus()) {
-
-	       $this->interfaces[$netpath->netpath_if2]->Initialize("out");
-	   
-	    }
+            /* only initialize the interface if it isn't already */
+            if($have_if2 && !$this->interfaces[$netpath->netpath_if2]->getStatus()) {
+               $this->interfaces[$netpath->netpath_if2]->Initialize("out");
+            }
 		  
-	    if($netpath->netpath_imq == "Y") {
-
-	       $this->interfaces[$netptah->netpath_if1]->buildChains($netpath->netpath_idx, "in");
-	       if($have_if2)
-		  $this->interfaces[$netpath->netpath_if2]->buildChains($netpath->netpath_idx, "out");
-
-	    }
-	    else {
-
-	       $this->interfaces[$netpath->netpath_if1]->buildChains($netpath->netpath_idx, "in");
-	       if($have_if2)
-		  $this->interfaces[$netpath->netpath_if2]->buildChains($netpath->netpath_idx, "out");
-
-	    }
+            if($netpath->netpath_imq == "Y") {
+               $this->interfaces[$netptah->netpath_if1]->buildChains($netpath->netpath_idx, "in");
+               if($have_if2)
+                  $this->interfaces[$netpath->netpath_if2]->buildChains($netpath->netpath_idx, "out");
+            }
+            else {
+               $this->interfaces[$netpath->netpath_if1]->buildChains($netpath->netpath_idx, "in");
+               if($have_if2)
+                  $this->interfaces[$netpath->netpath_if2]->buildChains($netpath->netpath_idx, "out");
+            }
          }
       }
 
@@ -274,13 +327,13 @@ class MSRULESET {
    /* Delete ms qdiscs */
    function delQdisc($interface)
    {
-      $this->runProc("tc", TC_BIN . " qdisc del dev ". $interface ." root", TRUE);
+      $this->runProc(TC_BIN . " qdisc del dev ". $interface ." root", TRUE);
 
    } // delQdisc()
 
    function delIptablesRules()
    {
-      $this->runProc("cleanup");
+      $this->runProc("env IPT_BIN=/sbin/iptables; ". SHAPER_PATH . "/shaper_ipt_cleanup.sh");
 
    } // delIptablesRules
 
@@ -292,7 +345,6 @@ class MSRULESET {
 
       /* Delete current root qdiscs */
       $this->delActiveInterfaceQdiscs();
-
       $this->delIptablesRules();
 
       /* Prepare the tc batch file */
@@ -301,93 +353,52 @@ class MSRULESET {
 
       /* If necessary prepare iptables batch files */
       if($this->ms->getOption("filter") == "ipt") {
-
-	 $temp_ipt = tempnam (TEMP_PATH, "FOOIPT");
-	 $output_ipt = fopen($temp_ipt, "w");
-	 
+	      $temp_ipt = tempnam (TEMP_PATH, "FOOIPT");
+         $output_ipt = fopen($temp_ipt, "w");
       }
 
       foreach($this->getCompleteRuleset() as $line) {
+         $line = trim($line);
+         if(!preg_match("/^#/", $line)) {
 
-	 $line = trim($line);
+            /* tc filter task */
+            if(strstr($line, TC_BIN) !== false && $line != "") {
+               $line = str_replace(TC_BIN ." ", "", $line);
+               fputs($output_tc, $line ."\n");
+            }
 
-	 if(!preg_match("/^#/", $line)) {
-
-	    /* tc filter task */
-	    if(strstr($line, TC_BIN) !== false && $line != "") {
-
-	       $line = str_replace(TC_BIN ." ", "", $line);
-		  fputs($output_tc, $line ."\n");
-
-	    }
-
-	    /* iptables task */
-	    if(strstr($line, IPT_BIN) !== false && $this->ms->getOption("filter") == "ipt") {
-
-	       fputs($output_ipt, $line ."\n");
-
-	    }
-	 }
+            /* iptables task */
+            if(strstr($line, IPT_BIN) !== false && $this->ms->getOption("filter") == "ipt") {
+               fputs($output_ipt, $line ."\n");
+            }
+         }
       }
 
       /* flush batch files */
       fclose($output_tc);
 
       if($this->ms->getOption("filter") == "ipt")
-	 fclose($output_ipt);
-
-      if(!$this->ms->fromcmd) {
-
-	 $this->ms->startTable("<img src=\"". ICON_OPTIONS ."\">&nbsp;". _("Loading MasterShaper Ruleset..."));
-?>
-    <table style="width: 100%; text-align: center;" class="withborder2">
-<?php
-      }
+         fclose($output_ipt);
 
       /* load tc filter rules */
-      if(($error = $this->runProc("tc", TC_BIN . " -b ". $temp_tc)) != TRUE) {
-?>
-     <tr><td style="text-align: center;"><img src="<?php print ICON_INACTIVE; ?>" align="middle">&nbsp;<? print _("MasterShaper is not active!"); ?></td></tr>
-     <tr><td style="text-align: center;"><?php print _("Error on mass loading tc rules. Try load ruleset in debug mode to figure incorrect or not supported rule."); ?></td></tr>
-     <tr><td style="text-align: center;"><?php print $error; ?></td></tr>
-<?php
-	 $found_error = 1;
-
+      if(($error = $this->runProc(TC_BIN . " -b ". $temp_tc)) != TRUE) {
+         print _("Error on mass loading tc rules. Try load ruleset in debug mode to figure incorrect or not supported rule.");
+         $found_error = 1;
       }
 
       /* load iptables rules */
-      if($this->ms->getOption("filter") == "ipt" && !$found_error) {
+      if(!$found_error && $this->ms->getOption("filter") == "ipt") {
 
-	 if(($error = $this->runProc("iptables", $temp_ipt)) != TRUE) {
-?>
-     <tr><td style="text-align: center;"><img src="<?php print ICON_INACTIVE ?>" align="middle">&nbsp;<? print _("MasterShaper is not active!"); ?></td></tr>
-     <tr><td style="text-align: center;"><?php print _("Error on mass loading iptables rule. Try load ruleset in debug mode to figure incorrect or not supported rule."); ?></td></tr>
-     <tr><td style="text-align: center;"><?php print $error; ?></td></tr>
-<?php
+         if(($error = $this->runProc($temp_ipt)) != TRUE) {
+            print _("Error on mass loading iptables rule. Try load ruleset in debug mode to figure incorrect or not supported rule.");
 
-	    $found_error = 1;
-
-	 }
-      }
-
-      if(!$this->ms->fromcmd && !$found_error) {
-?>
-     <tr><td style="text-align: center;"><img src="<?php print ICON_ACTIVE ?>" align="middle">&nbsp;<? print _("Shaping enabled - No error found."); ?></td></tr>
-<?php
-      }
-
-      if(!$this->ms->fromcmd) {
-?>
-    </table>
-<?php
-
-	 $this->ms->closeTable();
-
+            $found_error = 1;
+         }
       }
 
       unlink($temp_tc);
       if($this->ms->getOption("filter") == "ipt")
-	 unlink($temp_ipt);
+         unlink($temp_ipt);
 
 
       if(!$found_error)
@@ -401,8 +412,6 @@ class MSRULESET {
 
    function doItLineByLine()
    {
-      $this->ms->startTable("<img src=\"". ICON_OPTIONS ."\">&nbsp;". _("Loading MasterShaper Ruleset (debug)"));
-
       /* Delete current root qdiscs */
       $this->delActiveInterfaceQdiscs();
       $this->delIptablesRules();
@@ -411,72 +420,48 @@ class MSRULESET {
 
       foreach($this->getCompleteRuleset() as $line) {
 
-	 if(!preg_match("/^#/", $line)) {
+         if(!preg_match("/^#/", $line)) {
+            
+            if(strstr($line, TC_BIN) !== false) {
+               if(($tc = $this->runProc($line)) !== TRUE)
+                  print $tc."\n";
+            }
 
-	    if(strstr($line, TC_BIN) !== false) {
+            if(strstr($line, IPT_BIN) !== false) 
+               array_push($ipt_lines, $line);
 
-	       print $line."<br />\n";
-	       if(($tc = $this->runProc("tc", $line)) !== TRUE)
-		  print $tc."<br />\n";
+         }
+         else 
+            print $line."\n";
 
-	    }
-
-	    if(strstr($line, IPT_BIN) !== false) 
-	       array_push($ipt_lines, $line);
-
-	 }
-	 else {
-
-	       print $line."<br />\n";
-
-	 }
       }
 
       foreach($ipt_lines as $line) {
+         print $line."\n";
 
-	 print $line."<br />\n";
-
-	 if(($tc = $this->runProc("iptables", $line)) !== TRUE)
-	    print $tc."<br />\n";
+         if(($ipt = $this->runProc($line)) !== TRUE)
+            print $ipt."\n";
 
       }
-
-      $this->ms->closeTable();
 
    } // doItLineByLine()
 
-   function output($text)
-   {
-      if($_GET['output'] == "noisy")
-	 print $text ."\n";
-
-   } // output()
-
    function getCompleteRuleset()
    {
-
       $ruleset = Array();
       
       foreach($this->ms_pre as $tmp) {
-
          array_push($ruleset, $tmp);
-
       }
 
       foreach($this->interfaces as $interface) {
-
          foreach($interface->getRules() as $rule) {
-
-	    array_push($ruleset, $rule);
-
-	 }
-
+            array_push($ruleset, $rule);
+         }
       }
 
       foreach($this->ms_post as $tmp) {
-
          array_push($ruleset, $tmp);
-
       }
 
       return $ruleset;
@@ -485,7 +470,6 @@ class MSRULESET {
 
    function showIt()
    {
-
       print "# MasterShaper Ruleset\n";
 
       foreach($this->getCompleteRuleset() as $tmp) {
@@ -496,7 +480,7 @@ class MSRULESET {
 
    } // showIt()
 
-   function runProc($option, $cmd = "", $ignore_err = FALSE)
+   function runProc($cmd = "", $ignore_err = FALSE)
    {
       $desc = array(
          0 => array('pipe','r'), /* STDIN */
@@ -504,7 +488,11 @@ class MSRULESET {
          2 => array('pipe','w'), /* STDERR */ 
       );
 
-      $process = proc_open(SUDO_BIN ." ". SHAPER_PATH ."/shaper_loader.sh ". $option ." \"". $cmd ."\"", $desc, $pipes);
+      $cmd = SUDO_BIN ." ". $cmd;
+
+      $this->debug(DBG_FULL, $cmd);
+      //$process = proc_open(SUDO_BIN ." ". SHAPER_PATH ."/shaper_loader.sh ". $option ." \"". $cmd ."\"", $desc, $pipes);
+      $process = proc_open($cmd, $desc, $pipes);
 
       if(is_resource($process)) {
          $stdout = fgets($pipes[1], 255);
@@ -516,7 +504,7 @@ class MSRULESET {
          proc_close($process);
 
          if($stdout != "" && $stdout != "OK" && !$ignore_err) {
-            return $stdout;
+            print $stdout;
          }
 
          return TRUE;
@@ -531,9 +519,7 @@ class MSRULESET {
       $result = $this->ms->getActiveInterfaces();
 
       while($row = $result->fetchRow()) {
-
-	 $this->delQdisc($row->if_name);
-
+         $this->delQdisc($row->if_name);
       }
 
    } // delActiveInterfaceQdiscs()
@@ -543,6 +529,13 @@ class MSRULESET {
       return $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."network_paths WHERE netpath_active='Y' ORDER BY netpath_position");
 
    } // getActiveNetpaths()
+
+   function debug($verbosity, $text)
+   {
+      if($this->verbosity >= $verbosity)
+         print $text ."\n";
+
+   } // debug()
 
 }
 
