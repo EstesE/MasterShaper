@@ -62,11 +62,33 @@ class MSRULESET {
       $this->interfaces = Array();
       $this->verbosity  = 0;
 
-      $shortoptions = "cdhrsuv:";
+      $shortoptions = "Dcdhrsuv:";
       $longoptions = array("help");
 
       $opts = $this->getOptions(null, $shortoptions, $longoptions);
       $this->check_cmdline_opts($opts);
+
+      pcntl_signal(SIGINT, array(&$this, 'cleanup'));
+      pcntl_signal(SIGQUIT, array(&$this, 'cleanup'));
+      pcntl_signal(SIGABRT, array(&$this, 'cleanup'));
+      pcntl_signal(SIGTERM, array(&$this, 'cleanup'));
+      pcntl_signal(SIGKILL, array(&$this, 'cleanup'));
+
+      while(1) {
+
+         // check if a new ruleset needs to be loaded
+         if($this->checkNewRuleset()) {
+            $this->loadRuleset();
+         }         
+         else {
+            $this->collectStats();
+         }
+
+         sleep(1);
+
+      }
+
+      $this->cleanup();
 
    } // __construct()
 
@@ -165,9 +187,9 @@ http://www.mastershaper.org
 
    function show_ruleset($state = 0)
    {
-      $retval = 0;
-
+      /* Load ruleset */
       $this->initRules();
+
       $this->showIt();
 
    } // show_ruleset()
@@ -537,6 +559,44 @@ http://www.mastershaper.org
 
    } // debug()
 
+   function daemonize()
+   {
+
+      $pid = pcntl_fork();
+
+      if($pid == -1) {
+         print "Could not fork daemon process!\n";
+         exit(1);
+      }
+      elseif ($pid) {
+         exit(0);
+      }
+
+      // here the child proceeds
+      // detatch from the controlling terminal
+      if (!posix_setsid()) {
+         die("could not detach from terminal");
+      }
+
+   } // daemonize()
+
+   function cleanup($sigNo)
+   {
+      print "Dieing\n";
+      $this->db->db_disconnect();
+      exit(0);
+
+   } // cleanup()
+
+   function checkNewRuleset()
+   {
+
+   } // checkNewRuleset()
+
+   function collectStats()
+   {
+
+   }
 }
 
 $rules = new MSRULESET();
