@@ -30,10 +30,10 @@ class MASTERSHAPER_TMPL extends Smarty {
    public function __construct($parent)
    {
       $this->Smarty();
-      $this->template_dir = $parent->cfg->base_path .'/templates';
-      $this->compile_dir  = $parent->cfg->base_path .'/templates_c';
-      $this->config_dir   = $parent->cfg->base_path .'/smarty_config';
-      $this->cache_dir    = $parent->cfg->base_path .'/smarty_cache';
+      $this->template_dir = BASE_PATH .'/templates';
+      $this->compile_dir  = BASE_PATH .'/templates_c';
+      $this->config_dir   = BASE_PATH .'/smarty_config';
+      $this->cache_dir    = BASE_PATH .'/smarty_cache';
 
    } // __construct()
 
