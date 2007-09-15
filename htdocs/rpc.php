@@ -55,7 +55,7 @@ class MASTERSHAPER_RPC {
             break;
 
          case 'get_content':
-            print $ms->get_content();
+            print $ms->get_content($_GET['request']);
             break;
 
          case 'check_login':
@@ -64,6 +64,11 @@ class MASTERSHAPER_RPC {
 
          case 'logout':
             $ms->destroySession();
+            break;
+
+         case 'what_to_do':
+            if($ms->is_logged_in())
+               print "show_overview";
             break;
 
       }
