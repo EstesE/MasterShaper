@@ -39,12 +39,13 @@ class MASTERSHAPER {
     */
    public function __construct()
    {
+      $this->cfg = new MASTERSHAPER_CFG("config.dat");
+
       /* Check necessary requirements */
       if(!$this->checkRequirements()) {
          exit(1);
       }
 
-      $this->cfg = new MASTERSHAPER_CFG("config.dat");
       $this->db  = new MASTERSHAPER_DB(&$this, $this->cfg->fspot_db);
       $this->tmpl = new MASTERSHAPER_TMPL($this);
 
@@ -100,6 +101,11 @@ class MASTERSHAPER {
          $missing = true;
       }
       ini_restore('track_errors');
+
+      if(!is_dir(BASE_PATH ."/jpgraph")) {
+         print "Can't locate jpgraph in &lt;". BASE_PATH ."/jpgraph&gt;<br />\n";
+         $missing = true;
+      }
 
       if(isset($missing))
          return false;
