@@ -69,6 +69,7 @@ class MASTERSHAPER {
     */
    public function show()
    {
+      $this->tmpl->assign("page_title", "MasterShaper v". VERSION);
       $this->tmpl->show("index.tpl");
 
    } // show()
