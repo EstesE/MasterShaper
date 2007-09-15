@@ -104,14 +104,18 @@ function AskServerWhatToDo()
 
 function init_shaper()
 {
+   refreshPageTitle();
+   refreshMainMenu();
+   refreshSubMenu();
+ 
    whattodo = AskServerWhatToDo();
 
    if(whattodo == "") {
-      refreshPageTitle();
-      refreshMainMenu();
-      refreshSubMenu();
-      refreshContent();
+     refreshContent();
    }
+
+   if(whattodo == "show_overview")
+      refreshContent("overview");
 
 }
 
@@ -134,11 +138,15 @@ function refreshSubMenu()
 {
 }
 
-function refreshContent()
+function refreshContent(req_content)
 {
+   if(req_content == undefined)
+      req_content = "";
+
    var content = document.getElementById("content");
    content.innerHTML = "Loading...";
-   content.innerHTML = HTML_AJAX.grab(encodeURI('rpc.php?action=get_content'));
+
+   content.innerHTML = HTML_AJAX.grab(encodeURI('rpc.php?action=get_content&request=' + req_content));
 }
 
 function check_login()
@@ -168,18 +176,18 @@ function check_login()
 
 }
 
-function refreshPage()
+function refreshPage(content)
 {
       refreshPageTitle();
       refreshMainMenu();
       refreshSubMenu();
-      refreshContent();
+      refreshContent(content);
 }
 
 function js_logout()
 {
    HTML_AJAX.grab(encodeURI('rpc.php?action=logout'));
-   refreshPage();
+   refreshPage("overview");
 }
 
 function WSR_getElementsByClassName(oElm, strTagName, oClassNames){
