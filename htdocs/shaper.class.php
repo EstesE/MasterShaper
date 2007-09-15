@@ -68,51 +68,6 @@ class MASTERSHAPER {
     */
    public function show()
    {
-      $this->tmpl->assign('searchfor', $_SESSION['searchfor']);
-      $this->tmpl->assign('page_title', $this->cfg->page_title);
-      $this->tmpl->assign('current_condition', $_SESSION['tag_condition']);
-      $this->tmpl->assign('template_path', 'themes/'. $this->cfg->theme_name);
-
-      $_SESSION['start_action'] = $_GET['mode'];
-
-      switch($_GET['mode']) {
-         case 'showpi':
-            if(isset($_GET['tags'])) {
-               $_SESSION['selected_tags'] = $this->extractTags($_GET['tags']);
-            }
-            if(isset($_GET['from_date']) && $this->isValidDate($_GET['from_date'])) {
-               $_SESSION['from_date'] = strtotime($_GET['from_date'] ." 00:00:00");
-            }
-            if(isset($_GET['to_date']) && $this->isValidDate($_GET['to_date'])) {
-               $_SESSION['to_date'] = strtotime($_GET['to_date'] ." 23:59:59");
-            }
-            break;
-         case 'showp':
-            if(isset($_GET['tags'])) {
-               $_SESSION['selected_tags'] = $this->extractTags($_GET['tags']);
-               $_SESSION['start_action'] = 'showp';
-            }
-            if(isset($_GET['id']) && is_numeric($_GET['id'])) {
-               $_SESSION['current_photo'] = $_GET['id'];
-               $_SESSION['start_action'] = 'showp';
-            }
-            if(isset($_GET['from_date']) && $this->isValidDate($_GET['from_date'])) {
-               $_SESSION['from_date'] = strtotime($_GET['from_date']);
-            }
-            if(isset($_GET['to_date']) && $this->isValidDate($_GET['to_date'])) {
-               $_SESSION['to_date'] = strtotime($_GET['to_date']);
-            }
-            break;
-         case 'export':
-            $this->tmpl->show("export.tpl");
-            return;
-            break;
-         case 'slideshow':
-            $this->tmpl->show("slideshow.tpl");
-            return;
-            break;
-      }
-
       $this->tmpl->show("index.tpl");
 
    } // show()
