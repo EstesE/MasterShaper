@@ -115,6 +115,123 @@ class MASTERSHAPER {
 
    } // checkRequirements()
 
+   /**
+    * check login status
+    *
+    * return true if user is logged in
+    * return false if user is not yet logged in
+    */
+   private function is_logged_in()
+   {
+      if(isset($_SESSION['user_name']))
+         return true;
+
+      return false; 
+
+   } // is_logged_in()
+
+   /**
+    * returns current page title
+    */
+   public function get_page_title()
+   {
+      if(!$this->is_logged_in()) {
+         return "<img src=\"icons/home.gif\" />&nbsp;MasterShaper Login";
+      }
+      else {
+         return "<img src=\"icons/home.gif\" />&nbsp;MasterShaper Login"
+            ." - logged in as ". $_SESSION['user_name'] 
+            ." (<a href=\"javascript:js_logout();\" style=\"color: #ffffff;\">logout</a>)";
+      }
+
+   } // get_page_title()
+
+   /**
+    * returns main menu
+    */
+   public function get_main_menu()
+   {
+?>
+   <table class="menu">
+    <tr>
+     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+      <a href="javascript:void(0)" onClick="updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=overview')); location.href='<?php print $_SERVER['PHP_SELF'] ."?mode=99&amp;navpoint=overview"; ?>';" /><img src="icons/home.gif" />&nbsp;<?php print _("Overview"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=manage'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Manage"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=settings'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Settings"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=monitoring'));" /><img src="icons/chart_pie.gif" />&nbsp;<?php print _("Monitoring"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=rules'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Rules"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=others'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Others"); ?></a>      </td>     </tr>    </table> 
+<?php
+   } // get_main_menu()
+
+   /**
+    * return main content
+    */
+   public function get_content()
+   {
+      if(!$this->is_logged_in()) {
+         return $this->tmpl->fetch("login_box.tpl");
+      }
+
+   } // get_content()
+
+   /**
+    * check login
+    */
+   public function check_login()
+   {
+      if(isset($_POST['user_name']) && $_POST['user_name'] != "" &&
+         isset($_POST['user_pass']) && $_POST['user_pass'] != "") {
+
+         if($user = $this->getUserDetails($_POST['user_name'])) {
+            if($user->user_pass == md5($_POST['user_pass'])) {
+               $_SESSION['user_name'] = $_POST['user_name'];
+               $_SESSION['user_idx'] = $user->user_idx;
+
+               return "ok";
+            }
+            else {
+               return _("Invalid Password.");
+            }
+         }
+         else {
+            return _("Invalid or inactive User.");
+         }
+      }
+      else {
+         return _("Please enter Username and Password.");
+      }
+
+   } // check_login()
+
+   /**
+    * return all user details for the provided user_name
+    */
+   private function getUserDetails($user_name)
+   {
+      if($user = $this->db->db_fetchSingleRow("
+         SELECT user_idx, user_pass
+         FROM ". MYSQL_PREFIX ."users
+         WHERE
+            user_name LIKE '". $user_name ."'
+         AND
+            user_active='Y'")) {
+
+         return $user;
+      }
+
+      return NULL;
+
+   } // getUserDetails()
+
+   /**
+    * destroy the current user session to force logout
+    */
+   public function destroySession()
+   {
+      unset($_SESSION['user_name']);
+      unset($_SESSION['user_idx']);
+      unset($_SESSION['navpoint']);
+
+      session_destroy();
+
+   } // destroySession()
+
 }
 
 ?>
