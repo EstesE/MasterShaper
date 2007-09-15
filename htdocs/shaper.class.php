@@ -169,8 +169,6 @@ class MASTERSHAPER {
          return $this->tmpl->fetch("login_box.tpl");
       }
 
-      print $request;
-
       switch($request) {
 
          case 'overview':
