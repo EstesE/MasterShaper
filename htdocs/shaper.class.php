@@ -24,6 +24,7 @@
 require_once "shaper_cfg.php";
 require_once "shaper_db.php";
 require_once "shaper_tmpl.php";
+require_once "shaper_overview.php";
 
 class MASTERSHAPER {
 
@@ -121,7 +122,7 @@ class MASTERSHAPER {
     * return true if user is logged in
     * return false if user is not yet logged in
     */
-   private function is_logged_in()
+   public function is_logged_in()
    {
       if(isset($_SESSION['user_name']))
          return true;
@@ -162,10 +163,21 @@ class MASTERSHAPER {
    /**
     * return main content
     */
-   public function get_content()
+   public function get_content($request = "")
    {
       if(!$this->is_logged_in()) {
          return $this->tmpl->fetch("login_box.tpl");
+      }
+
+      print $request;
+
+      switch($request) {
+
+         case 'overview':
+            $overview = new MASTERSHAPER_OVERVIEW($this);
+            return $overview->show(); 
+            break;
+
       }
 
    } // get_content()
@@ -231,6 +243,41 @@ class MASTERSHAPER {
       session_destroy();
 
    } // destroySession()
+
+   /**
+    * return value of requested setting
+    */
+   public function getOption($object)
+   {
+      $result = $this->db->db_fetchSingleRow("
+         SELECT setting_value
+         FROM ". MYSQL_PREFIX ."settings
+         WHERE setting_key like '". $object ."'
+      ");
+
+      return $result->setting_value;
+
+   } // getOption() 
+
+   /**
+    * return true if the current user has the requested
+    * permission.
+    */
+   public function checkPermissions($permission)
+   {
+       $user = $this->db->db_fetchSingleRow("
+         SELECT ". $permission ."
+         FROM ". MYSQL_PREFIX ."users
+         WHERE user_idx='". $_SESSION['user_idx'] ."'
+      ");
+
+      if($user->$permission == "Y")
+         return true;
+
+      return false; 
+
+   } // checkPermissions()
+
 
 }
 
