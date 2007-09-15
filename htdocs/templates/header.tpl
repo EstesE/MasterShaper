@@ -23,7 +23,7 @@
     <tr>
      <td style="width: 15px;"></td>
      <td style="vertical-align: middle;">
-      <?php print $title; ?>
+      <div id="page_title"></div>
      </td>
     </tr>
    </table>
@@ -32,8 +32,7 @@
   <!-- /page title -->
 
   <div id="menubox">
-   <table class="menu">
-   </table>
+   <div id="main_menu"></div>
   </div>
 
   <!-- grey border line below header cell -->
@@ -52,9 +51,4 @@
   <!-- grey border line -->
   <div style="background-color: #aaaaaa; height: 2px;"></div>
   <div style="height: 30px;"></div>
-
-  <!-- main cell -->
-  <div id="main">
-  
-  <!-- module output -->
 
