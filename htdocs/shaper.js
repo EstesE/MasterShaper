@@ -168,7 +168,7 @@ function check_login()
    var retr = HTML_AJAX.post('rpc.php?action=check_login', objTemp);
 
    if(retr == "ok") {
-      refreshPage();
+      refreshPage("overview");
    }
    else {
       window.alert(retr);
@@ -187,7 +187,7 @@ function refreshPage(content)
 function js_logout()
 {
    HTML_AJAX.grab(encodeURI('rpc.php?action=logout'));
-   refreshPage("overview");
+   refreshPage();
 }
 
 function WSR_getElementsByClassName(oElm, strTagName, oClassNames){
