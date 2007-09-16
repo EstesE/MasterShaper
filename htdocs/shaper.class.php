@@ -156,7 +156,25 @@ class MASTERSHAPER {
    <table class="menu">
     <tr>
      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:void(0)" onClick="updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=overview')); location.href='<?php print $_SERVER['PHP_SELF'] ."?mode=99&amp;navpoint=overview"; ?>';" /><img src="icons/home.gif" />&nbsp;<?php print _("Overview"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=manage'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Manage"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=settings'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Settings"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=monitoring'));" /><img src="icons/chart_pie.gif" />&nbsp;<?php print _("Monitoring"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=rules'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Rules"); ?></a>      </td>      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">       <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=others'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Others"); ?></a>      </td>     </tr>    </table> 
+      <a href="javascript:refreshContent('overview');"><img src="icons/home.gif" />&nbsp;<?php print _("Overview"); ?></a>
+     </td>
+     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=manage'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Manage"); ?></a>
+     </td>
+     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=settings'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Settings"); ?></a>      
+     </td>      
+     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=monitoring'));" /><img src="icons/chart_pie.gif" />&nbsp;<?php print _("Monitoring"); ?></a>     
+     </td>      
+     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=rules'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Rules"); ?></a>      
+     </td>      
+     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=others'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Others"); ?></a>      
+     </td>
+    </tr> 
+   </table> 
 <?php
    } // get_main_menu()
 
