@@ -35,6 +35,33 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->config_dir   = BASE_PATH .'/smarty_config';
       $this->cache_dir    = BASE_PATH .'/smarty_cache';
 
+      $this->assign('icon_chains', 'icons/flag_blue.gif');
+      $this->assign('icon_options', 'icons/options.gif');
+      $this->assign('icon_pipes', 'icons/flag_pink.gif');
+      $this->assign('icon_ports', 'icons/flag_orange.gif');
+      $this->assign('icon_protocols', 'icons/flag_red.gif');
+      $this->assign('icon_servicelevels', 'icons/flag_yellow.gif');
+      $this->assign('icon_filters', 'icons/flag_green.gif');
+      $this->assign('icon_targets', 'icons/flag_purple.gif');
+      $this->assign('icon_delete', 'icons/delete.gif');
+      $this->assign('icon_active', 'icons/active.gif');
+      $this->assign('icon_inactive', 'icons/inactive.gif');
+      $this->assign('icon_arrow_left', 'icons/arrow_left.gif');
+      $this->assign('icon_chains_arrow_up', 'icons/ms_chains_arrow_up_14.gif');
+      $this->assign('icon_chains_arrow_down', 'icons/ms_chains_arrow_down_14.gif');
+      $this->assign('icon_pipes_arrow_up', 'icons/ms_pipes_arrow_up_14.gif');
+      $this->assign('icon_pipes_arrow_down', 'icons/ms_pipes_arrow_down_14.gif');
+      $this->assign('icon_users', 'icons/ms_users_14.gif');
+      $this->assign('icon_about', 'icons/home.gif');
+      $this->assign('icon_home', 'icons/home.gif');
+      $this->assign('icon_new', 'icons/page_white.gif');
+      $this->assign('icon_monitor', 'icons/chart_pie.gif');
+      $this->assign('icon_shaper_start', 'icons/enable.gif');
+      $this->assign('icon_shaper_stop', 'icons/disable.gif');
+      $this->assign('icon_bandwidth', 'icons/bandwidth.gif');
+      $this->assign('icon_update', 'icons/update.gif');
+      $this->assign('icon_interfaces', 'icons/network_card.gif');
+
    } // __construct()
 
    public function show($template)
