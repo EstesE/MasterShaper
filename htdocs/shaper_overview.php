@@ -163,7 +163,6 @@ class MASTERSHAPER_OVERVIEW {
       $this->tmpl->register_block("ov_pipe", array(&$this, "smarty_ov_pipe"));
       $this->tmpl->register_block("ov_filter", array(&$this, "smarty_ov_filter"));
       $this->tmpl->show("overview.tpl");
-      return;
 
    } // show()
 
@@ -260,16 +259,17 @@ class MASTERSHAPER_OVERVIEW {
       if($index < count($this->avail_chains[$np_idx])) {
 
          $chain_idx = $this->avail_chains[$np_idx][$index];
+         $chain =  $this->chains[$np_idx][$chain_idx];
          $this->tmpl->assign('chain_idx', $chain_idx);
-         $this->tmpl->assign('chain_name', $this->chains[$np_idx][$chain_idx]->chain_name);
-         $this->tmpl->assign('chain_sl_idx', $this->chains[$np_idx][$chain_idx]->chain_sl_idx);
-         $this->tmpl->assign('chain_fallback_idx', $this->chains[$np_idx][$chain_idx]->chain_fallback_idx);
-         $this->tmpl->assign('chain_src_target', $this->chains[$np_idx][$chain_idx]->chain_src_target);
-         $this->tmpl->assign('chain_dst_target', $this->chains[$np_idx][$chain_idx]->chain_dst_target);
-         $this->tmpl->assign('chain_direction', $this->chains[$np_idx][$chain_idx]->chain_direction);
-         $this->tmpl->assign('chain_action', $this->chains[$np_idx][$chain_idx]->chain_action);
+         $this->tmpl->assign('chain_name', $chain->chain_name);
+         $this->tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
+         $this->tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
+         $this->tmpl->assign('chain_src_target', $chain->chain_src_target);
+         $this->tmpl->assign('chain_dst_target', $chain->chain_dst_target);
+         $this->tmpl->assign('chain_direction', $chain->chain_direction);
+         $this->tmpl->assign('chain_action', $chain->chain_action);
 
-         if($this->chains[$np_idx][$chain_idx]->chain_sl_idx != 0) {
+         if($chain->chain_sl_idx != 0) {
             $this->tmpl->assign('chain_has_sl', 'true');
          }
 
