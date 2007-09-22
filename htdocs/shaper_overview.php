@@ -165,6 +165,7 @@ class MASTERSHAPER_OVERVIEW {
       $this->tmpl->assign('filters', $this->filters);
       $this->tmpl->register_function("start_table", array(&$this, "smarty_startTable"), false);
       $this->tmpl->register_function("sl_list", array(&$this, "smarty_sl_list"), false);
+      $this->tmpl->register_function("target_list", array(&$this, "smarty_target_list"), false);
       $this->tmpl->register_block("ov_netpath", array(&$this, "smarty_ov_netpath"));
       $this->tmpl->register_block("ov_chain", array(&$this, "smarty_ov_chain"));
       $this->tmpl->register_block("ov_pipe", array(&$this, "smarty_ov_pipe"));
@@ -195,7 +196,7 @@ class MASTERSHAPER_OVERVIEW {
       $res_sl = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."service_levels");
       while($sl = $res_sl->fetchRow()) {
          $string.= "<option value=\"". $sl->sl_idx ."\"";
-         if($sl->sl_idx == $idx)
+         if($sl->sl_idx == $params['idx'])
             $string.= " selected=\"selected\"";
          $string.= ">". $sl->sl_name ."</option>\n";
       }
@@ -204,20 +205,26 @@ class MASTERSHAPER_OVERVIEW {
 
    } // smarty_sl_list()
 
-   public function smarty_getTargetList($params, &$smarty)
+   public function smarty_target_list($params, &$smarty)
    {
-      $targets = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."targets");
+      if(!array_key_exists('idx', $params)) {
+         $this->tmpl->trigger_error("getSLList: missing 'idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
 
-      while($target = $targets->fetchRow()) {
-         $string = "<option value=\"". $target->target_idx ."\"";
-         if($target->target_idx == $chain->chain_src_target)
-            $string = " selected=\"selected\"";
-         $string = ">". $target->target_name ."</option>\n";
+      $res_targets = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."targets");
+
+      while($target = $res_targets->fetchRow()) {
+         $string.= "<option value=\"". $target->target_idx ."\"";
+         if($target->target_idx == $params['idx'])
+            $string.= " selected=\"selected\"";
+         $string.= ">". $target->target_name ."</option>\n";
       }
 
       return $string;
 
-   } // smarty_getTargetList()
+   } // smarty_target_list()
 
    public function smarty_ov_netpath($params, $content, &$smarty, &$repeat) {
    
@@ -234,7 +241,6 @@ class MASTERSHAPER_OVERVIEW {
          $index++;
          $this->tmpl->assign('smarty.IB.ov_netpath.index', $index);
          $repeat = true;
-         return;
 
       }
       else {
@@ -259,13 +265,18 @@ class MASTERSHAPER_OVERVIEW {
          $index = 0;
       }
 
-      if($index < count($this->avail_chains)) {
+      if($index < count($this->avail_chains[$np_idx])) {
 
          $chain_idx = $this->avail_chains[$np_idx][$index];
-
          $this->tmpl->assign('chain_idx', $chain_idx);
          $this->tmpl->assign('chain_name', $this->chains[$np_idx][$chain_idx]->chain_name);
-         
+         $this->tmpl->assign('chain_sl_idx', $this->chains[$np_idx][$chain_idx]->chain_sl_idx);
+         $this->tmpl->assign('chain_fallback_idx', $this->chains[$np_idx][$chain_idx]->chain_fallback_idx);
+         $this->tmpl->assign('chain_src_target', $this->chains[$np_idx][$chain_idx]->chain_src_target);
+         $this->tmpl->assign('chain_dst_target', $this->chains[$np_idx][$chain_idx]->chain_dst_target);
+         $this->tmpl->assign('chain_direction', $this->chains[$np_idx][$chain_idx]->chain_direction);
+         $this->tmpl->assign('chain_action', $this->chains[$np_idx][$chain_idx]->chain_action);
+
          if($this->chains[$np_idx][$chain_idx]->chain_sl_idx != 0) {
             $this->tmpl->assign('chain_has_sl', 'true');
          }
@@ -274,8 +285,6 @@ class MASTERSHAPER_OVERVIEW {
          $this->tmpl->assign('smarty.IB.ov_chain.index', $index);
 
          $repeat = true;
-         return;
-
       }
       else {
          $repeat = false;
@@ -284,6 +293,60 @@ class MASTERSHAPER_OVERVIEW {
       return $content;
 
    } // smart_ov_chain()
+
+   public function smarty_ov_pipe($params, $content, &$smarty, &$repeat) {
+
+      if(!array_key_exists('np_idx', $params)) {
+         $this->tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+      if(!array_key_exists('chain_idx', $params)) {
+         $this->tmpl->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+      
+      $np_idx = $params['np_idx'];
+      $chain_idx = $params['chain_idx'];
+
+      $index = $this->tmpl->get_template_vars('smarty.IB.ov_pipe.index');
+      if(!$index) {
+         $index = 0;
+      }
+
+      if($index < count($this->avail_pipes[$np_idx][$chain_idx])) {
+
+         $pipe_idx = $this->avail_pipes[$np_idx][$chain_idx][$index];
+         $pipe = $this->pipes[$np_idx][$chain_idx][$pipe_idx];
+
+         $this->tmpl->assign('pipe_idx', $pipe_idx);
+         $this->tmpl->assign('pipe_name', $pipe->pipe_name);
+         $this->tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
+         $this->tmpl->assign('pipe_fallback_idx', $pipe->pipe_fallback_idx);
+         $this->tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
+         $this->tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
+         $this->tmpl->assign('pipe_direction', $pipe->pipe_direction);
+         $this->tmpl->assign('pipe_action', $pipe->pipe_action);
+
+         if($pipe->pipe_sl_idx != 0) {
+            $this->tmpl->assign('pipe_has_sl', 'true');
+         }
+
+         $index++;
+         $this->tmpl->assign('smarty.IB.ov_pipe.index', $index);
+
+         $repeat = true;
+
+      }
+      else {
+         $repeat = false;
+      }
+
+      return $content;
+
+   } // smart_ov_pipe()
+
 }
 
 ?>

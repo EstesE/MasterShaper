@@ -43,15 +43,15 @@
      <td style="text-align: center;">
       <select name="chain_sl_idx[{ $chain_idx }]">
        <option value="0">--- Ignore QoS ---</option>
-       { sl_list idx=$chain_idx }
+       { sl_list idx=$chain_sl_idx }
       </select>
      </td> 
 
     { if $chain_has_sl }
      <td style="text-align: center;">
-      <select name="chain_fallback_idx[<?php print $chain->chain_idx; ?>]">
+      <select name="chain_fallback_idx[{ $chain_idx }]">
        <option value="0">--- No Fallback ---</option>
-       { sl_list idx=$chain_idx }
+       { sl_list idx=$chain_fallback_idx }
       </select>
      </td>
     { else }
@@ -59,68 +59,90 @@
     { /if }
 
      <td style="text-align: center;">
-      <select name="chain_src_target[<?php print $chain->chain_idx; ?>]">
+      <select name="chain_src_target[{ $chain_idx }]">
        <option value="0">any</option>
-           </select>
+       { target_list idx=$chain_src_target }
+      </select>
      </td>
-          <td style="text-align: center;">
-           <select name="chain_direction[<?php print $chain->chain_idx; ?>]">
-            <option value="1" <?php if($chain->chain_direction == 1) print "selected=\"selected\""; ?>>--&gt;</option>
-            <option value="2" <?php if($chain->chain_direction == 2) print "selected=\"selected\""; ?>>&lt;-&gt;</option>
+     <td style="text-align: center;">
+      <select name="chain_direction[{ $chain_idx }]">
+       <option value="1" { if $chain_direction == 1 } selected="selected" { /if }>--&gt;</option>
+       <option value="2" { if $chain_direction == 2 } selected="selected" { /if }>&lt;-&gt;</option>
       </select>
      </td>
      <td style="text-align: center;">
       <select name="chain_dst_target[<?php print $chain->chain_idx; ?>]">
        <option value="0">any</option>
-           </select>
-     </td>
-     <td style="text-align: center;">
-           <select name="chain_action[<?php print $chain->chain_idx; ?>]">
-       <option value="accept" <?php if($chain->chain_action == "accept") print "selected=\"selected\""; ?>><? print _("Accept"); ?></option>
-       <option value="drop" <?php if($chain->chain_action == "drop") print "selected=\"selected\""; ?>><? print _("Drop"); ?></option>
-       <option value="reject" <?php if($chain->chain_action == "reject") print "selected=\"selected\""; ?>><? print _("Reject"); ?></option>
+       { target_list idx=$chain_dst_target }
       </select>
      </td>
-          <td style="text-align: center;">
-           <a href="<?php print $this->parent->self."?mode=". $this->parent->mode ."&amp;screen=". MANAGE_POS_CHAINS ."&amp;chain_idx=". $chain->chain_idx ."&amp;to=0"; ?>"><img src="<? print ICON_CHAINS_ARROW_DOWN; ?>" alt="Move chain down" /></a>            <a href="<?php print $this->parent->self."?mode=". $this->parent->mode ."&amp;screen=". MANAGE_POS_CHAINS ."&amp;chain_idx=". $chain->chain_idx ."&amp;to=1"; ?>"><img src="<? print ICON_CHAINS_ARROW_UP; ?>" alt="Move chain up" /></a>           </td>     </tr> 
+     <td style="text-align: center;">
+      <select name="chain_action[<?php print $chain->chain_idx; ?>]">
+       <option value="accept" { if $chain_action == "accept" } selected="selected" { /if }>Accept</option>
+       <option value="drop" { if $chain_action == "drop" } selected="selected" { /if }>Drop</option>
+       <option value="reject" { if $chain_action == "reject" } selected="selected" { /if }>Reject</option>
+      </select>
+     </td>
+     <td style="text-align: center;">
+      <a href="javascript:;"><img src="{ $icon_chains_arrow_down }" alt="Move chain down" /></a>
+      <a href="javascript:;"><img src="{ $icon_chains_arrow_up }" alt="Move chain up" /></a>
+     </td>
+    </tr> 
 
-
-/* pipes are only available if the chain DOES NOT ignore QoS or DOES NOT use fallback service level */
-
-         <input type="hidden" name="pipes[<?php print $pipe_counter; ?>]" value="<? print $pipe->pipe_idx; ?>" />
-         <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">           <td style="text-align: center;">       <?php print $counter; ?>      </td>      <td>            <img src="<?php print ICON_PIPES; ?>" alt="pipes icon" />&nbsp;          <a href="<?php print $this->parent->self ."?mode=2&amp;screen=". MANAGE ."&amp;idx=". $pipe->pipe_idx; ?>" title="Modify pipe <? print $pipe->pipe_name; ?>" onmouseover="staticTip.show('tipPipe<? print $pipe->pipe_idx; ?>');" onmouseout="staticTip.hide();"><? print $pipe->pipe_name; ?></a>           </td>           <td style="text-align: center;">       <select name="pipe_sl_idx[<?php print $pipe->pipe_idx; ?>]"> 
-
-           </select>
+  <!-- pipes are only available if the chain DOES NOT ignore
+       QoS or DOES NOT use fallback service level
+  -->
+  { if $chain_sl_idx != 0 && $chain_fallback_idx != 0 }
+   { ov_pipe np_idx=$netpath_idx chain_idx=$chain_idx }
+    <input type="hidden" name="pipes[{ $pipe_counter }]" value="{ $pipe_idx }" />
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+     <td style="text-align: center;">{ $counter }</td>
+     <td>
+      <img src="{ $icon_pipes }" alt="pipes icon" />&nbsp;
+      <a href="" title="Modify pipe { $pipe_name }">{ $pipe_name }</a>
+     </td>
+     <td style="text-align: center;">
+      <select name="pipe_sl_idx[{ $pipe_idx }]"> 
+      { sl_list idx=$pipe_sl_idx }
+      </select>
      </td>
      <td>&nbsp;</td>
      <td style="text-align: center;">
-      <select name="pipe_src_target[<?php print $pipe->pipe_idx; ?>]">
+      <select name="pipe_src_target[{ $pipe_idx }">
        <option value="0">any</option>
-           </select>      </td>
-          <td style="text-align: center;">
-           <select name="pipe_direction[<?php print $pipe->pipe_idx; ?>]">
-            <option value="1" <?php if($pipe->pipe_direction == 1) print "selected=\"selected\""; ?>>--&gt;</option>
-            <option value="2" <?php if($pipe->pipe_direction == 2) print "selected=\"selected\""; ?>>&lt;-&gt;</option>
+       { target_list idx=$pipe_src_target }
+      </select>
+     </td>
+     <td style="text-align: center;">
+      <select name="pipe_direction[<?php print $pipe->pipe_idx; ?>]">
+       <option value="1" { if $pipe_direction == 1 } selected="selected" { /if }>--&gt;</option>
+       <option value="2" { if $pipe_direction == 2 } selected="selected" { /if }>&lt;-&gt;</option>
       </select>
      </td>
      <td style="text-align: center;">
       <select name="pipe_dst_target[<?php print $pipe->pipe_idx; ?>]">
        <option value="0">any</option>
-           </select>
-          </td>
-     <td style="text-align: center;">
-           <select name="pipe_action[<?php print $pipe->pipe_idx; ?>]">
-       <option value="accept" <?php if($pipe->pipe_action == "accept") print "selected=\"selected\""; ?>><? print _("Accept"); ?></option>
-       <option value="drop" <?php if($pipe->pipe_action == "drop") print "selected=\"selected\""; ?>><? print _("Drop"); ?></option>
-       <option value="reject" <?php if($pipe->pipe_action == "reject") print "selected=\"selected\""; ?>><? print _("Reject"); ?></option>
+       { target_list idx=$pipe_dst_target }
       </select>
      </td>
-          <td style="text-align: center;">
-           <a href="<?php print $this->parent->self ."?mode=". $this->parent->mode ."&amp;screen=". MANAGE_POS_PIPES ."&amp;pipe_idx=". $pipe->pipe_idx ."&amp;to=0"; ?>"><img src="<? print ICON_PIPES_ARROW_DOWN; ?>" alt="Move pipe down" /></a>            <a href="<?php print $this->parent->self ."?mode=". $this->parent->mode ."&amp;screen=". MANAGE_POS_PIPES ."&amp;pipe_idx=". $pipe->pipe_idx ."&amp;to=1"; ?>"><img src="<? print ICON_PIPES_ARROW_UP; ?>" alt="Move pipe up" /></a>           </td>          </tr> 
+     <td style="text-align: center;">
+      <select name="pipe_action[{ $pipe_idx }]">
+       <option value="accept" { if $pipe_action == "accept" } selected="selected" { /if}>Accept</option>
+       <option value="drop" { if $pipe_action == "drop" } selected="selected" { /if }>Drop</option>
+       <option value="reject" { if $pipe_action == "reject" } selected="selected" { /if }>Reject</option>
+      </select>
+     </td>
+     <td style="text-align: center;">
+      <a href=""><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
+      <a href=""><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
+     </td>
+    </tr> 
 
          <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">      <td />           <td colspan="7">       <img src="images/tree_end.gif" alt="tree" />          <img src="<?php print ICON_FILTERS; ?>" alt="filter icon" />&nbsp;            <a href="<?php print $this->parent->self ."?mode=8&amp;screen=". MANAGE ."&amp;idx=". $filter->filter_idx; ?>" title="Modify filter <? print $filter->filter_name; ?>"><? print $filter->filter_name; ?></a>           </td>           <td>            &nbsp;           </td>          </tr> 
 
 
+   {/ov_pipe}
+  {/if}
  {/ov_chain}
 {/ov_netpath}
         </table>
