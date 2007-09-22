@@ -155,14 +155,6 @@ class MASTERSHAPER_OVERVIEW {
          $this->cnt_network_paths++;
       }
 
-      $this->tmpl->assign('np_max', $this->avail_network_paths);
-      $this->tmpl->assign('chain_max', $this->avail_chains);
-      $this->tmpl->assign('pipes_max', $this->avail_pipes);
-      $this->tmpl->assign('filters_max', $this->avail_filters);
-      $this->tmpl->assign('network_paths', $this->network_paths);
-      $this->tmpl->assign('chains', $this->chains);
-      $this->tmpl->assign('pipes', $this->pipes);
-      $this->tmpl->assign('filters', $this->filters);
       $this->tmpl->register_function("start_table", array(&$this, "smarty_startTable"), false);
       $this->tmpl->register_function("sl_list", array(&$this, "smarty_sl_list"), false);
       $this->tmpl->register_function("target_list", array(&$this, "smarty_target_list"), false);
