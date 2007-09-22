@@ -61,6 +61,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_bandwidth', 'icons/bandwidth.gif');
       $this->assign('icon_update', 'icons/update.gif');
       $this->assign('icon_interfaces', 'icons/network_card.gif');
+      $this->assign('icon_treeend', 'icons/tree_end.gif');
 
    } // __construct()
 

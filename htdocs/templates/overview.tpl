@@ -137,21 +137,31 @@
       <a href=""><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
      </td>
     </tr> 
+    { ov_filter np_idx=$netpath_idx chain_idx=$chain_idx pipe_idx=$pipe_idx }
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+     <td colspan="7">
+      <img src="{ $icon_treeend }" alt="tree" />
+      <img src="{ $icon_filters }" alt="filter icon" />&nbsp;
+      <a href="" title="Modify filter { $filter_name }">{ $filter_name }</a>
+     </td>
+     <td>&nbsp;</td>
+    </tr> 
 
-         <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">      <td />           <td colspan="7">       <img src="images/tree_end.gif" alt="tree" />          <img src="<?php print ICON_FILTERS; ?>" alt="filter icon" />&nbsp;            <a href="<?php print $this->parent->self ."?mode=8&amp;screen=". MANAGE ."&amp;idx=". $filter->filter_idx; ?>" title="Modify filter <? print $filter->filter_name; ?>"><? print $filter->filter_name; ?></a>           </td>           <td>            &nbsp;           </td>          </tr> 
 
-
+    {/ov_filter}
    {/ov_pipe}
   {/if}
  {/ov_chain}
 {/ov_netpath}
-        </table>
-       </td>
-      </tr>
-      <tr>
-      </tr>
-     </table>
-         $this->parent->showSaveButton();
+   </table>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   { include file=savebutton.tmpl }
+  </td>
+ </tr>
+  </table>
 
 </form>
 

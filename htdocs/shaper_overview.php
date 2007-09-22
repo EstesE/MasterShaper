@@ -337,7 +337,6 @@ class MASTERSHAPER_OVERVIEW {
          $this->tmpl->assign('smarty.IB.ov_pipe.index', $index);
 
          $repeat = true;
-
       }
       else {
          $repeat = false;
@@ -346,6 +345,55 @@ class MASTERSHAPER_OVERVIEW {
       return $content;
 
    } // smart_ov_pipe()
+
+   public function smarty_ov_filter($params, $content, &$smarty, &$repeat) {
+
+      if(!array_key_exists('np_idx', $params)) {
+         $this->tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+      if(!array_key_exists('chain_idx', $params)) {
+         $this->tmpl->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+      if(!array_key_exists('pipe_idx', $params)) {
+         $this->tmpl->trigger_error("ov_netpath: missing 'pipe_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+      
+      $np_idx = $params['np_idx'];
+      $chain_idx = $params['chain_idx'];
+      $pipe_idx = $params['pipe_idx'];
+
+      $index = $this->tmpl->get_template_vars('smarty.IB.ov_filter.index');
+      if(!$index) {
+         $index = 0;
+      }
+
+      if($index < count($this->avail_filters[$np_idx][$chain_idx][$pipe_idx])) {
+
+         $filter_idx = $this->avail_filters[$np_idx][$chain_idx][$pipe_idx][$index];
+         $filter = $this->filters[$np_idx][$chain_idx][$pipe_idx][$filter_idx];
+
+         $this->tmpl->assign('filter_idx', $filter_idx);
+         $this->tmpl->assign('filter_name', $filter->filter_name);
+
+         $index++;
+         $this->tmpl->assign('smarty.IB.ov_filter.index', $index);
+
+         $repeat = true;
+      }
+      else {
+         $repeat = false;
+      }
+
+      return $content;
+
+   } // smart_ov_filter()
+
 
 }
 
