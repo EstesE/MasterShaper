@@ -252,7 +252,7 @@ class MASTERSHAPER_OVERVIEW {
       
       $np_idx = $params['np_idx'];
 
-      $index = $this->tmpl->get_template_vars('smarty.IB.ov_chain.index');
+      $index = $this->tmpl->get_template_vars('smarty.IB.ov_chain.index-'. $np_idx);
       if(!$index) {
          $index = 0;
       }
@@ -275,7 +275,7 @@ class MASTERSHAPER_OVERVIEW {
          }
 
          $index++;
-         $this->tmpl->assign('smarty.IB.ov_chain.index', $index);
+         $this->tmpl->assign('smarty.IB.ov_chain.index-'. $np_idx, $index);
 
          $repeat = true;
       }
@@ -303,7 +303,7 @@ class MASTERSHAPER_OVERVIEW {
       $np_idx = $params['np_idx'];
       $chain_idx = $params['chain_idx'];
 
-      $index = $this->tmpl->get_template_vars('smarty.IB.ov_pipe.index');
+      $index = $this->tmpl->get_template_vars('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx);
       if(!$index) {
          $index = 0;
       }
@@ -328,7 +328,7 @@ class MASTERSHAPER_OVERVIEW {
          }
 
          $index++;
-         $this->tmpl->assign('smarty.IB.ov_pipe.index', $index);
+         $this->tmpl->assign('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx, $index);
 
          $repeat = true;
       }
@@ -362,7 +362,7 @@ class MASTERSHAPER_OVERVIEW {
       $chain_idx = $params['chain_idx'];
       $pipe_idx = $params['pipe_idx'];
 
-      $index = $this->tmpl->get_template_vars('smarty.IB.ov_filter.index');
+      $index = $this->tmpl->get_template_vars('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx);
       if(!$index) {
          $index = 0;
       }
@@ -376,7 +376,7 @@ class MASTERSHAPER_OVERVIEW {
          $this->tmpl->assign('filter_name', $filter->filter_name);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.ov_filter.index', $index);
+         $this->tmpl->assign('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx, $index);
 
          $repeat = true;
       }
