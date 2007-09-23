@@ -45,12 +45,37 @@ class MASTERSHAPER_TARGETS {
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_show_rules")) {
+         !$this->parent->checkPermissions("user_manage_targets")) {
 
          $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset targets"), _("You do not have enough permissions to access this module!"));
          return 0;
       }
 
+      if(!isset($_GET['mode'])) {
+         $_GET['mode'] = "show";
+      }
+      if(!isset($_GET['idx']) ||
+         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
+         $_GET['idx'] = 0;
+
+      switch($_GET['mode']) {
+         default:
+         case 'show':
+            $this->showList();
+            break;
+         case 'new':
+         case 'edit':
+            $this->showEdit($_GET['idx']);
+            break;
+      }
+
+   }
+
+   /**
+    * display all targets
+    */
+   public function showList()
+   {
       if(!isset($this->parent->screen))
          $this->parent->screen = 0;
 
@@ -79,23 +104,36 @@ class MASTERSHAPER_TARGETS {
 
    } // show()
 
-   function showEdit()
+   /**
+    * display interface to create or edit targets
+    */
+   function showEdit($idx)
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_show_rules")) {
+         !$this->parent->checkPermissions("user_manage_targets")) {
 
          $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset targets"), _("You do not have enough permissions to access this module!"));
          return 0;
       }
+      
+      if($idx != 0) {
+         $target = $this->db->db_fetchSingleRow("
+            SELECT *
+            FROM ". MYSQL_PREFIX ."targets
+            WHERE
+               target_idx='". $idx ."'
+         ");
+      }
+      else {
+         $target->target_match = "IP";
+      }
 
-      $target = $this->db->db_fetchSingleRow("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."targets
-         WHERE
-            target_idx='". $_GET['idx'] ."'
-      ");
-
+      $this->tmpl->assign('target_idx', $idx);
+      $this->tmpl->assign('target_name', $target->target_name);
+      $this->tmpl->assign('target_match', $target->target_match);
+      $this->tmpl->assign('target_ip', $target->target_ip);
+      $this->tmpl->assign('target_mac', $target->target_mac);
       $this->tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
       $this->tmpl->show("targets_edit.tpl");
 
@@ -277,6 +315,7 @@ class MASTERSHAPER_TARGETS {
          $repeat = false;
          return;
       }
+      $group = $params['group'];
       $result = $this->db->db_query("
          SELECT target_idx, target_name
          FROM ". MYSQL_PREFIX ."targets 
@@ -288,7 +327,7 @@ class MASTERSHAPER_TARGETS {
       ");
 
       while($row = $result->fetchRow()) {
-         if(!$this->db->db_fetchSingleRow("
+         if($group == "unused" && !$this->db->db_fetchSingleRow("
             SELECT atg_idx
             FROM ". MYSQL_PREFIX ."assign_target_groups
             WHERE 
@@ -296,10 +335,21 @@ class MASTERSHAPER_TARGETS {
             AND
                atg_target_idx='". $row->target_idx ."'   
             ")) {
-
-         $string = "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
-        }
+            $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
+         }
+         elseif($group == "used"  &&  $this->db->db_fetchSingleRow("
+            SELECT atg_idx
+            FROM ". MYSQL_PREFIX ."assign_target_groups
+            WHERE
+               atg_group_idx='". $_GET['idx'] ."'
+            AND
+               atg_target_idx='". $row->target_idx ."'
+            ")) {
+            $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
+         }
       }
+
+      return $string;
    } // smarty_target_select_list()
 }
 
