@@ -321,6 +321,7 @@ class MASTERSHAPER_OVERVIEW {
          $this->tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
          $this->tmpl->assign('pipe_direction', $pipe->pipe_direction);
          $this->tmpl->assign('pipe_action', $pipe->pipe_action);
+         $this->tmpl->assign('counter', $index+1);
 
          if($pipe->pipe_sl_idx != 0) {
             $this->tmpl->assign('pipe_has_sl', 'true');
