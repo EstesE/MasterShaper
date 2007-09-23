@@ -224,9 +224,7 @@ function updateSubMenu(mode)
 {
    var submenu = document.getElementById("submenu");
    var content = "";
-   if(mode == "manage") {
-      content = HTML_AJAX.grab('rpc.php?action=get_sub_menu&navpoint=manage');
-   }
+   content = HTML_AJAX.grab('rpc.php?action=get_sub_menu&navpoint=' + mode);
    submenu.innerHTML = content;
 }
 
