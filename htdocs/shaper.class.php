@@ -25,6 +25,7 @@ require_once "shaper_cfg.php";
 require_once "shaper_db.php";
 require_once "shaper_tmpl.php";
 require_once "shaper_overview.php";
+require_once "shaper_targets.php";
 
 class MASTERSHAPER {
 
@@ -266,6 +267,15 @@ class MASTERSHAPER {
          case 'overview':
             $overview = new MASTERSHAPER_OVERVIEW($this);
             return $overview->show(); 
+            break;
+         case 'targets':
+            $targets = new MASTERSHAPER_TARGETS($this);
+            return $targets->show();
+            break;
+         case 'newtarget':
+         case 'edittarget':
+            $targets = new MASTERSHAPER_TARGETS($this);
+            return $targets->showEdit();
             break;
 
       }
