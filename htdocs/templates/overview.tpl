@@ -139,6 +139,7 @@
     </tr> 
     { ov_filter np_idx=$netpath_idx chain_idx=$chain_idx pipe_idx=$pipe_idx }
     <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+     <td>&nbsp;</td>
      <td colspan="7">
       <img src="{ $icon_treeend }" alt="tree" />
       <img src="{ $icon_filters }" alt="filter icon" />&nbsp;
