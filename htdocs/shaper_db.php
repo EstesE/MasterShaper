@@ -110,7 +110,7 @@ class MASTERSHAPER_DB {
          $result = $this->db->query($query);
 			
          if(PEAR::isError($result))
-            $this->trowError($result->getMessage());
+            $this->throwError($result->getMessage());
 	
          return $result;
       }
