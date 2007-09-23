@@ -219,3 +219,14 @@ function WSR_getElementsByClassName(oElm, strTagName, oClassNames){
    }
    return (arrReturnElements)
 }
+
+function updateSubMenu(mode)
+{
+   var submenu = document.getElementById("submenu");
+   var content = "";
+   if(mode == "manage") {
+      content = HTML_AJAX.grab('rpc.php?action=get_sub_menu&navpoint=manage');
+   }
+   submenu.innerHTML = content;
+}
+

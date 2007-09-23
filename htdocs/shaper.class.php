@@ -156,28 +156,102 @@ class MASTERSHAPER {
    <table class="menu">
     <tr>
      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:refreshContent('overview');"><img src="icons/home.gif" />&nbsp;<?php print _("Overview"); ?></a>
+      <a href="javascript:refreshContent('overview'); updateSubMenu();"><img src="icons/home.gif" />&nbsp;<?php print _("Overview"); ?></a>
      </td>
      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=manage'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Manage"); ?></a>
+      <a href="javascript:updateSubMenu('manage');" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Manage"); ?></a>
      </td>
      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=settings'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Settings"); ?></a>      
+      <a href="javascript:updateSubMenu('settings');" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Settings"); ?></a>      
      </td>      
      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=monitoring'));" /><img src="icons/chart_pie.gif" />&nbsp;<?php print _("Monitoring"); ?></a>     
+      <a href="javascript:updateSubMenu('monitoring');" /><img src="icons/chart_pie.gif" />&nbsp;<?php print _("Monitoring"); ?></a>     
      </td>      
      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=rules'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Rules"); ?></a>      
+      <a href="javascript:updateSubMenu('rules');" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Rules"); ?></a>      
      </td>      
      <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu(HTML_AJAX.grab('shaper_rpc.php?mode=get&navpoint=others'));" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Others"); ?></a>      
+      <a href="javascript:updateSubMenu('others');" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Others"); ?></a>      
      </td>
     </tr> 
    </table> 
 <?php
    } // get_main_menu()
 
+   /**
+    * returns sub menus
+    */
+   public function get_sub_menu($navpoint)
+   {
+      switch($navpoint) {
+         case 'manage':
+            $string = "<table class=\"submenu\"><tr>\n";
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=1", "icons/flag_blue.gif", _("Chains"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=8", "icons/flag_green.gif", _("Filters"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=2", "icons/flag_pink.gif", _("Pipes"));
+            $string.= "</tr></table>\n";
+            break;
+
+         case 'settings':
+            $string = "<table class=\"submenu\"><tr>\n";
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=4", "icons/flag_purple.gif", _("Targets"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=9", "icons/flag_orange.gif", _("Ports"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=10", "icons/flag_red.gif", _("Protocols"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=3", "icons/flag_yellow.gif", _("Service Levels"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=6", "icons/options.gif", _("Options"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=16", "icons/ms_users_14.gif", _("Users"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=17", "icons/network_card.gif", _("Interfaces"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=18", "icons/network_card.gif", _("Network Paths"));
+            $string.= "</tr></table>\n";
+            break;
+
+         case 'monitoring':
+            $string = "<table class=\"submenu\"><tr>\n";
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=5&amp;show=chains", "icons/flag_blue.gif", _("Chains"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=5&amp;show=pipes", "icons/flag_pink.gif", _("Pipes"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=5&amp;show=bandwidth", "icons/bandwidth.gif", _("Bandwidth"));
+            $string.= "</tr></table>\n";
+            break;
+
+         case 'rules':
+            $string = "<table class=\"submenu\"><tr>\n";
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=1", "icons/show.gif", _("Show"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=2", "icons/enable.gif", _("Load"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=3", "icons/enable.gif", _("Load (debug)"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=4", "icons/disable.gif", _("Unload"));
+            $string.= "</tr></table>\n";
+            break;
+
+         case 'others':
+            $string = "<table class=\"submenu\"><tr>\n";
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=12", "icons/disk.gif", _("Save Configuration"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=13", "icons/restore.gif", _("Restore Configuration"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=14", "icons/reset.gif", _("Reset Configuration"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=15", "icons/update.gif", _("Update L7 Protocols"));
+            $string.= $this->addSubMenuItem("http://www.mastershaper.org/MasterShaper_documentation.pdf", "icons/page_white_acrobat.gif", _("Documentation (PDF)"));
+            $string.= $this->addSubMenuItem("http://www.mastershaper.org/forum/", "icons/ms_users_14.gif", _("Support Forum"));
+            $string.= $this->addSubMenuItem($navurl ."&amp;mode=11", "icons/ms_users_14.gif", _("About"));
+            $string.= "</tr></table>\n";
+            break;
+
+      }
+   
+      return $string;
+   }
+
+   /**
+    * returns submenu item html code
+    */
+   private function addSubMenuItem($link, $image, $text)
+   {
+      $string = "
+     <td onmouseover=\"setBackGrdColor(this, 'mouseover');\" onmouseout=\"setBackGrdColor(this, 'mouseout');\">
+      <a href=\"". $link ."\"><img src=\"". $image ."\" />&nbsp;". $text ."</a>
+     </td>";
+      return $string;
+
+   } // addSubMenuItem() 
+            
    /**
     * return main content
     */

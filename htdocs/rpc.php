@@ -71,6 +71,12 @@ class MASTERSHAPER_RPC {
                print "show_overview";
             break;
 
+         case 'get_sub_menu':
+            if(isset($_GET['navpoint']) && is_string($_GET['navpoint'])) {
+               print $ms->get_sub_menu($_GET['navpoint']);
+            }
+            break;
+
       }
 
    } // process_ajax_request();
