@@ -272,12 +272,6 @@ class MASTERSHAPER {
             $targets = new MASTERSHAPER_TARGETS($this);
             return $targets->show();
             break;
-         case 'newtarget':
-         case 'edittarget':
-            $targets = new MASTERSHAPER_TARGETS($this);
-            return $targets->showEdit();
-            break;
-
       }
 
    } // get_content()
