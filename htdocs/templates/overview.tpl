@@ -10,7 +10,7 @@
  <tr>
   <td>
    &nbsp;
-   Network Path { $netpath_name }
+   Network Path '{ $netpath_name }'
    <a href=""><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
    <a href=""><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
   </td>
