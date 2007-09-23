@@ -63,6 +63,8 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_interfaces', 'icons/network_card.gif');
       $this->assign('icon_treeend', 'icons/tree_end.gif');
 
+      $this->register_function("start_table", array(&$this, "smarty_startTable"), false); 
+
    } // __construct()
 
    public function show($template)
@@ -70,6 +72,14 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->display($template);
 
    } // show()
+
+   public function smarty_startTable($params, &$smarty)
+   {  
+      $this->assign('title', $params['title']);
+      $this->assign('icon', $params['icon']);
+      $this->assign('alt', $params['alt']);
+      $this->show('start_table.tpl');
+   } // smarty_function_startTable() 
 
 }
 

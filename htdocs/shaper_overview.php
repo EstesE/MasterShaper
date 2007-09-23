@@ -155,7 +155,6 @@ class MASTERSHAPER_OVERVIEW {
          $this->cnt_network_paths++;
       }
 
-      $this->tmpl->register_function("start_table", array(&$this, "smarty_startTable"), false);
       $this->tmpl->register_function("sl_list", array(&$this, "smarty_sl_list"), false);
       $this->tmpl->register_function("target_list", array(&$this, "smarty_target_list"), false);
       $this->tmpl->register_block("ov_netpath", array(&$this, "smarty_ov_netpath"));
@@ -165,16 +164,6 @@ class MASTERSHAPER_OVERVIEW {
       $this->tmpl->show("overview.tpl");
 
    } // show()
-
-   public function smarty_startTable($params, &$smarty)
-   {
-      $this->tmpl->assign('title', $params['title']);
-      $this->tmpl->assign('icon', $params['icon']);
-      $this->tmpl->assign('alt', $params['alt']);
-      $this->tmpl->show('start_table.tpl');
-
-   } // smarty_function_startTable()
-
 
    public function smarty_sl_list($params, &$smarty)
    {
