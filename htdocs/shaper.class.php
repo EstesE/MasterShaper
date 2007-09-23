@@ -194,14 +194,14 @@ class MASTERSHAPER {
 
          case 'settings':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=4", "icons/flag_purple.gif", _("Targets"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=9", "icons/flag_orange.gif", _("Ports"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=10", "icons/flag_red.gif", _("Protocols"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=3", "icons/flag_yellow.gif", _("Service Levels"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=6", "icons/options.gif", _("Options"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=16", "icons/ms_users_14.gif", _("Users"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=17", "icons/network_card.gif", _("Interfaces"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=18", "icons/network_card.gif", _("Network Paths"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('targets');", "icons/flag_purple.gif", _("Targets"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('ports');", "icons/flag_orange.gif", _("Ports"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('protocols');", "icons/flag_red.gif", _("Protocols"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('servicelevels');", "icons/flag_yellow.gif", _("Service Levels"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('options');", "icons/options.gif", _("Options"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('users');", "icons/ms_users_14.gif", _("Users"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('interfaces');", "icons/network_card.gif", _("Interfaces"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('networkpaths');", "icons/network_card.gif", _("Network Paths"));
             $string.= "</tr></table>\n";
             break;
 
