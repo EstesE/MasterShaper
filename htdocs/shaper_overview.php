@@ -226,13 +226,14 @@ class MASTERSHAPER_OVERVIEW {
 
       if($index < count($this->avail_network_paths)) {
 
-         $this->tmpl->assign('netpath_name', $this->network_paths[$index]->netpath_name);
-         $this->tmpl->assign('netpath_idx', $this->avail_network_paths[$index]);
+         $np_idx = $this->avail_network_paths[$index];
+         $np =  $this->network_paths[$np_idx];
+         $this->tmpl->assign('netpath_idx', $np_idx);
+         $this->tmpl->assign('netpath_name', $np->netpath_name);
 
          $index++;
          $this->tmpl->assign('smarty.IB.ov_netpath.index', $index);
          $repeat = true;
-
       }
       else {
          $repeat = false;
