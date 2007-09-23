@@ -1,4 +1,4 @@
-{start_table icon="icons/home.gif" alt="home icon" title="MasterShaper Ruleset Overview" }
+{start_table icon=$icon_home alt="home icon" title="MasterShaper Ruleset Overview" }
 <form>
 
 {ov_netpath }
