@@ -159,7 +159,7 @@
  </tr>
  <tr>
   <td>
-   { include file=savebutton.tmpl }
+   { include file=savebutton.tpl }
   </td>
  </tr>
   </table>
