@@ -138,15 +138,19 @@ function refreshSubMenu()
 {
 }
 
-function refreshContent(req_content)
+function refreshContent(req_content, options)
 {
    if(req_content == undefined)
       req_content = "";
 
    var content = document.getElementById("content");
    content.innerHTML = "Loading...";
+   var url = 'rpc.php?action=get_content&request=' + req_content;
+   if(options != undefined) {
+      url = url+options;
+   }
 
-   content.innerHTML = HTML_AJAX.grab(encodeURI('rpc.php?action=get_content&request=' + req_content));
+   content.innerHTML = HTML_AJAX.grab(encodeURI(url));
 }
 
 function check_login()
