@@ -6,7 +6,7 @@
  <tr>
   <td colspan="3" style="text-align: center;">
    <img src="{ $icon_new }" alt="new icon" />
-   <a href="javascript:refreshContent('newtarget');">Create a new Target</a>
+   <a href="javascript:refreshContent('targets', '&mode=new');">Create a new Target</a>
   </td>
  </tr>
  <tr>
@@ -21,7 +21,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{ $icon_targets }" alt="target icon" />
-   <a href="javascript:refreshContent('edittarget', '{ $target_idx }');">{ $target_name }</a>
+   <a href="javascript:refreshContent('targets', '&mode=edit&idx={ $target_idx }');">{ $target_name }</a>
   </td>
   <td>
    <img src="{ $icon_targets }" alt="target icon" />
