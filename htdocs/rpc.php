@@ -57,6 +57,10 @@ class MASTERSHAPER_RPC {
          case 'get_content':
             print $ms->get_content($_GET['request']);
             break;
+         
+         case 'store':
+            print $ms->store();
+            break;
 
          case 'check_login':
             print $ms->check_login();

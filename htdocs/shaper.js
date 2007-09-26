@@ -232,3 +232,39 @@ function updateSubMenu(mode)
    submenu.innerHTML = content;
 }
 
+function save(module)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   var objForm = document.forms[module];
+   var objEl = null;
+   var x = 0;
+      var a = 0;
+
+   objTemp['test'] = document.forms['targets'];
+   objTemp['module'] = module;
+   objTemp['target_name'] = document.forms['targets'].target_name.value;
+   objTemp['target_match'] = target_match;
+   objTemp['target_ip'] = document.forms['targets'].target_ip.value;
+   objTemp['target_mac'] = document.forms['targets'].target_mac.value;
+   objTemp['target_group'] = document.forms['targets'].used;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("overview");
+   }
+   else {
+      window.alert(retr);
+   }
+
+}
+
+function getRadioValue(obj)
+{
+   for(cnt = 0; cnt < obj.length; cnt++) {
+      if(obj[cnt].checked)
+         return obj[cnt].value;
+   }
+}

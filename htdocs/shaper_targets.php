@@ -69,7 +69,16 @@ class MASTERSHAPER_TARGETS {
             break;
       }
 
-   }
+   } // show()
+
+   /**
+    * handle updates
+    */
+   public function store()
+   {
+      print_r($_POST);
+
+   } // store()
 
    /**
     * display all targets

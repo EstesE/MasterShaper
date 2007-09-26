@@ -277,6 +277,26 @@ class MASTERSHAPER {
    } // get_content()
 
    /**
+    * bla
+    */
+   public function store()
+   {
+      if(!$this->is_logged_in()) {
+         return;
+      }
+
+      if(isset($_POST['module'])) {
+         switch($_POST['module']) {
+            case 'targets':
+               $targets = new MASTERSHAPER_TARGETS($this);
+               return $targets->store();
+               break;
+         }
+      }
+   } // store()
+      
+
+   /**
     * check login
     */
    public function check_login()
