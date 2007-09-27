@@ -76,7 +76,104 @@ class MASTERSHAPER_TARGETS {
     */
    public function store()
    {
-      print_r($_POST);
+      isset($_POST['target_new']) && $_POST['target_new'] == 1 ? $new = 1 : $new = NULL;
+
+      $error = 0;
+
+      if(!isset($_POST['target_name']) || $_POST['target_name'] == "") {
+         return _("Please enter a name for this target!");
+      }
+      if(!$error && isset($new) && $this->checkTargetExists($_POST['target_name'])) { 
+         return _("A target with that name already exists!");
+      }
+      if(!$error && !isset($new) && $_POST['namebefore'] != $_POST['target_name']
+         && $this->checkTargetExists($_POST['target_name'] )) {
+         return _("A target with that name already exists!");
+      }
+      if(!$error && $_POST['target_match'] == "IP" && $_POST['target_ip'] == "") {
+         return _("You have selected IP match but didn't entered a IP address!");
+      }
+      elseif(!$error && $_POST['target_match'] == "IP" && $_POST['target_ip'] != "") {
+         /* Is target_ip a ip range seperated by "-" */
+         if(strstr($_POST['target_ip'], "-") !== false) {
+            $hosts = split("-", $_POST['target_ip']);
+            foreach($hosts as $host) {
+               $ipv4 = new Net_IPv4;
+               if(!$error && !$ipv4->validateIP($host)) {
+                  return _("Incorrect IP address in IP range definition! Please enter a valid IP address!");
+               }
+            }
+         }
+         /* Is target_ip a network */
+         elseif(strstr($_POST['target_ip'], "/") !== false) {
+            $ipv4 = new Net_IPv4;
+            $net = $ipv4->parseAddress($_POST['target_ip']);
+            if($net->netmask == "" || $net->netmask == "0.0.0.0") {
+               return _("Incorrect CIDR address! Please enter a valid network address!");
+            }
+         }
+         /* target_ip is a simple IP */
+         else {
+            $ipv4 = new Net_IPv4;
+            if(!$ipv4->validateIP($_POST['target_ip'])) {
+               return _("Incorrect IP address! Please enter a valid IP address!");
+            }
+         }
+      }
+      /* MAC address specified? */
+      if(!$error && $_POST['target_match'] == "MAC" && $_POST['target_mac'] == "") {
+         return _("You have selected MAC match but didn't entered a MAC address!");
+      }
+      elseif(!$error && $_POST['target_match'] == "MAC" && $_POST['target_mac'] != "") {
+         if(!preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $_POST['target_mac'])
+            && !preg_match("/(.*)-(.*)-(.*)-(.*)-(.*)-(.*)/", $_POST['target_mac'])) {
+            return _("You have selected MAC match but specified a INVALID MAC address! Please specify a correct MAC address!");
+         }
+      }
+      if(!$error && $_POST['target_match'] == "GROUP" && count($_POST['target_used']) < 1) {
+         return _("You have selected Group match but didn't selected at least one target from the list!");
+      }
+
+      if(!$error) {
+         if(isset($new)) {
+            $this->db->db_query("
+               INSERT INTO ". MYSQL_PREFIX ."targets
+                  (target_name, target_match, target_ip, target_mac)
+               VALUES  (
+                  '". $_POST['target_name'] ."',
+                  '". $_POST['target_match'] ."',
+                  '". $_POST['target_ip'] ."',
+                  '". $_POST['target_mac'] ."'
+               )
+            ");
+            $_GET['idx'] = $this->db->db_getid();
+
+         }
+         else {
+            $this->db->db_query("
+               UPDATE ". MYSQL_PREFIX ."targets
+               SET 
+                  target_name='". $_POST['target_name'] ."',
+                  target_match='". $_POST['target_match'] ."',
+                  target_ip='". $_POST['target_ip'] ."',
+                  target_mac='". $_POST['target_mac'] ."'
+                  WHERE target_idx='". $_POST['target_idx'] ."'
+            ");
+         }
+
+         if($_POST['target_used']) {
+            $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."assign_target_groups WHERE atg_group_idx='". $_POST['target_idx'] ."'");
+            foreach($_POST['target_used'] as $use) {
+               if($use != "") {
+                  $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_target_groups (atg_group_idx, atg_target_idx) "
+                  ."VALUES ('". $_POST['target_idx'] ."', '". $use ."')");
+               }
+            }
+         }
+         return "ok";
+      }
+
+      return "unknown error";
 
    } // store()
 
@@ -183,139 +280,33 @@ class MASTERSHAPER_TARGETS {
 
    } // smarty_target_list()
 
-   public function smarty_edit()
+   public function delete()
    {
-   
-      switch($bla) {
-         case 'edit':
+      if(isset($_POST['target_idx'])) {
+         $idx = $_POST['target_idx'];
 
-            if(!$saveit) {
-            }
-            else {
-               $error = 0;
-
-               if(!isset($_POST['target_name']) || $_POST['target_name'] == "") {
-                  $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("Please enter a name for this target!"));
-                  $error = 1;
-               }
-               if(!$error && isset($_GET['new']) && $this->db->db_fetchSingleRow("SELECT target_idx FROM ". MYSQL_PREFIX ."targets WHERE target_name LIKE BINARY '". $_POST['target_name'] ."'")) {
-                  $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("A target with that name already exists!"));
-                  $error = 1;
-               }
-               if(!$error && !isset($_GET['new']) && $_GET['namebefore'] != $_POST['target_name'] && $this->db->db_fetchSingleRow("SELECT target_idx FROM ". MYSQL_PREFIX ."targets WHERE target_name LIKE BINARY '". $_POST['target_name'] ."'")) {
-                  $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("A target with that name already exists!"));
-                  $error = 1;
-               }
-               if(!$error && $_POST['target_match'] == "IP" && $_POST['target_ip'] == "") {
-                  $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("You have selected IP match but didn't entered a IP address!"));
-                  $error = 1;
-               }
-               elseif(!$error && $_POST['target_match'] == "IP" && $_POST['target_ip'] != "") {
-                  /* Is target_ip a ip range seperated by "-" */
-                  if(strstr($_POST['target_ip'], "-") !== false) {
-                     $hosts = split("-", $_POST['target_ip']);
-                     foreach($hosts as $host) {
-                        $ipv4 = new Net_IPv4;
-                        if(!$error && !$ipv4->validateIP($host)) {
-                           $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("Incorrect IP address in IP range definition! Please enter a valid IP address!"));
-                           $error = 1;
-                        }
-                     }
-                  }
-
-                  /* Is target_ip a network */
-                  elseif(strstr($_POST['target_ip'], "/") !== false) {
-                     $ipv4 = new Net_IPv4;
-                     $net = $ipv4->parseAddress($_POST['target_ip']);
-                     if($net->netmask == "" || $net->netmask == "0.0.0.0") {
-                        $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("Incorrect CIDR address! Please enter a valid network address!"));
-                        $error = 1;
-                     }
-                  }
-
-                  /* target_ip is a simple IP */
-                  else {
-                     $ipv4 = new Net_IPv4;
-                     if(!$ipv4->validateIP($_POST['target_ip'])) {
-                        $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("Incorrect IP address! Please enter a valid IP address!"));
-                        $error = 1;
-                     }
-                  }
-               }
-
-               /* MAC address specified? */
-               if(!$error && $_POST['target_match'] == "MAC" && $_POST['target_mac'] == "") {
-                  $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("You have selected MAC match but didn't entered a MAC address!"));
-                  $error = 1;
-               }
-               elseif(!$error && $_POST['target_match'] == "MAC" && $_POST['target_mac'] != "") {
-                  if(!preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $_POST['target_mac']) && !preg_match("/(.*)-(.*)-(.*)-(.*)-(.*)-(.*)/", $_POST['target_mac'])) {
-                     $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("You have selected MAC match but specified a INVALID MAC address! Please specify a correct MAC address!"));
-                     $error = 1;
-                  }
-               }
-               if(!$error && $_POST['target_match'] == "GROUP" && count($_POST['used']) <= 1) {
-                  $this->parent->printError("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Manage Target"), _("You have selected Group match but didn't selected at least one target from the list!"));
-                  $error = 1;
-               }
-
-               if(!$error) {
-                  if(isset($_GET['new'])) {
-                     $this->db->db_query("
-                        INSERT INTO ". MYSQL_PREFIX ."targets
-                           (target_name, target_match, target_ip, target_mac)
-                        VALUES  (
-                           '". $_POST['target_name'] ."',
-                           '". $_POST['target_match'] ."',
-                           '". $_POST['target_ip'] ."',
-                           '". $_POST['target_mac'] ."'
-                        )
-                     ");
-                     $_GET['idx'] = $this->db->db_getid();
-
-                  }
-                  else {
-                     $this->db->db_query("
-                        UPDATE ". MYSQL_PREFIX ."targets
-                        SET 
-                           target_name='". $_POST['target_name'] ."',
-                           target_match='". $_POST['target_match'] ."',
-                           target_ip='". $_POST['target_ip'] ."',
-                           target_mac='". $_POST['target_mac'] ."'
-                           WHERE target_idx='". $_GET['idx'] ."'
-                     ");
-                  }
-
-                  if($_POST['used']) {
-                     $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."assign_target_groups WHERE atg_group_idx='". $_GET['idx'] ."'");
-		               foreach($_POST['used'] as $use) {
-                        if($use != "") {
-                           $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_target_groups (atg_group_idx, atg_target_idx) "
-                           ."VALUES ('". $_GET['idx'] ."', '". $use ."')");
-			               }
-                     }
-                  }
-
-                  $this->parent->goBack();
-               }
-            }
-            break;
-
-         case DELETE:
-
-            //$this->parent->printYesNo("<img src=\"". ICON_TARGETS ."\" alt=\"target icon\" />&nbsp;". _("Delete Target"), _("Delete target") ." ". $_GET['name'] ."?");
-            if(isset($_GET['idx'])) {
-               $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."targets WHERE target_idx='". $_GET['idx'] ."'");
-               $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."assign_target_groups WHERE atg_group_idx='". $_GET['idx'] ."'");
-               $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."assign_target_groups WHERE atg_target_idx='". $_GET['idx'] ."'");
-               $this->parent->goBack();
-            }
-            break;
+         $this->db->db_query("
+            DELETE FROM ". MYSQL_PREFIX ."targets
+            WHERE
+               target_idx='". $idx ."'
+         ");
+         $this->db->db_query("
+            DELETE FROM ". MYSQL_PREFIX ."assign_target_groups
+            WHERE
+               atg_group_idx='". $idx ."'
+         ");
+         $this->db->db_query("
+            DELETE FROM ". MYSQL_PREFIX ."assign_target_groups
+            WHERE
+               atg_target_idx='". $idx ."'
+         ");
+         
+         return "ok";
       }
 
-
-
-   } // edit()
+      return "unknown error";
+   
+   } // delete()
 
    public function smarty_target_select_list($params, &$smarty)
    {
@@ -360,6 +351,25 @@ class MASTERSHAPER_TARGETS {
 
       return $string;
    } // smarty_target_select_list()
+
+   /**
+    * checks if target if provided target name already
+    * and will return true if so.
+    */
+   private function checkTargetExists($target_name)
+   {
+      if($this->db->db_fetchSingleRow("
+         SELECT target_idx
+         FROM ". MYSQL_PREFIX ."targets
+         WHERE
+            target_name LIKE BINARY '". $target_name ."'
+         ")) {
+         return true;
+      }
+
+      return false;
+   } // checkTargetExists()
+
 }
 
 ?>

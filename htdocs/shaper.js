@@ -232,28 +232,36 @@ function updateSubMenu(mode)
    submenu.innerHTML = content;
 }
 
-function save(module)
+function saveTarget()
 {
    // Create object with values of the form
    var objTemp = new Object();
 
-   var objForm = document.forms[module];
-   var objEl = null;
-   var x = 0;
-      var a = 0;
-
-   objTemp['test'] = document.forms['targets'];
-   objTemp['module'] = module;
+   objTemp['module'] = 'target';
+   objTemp['action'] = 'modify';
+   objTemp['target_new'] = document.forms['targets'].target_new.value;
+   if(document.forms['targets'].target_new.value == 0) {
+      objTemp['target_idx'] = document.forms['targets'].target_idx.value;
+      objTemp['namebefore'] = document.forms['targets'].namebefore.value;
+   }
    objTemp['target_name'] = document.forms['targets'].target_name.value;
-   objTemp['target_match'] = target_match;
+   objTemp['target_match'] = currentRadio(document.forms['targets'].target_match);
    objTemp['target_ip'] = document.forms['targets'].target_ip.value;
    objTemp['target_mac'] = document.forms['targets'].target_mac.value;
    objTemp['target_group'] = document.forms['targets'].used;
 
+   var target_used = new Array();
+   var used = document.forms['targets'].elements['used[]'];
+   for(i = 1; i < used.length; i++) {
+      target_used[i-1] = used.options[i].value;
+   }
+
+   objTemp['target_used'] = target_used;
+
    var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
 
    if(retr == "ok") {
-      refreshPage("overview");
+      refreshPage("targets");
    }
    else {
       window.alert(retr);
@@ -261,7 +269,26 @@ function save(module)
 
 }
 
-function getRadioValue(obj)
+function deleteTarget(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'target';
+   objTemp['action'] = 'delete';
+   objTemp['target_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("targets");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deleteTarget()
+
+function currentRadio(obj)
 {
    for(cnt = 0; cnt < obj.length; cnt++) {
       if(obj[cnt].checked)

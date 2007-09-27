@@ -103,6 +103,11 @@ class MASTERSHAPER {
          print "PEAR MDB2 package is missing<br />\n";
          $missing = true;
       }
+      @include_once 'Net/IPv4.php';
+      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
+         print "PEAR Net_IPv4 package is missing<br />\n";
+         $missing = true;
+      }
       ini_restore('track_errors');
 
       if(!is_dir(BASE_PATH ."/jpgraph")) {
@@ -287,9 +292,12 @@ class MASTERSHAPER {
 
       if(isset($_POST['module'])) {
          switch($_POST['module']) {
-            case 'targets':
+            case 'target':
                $targets = new MASTERSHAPER_TARGETS($this);
-               return $targets->store();
+               switch($_POST['action']) {
+                  case 'modify': return $targets->store(); break;
+                  case 'delete': return $targets->delete(); break;
+               }
                break;
          }
       }

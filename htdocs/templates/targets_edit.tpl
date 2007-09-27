@@ -1,9 +1,13 @@
+<form id="targets" onsubmit="saveTarget(); return false;">
 { if ! $target_idx }
  {start_table icon=$icon_targets alt="target icon" title="Create a new Target" }
+ <input type="hidden" name="target_new" value="1">
 { else }
  {start_table icon=$icon_targets alt="target icon" title="Modify Target $target_name" }
+ <input type="hidden" name="target_new" value="0" />
+ <input type="hidden" name="namebefore" value="{ $target_name }" />
+ <input type="hidden" name="target_idx" value="{ $target_idx }" />
 { /if }
-<form id="targets" onsubmit="save('targets'); return false;">
 <table style="width: 100%;" class="withborder">
  <tr>
   <td colspan="3">&nbsp;</td>
