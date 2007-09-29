@@ -193,24 +193,21 @@ class MASTERSHAPER_PORTS {
    {
       isset($_POST['port_new']) && $_POST['port_new'] == 1 ? $new = 1 : $new = NULL;
 
-      $error = 0;
-      $is_numeric = 1;
-
       if(!isset($_POST['port_name']) || $_POST['port_name'] == "") {
          return _("Please enter a port name!");
       }
 
-      if(!$error && isset($new) && $this->checkPortExists($_POST['port_name'])) {
+      if(isset($new) && $this->checkPortExists($_POST['port_name'])) {
          return _("A port with that name already exists!");
       }
 
-      if(!$error && !isset($new) && $_POST['namebefore'] != $_POST['port_name']
+      if(!isset($new) && $_POST['namebefore'] != $_POST['port_name']
          && $this->checkPortExists($_POST['port_name'])) {
          return _("A port with that name already exists!");
       }
 
       /* only one or several ports */
-      if(!$error && (preg_match("/,/", $_POST['port_number']) || preg_match("/-/", $_POST['port_number']))) {
+      if(preg_match("/,/", $_POST['port_number']) || preg_match("/-/", $_POST['port_number'])) {
          $temp_ports = split(",", $_POST['port_number']);
          foreach($temp_ports as $port) {
             $port = trim($port); 
@@ -227,11 +224,8 @@ class MASTERSHAPER_PORTS {
             }
          }
       }
-      elseif(!$error && !is_numeric($_POST['port_number']) ||
-         $_POST['port_number'] <= 0 || $_POST['port_number'] >= 65536)
-         $is_numeric = 0;
-
-      if(!$error && !$is_numeric) {
+      elseif(!is_numeric($_POST['port_number']) ||
+         $_POST['port_number'] <= 0 || $_POST['port_number'] >= 65536) {
          return _("Please enter a decimal port number within 1 - 65535!");
       }
 
