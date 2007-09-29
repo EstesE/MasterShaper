@@ -267,7 +267,7 @@ function saveTarget()
       window.alert(retr);
    }
 
-}
+} // saveTarget()
 
 function deleteTarget(idx)
 {
@@ -287,6 +287,54 @@ function deleteTarget(idx)
       window.alert(retr);
    }
 } // deleteTarget()
+
+function savePort()
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'port';
+   objTemp['action'] = 'modify';
+   objTemp['port_new'] = document.forms['ports'].port_new.value;
+   if(document.forms['ports'].port_new.value == 0) {
+      objTemp['port_idx'] = document.forms['ports'].port_idx.value;
+      objTemp['namebefore'] = document.forms['ports'].namebefore.value;
+   }
+   objTemp['port_name'] = document.forms['ports'].port_name.value;
+   objTemp['port_desc'] = document.forms['ports'].port_desc.value;
+   objTemp['port_number'] = document.forms['ports'].port_number.value;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("ports");
+   }
+   else {
+      window.alert(retr);
+   }
+
+} // savePort()
+
+function deletePort(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'port';
+   objTemp['action'] = 'delete';
+   objTemp['port_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("ports");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deletePort()
+
+
 
 function currentRadio(obj)
 {

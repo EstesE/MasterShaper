@@ -26,6 +26,7 @@ require_once "shaper_db.php";
 require_once "shaper_tmpl.php";
 require_once "shaper_overview.php";
 require_once "shaper_targets.php";
+require_once "shaper_ports.php";
 
 class MASTERSHAPER {
 
@@ -268,7 +269,6 @@ class MASTERSHAPER {
       }
 
       switch($request) {
-
          case 'overview':
             $overview = new MASTERSHAPER_OVERVIEW($this);
             return $overview->show(); 
@@ -276,6 +276,10 @@ class MASTERSHAPER {
          case 'targets':
             $targets = new MASTERSHAPER_TARGETS($this);
             return $targets->show();
+            break;
+         case 'ports':
+            $ports = new MASTERSHAPER_PORTS($this);
+            return $ports->show();
             break;
       }
 
@@ -297,6 +301,13 @@ class MASTERSHAPER {
                switch($_POST['action']) {
                   case 'modify': return $targets->store(); break;
                   case 'delete': return $targets->delete(); break;
+               }
+               break;
+            case 'port':
+               $ports = new MASTERSHAPER_PORTS($this);
+               switch($_POST['action']) {
+                  case 'modify': return $ports->store(); break;
+                  case 'delete': return $ports->delete(); break;
                }
                break;
          }
