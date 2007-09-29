@@ -1,7 +1,7 @@
 <form id="ports" onsubmit="savePort(); return false;">
 { if ! $port_idx }
  {start_table icon=$icon_ports alt="port icon" title="Create a new Port" }
- <input type="hidden" name="port_new" value="1">
+ <input type="hidden" name="port_new" value="1" />
 { else }
  {start_table icon=$icon_ports alt="port icon" title="Modify Port $port_name" }
  <input type="hidden" name="port_new" value="0" />
