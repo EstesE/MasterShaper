@@ -27,6 +27,7 @@ require_once "shaper_tmpl.php";
 require_once "shaper_overview.php";
 require_once "shaper_targets.php";
 require_once "shaper_ports.php";
+require_once "shaper_protocols.php";
 
 class MASTERSHAPER {
 
@@ -281,6 +282,10 @@ class MASTERSHAPER {
             $ports = new MASTERSHAPER_PORTS($this);
             return $ports->show();
             break;
+         case 'protocols':
+            $protocols = new MASTERSHAPER_protocols($this);
+            return $protocols->show();
+            break;
       }
 
    } // get_content()
@@ -308,6 +313,13 @@ class MASTERSHAPER {
                switch($_POST['action']) {
                   case 'modify': return $ports->store(); break;
                   case 'delete': return $ports->delete(); break;
+               }
+               break;
+            case 'protocol':
+               $protocols = new MASTERSHAPER_PROTOCOLS($this);
+               switch($_POST['action']) {
+                  case 'modify': return $protocols->store(); break;
+                  case 'delete': return $protocols->delete(); break;
                }
                break;
          }

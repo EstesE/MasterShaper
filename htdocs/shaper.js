@@ -334,6 +334,53 @@ function deletePort(idx)
    }
 } // deletePort()
 
+function saveProtocol()
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'protocol';
+   objTemp['action'] = 'modify';
+   objTemp['proto_new'] = document.forms['protocols'].proto_new.value;
+   if(document.forms['protocols'].proto_new.value == 0) {
+      objTemp['proto_idx'] = document.forms['protocols'].proto_idx.value;
+      objTemp['namebefore'] = document.forms['protocols'].namebefore.value;
+   }
+   objTemp['proto_name'] = document.forms['protocols'].proto_name.value;
+   objTemp['proto_number'] = document.forms['protocols'].proto_number.value;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("protocols");
+   }
+   else {
+      window.alert(retr);
+   }
+
+} // saveProtocol()
+
+function deleteProtocol(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'protocol';
+   objTemp['action'] = 'delete';
+   objTemp['proto_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("protocols");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deletePort()
+
+
+
 
 
 function currentRadio(obj)
