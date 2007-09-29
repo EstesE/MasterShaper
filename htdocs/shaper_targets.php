@@ -193,18 +193,15 @@ class MASTERSHAPER_TARGETS {
       $cnt_targets = 0;
 
       while($target = $res_targets->fetchrow()) {
-
          $this->avail_targets[$cnt_targets] = $target->target_idx;
          $this->targets[$target->target_idx] = $target;
-
          $cnt_targets++;
-
       }
 
       $this->tmpl->register_block("target_list", array(&$this, "smarty_target_list"));
       $this->tmpl->show("targets_list.tpl");
 
-   } // show()
+   } // showList()
 
    /**
     * display interface to create or edit targets
