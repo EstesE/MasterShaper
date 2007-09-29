@@ -21,10 +21,6 @@
  *
  ***************************************************************************/
 
-define('MANAGE_POS_CHAINS', 1);
-define('MANAGE_POS_PIPES', 2);
-define('MANAGE_POS_NETPATHS', 3);
-
 class MASTERSHAPER_TARGETS {
 
    var $db;
@@ -34,7 +30,7 @@ class MASTERSHAPER_TARGETS {
    /* Class constructor */
    function MASTERSHAPER_TARGETS($parent)
    {
-      $this->db = $parent->db;
+      $this->db = &$parent->db;
       $this->parent = &$parent;
       $this->tmpl = &$this->parent->tmpl;
 
