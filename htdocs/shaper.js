@@ -379,10 +379,6 @@ function deleteProtocol(idx)
    }
 } // deletePort()
 
-
-
-
-
 function currentRadio(obj)
 {
    for(cnt = 0; cnt < obj.length; cnt++) {
