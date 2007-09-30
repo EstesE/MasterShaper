@@ -28,6 +28,7 @@ require_once "shaper_overview.php";
 require_once "shaper_targets.php";
 require_once "shaper_ports.php";
 require_once "shaper_protocols.php";
+require_once "shaper_service_levels.php";
 
 class MASTERSHAPER {
 
@@ -283,8 +284,12 @@ class MASTERSHAPER {
             return $ports->show();
             break;
          case 'protocols':
-            $protocols = new MASTERSHAPER_protocols($this);
-            return $protocols->show();
+            $proto = new MASTERSHAPER_PROTOCOLS($this);
+            return $proto->show();
+            break;
+         case 'servicelevels':
+            $sl = new MASTERSHAPER_SERVICELEVELS($this);
+            return $sl->show();
             break;
       }
 
@@ -315,11 +320,18 @@ class MASTERSHAPER {
                   case 'delete': return $ports->delete(); break;
                }
                break;
-            case 'protocol':
-               $protocols = new MASTERSHAPER_PROTOCOLS($this);
+            case 'proto':
+               $proto = new MASTERSHAPER_PROTOCOLS($this);
                switch($_POST['action']) {
-                  case 'modify': return $protocols->store(); break;
-                  case 'delete': return $protocols->delete(); break;
+                  case 'modify': return $proto->store(); break;
+                  case 'delete': return $proto->delete(); break;
+               }
+               break;
+            case 'servicelevels':
+               $sl = new MASTERSHAPER_SERVICELEVELS($this);
+               switch($_POST['action']) {
+                  case 'modify': return $sl->store(); break;
+                  case 'delete': return $sl->delete(); break;
                }
                break;
          }
@@ -423,6 +435,20 @@ class MASTERSHAPER {
 
    } // checkPermissions()
 
+   /**
+    * return human readable priority name
+    */
+   function getPriorityName($prio)
+   {
+      switch($prio) {
+         case 0: return _("Ignored"); break;
+         case 1: return _("Highest"); break;
+         case 2: return _("High");    break;
+         case 3: return _("Normal");  break;
+         case 4: return _("Low");     break;
+         case 5: return _("Lowest");  break;
+      }
+   } // getPriorityName()
 
 }
 
