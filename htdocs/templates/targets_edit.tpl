@@ -91,7 +91,7 @@
  <tr>
   <td style="text-align: center;"><a href="javascript:refreshContent('targets');" title="Back"><img src="{ $icon_arrow_left }" alt="arrow left icon" /></a></td>
   <td><input type="submit" value="Save" /></td>
-  <td><?php _("Save settings."); ?></td>
+  <td>Save settings.</td>
  </tr>
 </table> 
 </form>
