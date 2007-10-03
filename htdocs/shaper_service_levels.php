@@ -108,7 +108,7 @@ class MASTERSHAPER_SERVICELEVELS {
       }
 
       if($idx != 0) {
-         $port = $this->db->db_fetchSingleRow("
+         $sl = $this->db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."service_levels
             WHERE
@@ -117,10 +117,20 @@ class MASTERSHAPER_SERVICELEVELS {
       }
       else {
          /* preset values here */
+         
       }
 
-      $this->tmpl->assign('classifier', $this->parent->getOption("classifier"));
-      $this->tmpl->assign('sl_idx', $sl_idx);
+      if(!isset($_GET['classifier']))
+         $this->tmpl->assign('classifier', $this->parent->getOption("classifier"));
+      else
+         $this->tmpl->assign('classifier', $_GET['classifier']);
+
+      if(!isset($_GET['qdiscmode']))
+         $this->tmpl->assign('qdiscmode', $sl->sl_qdisc);
+      else
+         $this->tmpl->assign('qdiscmode', $_GET['qdiscmode']);
+
+      $this->tmpl->assign('sl_idx', $idx);
       $this->tmpl->assign('sl_name', $sl->sl_name);
       $this->tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
       $this->tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
