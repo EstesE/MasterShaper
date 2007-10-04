@@ -450,6 +450,7 @@ class MASTERSHAPER_SERVICELEVELS {
 
 	       }
 	    }
+
    } // edit()
 
    public function delete()
