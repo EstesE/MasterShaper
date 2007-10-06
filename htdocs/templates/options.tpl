@@ -1,3 +1,4 @@
+{start_table icon=$icon_options alt="option icon" title="Manage Options" }
 <form id="options" onsubmit="saveOptions(); return false;">
  <table style="width: 100%;" class="withborder2">
   <tr>
