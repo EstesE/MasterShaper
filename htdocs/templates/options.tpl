@@ -1,4 +1,4 @@
-<form action="saveOptions()">
+<form id="options" onsubmit="saveOptions(); return false;">
  <table style="width: 100%;" class="withborder2">
   <tr>
    <td colspan="3">

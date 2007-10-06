@@ -101,6 +101,8 @@ class MASTERSHAPER_OPTIONS {
          $this->parent->setOption("esfq_default_hash", $_POST['esfq_default_hash']);
       }
 
+      print "ok";
+
    } // store()
 
    /**

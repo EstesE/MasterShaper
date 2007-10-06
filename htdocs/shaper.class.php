@@ -339,8 +339,8 @@ class MASTERSHAPER {
                   case 'delete': return $sl->delete(); break;
                }
                break;
-            case 'option':
-               $opt = new MASTERSHAPER_SERVICELEVELS($this);
+            case 'options':
+               $opt = new MASTERSHAPER_OPTIONS($this);
                switch($_POST['action']) {
                   case 'modify': return $opt->store(); break;
                }
@@ -426,6 +426,22 @@ class MASTERSHAPER {
       return $result->setting_value;
 
    } // getOption() 
+
+   /**
+    * set value of requested setting
+    */
+   public function setOption($key, $value)
+   {
+      $this->db->db_query("
+         REPLACE INTO ". MYSQL_PREFIX ."settings (
+            setting_key, setting_value
+         ) VALUES (
+            '". $key ."',
+            '". $value ."'
+         )
+      ");
+
+   } // setOption()
 
    /**
     * return true if the current user has the requested

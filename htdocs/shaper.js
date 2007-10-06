@@ -387,6 +387,14 @@ function currentRadio(obj)
    }
 }
 
+function currentSelect(obj)
+{
+   for(cnt = 0; cnt < obj.length; cnt++) {
+      if(obj[cnt].selected)
+         return obj[cnt].value;
+   }
+}
+
 function saveServiceLevel()
 {
    // Create object with values of the form
@@ -479,5 +487,41 @@ function deleteServiceLevel(idx)
       window.alert(retr);
    }
 } // deletePort()
+
+function saveOptions()
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'options';
+   objTemp['action'] = 'modify';
+
+   opt_form = document.forms['options'];
+
+   objTemp['language'] = currentSelect(opt_form.language);
+   objTemp['ack_sl'] = currentSelect(opt_form.ack_sl);
+   objTemp['classifier'] = currentSelect(opt_form.classifier);
+   objTemp['qdisc'] = currentSelect(opt_form.qdisc);
+   if(objTemp['qdisc'] == "ESFQ") {
+      objTemp['sl_default_esfq_perturb'] = opt_form.sl_default_esfq_perturb.value;
+      objTemp['sl_default_esfq_limit'] = opt_form.sl_default_esfq_limit.value;
+      objTemp['sl_default_esfq_depth'] = opt_form.sl_default_esfq_depth.value;
+      objTemp['sl_default_esfq_divisor'] = opt_form.sl_default_esfq_divisor.value;
+      objTemp['sl_default_esfq_hash'] = opt_form.sl_default_esfq_hash.value;
+   }
+   objTemp['filter'] = currentRadio(opt_form.filter);
+   objTemp['msmode'] = currentRadio(opt_form.msmode);
+   objTemp['authentication'] = currentRadio(opt_form.authentication);
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("options");
+   }
+   else {
+      window.alert(retr);
+   }
+
+} // saveServiceLevel()
 
 
