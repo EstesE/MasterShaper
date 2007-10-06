@@ -320,14 +320,14 @@ class MASTERSHAPER {
                   case 'delete': return $ports->delete(); break;
                }
                break;
-            case 'proto':
+            case 'protocol':
                $proto = new MASTERSHAPER_PROTOCOLS($this);
                switch($_POST['action']) {
                   case 'modify': return $proto->store(); break;
                   case 'delete': return $proto->delete(); break;
                }
                break;
-            case 'servicelevels':
+            case 'servicelevel':
                $sl = new MASTERSHAPER_SERVICELEVELS($this);
                switch($_POST['action']) {
                   case 'modify': return $sl->store(); break;
