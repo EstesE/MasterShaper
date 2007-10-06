@@ -22,7 +22,7 @@
  <tr>
   <td>Classifier:</td>
   <td>
-   <select name="classifier" onchange="refreshContent('servicelevels', '&mode=new&classifier='+(document.forms['servicelevels'].classifier.options[document.forms['servicelevels'].classifier.selectedIndex].value)+'&qdiscmode='+(document.forms['servicelevels'].sl_qdisc.options[document.forms['servicelevels'].sl_qdisc.selectedIndex].value));">
+   <select name="classifier" onchange="refreshContent('servicelevels', '&mode=edit&idx={ $sl_idx }&classifier='+(document.forms['servicelevels'].classifier.options[document.forms['servicelevels'].classifier.selectedIndex].value)+'&qdiscmode='+(document.forms['servicelevels'].sl_qdisc.options[document.forms['servicelevels'].sl_qdisc.selectedIndex].value));">
     <option value="HTB"  { if $classifier == "HTB"  } selected="selected" { /if }>HTB</option>
     <option value="HFSC" { if $classifier == "HFSC" } selected="selected" { /if }>HFSC</option>
     <option value="CBQ"  { if $classifier == "CBQ"  } selected="selected" { /if }>CBQ</option>
@@ -211,7 +211,7 @@
    Queuing Discipline:
   </td>
   <td>
-   <select name="sl_qdisc"  onchange="refreshContent('servicelevels', '&mode=new&qdiscmode='+(document.forms['servicelevels'].sl_qdisc.options[document.forms['servicelevels'].sl_qdisc.selectedIndex].value)+'&classifier='+(document.forms['servicelevels'].classifier.options[document.forms['servicelevels'].classifier.selectedIndex].value));">
+   <select name="sl_qdisc"  onchange="refreshContent('servicelevels', '&mode=edit&idx={ $sl_idx }&qdiscmode='+(document.forms['servicelevels'].sl_qdisc.options[document.forms['servicelevels'].sl_qdisc.selectedIndex].value)+'&classifier='+(document.forms['servicelevels'].classifier.options[document.forms['servicelevels'].classifier.selectedIndex].value));">
     <option value="SFQ" { if $qdiscmode == "SFQ" } selected="selected" { /if }>SFQ</option>
     <option value="ESFQ" { if $qdiscmode == "ESFQ" } selected="selected" { /if }>ESFQ</option>
     <option value="HFSC" { if $qdiscmode == "HFSC" } selected="selected" { /if }>HFSC</option>

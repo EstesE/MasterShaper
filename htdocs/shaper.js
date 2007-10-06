@@ -386,3 +386,98 @@ function currentRadio(obj)
          return obj[cnt].value;
    }
 }
+
+function saveServiceLevel()
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'servicelevel';
+   objTemp['action'] = 'modify';
+
+   sl_form = document.forms['servicelevels'];
+   objTemp['sl_new'] = sl_form.sl_new.value;
+   if(sl_form.sl_new.value == 0) {
+      objTemp['sl_idx'] = sl_form.sl_idx.value;
+      objTemp['namebefore'] = sl_form.namebefore.value;
+   }
+   objTemp['sl_name'] = sl_form.sl_name.value;
+
+   if(sl_form.sl_htb_bw_in_rate != undefined) {
+      objTemp['sl_htb_bw_in_rate'] = sl_form.sl_htb_bw_in_rate.value;
+      objTemp['sl_htb_bw_in_ceil'] = sl_form.sl_htb_bw_in_ceil.value;
+      objTemp['sl_htb_bw_in_burst'] = sl_form.sl_htb_bw_in_burst.value;
+      objTemp['sl_htb_bw_out_rate'] = sl_form.sl_htb_bw_out_rate.value;
+      objTemp['sl_htb_bw_out_ceil'] = sl_form.sl_htb_bw_out_ceil.value;
+      objTemp['sl_htb_bw_out_burst'] = sl_form.sl_htb_bw_out_burst.value;
+      objTemp['sl_htb_priority'] = sl_form.sl_htb_priority.value;
+   }
+   if(sl_form.sl_hfsc_in_umax != undefined) {
+      objTemp['sl_hfsc_in_umax'] = sl_form.sl_hfsc_in_umax.value;
+      objTemp['sl_hfsc_in_dmax'] = sl_form.sl_hfsc_in_dmax.value;
+      objTemp['sl_hfsc_in_rate'] = sl_form.sl_hfsc_in_rate.value;
+      objTemp['sl_hfsc_in_ulrate'] = sl_form.sl_hfsc_in_ulrate.value;
+      objTemp['sl_hfsc_out_umax'] = sl_form.sl_hfsc_out_umax.value;
+      objTemp['sl_hfsc_out_dmax'] = sl_form.sl_hfsc_out_dmax.value;
+      objTemp['sl_hfsc_out_rate'] = sl_form.sl_hfsc_out_rate.value;
+      objTemp['sl_hfsc_out_ulrate'] = sl_form.sl_hfsc_out_ulrate.value;
+   }
+   if(sl_form.sl_cbq_in_rate != undefined) {
+      objTemp['sl_cbq_in_rate'] = sl_form.sl_cbq_in_rate.value;
+      objTemp['sl_cbq_in_priority'] = sl_form.sl_cbq_in_priority.value;
+      objTemp['sl_cbq_out_rate'] = sl_form.sl_cbq_out_rate.value;
+      objTemp['sl_cbq_out_priority'] = sl_form.sl_cbq_priority.value;
+      objTemp['sl_cbq_bounded'] = sl_form.sl_cbq_bounded.value;
+   }
+
+   objTemp['sl_qdisc'] = sl_form.sl_qdisc.value;
+   if(sl_form.sl_qdisc.value == "NETEM") {
+      objTemp['sl_netem_delay'] = sl_form.sl_netem_delay.value;
+      objTemp['sl_netem_jitter'] = sl_form.sl_netem_jitter.value;
+      objTemp['sl_netem_random'] = sl_form.sl_netem_random.value;
+      objTemp['sl_netem_distribution'] = sl_form.sl_netem_distribution.value;
+      objTemp['sl_netem_loss'] = sl_form.sl_netem_loss.value;
+      objTemp['sl_netem_duplication'] = sl_form.sl_netem_duplication.value;
+      objTemp['sl_netem_gap'] = sl_form.sl_netem_gap.value;
+      objTemp['sl_netem_reorder_percentage'] = sl_form.sl_netem_reorder_percentage.value;
+      objTemp['sl_netem_reorder_correlation'] = sl_form.sl_netem_reorder_correlation.value;
+   }
+   else if(sl_form.sl_qdisc.value == "ESFQ") {
+      objTemp['sl_esfq_perturb'] = sl_form.sl_esfq_perturb.value;
+      objTemp['sl_esfq_limit'] = sl_form.sl_esfq_limit.value;
+      objTemp['sl_esfq_depth'] = sl_form.sl_esfq_depth.value;
+      objTemp['sl_esfq_divisor'] = sl_form.sl_esfq_divisor.value;
+      objTemp['sl_esfq_hash'] = sl_form.sl_esfq_hash.value;
+   }
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("servicelevels");
+   }
+   else {
+      window.alert(retr);
+   }
+
+} // saveServiceLevel()
+
+function deleteServiceLevel(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'servicelevel';
+   objTemp['action'] = 'delete';
+   objTemp['sl_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("servicelevels");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deletePort()
+
+
