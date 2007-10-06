@@ -182,17 +182,17 @@ function check_login()
 
 function refreshPage(content)
 {
-      refreshPageTitle();
-      refreshMainMenu();
-      refreshSubMenu();
-      refreshContent(content);
-}
+   refreshPageTitle();
+   refreshMainMenu();
+   refreshSubMenu();
+   refreshContent(content);
+} // refreshPage()
 
 function js_logout()
 {
    HTML_AJAX.grab(encodeURI('rpc.php?action=logout'));
    refreshPage();
-}
+} // js_logout()
 
 function WSR_getElementsByClassName(oElm, strTagName, oClassNames){
    var arrElements = (strTagName == "*" && oElm.all)? oElm.all : oElm.getElementsByTagName(strTagName);
