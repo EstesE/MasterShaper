@@ -30,6 +30,7 @@ require_once "shaper_ports.php";
 require_once "shaper_protocols.php";
 require_once "shaper_service_levels.php";
 require_once "shaper_options.php";
+require_once "shaper_users.php";
 
 class MASTERSHAPER {
 
@@ -296,6 +297,10 @@ class MASTERSHAPER {
             $opt = new MASTERSHAPER_OPTIONS($this);
             return $opt->show();
             break;
+         case 'users':
+            $users = new MASTERSHAPER_USERS($this);
+            return $users->show();
+            break;
       }
 
    } // get_content()
@@ -343,6 +348,13 @@ class MASTERSHAPER {
                $opt = new MASTERSHAPER_OPTIONS($this);
                switch($_POST['action']) {
                   case 'modify': return $opt->store(); break;
+               }
+               break;
+            case 'user':
+               $users = new MASTERSHAPER_USERS($this);
+               switch($_POST['action']) {
+                  case 'modify': return $users->store(); break;
+                  case 'delete': return $users->delete(); break;
                }
                break;
          }
