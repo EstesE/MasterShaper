@@ -276,42 +276,35 @@ class MASTERSHAPER {
 
       switch($request) {
          case 'overview':
-            $overview = new MASTERSHAPER_OVERVIEW($this);
-            return $overview->show(); 
+            $obj = new MASTERSHAPER_OVERVIEW($this);
             break;
          case 'targets':
-            $targets = new MASTERSHAPER_TARGETS($this);
-            return $targets->show();
+            $obj = new MASTERSHAPER_TARGETS($this);
             break;
          case 'ports':
-            $ports = new MASTERSHAPER_PORTS($this);
-            return $ports->show();
+            $obj = new MASTERSHAPER_PORTS($this);
             break;
          case 'protocols':
-            $proto = new MASTERSHAPER_PROTOCOLS($this);
-            return $proto->show();
+            $obj = new MASTERSHAPER_PROTOCOLS($this);
             break;
          case 'servicelevels':
-            $sl = new MASTERSHAPER_SERVICELEVELS($this);
-            return $sl->show();
+            $obj = new MASTERSHAPER_SERVICELEVELS($this);
             break;
          case 'options':
-            $opt = new MASTERSHAPER_OPTIONS($this);
-            return $opt->show();
+            $obj = new MASTERSHAPER_OPTIONS($this);
             break;
          case 'users':
-            $users = new MASTERSHAPER_USERS($this);
-            return $users->show();
+            $obj = new MASTERSHAPER_USERS($this);
             break;
          case 'interfaces':
-            $if = new MASTERSHAPER_INTERFACES($this);
-            return $if->show();
+            $obj = new MASTERSHAPER_INTERFACES($this);
             break;
          case 'networkpaths':
-            $np = new MASTERSHAPER_NETPATHS($this);
-            return $np->show();
+            $obj = new MASTERSHAPER_NETPATHS($this);
             break;
       }
+      if(isset($obj))
+         return $obj->show();
 
    } // get_content()
 
@@ -327,63 +320,37 @@ class MASTERSHAPER {
       if(isset($_POST['module'])) {
          switch($_POST['module']) {
             case 'target':
-               $targets = new MASTERSHAPER_TARGETS($this);
-               switch($_POST['action']) {
-                  case 'modify': return $targets->store(); break;
-                  case 'delete': return $targets->delete(); break;
-               }
+               $obj = new MASTERSHAPER_TARGETS($this);
                break;
             case 'port':
-               $ports = new MASTERSHAPER_PORTS($this);
-               switch($_POST['action']) {
-                  case 'modify': return $ports->store(); break;
-                  case 'delete': return $ports->delete(); break;
-               }
+               $obj = new MASTERSHAPER_PORTS($this);
                break;
             case 'protocol':
-               $proto = new MASTERSHAPER_PROTOCOLS($this);
-               switch($_POST['action']) {
-                  case 'modify': return $proto->store(); break;
-                  case 'delete': return $proto->delete(); break;
-               }
+               $obj = new MASTERSHAPER_PROTOCOLS($this);
                break;
             case 'servicelevel':
-               $sl = new MASTERSHAPER_SERVICELEVELS($this);
-               switch($_POST['action']) {
-                  case 'modify': return $sl->store(); break;
-                  case 'delete': return $sl->delete(); break;
-               }
+               $obj = new MASTERSHAPER_SERVICELEVELS($this);
                break;
             case 'options':
-               $opt = new MASTERSHAPER_OPTIONS($this);
-               switch($_POST['action']) {
-                  case 'modify': return $opt->store(); break;
-               }
+               $obj = new MASTERSHAPER_OPTIONS($this);
                break;
             case 'user':
-               $users = new MASTERSHAPER_USERS($this);
-               switch($_POST['action']) {
-                  case 'modify': return $users->store(); break;
-                  case 'delete': return $users->delete(); break;
-                  case 'toggle': return $users->toggleUserStatus(); break;
-               }
+               $obj = new MASTERSHAPER_USERS($this);
                break;
             case 'interface':
-               $if = new MASTERSHAPER_INTERFACES($this);
-               switch($_POST['action']) {
-                  case 'modify': return $if->store(); break;
-                  case 'delete': return $if->delete(); break;
-                  case 'toggle': return $if->toggleInterfaceStatus(); break;
-               }
+               $obj = new MASTERSHAPER_INTERFACES($this);
                break;
             case 'networkpath':
-               $np = new MASTERSHAPER_NETPATHS($this);
-               switch($_POST['action']) {
-                  case 'modify': return $np->store(); break;
-                  case 'delete': return $np->delete(); break;
-                  case 'toggle': return $np->toggleNetworkPathStatus(); break;
-               }
+               $obj = new MASTERSHAPER_NETPATHS($this);
                break;
+         }
+
+         if(isset($obj)) {
+            switch($_POST['action']) {
+               case 'modify': return $obj->store(); break;
+               case 'delete': return $obj->delete(); break;
+               case 'toggle': return $obj->toggleNetworkPathStatus(); break;
+            }
          }
       }
 
