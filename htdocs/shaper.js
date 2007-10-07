@@ -686,3 +686,75 @@ function toggleInterfaceStatus(idx, to)
       window.alert(retr);
    }
 } // toggleInterfaceStatus()
+
+function saveNetworkPath()
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'networkpath';
+   objTemp['action'] = 'modify';
+
+   netpath_form = document.forms['netpaths'];
+
+   objTemp['netpath_new'] = netpath_form.netpath_new.value;
+   if(objTemp['netpath_new'] == 0) {
+      objTemp['netpath_idx'] = netpath_form.netpath_idx.value;
+      objTemp['namebefore'] = netpath_form.namebefore.value;
+   }
+ 
+   objTemp['netpath_name'] = netpath_form.netpath_name.value;
+   objTemp['netpath_active'] = currentRadio(netpath_form.netpath_active);
+   objTemp['netpath_if1'] = currentSelect(netpath_form.netpath_if1);
+   objTemp['netpath_if2'] = currentSelect(netpath_form.netpath_if2);
+   objTemp['netpath_imq'] = currentRadio(netpath_form.netpath_imq);
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("networkpaths");
+   }
+   else {
+      window.alert(retr);
+   }
+
+} // saveNetworkPath()
+
+function deleteNetworkPath(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'networkpath';
+   objTemp['action'] = 'delete';
+   objTemp['netpath_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("networkpaths");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deleteNetworkPath()
+
+function toggleNetworkPathStatus(idx, to)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'networkpath';
+   objTemp['action'] = 'toggle';
+   objTemp['netpath_idx'] = idx;
+   objTemp['to'] = to;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("networkpaths");
+   }
+   else {
+      window.alert(retr);
+   }
+} // toggleInterfaceStatus()

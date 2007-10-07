@@ -32,6 +32,7 @@ require_once "shaper_service_levels.php";
 require_once "shaper_options.php";
 require_once "shaper_users.php";
 require_once "shaper_interfaces.php";
+require_once "shaper_net_paths.php";
 
 class MASTERSHAPER {
 
@@ -306,6 +307,10 @@ class MASTERSHAPER {
             $if = new MASTERSHAPER_INTERFACES($this);
             return $if->show();
             break;
+         case 'networkpaths':
+            $np = new MASTERSHAPER_NETPATHS($this);
+            return $np->show();
+            break;
       }
 
    } // get_content()
@@ -369,6 +374,14 @@ class MASTERSHAPER {
                   case 'modify': return $if->store(); break;
                   case 'delete': return $if->delete(); break;
                   case 'toggle': return $if->toggleInterfaceStatus(); break;
+               }
+               break;
+            case 'networkpath':
+               $np = new MASTERSHAPER_NETPATHS($this);
+               switch($_POST['action']) {
+                  case 'modify': return $np->store(); break;
+                  case 'delete': return $np->delete(); break;
+                  case 'toggle': return $np->toggleNetworkPathStatus(); break;
                }
                break;
          }
@@ -517,6 +530,26 @@ class MASTERSHAPER {
          return true;
 
    } // validateBandwidth()
+
+   /**
+    * this function will return the interface name
+    * of the interface provided with its index number
+    */
+   public function getInterfaceName($if_idx)
+   {
+      if($if_idx != 0) {
+         $if = $this->db->db_fetchSingleRow("
+            SELECT if_name
+            FROM ". MYSQL_PREFIX ."interfaces
+            WHERE
+               if_idx='". $if_idx ."'
+         ");
+         return $if->if_name;
+      }
+      
+      return NULL;
+
+   } // getInterfaceName() 
 
 }
 
