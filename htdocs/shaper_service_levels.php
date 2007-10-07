@@ -59,6 +59,7 @@ class MASTERSHAPER_SERVICELEVELS {
          case 'show':
             $this->showList();
             break;
+         case 'new':
          case 'edit':
             $this->showEdit($_GET['idx']);
             break;
