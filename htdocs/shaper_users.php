@@ -202,7 +202,7 @@ class MASTERSHAPER_USERS {
                user_show_monitor='". $_POST['user_show_monitor'] ."',
                user_active='". $_POST['user_active'] ."'
             WHERE
-               user_idx='". $_GET['idx'] ."'
+               user_idx='". $_POST['user_idx'] ."'
          ");
 
          if($_POST['user_pass1'] != "nochangeMS") {
@@ -211,7 +211,7 @@ class MASTERSHAPER_USERS {
                SET
                   user_pass='". md5($_POST['user_pass1']) ."' 
                WHERE
-                  user_idx='". $_GET['idx'] ."'
+                  user_idx='". $_POST['user_idx'] ."'
             ");
          }
       }
@@ -225,8 +225,8 @@ class MASTERSHAPER_USERS {
     */
    public function delete()
    {
-      if(isset($_POST['idx'])) {
-         $idx = $_POST['idx'];
+      if(isset($_POST['user_idx']) && is_numeric($_POST['user_idx'])) {
+         $idx = $_POST['user_idx'];
 
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."users
@@ -322,6 +322,24 @@ class MASTERSHAPER_USERS {
       return substr($string, 0, strlen($string)-2);
 
    } // getPermissions()
+
+   /**
+    * checks if provided user name already exists
+    * and will return true if so.
+    */
+   private function checkUserExists($user_name)
+   {
+      if($this->db->db_fetchSingleRow("
+         SELECT user_idx
+         FROM ". MYSQL_PREFIX ."users
+         WHERE
+            user_name LIKE BINARY '". $user_name ."'
+         ")) {
+         return true;
+      }
+
+      return false;
+   } // checkTargetExists()
 
 }
 

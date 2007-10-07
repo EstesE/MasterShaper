@@ -395,6 +395,15 @@ function currentSelect(obj)
    }
 }
 
+function currentCheckbox(obj)
+{
+   if(obj.checked == true) {
+      return obj.value;
+   }
+   
+   return;
+}
+
 function saveServiceLevel()
 {
    // Create object with values of the form
@@ -486,7 +495,7 @@ function deleteServiceLevel(idx)
    else {
       window.alert(retr);
    }
-} // deletePort()
+} // deleteServiceLevel()
 
 function saveOptions()
 {
@@ -524,4 +533,65 @@ function saveOptions()
 
 } // saveServiceLevel()
 
+function saveUser()
+{
+   // Create object with values of the form
+   var objTemp = new Object();
 
+   objTemp['module'] = 'user';
+   objTemp['action'] = 'modify';
+
+   user_form = document.forms['users'];
+
+   objTemp['user_new'] = user_form.user_new.value;
+   if(objTemp['user_new'] == 0) {
+      objTemp['user_idx'] = user_form.user_idx.value;
+      objTemp['namebefore'] = user_form.namebefore.value;
+   }
+ 
+   objTemp['user_name'] = user_form.user_name.value;
+   objTemp['user_pass1'] = user_form.user_pass1.value;
+   objTemp['user_pass2'] = user_form.user_pass2.value;
+   objTemp['user_active'] = currentRadio(user_form.user_active);
+   objTemp['user_manage_chains'] = currentCheckbox(user_form.user_manage_chains);
+   objTemp['user_manage_pipes'] = currentCheckbox(user_form.user_manage_pipes);
+   objTemp['user_manage_filters'] = currentCheckbox(user_form.user_manage_filters);
+   objTemp['user_manage_ports'] = currentCheckbox(user_form.user_manage_ports);
+   objTemp['user_manage_protocols'] = currentCheckbox(user_form.user_manage_protocols);
+   objTemp['user_manage_targets'] = currentCheckbox(user_form.user_manage_targets);
+   objTemp['user_manage_users'] = currentCheckbox(user_form.user_manage_users);
+   objTemp['user_manage_options'] = currentCheckbox(user_form.user_manage_options);
+   objTemp['user_manage_servicelevels'] = currentCheckbox(user_form.user_manage_servicelevels);
+   objTemp['user_load_rules'] = currentCheckbox(user_form.user_load_rules);
+   objTemp['user_show_rules'] = currentCheckbox(user_form.user_show_rules);
+   objTemp['user_show_monitor'] = currentCheckbox(user_form.user_show_monitor);
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("users");
+   }
+   else {
+      window.alert(retr);
+   }
+
+} // saveUser()
+
+function deleteUser(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'user';
+   objTemp['action'] = 'delete';
+   objTemp['user_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("users");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deleteUser()
