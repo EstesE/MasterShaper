@@ -595,3 +595,23 @@ function deleteUser(idx)
       window.alert(retr);
    }
 } // deleteUser()
+
+function toggleUserStatus(idx, to)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'user';
+   objTemp['action'] = 'toggle';
+   objTemp['user_idx'] = idx;
+   objTemp['to'] = to;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("users");
+   }
+   else {
+      window.alert(retr);
+   }
+} // toggleUserStatus()

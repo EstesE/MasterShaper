@@ -246,12 +246,24 @@ class MASTERSHAPER_USERS {
     */
    public function toggleUserStatus()
    {
-      if(isset($_GET['idx'])) {
-         if($_GET['to'] == 1) $this->db->db_query("UPDATE ". MYSQL_PREFIX ."users SET user_active='Y' WHERE user_idx='". $_GET['idx'] ."'");
-         elseif($_GET['to'] == 0) $this->db->db_query("UPDATE ". MYSQL_PREFIX ."users SET user_active='N' WHERE user_idx='". $_GET['idx'] ."'");
-      }
+      if(isset($_POST['user_idx']) && is_numeric($_POST['user_idx'])) {
+         if($_POST['to'] == 1)
+            $new_status='Y';
+         else
+            $new_status='N';
 
-      return "ok";
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."users
+            SET
+               user_active='". $new_status ."'
+            WHERE
+               user_idx='". $_POST['user_idx'] ."'");
+
+         return "ok";
+      }
+   
+      return "unkown error";
+
    } // toggleUserStatus()
 
    /**
@@ -271,6 +283,7 @@ class MASTERSHAPER_USERS {
 
          $this->tmpl->assign('user_idx', $user_idx);
          $this->tmpl->assign('user_name', $user->user_name);
+         $this->tmpl->assign('user_active', $user->user_active);
 
          $index++;
          $this->tmpl->assign('smarty.IB.user_list.index', $index);

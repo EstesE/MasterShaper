@@ -355,6 +355,7 @@ class MASTERSHAPER {
                switch($_POST['action']) {
                   case 'modify': return $users->store(); break;
                   case 'delete': return $users->delete(); break;
+                  case 'toggle': return $users->toggleUserStatus(); break;
                }
                break;
          }
