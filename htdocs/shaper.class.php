@@ -31,6 +31,7 @@ require_once "shaper_protocols.php";
 require_once "shaper_service_levels.php";
 require_once "shaper_options.php";
 require_once "shaper_users.php";
+require_once "shaper_interfaces.php";
 
 class MASTERSHAPER {
 
@@ -301,6 +302,10 @@ class MASTERSHAPER {
             $users = new MASTERSHAPER_USERS($this);
             return $users->show();
             break;
+         case 'interfaces':
+            $if = new MASTERSHAPER_INTERFACES($this);
+            return $if->show();
+            break;
       }
 
    } // get_content()
@@ -356,6 +361,14 @@ class MASTERSHAPER {
                   case 'modify': return $users->store(); break;
                   case 'delete': return $users->delete(); break;
                   case 'toggle': return $users->toggleUserStatus(); break;
+               }
+               break;
+            case 'interface':
+               $if = new MASTERSHAPER_INTERFACES($this);
+               switch($_POST['action']) {
+                  case 'modify': return $if->store(); break;
+                  case 'delete': return $if->delete(); break;
+                  case 'toggle': return $if->toggleInterfaceStatus(); break;
                }
                break;
          }
@@ -489,6 +502,21 @@ class MASTERSHAPER {
          case 5: return _("Lowest");  break;
       }
    } // getPriorityName()
+ 
+   /** 
+    * this function validates the provided bandwidth
+    * and will return true if correctly specified
+    */
+   public function validateBandwidth($bw)
+   {
+      if(!is_numeric($bw)) {
+         if(preg_match("/^(\d+)(k|m)$/i", $bw))
+            return true;
+      }
+      else
+         return true;
+
+   } // validateBandwidth()
 
 }
 

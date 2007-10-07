@@ -615,3 +615,74 @@ function toggleUserStatus(idx, to)
       window.alert(retr);
    }
 } // toggleUserStatus()
+
+function saveInterface()
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'interface';
+   objTemp['action'] = 'modify';
+
+   if_form = document.forms['interfaces'];
+
+   objTemp['if_new'] = if_form.if_new.value;
+   if(objTemp['if_new'] == 0) {
+      objTemp['if_idx'] = if_form.if_idx.value;
+      objTemp['namebefore'] = if_form.namebefore.value;
+   }
+ 
+   objTemp['if_name'] = if_form.if_name.value;
+   objTemp['if_active'] = currentRadio(if_form.if_active);
+   objTemp['if_speed'] = if_form.if_speed.value;
+   objTemp['if_ifb'] = currentRadio(if_form.if_ifb);
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("interfaces");
+   }
+   else {
+      window.alert(retr);
+   }
+
+} // saveInterface()
+
+function deleteInterface(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'interface';
+   objTemp['action'] = 'delete';
+   objTemp['if_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("interfaces");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deleteInterface()
+
+function toggleInterfaceStatus(idx, to)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'interface';
+   objTemp['action'] = 'toggle';
+   objTemp['if_idx'] = idx;
+   objTemp['to'] = to;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("interfaces");
+   }
+   else {
+      window.alert(retr);
+   }
+} // toggleInterfaceStatus()
