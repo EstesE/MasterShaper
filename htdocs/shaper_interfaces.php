@@ -115,7 +115,7 @@ class MASTERSHAPER_INTERFACES {
    } // showEdit()
 
    /**
-    * template function which will be called from the target listing template
+    * template function which will be called from the interface listing template
     */
    public function smarty_interface_list($params, $content, &$smarty, &$repeat)
    {
