@@ -33,6 +33,7 @@ require_once "shaper_options.php";
 require_once "shaper_users.php";
 require_once "shaper_interfaces.php";
 require_once "shaper_net_paths.php";
+require_once "shaper_filters.php";
 
 class MASTERSHAPER {
 
@@ -199,9 +200,9 @@ class MASTERSHAPER {
       switch($navpoint) {
          case 'manage':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=1", "icons/flag_blue.gif", _("Chains"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=8", "icons/flag_green.gif", _("Filters"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=2", "icons/flag_pink.gif", _("Pipes"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('chains');", "icons/flag_blue.gif", _("Chains"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('filters');", "icons/flag_green.gif", _("Filters"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('pipes');", "icons/flag_pink.gif", _("Pipes"));
             $string.= "</tr></table>\n";
             break;
 
@@ -301,6 +302,9 @@ class MASTERSHAPER {
             break;
          case 'networkpaths':
             $obj = new MASTERSHAPER_NETPATHS($this);
+            break;
+         case 'filters':
+            $obj = new MASTERSHAPER_FILTERS($this);
             break;
       }
       if(isset($obj))
@@ -517,6 +521,79 @@ class MASTERSHAPER {
       return NULL;
 
    } // getInterfaceName() 
+
+   function getYearList($current = "")
+   {
+      $string = "";
+      for($i = date("Y"); $i <= date("Y")+2; $i++) {
+         $string.= "<option value=\"". $i ."\"";
+         if($i == date("Y", (int) $current))
+            $string.= " selected=\"selected\"";
+         $string.= ">". $i ."</option>";
+      }
+      return $string;
+
+   } // getYearList()
+
+   function getMonthList($current = "")
+   {
+      $string = "";
+      for($i = 1; $i <= 12; $i++) {
+         $string.= "<option value=\"". $i ."\"";
+         if($i == date("n", (int) $current))
+            $string.= " selected=\"selected\"";
+         if(date("m") == $i && $current == "")
+            $string.= " selected=\"selected\"";
+         $string.= ">". $i ."</option>";
+      }
+      return $string;
+
+   } // getMonthList()
+
+   function getDayList($current = "")
+   {
+      $string = "";
+      for($i = 1; $i <= 31; $i++) {
+         $string.= "<option value=\"". $i ."\"";
+         if($i == date("d", (int) $current))
+            $string.= " selected=\"selected\"";
+         if(date("d") == $i && $current == "")
+            $string.= " selected=\"selected\"";
+         $string.= ">". $i ."</option>";
+      }
+      return $string;
+
+   } // getDayList()
+
+   function getHourList($current = "")
+   {
+      $string = "";
+      for($i = 0; $i <= 23; $i++) {
+         $string.= "<option value=\"". $i ."\"";
+         if($i == date("H", (int) $current))
+            $string.= " selected=\"selected\"";
+         if(date("H") == $i && $current == "")
+            $string.= " selected=\"selected\"";
+         $string.= ">". sprintf("%02d", $i) ."</option>";
+      }
+      return $string;
+
+   } // getHourList()
+
+   function getMinuteList($current = "")
+   {
+      $string = "";
+      for($i = 0; $i <= 59; $i++) {
+         $string.= "<option value=\"". $i ."\"";
+         if($i == date("i", (int) $current))
+            $string.= " selected=\"selected\"";
+         if(date("i") == $i && $current == "")
+            $string.= " selected=\"selected\"";
+         $string.= ">". sprintf("%02d", $i)  ."</option>";
+      }
+      return $string;
+
+   } // getMinuteList()
 
 }
 

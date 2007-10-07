@@ -29,6 +29,8 @@ class MASTERSHAPER_TMPL extends Smarty {
 
    public function __construct($parent)
    {
+      $this->parent = &$parent;
+
       $this->Smarty();
       $this->template_dir = BASE_PATH .'/templates';
       $this->compile_dir  = BASE_PATH .'/templates_c';
@@ -64,6 +66,11 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_treeend', 'icons/tree_end.gif');
 
       $this->register_function("start_table", array(&$this, "smarty_startTable"), false); 
+      $this->register_function("year_select", array(&$this, "smarty_year_select"), false); 
+      $this->register_function("month_select", array(&$this, "smarty_month_select"), false); 
+      $this->register_function("day_select", array(&$this, "smarty_day_select"), false); 
+      $this->register_function("hour_select", array(&$this, "smarty_hour_select"), false); 
+      $this->register_function("minute_select", array(&$this, "smarty_minute_select"), false); 
 
    } // __construct()
 
@@ -80,6 +87,31 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('alt', $params['alt']);
       $this->show('start_table.tpl');
    } // smarty_function_startTable() 
+
+   public function smarty_year_select($params, &$smarty)
+   {
+      print $this->parent->getYearList($params['current']); 
+   } // smarty_year_select()
+
+   public function smarty_month_select($params, &$smarty)
+   {
+      print $this->parent->getMonthList($params['current']); 
+   } // smarty_month_select()
+
+   public function smarty_day_select($params, &$smarty)
+   {
+      print $this->parent->getDayList($params['current']); 
+   } // smarty_day_select()
+
+   public function smarty_hour_select($params, &$smarty)
+   {
+      print $this->parent->getHourList($params['current']); 
+   } // smarty_hour_select()
+
+   public function smarty_minute_select($params, &$smarty)
+   {
+      print $this->parent->getMinuteList($params['current']); 
+   } // smarty_minute_select()
 
 }
 
