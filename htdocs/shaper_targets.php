@@ -350,7 +350,7 @@ class MASTERSHAPER_TARGETS {
    } // smarty_target_select_list()
 
    /**
-    * checks if target if provided target name already
+    * checks if provided target name already exists
     * and will return true if so.
     */
    private function checkTargetExists($target_name)
