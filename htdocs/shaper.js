@@ -687,35 +687,15 @@ function toggleInterfaceStatus(idx, to)
    }
 } // toggleInterfaceStatus()
 
-function saveNetworkPath()
+function saveNetworkPath(obj)
 {
-   // Create object with values of the form
-   var objTemp = new Object();
+   var retval = formSubmit(obj, null, {isAsync: false});
 
-   objTemp['module'] = 'networkpath';
-   objTemp['action'] = 'modify';
-
-   netpath_form = document.forms['netpaths'];
-
-   objTemp['netpath_new'] = netpath_form.netpath_new.value;
-   if(objTemp['netpath_new'] == 0) {
-      objTemp['netpath_idx'] = netpath_form.netpath_idx.value;
-      objTemp['namebefore'] = netpath_form.namebefore.value;
-   }
- 
-   objTemp['netpath_name'] = netpath_form.netpath_name.value;
-   objTemp['netpath_active'] = currentRadio(netpath_form.netpath_active);
-   objTemp['netpath_if1'] = currentSelect(netpath_form.netpath_if1);
-   objTemp['netpath_if2'] = currentSelect(netpath_form.netpath_if2);
-   objTemp['netpath_imq'] = currentRadio(netpath_form.netpath_imq);
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
+   if(retval == "ok") {
       refreshPage("networkpaths");
    }
    else {
-      window.alert(retr);
+      window.alert(retval);
    }
 
 } // saveNetworkPath()
@@ -758,3 +738,74 @@ function toggleNetworkPathStatus(idx, to)
       window.alert(retr);
    }
 } // toggleInterfaceStatus()
+
+function formSubmit(form, target, options)
+{
+   form = HTML_AJAX_Util.getElement(form);
+   if (!form) {
+      // let the submit be processed normally
+      return false;
+   }
+
+   var out = HTML_AJAX.formEncode(form);
+   target = HTML_AJAX_Util.getElement(target);
+   if (!target) {
+      target = form;
+   }
+   try
+   {
+      var action = form.attributes['action'].value;
+   }
+   catch(e){}
+   if(action == undefined)
+   {
+      action = form.getAttribute('action');
+   }
+   var callback = false;
+   if (HTML_AJAX_Util.getType(target) == 'function') {
+      callback = target;
+   }
+   else {
+      callback = function(result) {
+         // result will be undefined if HA_Action is returned, so skip the replace
+         if (typeof result != 'undefined') {
+            HTML_AJAX_Util.setInnerHTML(target,result);
+         }
+      }
+   }
+   var serializer = HTML_AJAX.serializerForEncoding('Null');
+   var request = new HTML_AJAX_Request(serializer);
+   request.isAsync = true;
+   request.callback = callback;
+
+   switch (form.getAttribute('method').toLowerCase()) {
+      case 'post':
+         var headers = {};
+         headers['Content-Type'] = 'application/x-www-form-urlencoded';
+         request.customHeaders = headers;
+         request.requestType = 'POST';
+         request.requestUrl = action;
+         request.args = out;
+         break;
+      default:
+         if (action.indexOf('?') == -1) {
+            out = '?' + out.substr(0, out.length - 1);
+         }
+         request.requestUrl = action+out;
+         request.requestType = 'GET';
+   }
+
+   if(options) {
+      for(var i in options) {
+         request[i] = options[i];
+      }
+   }
+
+   if(request.isAsync == true) {
+      HTML_AJAX.makeRequest(request);
+      return true;
+   }
+   else {
+      return HTML_AJAX.makeRequest(request);
+   }
+}
