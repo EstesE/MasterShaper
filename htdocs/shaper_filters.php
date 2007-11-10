@@ -472,7 +472,7 @@ class MASTERSHAPER_FILTERS {
       if(isset($_POST['filter_idx']) && is_numeric($_POST['filter_idx'])) {
          $idx = $_POST['filter_idx'];
 
-         if($_POSt['to'] == 1)
+         if($_POST['to'] == 1)
             $new_status = 'Y';
          else
             $new_status = 'N';
