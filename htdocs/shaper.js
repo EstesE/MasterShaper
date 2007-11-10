@@ -739,6 +739,45 @@ function toggleNetworkPathStatus(idx, to)
    }
 } // toggleInterfaceStatus()
 
+function deleteFilter(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'filter';
+   objTemp['action'] = 'delete';
+   objTemp['filter_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("filters");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deleteFilter()
+
+function toggleFilterStatus(idx, to)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'filter';
+   objTemp['action'] = 'toggle';
+   objTemp['filter_idx'] = idx;
+   objTemp['to'] = to;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("filters");
+   }
+   else {
+      window.alert(retr);
+   }
+} // toggleFilterStatus()
+
 function formSubmit(form, target, options)
 {
    form = HTML_AJAX_Util.getElement(form);

@@ -467,7 +467,7 @@ class MASTERSHAPER_FILTERS {
    /**
     * toggle filter status
     */
-   public function toggleFilterStatus()
+   public function toggleStatus()
    {
       if(isset($_POST['filter_idx']) && is_numeric($_POST['filter_idx'])) {
          $idx = $_POST['filter_idx'];
