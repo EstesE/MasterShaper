@@ -454,7 +454,7 @@ class MASTERSHAPER_PIPES {
             SET
                pipe_active='". $new_status ."'
             WHERE
-                pipe_idx='". $idx ."'
+               pipe_idx='". $idx ."'
          ");
       
          return "ok";
@@ -481,9 +481,7 @@ class MASTERSHAPER_PIPES {
 
       return false;
 
-   } // checkFilterExists()
-
-
+   } // checkPipeExists()
 
 }
 
