@@ -34,6 +34,7 @@ require_once "shaper_users.php";
 require_once "shaper_interfaces.php";
 require_once "shaper_net_paths.php";
 require_once "shaper_filters.php";
+require_once "shaper_pipes.php";
 
 class MASTERSHAPER {
 
@@ -306,6 +307,9 @@ class MASTERSHAPER {
          case 'filters':
             $obj = new MASTERSHAPER_FILTERS($this);
             break;
+         case 'pipes':
+            $obj = new MASTERSHAPER_PIPES($this);
+            break;
       }
       if(isset($obj))
          return $obj->show();
@@ -347,13 +351,19 @@ class MASTERSHAPER {
             case 'networkpath':
                $obj = new MASTERSHAPER_NETPATHS($this);
                break;
+            case 'filter':
+               $obj = new MASTERSHAPER_FILTERS($this);
+               break;
+            case 'pipe':
+               $obj = new MASTERSHAPER_PIPES($this);
+               break;
          }
 
          if(isset($obj)) {
             switch($_POST['action']) {
                case 'modify': return $obj->store(); break;
                case 'delete': return $obj->delete(); break;
-               case 'toggle': return $obj->toggleNetworkPathStatus(); break;
+               case 'toggle': return $obj->toggleStatus(); break;
             }
          }
       }

@@ -233,7 +233,7 @@ class MASTERSHAPER_NETPATHS {
    /**
     * toggle network path status
     */
-   public function toggleNetworkPathStatus()
+   public function toggleStatus()
    {
       if(isset($_POST['netpath_idx']) && is_numeric($_POST['netpath_idx'])) {
          $idx = $_POST['netpath_idx'];
