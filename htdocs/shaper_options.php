@@ -252,7 +252,7 @@ class MASTERSHAPER_OPTIONS {
 		
       // Filters 
       $result = $this->db->db_query("
-         SELECT filter_idx, filter_name, filter_protocol_id, filter_TOS,
+         SELECT filter_idx, filter_name, filter_protocol_id, filter_tos,
          filter_tcpflag_syn, filter_tcpflag_ack, filter_tcpflag_fin,
          filter_tcpflag_rst, filter_tcpflag_urg, filter_tcpflag_psh,
          filter_packet_length, filter_p2p_edk, filter_p2p_kazaa,
@@ -552,7 +552,7 @@ class MASTERSHAPER_OPTIONS {
 	                       ."VALUES ('". $object->l7proto_idx ."', '". $object->l7proto_name ."')");
 	    break;
          case 'Filters':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."filters (filter_idx, filter_name, filter_protocol_id, filter_TOS, "
+            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."filters (filter_idx, filter_name, filter_protocol_id, filter_tos, "
                                ."filter_tcpflag_syn, filter_tcpflag_ack, filter_tcpflag_fin, "
 			       ."filter_tcpflag_rst, filter_tcpflag_urg, filter_tcpflag_psh, "
 			       ."filter_packet_length, filter_p2p_edk, filter_p2p_kazaa, "
