@@ -191,7 +191,34 @@ class MASTERSHAPER_TMPL extends Smarty {
 
       return $string;
 
-   } // get_service_level_select_list()
+   } // smarty_service_level_select_list()
+
+   public function smarty_network_path_select_list($params, &$smarty)
+   {
+      if(!array_key_exists('np_idx', $params)) {
+         $this->trigger_error("smarty_network_path_select_list: missing 'np_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+
+      $result = $this->parent->db->db_query("
+         SELECT *
+         FROM ". MYSQL_PREFIX ."net_paths
+         ORDER BY sl_name ASC
+      ");
+
+      while($row = $result->fetchRow()) {
+         $string.= "<option value=\"". $row->netpath_idx ."\"";
+         if($row->netpath_idx == $params['chain_np_idx']) {
+            $string.= " selected=\"selected\"";
+         }
+         $string.= ">". $row->netpath_name ."</option>\n";
+      }
+
+      return $string;
+
+   } // smarty_network_path_select_list()
+
 
 }
 
