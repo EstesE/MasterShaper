@@ -118,7 +118,7 @@
   <td>Service-Level:</td>
   <td>
    <select name="pipe_sl_idx">
-   { service_level_select_list pipe_sl_idx=$pipe_sl_idx }
+   { service_level_select_list sl_idx=$pipe_sl_idx }
    </select>
   </td>
   <td>Bandwidth limit for this pipe.</td>
