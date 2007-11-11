@@ -35,6 +35,7 @@ require_once "shaper_interfaces.php";
 require_once "shaper_net_paths.php";
 require_once "shaper_filters.php";
 require_once "shaper_pipes.php";
+require_once "shaper_chains.php";
 
 class MASTERSHAPER {
 
@@ -310,6 +311,9 @@ class MASTERSHAPER {
          case 'pipes':
             $obj = new MASTERSHAPER_PIPES($this);
             break;
+         case 'chains':
+            $obj = new MASTERSHAPER_CHAINS($this);
+            break;
       }
       if(isset($obj))
          return $obj->show();
@@ -356,6 +360,9 @@ class MASTERSHAPER {
                break;
             case 'pipe':
                $obj = new MASTERSHAPER_PIPES($this);
+               break;
+            case 'chain':
+               $obj = new MASTERSHAPER_CHAINS($this);
                break;
          }
 

@@ -843,7 +843,59 @@ function togglePipeStatus(idx, to)
    else {
       window.alert(retr);
    }
-} // toggleFilterStatus()
+} // togglePipeStatus()
+
+function saveChain(obj)
+{
+   var retval = formSubmit(obj, null, {isAsync: false});
+
+   if(retval == "ok") {
+      refreshPage("chains");
+   }
+   else {
+      window.alert(retval);
+   }
+
+} // saveChain()
+
+function deleteChain(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'chain';
+   objTemp['action'] = 'delete';
+   objTemp['chain_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("chains");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deleteChain()
+
+function toggleChainStatus(idx, to)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'chain';
+   objTemp['action'] = 'toggle';
+   objTemp['chain_idx'] = idx;
+   objTemp['to'] = to;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("chains");
+   }
+   else {
+      window.alert(retr);
+   }
+} // toggleChainStatus()
 
 function formSubmit(form, target, options)
 {
