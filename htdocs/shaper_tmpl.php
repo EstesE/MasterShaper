@@ -74,6 +74,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
       $this->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
       $this->register_function("service_level_select_list", array(&$this, "smarty_service_level_select_list"), false);
+      $this->register_function("network_path_select_list", array(&$this, "smarty_network_path_select_list"), false);
 
    } // __construct()
 
