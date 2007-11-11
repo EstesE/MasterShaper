@@ -377,7 +377,65 @@ class MASTERSHAPER_OVERVIEW {
 
    } // smart_ov_filter()
 
+   public function alter_position()
+   {
+      switch($_POST['type']) {
 
+         case 'chain':
+            $obj_table = "chains";
+            $obj_col = "chain";
+            break;
+
+         case 'netpath':
+            $obj_table = "network_paths";
+            $obj_col = "netpath";
+            break;
+
+         case 'pipe':
+            $obj_table = "pipes";
+            $obj_col = "pipe";
+            break;
+
+      }
+
+      if(!isset($_POST['idx']) || !is_numeric($_POST['idx']))
+         return;
+
+      $idx = $_POST['idx'];
+
+      // get my current position
+      $my_pos = $this->db->db_fetchSingleRow("
+         SELECT ". $obj_col ."_position as position
+         FROM ". MYSQL_PREFIX .  $obj_table ."
+         WHERE
+            ". $obj_col ."_idx='". $idx ."'
+      ");
+
+      if($_POST['to'] == 1)
+         $new_pos = $my_pos->position - 1;
+      else 
+         $new_pos = $my_pos->position + 1;
+
+      $this->db->db_query("
+         UPDATE ". MYSQL_PREFIX . $obj_table ."
+         SET
+            ". $obj_col ."_position='". $my_pos->position ."'
+         WHERE
+            ". $obj_col ."_position='". $new_pos ."'
+      ");
+
+      $this->db->db_query("
+         UPDATE ". MYSQL_PREFIX . $obj_table ."
+         SET
+            ". $obj_col ."_position='". $new_pos ."'
+         WHERE
+            ". $obj_col ."_idx='". $idx ."';
+      ");
+
+      return "ok";
+
+   } // alter_position()
+   
 }
 
 ?>

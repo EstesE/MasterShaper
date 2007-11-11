@@ -967,3 +967,22 @@ function formSubmit(form, target, options)
       return HTML_AJAX.makeRequest(request);
    }
 }
+
+function alterPosition(type, idx, to)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+   objTemp['type'] = type;
+   objTemp['idx'] = idx;
+   objTemp['to'] = to;
+
+   var retr = HTML_AJAX.post('rpc.php?action=alter_position', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("overview");
+   }
+   else {
+      window.alert(retr);
+   }
+
+} // alterPosition()

@@ -11,8 +11,8 @@
   <td>
    &nbsp;
    Network Path '{ $netpath_name }'
-   <a href=""><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
-   <a href=""><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
+   <a href="javascript:alterPosition('netpath', '{ $netpath_idx }', '0');"><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
+   <a href="javascript:alterPosition('netpath', '{ $netpath_idx }', '1');"><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
   </td>
  </tr>
  <tr>
@@ -84,8 +84,8 @@
       </select>
      </td>
      <td style="text-align: center;">
-      <a href="javascript:;"><img src="{ $icon_chains_arrow_down }" alt="Move chain down" /></a>
-      <a href="javascript:;"><img src="{ $icon_chains_arrow_up }" alt="Move chain up" /></a>
+      <a href="javascript:alterPosition('chain', '{ $chain_idx }', '0');"><img src="{ $icon_chains_arrow_down }" alt="Move chain down" /></a>
+      <a href="javascript:alterPosition('chain', '{ $chain_idx }', '1');"><img src="{ $icon_chains_arrow_up }" alt="Move chain up" /></a>
      </td>
     </tr> 
 
@@ -133,8 +133,8 @@
       </select>
      </td>
      <td style="text-align: center;">
-      <a href=""><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
-      <a href=""><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
+      <a href="javascript:alterPosition('pipe', '{ $pipe_idx }', '0');"><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
+      <a href="javascript:alterPosition('pipe', '{ $pipe_idx }', '1');"><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
      </td>
     </tr> 
     { ov_filter np_idx=$netpath_idx chain_idx=$chain_idx pipe_idx=$pipe_idx }

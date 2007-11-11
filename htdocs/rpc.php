@@ -81,6 +81,10 @@ class MASTERSHAPER_RPC {
             }
             break;
 
+         case 'alter_position':
+            print $ms->alter_position();
+            break;
+
       }
 
    } // process_ajax_request();

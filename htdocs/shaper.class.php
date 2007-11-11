@@ -378,6 +378,16 @@ class MASTERSHAPER {
    } // store()
 
    /**
+    * change position
+    */
+   public function alter_position()
+   {
+      $obj = new MASTERSHAPER_OVERVIEW($this);
+      return $obj->alter_position();
+
+   } // alter_position()
+
+   /**
     * check login
     */
    public function check_login()
