@@ -170,8 +170,8 @@ class MASTERSHAPER_TMPL extends Smarty {
 
    public function smarty_service_level_select_list($params, &$smarty)
    {
-      if(!array_key_exists('pipe_sl_idx', $params)) {
-         $this->trigger_error("smarty_service_level_select_list: missing 'pipe_sl_idx' parameter", E_USER_WARNING);
+      if(!array_key_exists('sl_idx', $params)) {
+         $this->trigger_error("smarty_service_level_select_list: missing 'sl_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
@@ -184,10 +184,21 @@ class MASTERSHAPER_TMPL extends Smarty {
 
       while($row = $result->fetchRow()) {
          $string.= "<option value=\"". $row->sl_idx ."\"";
-         if($row->sl_idx == $params['pipe_sl_idx']) {
+         if($row->sl_idx == $params['sl_idx']) {
             $string.= " selected=\"selected\"";
          }
-         $string.= ">". $row->sl_name ."</option>\n";
+         switch($this->parent->getOption("classifier")) {
+            case 'HTB':
+               $string.= ">". $row->sl_name ." (in: ". $row->sl_htb_bw_in_rate ."kbit/s, out: ". $row->sl_htb_bw_out_rate ."kbit/s)</option>\n";
+               break;
+            case 'HFSC':
+               $string.= ">". $row->sl_name ." (in: ". $row->sl_hfsc_in_dmax ."ms,". $row->sl_hfsc_in_rate ."kbit/s, out: ". $row->sl_hfsc_out_dmax ."ms,". $row->sl_hfsc_bw_out_rate ."kbit/s)</option>\n";
+               break;
+            case 'CBQ':
+               $string.= ">". $row->sl_name ." (in: ". $row->sl_cbq_in_rate ."kbit/s, out: ". $row->sl_cbq_out_rate ."kbit/s)</option>\n";
+               break;
+         }
+
       }
 
       return $string;
@@ -204,13 +215,13 @@ class MASTERSHAPER_TMPL extends Smarty {
 
       $result = $this->parent->db->db_query("
          SELECT *
-         FROM ". MYSQL_PREFIX ."net_paths
-         ORDER BY sl_name ASC
+         FROM ". MYSQL_PREFIX ."network_paths
+         ORDER BY netpath_name ASC
       ");
 
       while($row = $result->fetchRow()) {
          $string.= "<option value=\"". $row->netpath_idx ."\"";
-         if($row->netpath_idx == $params['chain_np_idx']) {
+         if($row->netpath_idx == $params['np_idx']) {
             $string.= " selected=\"selected\"";
          }
          $string.= ">". $row->netpath_name ."</option>\n";
@@ -219,7 +230,6 @@ class MASTERSHAPER_TMPL extends Smarty {
       return $string;
 
    } // smarty_network_path_select_list()
-
 
 }
 
