@@ -403,8 +403,9 @@ class MASTERSHAPER_PIPES {
             }
          }
 
-         return "ok";
       }
+
+      return "ok";
 
    } // store()
 
