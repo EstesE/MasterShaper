@@ -605,6 +605,26 @@ class MASTERSHAPER {
 
    } // getMinuteList()
 
+   /**
+    * returns IANA protocol number
+    *
+    * this function returns the IANA protocol number
+    * for the specified database entry in protocol table
+    */
+   public function getProtocolNumberById($proto_idx)
+   {
+      if($proto = $this->db->db_fetchSingleRow("
+         SELECT proto_number
+         FROM ". MYSQL_PREFIX ."protocols
+         WHERE
+            proto_idx LIKE '". $proto_idx ."'"))
+         return $proto->proto_number;
+
+      return 0;
+
+   } // getProtocolNumberById()
+
+
 }
 
 ?>

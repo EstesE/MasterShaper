@@ -112,6 +112,9 @@ class MASTERSHAPER_FILTERS {
                filter_idx='". $idx ."'
          ");
       }
+      else {
+         $filter->filter_active = 'Y'; 
+      }
 
       $this->tmpl->assign('filter_idx', $idx);
       $this->tmpl->assign('filter_mode', $this->parent->getOption("filter"));
@@ -270,7 +273,7 @@ class MASTERSHAPER_FILTERS {
       if(isset($new)) {
          $this->db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."filters (
-               filter_name, filter_protocol_id, filter_TOS,
+               filter_name, filter_protocol_id, filter_tos,
                filter_tcpflag_syn, filter_tcpflag_ack,
                filter_tcpflag_fin, filter_tcpflag_rst,
                filter_tcpflag_urg, filter_tcpflag_psh, 
@@ -321,7 +324,7 @@ class MASTERSHAPER_FILTERS {
             ')
          ");
                           
-         $_POST['idx'] = $this->db->db_getid();
+         $_POST['filter_idx'] = $this->db->db_getid();
 
       }
       else {
@@ -363,7 +366,7 @@ class MASTERSHAPER_FILTERS {
                      filter_match_sip='". $_POST['filter_match_sip'] ."', 
                      filter_active='". $_POST['filter_active'] ."' 
                   WHERE
-                     filter_idx='". $_POST['idx'] ."'
+                     filter_idx='". $_POST['filter_idx'] ."'
                ");
                break;
             case 'tc':
@@ -375,7 +378,7 @@ class MASTERSHAPER_FILTERS {
                      filter_tos='". $_POST['filter_tos'] ."', 
                      filter_active='". $_POST['filter_active'] ."' 
                   WHERE
-                     filter_idx='". $_POST['idx'] ."'
+                     filter_idx='". $_POST['filter_idx'] ."'
                ");
                break;
          }
@@ -385,7 +388,7 @@ class MASTERSHAPER_FILTERS {
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_ports
             WHERE
-               afp_filter_idx='". $_POST['idx'] ."'
+               afp_filter_idx='". $_POST['filter_idx'] ."'
          ");
 
          foreach($_POST['used'] as $use) {
@@ -394,7 +397,7 @@ class MASTERSHAPER_FILTERS {
                   INSERT INTO ". MYSQL_PREFIX ."assign_ports (
                      afp_filter_idx, afp_port_idx
                   ) VALUES (
-                     '". $_POSET['idx'] ."',
+                     '". $_POST['filter_idx'] ."',
                      '". $use ."'
                   )
                ");
@@ -405,7 +408,7 @@ class MASTERSHAPER_FILTERS {
             $this->db->db_query("
                DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols
                WHERE
-                  afl7_filter_idx='". $_POST['idx'] ."'
+                  afl7_filter_idx='". $_POST['filter_idx'] ."'
             ");
             foreach($_POST['filter_l7_used'] as $use) {
                if($use != "") {
@@ -413,7 +416,7 @@ class MASTERSHAPER_FILTERS {
                      INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols (
                         afl7_filter_idx, afl7_l7proto_idx
                      ) VALUES (
-                        '". $_POST['idx'] ."',
+                        '". $_POST['filter_idx'] ."',
                         '". $use ."'
                      )
                   ");

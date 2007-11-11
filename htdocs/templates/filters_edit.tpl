@@ -1,4 +1,7 @@
-<form id="filters" onsubmit="saveFilter(); return false;">
+<pre id="target"></pre>
+<form action="rpc.php?action=store" id="filters" onsubmit="saveFilter(this); return false;" method="post">
+<input type="hidden" name="module" value="filter" />
+<input type="hidden" name="action" value="modify" />
 { if !$filter_idx }
  {start_table icon=$icon_filters alt="filter icon" title="Create a new Filter" }
  <input type="hidden" name="filter_new" value="1" />

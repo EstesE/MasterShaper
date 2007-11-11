@@ -778,6 +778,20 @@ function toggleFilterStatus(idx, to)
    }
 } // toggleFilterStatus()
 
+function saveFilter(obj)
+{
+   selectAll(document.forms['filters'].elements['used[]']);
+   var retval = formSubmit(obj, null, {isAsync: false});
+
+   if(retval == "ok") {
+      refreshPage("filters");
+   }
+   else {
+      window.alert(retval);
+   }
+
+} // saveFilter()
+
 function savePipe(obj)
 {
    selectAll(document.forms['pipes'].elements['used[]']);
