@@ -778,6 +778,59 @@ function toggleFilterStatus(idx, to)
    }
 } // toggleFilterStatus()
 
+function savePipe(obj)
+{
+   selectAll(document.forms['pipes'].elements['used[]']);
+   var retval = formSubmit(obj, null, {isAsync: false});
+
+   if(retval == "ok") {
+      refreshPage("pipes");
+   }
+   else {
+      window.alert(retval);
+   }
+
+} // savePipe()
+
+function deletePipe(idx)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'pipe';
+   objTemp['action'] = 'delete';
+   objTemp['pipe_idx'] = idx;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("pipes");
+   }
+   else {
+      window.alert(retr);
+   }
+} // deletePipe()
+
+function togglePipeStatus(idx, to)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+
+   objTemp['module'] = 'pipe';
+   objTemp['action'] = 'toggle';
+   objTemp['pipe_idx'] = idx;
+   objTemp['to'] = to;
+
+   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
+
+   if(retr == "ok") {
+      refreshPage("pipes");
+   }
+   else {
+      window.alert(retr);
+   }
+} // toggleFilterStatus()
+
 function formSubmit(form, target, options)
 {
    form = HTML_AJAX_Util.getElement(form);
