@@ -129,11 +129,8 @@ class MASTERSHAPER_PIPES {
       $this->tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
       $this->tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
 
-      $this->tmpl->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
-      $this->tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
       $this->tmpl->register_function("unused_filters_select_list", array(&$this, "smarty_unused_filters_select_list"), false);
       $this->tmpl->register_function("used_filters_select_list", array(&$this, "smarty_used_filters_select_list"), false);
-      $this->tmpl->register_function("service_level_select_list", array(&$this, "smarty_service_level_select_list"), false);
 
       $this->tmpl->show("pipes_edit.tpl");
 
@@ -244,83 +241,6 @@ class MASTERSHAPER_PIPES {
       return $string;
 
    } // smarty_used_filters_select_list()
-
-   public function smarty_chain_select_list($params, &$smarty) 
-   {
-      if(!array_key_exists('chain_idx', $params)) {
-         $this->tmpl->trigger_error("smarty_chain_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-
-      $result = $this->db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."chains
-      ");
-
-      while($row = $result->fetchrow()) {
-         $string.= "<option value='". $row->chain_idx ."'";
-         if($row->chain_idx == $params['chain_idx']) {
-            $string.= " selected=\"selected\"";
-         }
-         $string.= ">". $row->chain_name ."</option>\n";
-      }  
-
-      return $string;
-
-   } // smarty_chain_select_list()
-
-   public function smarty_target_select_list($params, &$smarty)
-   {
-      if(!array_key_exists('target_idx', $params)) {
-         $this->tmpl->trigger_error("smarty_target_select_list: missing 'target_idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-   
-      $result = $this->db->db_query("
-         SELECT target_idx, target_name
-         FROM ". MYSQL_PREFIX ."targets
-         ORDER BY target_name
-      ");
-
-      while($row = $result->fetchRow()) {
-         $string.= "<option value=\"". $row->target_idx ."\" ";
-         if($row->target_idx == $params['target_idx']) {
-            $string.= " selected=\"selected\"";
-         }
-         $string.= ">". $row->target_name ."</option>\n";
-      } 
-
-      return $string;
-
-   } // smarty_target_select_list()
-
-   public function smarty_service_level_select_list($params, &$smarty) 
-   {
-      if(!array_key_exists('pipe_sl_idx', $params)) {
-         $this->tmpl->trigger_error("smarty_service_level_select_list: missing 'pipe_sl_idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-
-      $result = $this->db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."service_levels
-         ORDER BY sl_name ASC
-      ");
-
-      while($row = $result->fetchRow()) {
-         $string.= "<option value=\"". $row->sl_idx ."\"";
-         if($row->sl_idx == $params['pipe_sl_idx']) {
-            $string.= " selected=\"selected\"";
-         }
-         $string.= ">". $row->sl_name ."</option>\n"; 
-      }
-
-      return $string;
-
-   } // get_service_level_select_list()
 
    /**
     * handle updates
