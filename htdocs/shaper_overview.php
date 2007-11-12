@@ -21,10 +21,6 @@
  *
  ***************************************************************************/
 
-define('MANAGE_POS_CHAINS', 1);
-define('MANAGE_POS_PIPES', 2);
-define('MANAGE_POS_NETPATHS', 3);
-
 class MASTERSHAPER_OVERVIEW {
 
    var $db;

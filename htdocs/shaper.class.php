@@ -36,6 +36,7 @@ require_once "shaper_net_paths.php";
 require_once "shaper_filters.php";
 require_once "shaper_pipes.php";
 require_once "shaper_chains.php";
+require_once "shaper_about.php";
 
 class MASTERSHAPER {
 
@@ -246,7 +247,7 @@ class MASTERSHAPER {
             $string.= $this->addSubMenuItem($navurl ."&amp;mode=15", "icons/update.gif", _("Update L7 Protocols"));
             $string.= $this->addSubMenuItem("http://www.mastershaper.org/MasterShaper_documentation.pdf", "icons/page_white_acrobat.gif", _("Documentation (PDF)"));
             $string.= $this->addSubMenuItem("http://www.mastershaper.org/forum/", "icons/ms_users_14.gif", _("Support Forum"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=11", "icons/ms_users_14.gif", _("About"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('about');", "icons/ms_users_14.gif", _("About"));
             $string.= "</tr></table>\n";
             break;
 
@@ -313,6 +314,9 @@ class MASTERSHAPER {
             break;
          case 'chains':
             $obj = new MASTERSHAPER_CHAINS($this);
+            break;
+         case 'about':
+            $obj = new MASTERSHAPER_ABOUT($this);
             break;
       }
       if(isset($obj))
