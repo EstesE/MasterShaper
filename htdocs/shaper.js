@@ -299,6 +299,11 @@ function saveForm(obj, target)
    }
 } // saveForm()
 
+/**
+ * stolen from HTM_AJAX, since it seems to have a bug as 
+ * it always returns true.
+ * see http://pear.php.net/bugs/bug.php?id=12415
+ */
 function formSubmit(form, target, options)
 {
    form = HTML_AJAX_Util.getElement(form);
