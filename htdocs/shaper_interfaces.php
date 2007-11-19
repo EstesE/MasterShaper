@@ -243,7 +243,7 @@ class MASTERSHAPER_INTERFACES {
    /**
     * toggle interface status
     */
-   public function toggleInterfaceStatus()
+   public function toggleStatus()
    {
       if(isset($_POST['if_idx']) && is_numeric($_POST['if_idx'])) {
 
@@ -268,7 +268,7 @@ class MASTERSHAPER_INTERFACES {
 
       return "unkown error";
 
-   } // toggleInterfaceStatus()
+   } // toggleStatus()
 
 }
 
