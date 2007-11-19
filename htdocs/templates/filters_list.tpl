@@ -22,9 +22,9 @@
   <td style="text-align: center;">
    <a href="javascript:deleteObj('filter', 'filters', '{ $filter_idx }');" title="Delete"><img src="{ $icon_delete }" alt="filter icon" /></a>
    { if $filter_active == "Y" }
-   <a href="javascript:toggleFilterStatus('{ $filter_idx }', '0');" title="Disable filter { $filter_name }"><img src="{ $icon_active }" alt="active icon" /></a>
+   <a href="javascript:toggleStatus('filter', 'filters', '{ $filter_idx }', '0');" title="Disable filter { $filter_name }"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }
-   <a href="javascript:toggleFilterStatus('{ $filter_idx }', '1');" title="Enable filter { $filter_name }"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
+   <a href="javascript:toggleStatus('filter', 'filters', '{ $filter_idx }', '1');" title="Enable filter { $filter_name }"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
    { /if }
   </td>
  </tr>

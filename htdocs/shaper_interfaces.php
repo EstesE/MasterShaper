@@ -245,9 +245,8 @@ class MASTERSHAPER_INTERFACES {
     */
    public function toggleStatus()
    {
-      if(isset($_POST['if_idx']) && is_numeric($_POST['if_idx'])) {
-
-         $idx = $_POST['if_idx'];
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          if($_POST['to'] == 1)
             $new_status = 'Y';

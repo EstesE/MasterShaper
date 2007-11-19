@@ -361,8 +361,8 @@ class MASTERSHAPER_PIPES {
     */
    public function toggleStatus()
    {
-      if(isset($_POST['pipe_idx']) && is_numeric($_POST['pipe_idx'])) {
-         $idx = $_POST['pipe_idx'];
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          if($_POST['to'] == 1)
             $new_status = 'Y';
@@ -382,7 +382,7 @@ class MASTERSHAPER_PIPES {
    
       return "unkown error";
 
-   } // togglePipeStatus()
+   } // toggleStatus()
 
    /**
     * return true if the provided pipe with the specified name is

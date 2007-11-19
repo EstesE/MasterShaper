@@ -30,9 +30,9 @@
   <td style="text-align: center;">
    <a href="javascript:deleteObj('networkpath', 'networkpaths', '{ $netpath_idx }');"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $netpath_active == 'Y' }
-   <a href="javascript:toggleNetworkPathStatus('{ $netpath_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
+   <a href="javascript:toggleStatus('networkpath', 'networkpaths', '{ $netpath_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }
-   <a href="javascript:toggleNetworkPathStatus('{ $netpath_idx }', '1');"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
+   <a href="javascript:toggleStatus('networkpath', 'networkpaths', '{ $netpath_idx }', '1');"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
    { /if }
   </td>
  </tr>

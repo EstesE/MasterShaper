@@ -40,9 +40,9 @@
   <td style="text-align: center;">
    <a href="javascript:deleteObj('chain', 'chains', '{ $chain_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $chain_active == 'Y' }
-   <a href="javascript:toggleChainStatus('{ $chain_idx }', '0');" title="Disable chain { $chain_name }"><img src="{ $icon_active }" alt="status icon" /></a>
+   <a href="javascript:toggleStatus('chain', 'chains', '{ $chain_idx }', '0');" title="Disable chain { $chain_name }"><img src="{ $icon_active }" alt="status icon" /></a>
    { else }
-   <a href="javascript:toggleChainStatus('{ $chain_idx }', '1');" title="Enable chain { $chain_name }"><img src="{ $icon_inactive }" alt="status icon" /></a>
+   <a href="javascript:toggleStatus('chain', 'chains', '{ $chain_idx }', '1');" title="Enable chain { $chain_name }"><img src="{ $icon_inactive }" alt="status icon" /></a>
    { /if }
   </td>
  </tr>

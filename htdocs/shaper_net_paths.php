@@ -235,8 +235,8 @@ class MASTERSHAPER_NETPATHS {
     */
    public function toggleStatus()
    {
-      if(isset($_POST['netpath_idx']) && is_numeric($_POST['netpath_idx'])) {
-         $idx = $_POST['netpath_idx'];
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          if($_POST['to'] == 1)
             $new_status = 'Y';
@@ -257,7 +257,7 @@ class MASTERSHAPER_NETPATHS {
 
       return "unkown error";
 
-   } // toggleNetworkPathStatus()
+   } // toggleStatus()
 
    /**
     * this function will return a select list full of interfaces

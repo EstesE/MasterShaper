@@ -271,45 +271,22 @@ function currentCheckbox(obj)
    return;
 }
 
-function toggleUserStatus(idx, to)
+function toggleStatus(module, target, idx, to)
 {
    // Create object with values of the form
    var objTemp = new Object();
-
-   objTemp['module'] = 'user';
+   objTemp['module'] = module;
    objTemp['action'] = 'toggle';
-   objTemp['user_idx'] = idx;
+   objTemp['idx'] = idx;
    objTemp['to'] = to;
-
    var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
    if(retr == "ok") {
-      refreshPage("users");
+      refreshPage(target);
    }
    else {
       window.alert(retr);
    }
-} // toggleUserStatus()
-
-function toggleInterfaceStatus(idx, to)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'interface';
-   objTemp['action'] = 'toggle';
-   objTemp['if_idx'] = idx;
-   objTemp['to'] = to;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("interfaces");
-   }
-   else {
-      window.alert(retr);
-   }
-} // toggleInterfaceStatus()
+} // toggleStatus()
 
 function saveForm(obj, target)
 {
@@ -321,66 +298,6 @@ function saveForm(obj, target)
       window.alert(retval);
    }
 } // saveForm()
-
-function toggleNetworkPathStatus(idx, to)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'networkpath';
-   objTemp['action'] = 'toggle';
-   objTemp['netpath_idx'] = idx;
-   objTemp['to'] = to;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("networkpaths");
-   }
-   else {
-      window.alert(retr);
-   }
-} // toggleInterfaceStatus()
-
-function togglePipeStatus(idx, to)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'pipe';
-   objTemp['action'] = 'toggle';
-   objTemp['pipe_idx'] = idx;
-   objTemp['to'] = to;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("pipes");
-   }
-   else {
-      window.alert(retr);
-   }
-} // togglePipeStatus()
-
-function toggleChainStatus(idx, to)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'chain';
-   objTemp['action'] = 'toggle';
-   objTemp['chain_idx'] = idx;
-   objTemp['to'] = to;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("chains");
-   }
-   else {
-      window.alert(retr);
-   }
-} // toggleChainStatus()
 
 function formSubmit(form, target, options)
 {

@@ -246,7 +246,7 @@ class MASTERSHAPER_USERS {
     */
    public function toggleStatus()
    {
-      if(isset($_POST['user_idx']) && is_numeric($_POST['user_idx'])) {
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          if($_POST['to'] == 1)
             $new_status='Y';
          else
@@ -257,7 +257,7 @@ class MASTERSHAPER_USERS {
             SET
                user_active='". $new_status ."'
             WHERE
-               user_idx='". $_POST['user_idx'] ."'");
+               user_idx='". $_POST['idx'] ."'");
 
          return "ok";
       }
