@@ -1,4 +1,7 @@
-<form id="servicelevels" onsubmit="saveServiceLevel(); return false;">
+<pre id="target"></pre>
+<form action="rpc.php?action=store" id="servicelevels" onsubmit="saveForm(this, 'servicelevels'); return false;" method="post">
+<input type="hidden" name="module" value="servicelevel" />
+<input type="hidden" name="action" value="modify" />
 { if ! $sl_idx }
  {start_table icon=$icon_servicelevels alt="service level icon" title="Create a new service level" }
  <input type="hidden" name="sl_new" value="1" />

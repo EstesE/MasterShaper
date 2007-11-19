@@ -1,5 +1,8 @@
+<pre id="target"></pre>
+<form action="rpc.php?action=store" id="options" onsubmit="saveForm(this, 'options'); return false;" method="post">
+<input type="hidden" name="module" value="options" />
+<input type="hidden" name="action" value="modify" />
 {start_table icon=$icon_options alt="option icon" title="Manage Options" }
-<form id="options" onsubmit="saveOptions(); return false;">
  <table style="width: 100%;" class="withborder2">
   <tr>
    <td colspan="3">

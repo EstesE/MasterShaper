@@ -1,5 +1,5 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="netpaths" onsubmit="saveNetworkPath(this); return false;" method="post">
+<form action="rpc.php?action=store" id="netpaths" onsubmit="saveForm(this, 'networkpaths'); return false;" method="post">
 <input type="hidden" name="module" value="networkpath" />
 <input type="hidden" name="action" value="modify" />
 { if !$netpath_idx }

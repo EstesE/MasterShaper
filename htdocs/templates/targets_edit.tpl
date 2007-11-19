@@ -1,4 +1,7 @@
-<form id="targets" onsubmit="saveTarget(); return false;">
+<pre id="target"></pre>
+<form action="rpc.php?action=store" id="targets" onsubmit="saveForm(this, 'targets'); return false;" method="post">
+<input type="hidden" name="module" value="target" />
+<input type="hidden" name="action" value="modify" />
 { if ! $target_idx }
  {start_table icon=$icon_targets alt="target icon" title="Create a new Target" }
  <input type="hidden" name="target_new" value="1">

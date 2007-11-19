@@ -1,5 +1,3 @@
-
-
 /***************************************************************************
  *
  * Copyright (c) by Andreas Unterkircher
@@ -232,43 +230,6 @@ function updateSubMenu(mode)
    submenu.innerHTML = content;
 }
 
-function saveTarget()
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'target';
-   objTemp['action'] = 'modify';
-   objTemp['target_new'] = document.forms['targets'].target_new.value;
-   if(document.forms['targets'].target_new.value == 0) {
-      objTemp['target_idx'] = document.forms['targets'].target_idx.value;
-      objTemp['namebefore'] = document.forms['targets'].namebefore.value;
-   }
-   objTemp['target_name'] = document.forms['targets'].target_name.value;
-   objTemp['target_match'] = currentRadio(document.forms['targets'].target_match);
-   objTemp['target_ip'] = document.forms['targets'].target_ip.value;
-   objTemp['target_mac'] = document.forms['targets'].target_mac.value;
-   objTemp['target_group'] = document.forms['targets'].used;
-
-   var target_used = new Array();
-   var used = document.forms['targets'].elements['used[]'];
-   for(i = 1; i < used.length; i++) {
-      target_used[i-1] = used.options[i].value;
-   }
-
-   objTemp['target_used'] = target_used;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("targets");
-   }
-   else {
-      window.alert(retr);
-   }
-
-} // saveTarget()
-
 function deleteTarget(idx)
 {
    // Create object with values of the form
@@ -288,33 +249,6 @@ function deleteTarget(idx)
    }
 } // deleteTarget()
 
-function savePort()
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'port';
-   objTemp['action'] = 'modify';
-   objTemp['port_new'] = document.forms['ports'].port_new.value;
-   if(document.forms['ports'].port_new.value == 0) {
-      objTemp['port_idx'] = document.forms['ports'].port_idx.value;
-      objTemp['namebefore'] = document.forms['ports'].namebefore.value;
-   }
-   objTemp['port_name'] = document.forms['ports'].port_name.value;
-   objTemp['port_desc'] = document.forms['ports'].port_desc.value;
-   objTemp['port_number'] = document.forms['ports'].port_number.value;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("ports");
-   }
-   else {
-      window.alert(retr);
-   }
-
-} // savePort()
-
 function deletePort(idx)
 {
    // Create object with values of the form
@@ -333,32 +267,6 @@ function deletePort(idx)
       window.alert(retr);
    }
 } // deletePort()
-
-function saveProtocol()
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'protocol';
-   objTemp['action'] = 'modify';
-   objTemp['proto_new'] = document.forms['protocols'].proto_new.value;
-   if(document.forms['protocols'].proto_new.value == 0) {
-      objTemp['proto_idx'] = document.forms['protocols'].proto_idx.value;
-      objTemp['namebefore'] = document.forms['protocols'].namebefore.value;
-   }
-   objTemp['proto_name'] = document.forms['protocols'].proto_name.value;
-   objTemp['proto_number'] = document.forms['protocols'].proto_number.value;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("protocols");
-   }
-   else {
-      window.alert(retr);
-   }
-
-} // saveProtocol()
 
 function deleteProtocol(idx)
 {
@@ -404,80 +312,6 @@ function currentCheckbox(obj)
    return;
 }
 
-function saveServiceLevel()
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'servicelevel';
-   objTemp['action'] = 'modify';
-
-   sl_form = document.forms['servicelevels'];
-   objTemp['sl_new'] = sl_form.sl_new.value;
-   if(sl_form.sl_new.value == 0) {
-      objTemp['sl_idx'] = sl_form.sl_idx.value;
-      objTemp['namebefore'] = sl_form.namebefore.value;
-   }
-   objTemp['sl_name'] = sl_form.sl_name.value;
-
-   if(sl_form.sl_htb_bw_in_rate != undefined) {
-      objTemp['sl_htb_bw_in_rate'] = sl_form.sl_htb_bw_in_rate.value;
-      objTemp['sl_htb_bw_in_ceil'] = sl_form.sl_htb_bw_in_ceil.value;
-      objTemp['sl_htb_bw_in_burst'] = sl_form.sl_htb_bw_in_burst.value;
-      objTemp['sl_htb_bw_out_rate'] = sl_form.sl_htb_bw_out_rate.value;
-      objTemp['sl_htb_bw_out_ceil'] = sl_form.sl_htb_bw_out_ceil.value;
-      objTemp['sl_htb_bw_out_burst'] = sl_form.sl_htb_bw_out_burst.value;
-      objTemp['sl_htb_priority'] = sl_form.sl_htb_priority.value;
-   }
-   if(sl_form.sl_hfsc_in_umax != undefined) {
-      objTemp['sl_hfsc_in_umax'] = sl_form.sl_hfsc_in_umax.value;
-      objTemp['sl_hfsc_in_dmax'] = sl_form.sl_hfsc_in_dmax.value;
-      objTemp['sl_hfsc_in_rate'] = sl_form.sl_hfsc_in_rate.value;
-      objTemp['sl_hfsc_in_ulrate'] = sl_form.sl_hfsc_in_ulrate.value;
-      objTemp['sl_hfsc_out_umax'] = sl_form.sl_hfsc_out_umax.value;
-      objTemp['sl_hfsc_out_dmax'] = sl_form.sl_hfsc_out_dmax.value;
-      objTemp['sl_hfsc_out_rate'] = sl_form.sl_hfsc_out_rate.value;
-      objTemp['sl_hfsc_out_ulrate'] = sl_form.sl_hfsc_out_ulrate.value;
-   }
-   if(sl_form.sl_cbq_in_rate != undefined) {
-      objTemp['sl_cbq_in_rate'] = sl_form.sl_cbq_in_rate.value;
-      objTemp['sl_cbq_in_priority'] = sl_form.sl_cbq_in_priority.value;
-      objTemp['sl_cbq_out_rate'] = sl_form.sl_cbq_out_rate.value;
-      objTemp['sl_cbq_out_priority'] = sl_form.sl_cbq_priority.value;
-      objTemp['sl_cbq_bounded'] = sl_form.sl_cbq_bounded.value;
-   }
-
-   objTemp['sl_qdisc'] = sl_form.sl_qdisc.value;
-   if(sl_form.sl_qdisc.value == "NETEM") {
-      objTemp['sl_netem_delay'] = sl_form.sl_netem_delay.value;
-      objTemp['sl_netem_jitter'] = sl_form.sl_netem_jitter.value;
-      objTemp['sl_netem_random'] = sl_form.sl_netem_random.value;
-      objTemp['sl_netem_distribution'] = sl_form.sl_netem_distribution.value;
-      objTemp['sl_netem_loss'] = sl_form.sl_netem_loss.value;
-      objTemp['sl_netem_duplication'] = sl_form.sl_netem_duplication.value;
-      objTemp['sl_netem_gap'] = sl_form.sl_netem_gap.value;
-      objTemp['sl_netem_reorder_percentage'] = sl_form.sl_netem_reorder_percentage.value;
-      objTemp['sl_netem_reorder_correlation'] = sl_form.sl_netem_reorder_correlation.value;
-   }
-   else if(sl_form.sl_qdisc.value == "ESFQ") {
-      objTemp['sl_esfq_perturb'] = sl_form.sl_esfq_perturb.value;
-      objTemp['sl_esfq_limit'] = sl_form.sl_esfq_limit.value;
-      objTemp['sl_esfq_depth'] = sl_form.sl_esfq_depth.value;
-      objTemp['sl_esfq_divisor'] = sl_form.sl_esfq_divisor.value;
-      objTemp['sl_esfq_hash'] = sl_form.sl_esfq_hash.value;
-   }
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("servicelevels");
-   }
-   else {
-      window.alert(retr);
-   }
-
-} // saveServiceLevel()
-
 function deleteServiceLevel(idx)
 {
    // Create object with values of the form
@@ -496,86 +330,6 @@ function deleteServiceLevel(idx)
       window.alert(retr);
    }
 } // deleteServiceLevel()
-
-function saveOptions()
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'options';
-   objTemp['action'] = 'modify';
-
-   opt_form = document.forms['options'];
-
-   objTemp['language'] = currentSelect(opt_form.language);
-   objTemp['ack_sl'] = currentSelect(opt_form.ack_sl);
-   objTemp['classifier'] = currentSelect(opt_form.classifier);
-   objTemp['qdisc'] = currentSelect(opt_form.qdisc);
-   if(objTemp['qdisc'] == "ESFQ") {
-      objTemp['sl_default_esfq_perturb'] = opt_form.sl_default_esfq_perturb.value;
-      objTemp['sl_default_esfq_limit'] = opt_form.sl_default_esfq_limit.value;
-      objTemp['sl_default_esfq_depth'] = opt_form.sl_default_esfq_depth.value;
-      objTemp['sl_default_esfq_divisor'] = opt_form.sl_default_esfq_divisor.value;
-      objTemp['sl_default_esfq_hash'] = opt_form.sl_default_esfq_hash.value;
-   }
-   objTemp['filter'] = currentRadio(opt_form.filter);
-   objTemp['msmode'] = currentRadio(opt_form.msmode);
-   objTemp['authentication'] = currentRadio(opt_form.authentication);
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("options");
-   }
-   else {
-      window.alert(retr);
-   }
-
-} // saveServiceLevel()
-
-function saveUser()
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'user';
-   objTemp['action'] = 'modify';
-
-   user_form = document.forms['users'];
-
-   objTemp['user_new'] = user_form.user_new.value;
-   if(objTemp['user_new'] == 0) {
-      objTemp['user_idx'] = user_form.user_idx.value;
-      objTemp['namebefore'] = user_form.namebefore.value;
-   }
- 
-   objTemp['user_name'] = user_form.user_name.value;
-   objTemp['user_pass1'] = user_form.user_pass1.value;
-   objTemp['user_pass2'] = user_form.user_pass2.value;
-   objTemp['user_active'] = currentRadio(user_form.user_active);
-   objTemp['user_manage_chains'] = currentCheckbox(user_form.user_manage_chains);
-   objTemp['user_manage_pipes'] = currentCheckbox(user_form.user_manage_pipes);
-   objTemp['user_manage_filters'] = currentCheckbox(user_form.user_manage_filters);
-   objTemp['user_manage_ports'] = currentCheckbox(user_form.user_manage_ports);
-   objTemp['user_manage_protocols'] = currentCheckbox(user_form.user_manage_protocols);
-   objTemp['user_manage_targets'] = currentCheckbox(user_form.user_manage_targets);
-   objTemp['user_manage_users'] = currentCheckbox(user_form.user_manage_users);
-   objTemp['user_manage_options'] = currentCheckbox(user_form.user_manage_options);
-   objTemp['user_manage_servicelevels'] = currentCheckbox(user_form.user_manage_servicelevels);
-   objTemp['user_load_rules'] = currentCheckbox(user_form.user_load_rules);
-   objTemp['user_show_rules'] = currentCheckbox(user_form.user_show_rules);
-   objTemp['user_show_monitor'] = currentCheckbox(user_form.user_show_monitor);
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("users");
-   }
-   else {
-      window.alert(retr);
-   }
-
-} // saveUser()
 
 function deleteUser(idx)
 {
@@ -616,38 +370,6 @@ function toggleUserStatus(idx, to)
    }
 } // toggleUserStatus()
 
-function saveInterface()
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'interface';
-   objTemp['action'] = 'modify';
-
-   if_form = document.forms['interfaces'];
-
-   objTemp['if_new'] = if_form.if_new.value;
-   if(objTemp['if_new'] == 0) {
-      objTemp['if_idx'] = if_form.if_idx.value;
-      objTemp['namebefore'] = if_form.namebefore.value;
-   }
- 
-   objTemp['if_name'] = if_form.if_name.value;
-   objTemp['if_active'] = currentRadio(if_form.if_active);
-   objTemp['if_speed'] = if_form.if_speed.value;
-   objTemp['if_ifb'] = currentRadio(if_form.if_ifb);
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("interfaces");
-   }
-   else {
-      window.alert(retr);
-   }
-
-} // saveInterface()
-
 function deleteInterface(idx)
 {
    // Create object with values of the form
@@ -687,18 +409,16 @@ function toggleInterfaceStatus(idx, to)
    }
 } // toggleInterfaceStatus()
 
-function saveNetworkPath(obj)
+function saveForm(obj, target)
 {
    var retval = formSubmit(obj, null, {isAsync: false});
-
    if(retval == "ok") {
-      refreshPage("networkpaths");
+      refreshPage(target);
    }
    else {
       window.alert(retval);
    }
-
-} // saveNetworkPath()
+} // saveForm()
 
 function deleteNetworkPath(idx)
 {
@@ -778,32 +498,16 @@ function toggleFilterStatus(idx, to)
    }
 } // toggleFilterStatus()
 
-function saveFilter(obj)
+function saveFilter(obj, target)
 {
    selectAll(document.forms['filters'].elements['used[]']);
-   var retval = formSubmit(obj, null, {isAsync: false});
-
-   if(retval == "ok") {
-      refreshPage("filters");
-   }
-   else {
-      window.alert(retval);
-   }
-
+   saveForm(obj, 'filters');
 } // saveFilter()
 
-function savePipe(obj)
+function savePipe(obj, target)
 {
    selectAll(document.forms['pipes'].elements['used[]']);
-   var retval = formSubmit(obj, null, {isAsync: false});
-
-   if(retval == "ok") {
-      refreshPage("pipes");
-   }
-   else {
-      window.alert(retval);
-   }
-
+   saveForm(obj, 'pipes');
 } // savePipe()
 
 function deletePipe(idx)
@@ -844,19 +548,6 @@ function togglePipeStatus(idx, to)
       window.alert(retr);
    }
 } // togglePipeStatus()
-
-function saveChain(obj)
-{
-   var retval = formSubmit(obj, null, {isAsync: false});
-
-   if(retval == "ok") {
-      refreshPage("chains");
-   }
-   else {
-      window.alert(retval);
-   }
-
-} // saveChain()
 
 function deleteChain(idx)
 {

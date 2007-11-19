@@ -1,4 +1,7 @@
-<form id="interfaces" onsubmit="saveInterface(); return false;">
+<pre id="target"></pre>
+<form action="rpc.php?action=store" id="interfaces" onsubmit="saveForm(this, 'interfaces'); return false;" method="post">
+<input type="hidden" name="module" value="interface" />
+<input type="hidden" name="action" value="modify" />
 { if !$if_idx }
  {start_table icon=$icon_interfaces alt="interface icon" title="Create a new Interface" }
  <input type="hidden" name="if_new" value="1" />
