@@ -57,7 +57,7 @@
    { /if }
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteServiceLevel('{ $sl_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a href="javascript:deleteObj('servicelevel', 'servicelevels', '{ $sl_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
   </td>
  </tr>
  { /service_level_list }

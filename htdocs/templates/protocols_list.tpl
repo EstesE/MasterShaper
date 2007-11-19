@@ -35,7 +35,7 @@
   </td>
   <td>{ if $proto_number != ""} { $proto_number} { else} &nbsp; { /if} </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteProtocol('{ $proto_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a href="javascript:deleteObj('protocol', 'protocols', '{ $proto_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
   </td>
  </tr>
 { /protocol_list }

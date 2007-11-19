@@ -234,8 +234,8 @@ class MASTERSHAPER_PROTOCOLS {
     */
    public function delete()
    {
-      if(isset($_POST['proto_idx'])) {
-         $idx = $_POST['proto_idx'];
+      if(isset($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."protocols

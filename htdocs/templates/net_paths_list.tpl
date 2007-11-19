@@ -28,7 +28,7 @@
    { $netpath_if2 }
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteNetworkPath('{ $netpath_idx }');"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a href="javascript:deleteObj('networkpath', 'networkpaths', '{ $netpath_idx }');"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $netpath_active == 'Y' }
    <a href="javascript:toggleNetworkPathStatus('{ $netpath_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }

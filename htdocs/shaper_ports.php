@@ -280,8 +280,8 @@ class MASTERSHAPER_PORTS {
     */
    public function delete()
    {
-      if(isset($_POST['port_idx'])) {
-         $idx = $_POST['port_idx'];
+      if(isset($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."ports

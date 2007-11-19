@@ -213,8 +213,8 @@ class MASTERSHAPER_NETPATHS {
     */
    public function delete()
    {
-      if(isset($_POST['netpath_idx']) && is_numeric($_POST['netpath_idx'])) {
-         $idx = $_POST['netpath_idx'];
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."network_paths

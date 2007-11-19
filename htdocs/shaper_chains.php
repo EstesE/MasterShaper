@@ -255,8 +255,8 @@ class MASTERSHAPER_CHAINS {
     */
    public function delete()
    {
-      if(isset($_POST['chain_idx']) && is_numeric($_POST['chain_idx'])) {
-         $idx = $_POST['chain_idx'];
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."chains

@@ -334,8 +334,8 @@ class MASTERSHAPER_PIPES {
     */
    public function delete()
    {
-      if(isset($_POST['pipe_idx']) && is_numeric($_POST['pipe_idx'])) {
-         $idx = $_POST['pipe_idx'];
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."pipes

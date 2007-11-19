@@ -151,8 +151,8 @@ class MASTERSHAPER_INTERFACES {
     */
    public function delete()
    {
-      if(isset($_POST['if_idx']) && is_numeric($_POST['if_idx'])) {
-         $idx = $_POST['if_idx'];
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
+         $idx = $_POST['idx'];
    
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."interfaces

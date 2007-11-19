@@ -230,62 +230,21 @@ function updateSubMenu(mode)
    submenu.innerHTML = content;
 }
 
-function deleteTarget(idx)
+function deleteObj(module, target, idx)
 {
    // Create object with values of the form
    var objTemp = new Object();
-
-   objTemp['module'] = 'target';
+   objTemp['module'] = module;
    objTemp['action'] = 'delete';
-   objTemp['target_idx'] = idx;
-
+   objTemp['idx'] = idx;
    var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
    if(retr == "ok") {
-      refreshPage("targets");
+      refreshPage(target);
    }
    else {
       window.alert(retr);
    }
-} // deleteTarget()
-
-function deletePort(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'port';
-   objTemp['action'] = 'delete';
-   objTemp['port_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("ports");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deletePort()
-
-function deleteProtocol(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'protocol';
-   objTemp['action'] = 'delete';
-   objTemp['proto_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("protocols");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deletePort()
+} // delete()
 
 function currentRadio(obj)
 {
@@ -312,44 +271,6 @@ function currentCheckbox(obj)
    return;
 }
 
-function deleteServiceLevel(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'servicelevel';
-   objTemp['action'] = 'delete';
-   objTemp['sl_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("servicelevels");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deleteServiceLevel()
-
-function deleteUser(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'user';
-   objTemp['action'] = 'delete';
-   objTemp['user_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("users");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deleteUser()
-
 function toggleUserStatus(idx, to)
 {
    // Create object with values of the form
@@ -369,25 +290,6 @@ function toggleUserStatus(idx, to)
       window.alert(retr);
    }
 } // toggleUserStatus()
-
-function deleteInterface(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'interface';
-   objTemp['action'] = 'delete';
-   objTemp['if_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("interfaces");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deleteInterface()
 
 function toggleInterfaceStatus(idx, to)
 {
@@ -420,25 +322,6 @@ function saveForm(obj, target)
    }
 } // saveForm()
 
-function deleteNetworkPath(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'networkpath';
-   objTemp['action'] = 'delete';
-   objTemp['netpath_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("networkpaths");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deleteNetworkPath()
-
 function toggleNetworkPathStatus(idx, to)
 {
    // Create object with values of the form
@@ -459,76 +342,6 @@ function toggleNetworkPathStatus(idx, to)
    }
 } // toggleInterfaceStatus()
 
-function deleteFilter(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'filter';
-   objTemp['action'] = 'delete';
-   objTemp['filter_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("filters");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deleteFilter()
-
-function toggleFilterStatus(idx, to)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'filter';
-   objTemp['action'] = 'toggle';
-   objTemp['filter_idx'] = idx;
-   objTemp['to'] = to;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("filters");
-   }
-   else {
-      window.alert(retr);
-   }
-} // toggleFilterStatus()
-
-function saveFilter(obj, target)
-{
-   selectAll(document.forms['filters'].elements['used[]']);
-   saveForm(obj, 'filters');
-} // saveFilter()
-
-function savePipe(obj, target)
-{
-   selectAll(document.forms['pipes'].elements['used[]']);
-   saveForm(obj, 'pipes');
-} // savePipe()
-
-function deletePipe(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'pipe';
-   objTemp['action'] = 'delete';
-   objTemp['pipe_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("pipes");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deletePipe()
-
 function togglePipeStatus(idx, to)
 {
    // Create object with values of the form
@@ -548,25 +361,6 @@ function togglePipeStatus(idx, to)
       window.alert(retr);
    }
 } // togglePipeStatus()
-
-function deleteChain(idx)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-
-   objTemp['module'] = 'chain';
-   objTemp['action'] = 'delete';
-   objTemp['chain_idx'] = idx;
-
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("chains");
-   }
-   else {
-      window.alert(retr);
-   }
-} // deleteChain()
 
 function toggleChainStatus(idx, to)
 {

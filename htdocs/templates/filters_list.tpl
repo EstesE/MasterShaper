@@ -20,7 +20,7 @@
    <a href="javascript:refreshContent('filters', '&mode=edit&idx={ $filter_idx }');">{ $filter_name }</a>
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteFilter('{ $filter_idx }');" title="Delete"><img src="{ $icon_delete }" alt="filter icon" /></a>
+   <a href="javascript:deleteObj('filter', 'filters', '{ $filter_idx }');" title="Delete"><img src="{ $icon_delete }" alt="filter icon" /></a>
    { if $filter_active == "Y" }
    <a href="javascript:toggleFilterStatus('{ $filter_idx }', '0');" title="Disable filter { $filter_name }"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }

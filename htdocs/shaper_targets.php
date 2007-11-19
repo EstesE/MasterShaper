@@ -279,8 +279,8 @@ class MASTERSHAPER_TARGETS {
 
    public function delete()
    {
-      if(isset($_POST['target_idx'])) {
-         $idx = $_POST['target_idx'];
+      if(isset($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."targets

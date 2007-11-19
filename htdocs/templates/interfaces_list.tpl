@@ -24,7 +24,7 @@
    { $if_speed }
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteInterface('{ $if_idx }');"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a href="javascript:deleteObj('interface', 'interfaces', '{ $if_idx }');"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $if_active == 'Y' }
    <a href="javascript:toggleInterfaceStatus('{ $if_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }

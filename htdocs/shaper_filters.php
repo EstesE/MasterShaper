@@ -435,8 +435,8 @@ class MASTERSHAPER_FILTERS {
     */
    public function delete()
    {
-      if(isset($_POST['filter_idx']) && is_numeric($_POST['filter_idx'])) {
-         $idx = $_POST['filter_idx'];
+      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
+         $idx = $_POST['idx'];
       
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."filters

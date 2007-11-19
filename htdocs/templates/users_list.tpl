@@ -20,7 +20,7 @@
    <a href="javascript:refreshContent('users', '&mode=edit&idx={ $user_idx }');">{ $user_name }</a>
   </td>
   <td style="text-align: center;">
-   <a href="javascript: deleteUser('{ $user_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a href="javascript: deleteObj('user', 'users', '{ $user_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $user_active == 'Y' }
    <a href="javascript:toggleUserStatus('{ $user_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }

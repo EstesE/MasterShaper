@@ -54,7 +54,7 @@
   <td>{ if $port_desc != "" } { $port_desc } { else } &nbsp; { /if }</td>
   <td>{ if $port_number != ""} { $port_number} { else} &nbsp; { /if} </td>
   <td style="text-align: center;">
-   <a href="javascript:deletePort('{ $port_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a href="javascript:deleteObj('port', 'ports', '{ $port_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
   </td>
  </tr>
 { /port_list }

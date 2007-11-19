@@ -397,8 +397,8 @@ class MASTERSHAPER_SERVICELEVELS {
 
    public function delete()
    {
-      if(isset($_POST['sl_idx'])) {
-         $idx = $_POST['sl_idx'];
+      if(isset($_POST['idx'])) {
+         $idx = $_POST['idx'];
 
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."service_levels

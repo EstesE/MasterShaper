@@ -30,7 +30,7 @@
    { $pipe_filters }
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deletePipe('{ $pipe_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a href="javascript:deleteObj('pipe', 'pipes', '{ $pipe_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $pipe_active == "Y" }
    <a href="javascript:togglePipeStatus('{ $pipe_idx }', '0');" title="Disable pipe { $pipe_name }"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }

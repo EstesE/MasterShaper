@@ -28,7 +28,7 @@
    { $target_type }
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteTarget('{ $target_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a href="javascript:deleteObj('target', 'targets', '{ $target_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
   </td>
  </tr>
 { /target_list }
