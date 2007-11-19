@@ -244,7 +244,7 @@ class MASTERSHAPER_USERS {
    /**
     * toggle user active/inactive
     */
-   public function toggleUserStatus()
+   public function toggleStatus()
    {
       if(isset($_POST['user_idx']) && is_numeric($_POST['user_idx'])) {
          if($_POST['to'] == 1)
@@ -264,7 +264,7 @@ class MASTERSHAPER_USERS {
    
       return "unkown error";
 
-   } // toggleUserStatus()
+   } // toggleStatus()
 
    /**
     * template function which will be called from the user listing template
