@@ -707,7 +707,7 @@ class MASTERSHAPER_INTERFACE {
                            if($dst_ports != 0) {
                               foreach($dst_ports as $dst_port) {
                                  $tmp_str = $string ." [DIRECTION] ". $dst_port ." 0xffff ";
-                                 if($filter->filter_tos != 0)
+                                 if($filter->filter_tos > 0)
                                     $tmp_str.= "match ip tos ". $filter->filter_tos ." 0xff ";
 
                                  switch($direction) {
@@ -1008,7 +1008,7 @@ class MASTERSHAPER_INTERFACE {
             }
 
             // TOS flags matching 
-            if($filter->filter_tos != 0)
+            if($filter->filter_tos > 0)
                $match_str.= " -m tos --tos ". $filter->filter_tos;
 
             // packet length matching 
