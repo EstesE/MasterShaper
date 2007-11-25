@@ -783,6 +783,53 @@ class MASTERSHAPER {
 
    } // extractPorts()
 
+   /**
+    * this function generates the value used for CONNMARK
+    */
+   function getConnmarkId($string1, $string2)
+   {
+      return "0x". dechex(crc32($string1 . str_replace(":", "", $string2))* -1);
+
+   } // getConnmarkId()
+
+   /**
+    * return all assigned l7 protocols
+    *
+    * this function will return all assigned l7 protocol which
+    * are assigned to the provided filter
+    */
+   function getL7Protocols($filter_idx)
+   {
+      $list = NULL;
+      $numbers = "";
+
+      $protocols = $this->db->db_query("  
+         SELECT afl7_l7proto_idx
+         FROM ". MYSQL_PREFIX ."assign_l7_protocols
+         WHERE
+            afl7_filter_idx='". $filter_idx ."'");
+
+      while($protocol = $protocols->fetchRow()) {
+         $numbers.= $protocol->afl7_l7proto_idx .",";
+      }
+
+      if($numbers != "") {
+         $numbers = substr($numbers, 0, strlen($numbers)-1);
+         $list = $this->db->db_query("
+            SELECT l7proto_name
+            FROM ". MYSQL_PREFIX ."l7_protocols
+            WHERE
+               l7proto_idx IN (". $numbers .")
+         ");
+      }
+
+      return $list;
+
+   } // getL7Protocols
+
+
+
+
 } // class MASTERSHAPER()
 
 ?>
