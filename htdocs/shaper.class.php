@@ -37,6 +37,8 @@ require_once "shaper_filters.php";
 require_once "shaper_pipes.php";
 require_once "shaper_chains.php";
 require_once "shaper_about.php";
+require_once "shaper_ruleset.php";
+require_once "shaper_interface.php";
 
 class MASTERSHAPER {
 
@@ -232,7 +234,7 @@ class MASTERSHAPER {
 
          case 'rules':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=1", "icons/show.gif", _("Show"));
+            $string.= $this->addSubMenuItem("javascript:refreshContent('ruleset');", "icons/show.gif", _("Show"));
             $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=2", "icons/enable.gif", _("Load"));
             $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=3", "icons/enable.gif", _("Load (debug)"));
             $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=4", "icons/disable.gif", _("Unload"));
@@ -317,6 +319,9 @@ class MASTERSHAPER {
             break;
          case 'about':
             $obj = new MASTERSHAPER_ABOUT($this);
+            break;
+         case 'ruleset':
+            $obj = new MASTERSHAPER_RULESET($this);
             break;
       }
       if(isset($obj))
@@ -645,7 +650,139 @@ class MASTERSHAPER {
 
    } // getProtocolNumberById()
 
+   /**
+    * return kbit/s in integer value
+    *
+    * this function will transform user entered bandwidth
+    * values (kilobit, megabit) into integer values).
+    */
+   function getKbit($bw)
+   {
+      if(preg_match("/^(\d+)k$/i", $bw))
+         return preg_replace("/k/i", "", $bw);
+      if(preg_match("/^(\d+)m$/i", $bw))
+         return (preg_replace("/m/i", "", $bw) * 1024);
 
-}
+      return $bw;
+
+   } // getKbit
+
+   /** 
+    * get service level information
+    *
+    * this function will return all details of the requested
+    * service level.
+    */
+   function getServiceLevel($sl_idx)
+   {
+      return $this->db->db_fetchSingleRow("
+         SELECT *
+         FROM ". MYSQL_PREFIX ."service_levels
+         WHERE
+            sl_idx='". $sl_idx ."'
+      ");
+
+   } // getServiceLevel()
+
+   /** get filter information
+    *
+    * this function will return all details of the requested
+    * filter
+   */
+   function getFilter($filter_idx)
+   {
+      return $this->db->db_fetchSingleRow("
+         SELECT *
+         FROM ". MYSQL_PREFIX ."filters
+         WHERE
+            filter_idx='". $filter_idx ."'");
+
+   } // getFilter()
+
+   /**
+    * get all filters for that pipe
+    *
+    * this function will return all assigned filters
+    * for the specified pipe
+    */
+   function getFilters($pipe_idx)
+   {
+      return $this->db->db_query("
+         SELECT af.apf_filter_idx as apf_filter_idx
+         FROM ". MYSQL_PREFIX ."assign_filters af
+         INNER JOIN ". MYSQL_PREFIX ."filters f
+            ON af.apf_filter_idx=f.filter_idx
+         WHERE
+            af.apf_pipe_idx='". $pipe_idx ."' AND 
+            f.filter_active='Y'
+      ");
+
+   } // getFilters()
+
+   /**
+    * get all ports for that filters
+    *
+    * this function will return all assigned ports
+    * for the specified filter
+    */
+   function getPorts($filter_idx)
+   {
+      $list = NULL;
+      $numbers = "";
+
+      /* first get all the port id's for that filter */
+      $ports = $this->db->db_query("
+         SELECT afp_port_idx
+         FROM ". MYSQL_PREFIX ."assign_ports
+         WHERE
+            afp_filter_idx='". $filter_idx ."'
+      ");
+
+      while($port = $ports->fetchRow()) {
+         $numbers.= $port->afp_port_idx .",";
+      }
+
+      /* now look up the IANA port numbers for that ports */
+      if($numbers != "") {
+         $numbers = substr($numbers, 0, strlen($numbers)-1);
+         $list = $this->db->db_query("
+            SELECT port_name, port_number
+            FROM ". MYSQL_PREFIX ."ports
+            WHERE
+               port_idx IN (". $numbers .")");
+      }
+
+      return $list;
+
+   } // getPorts()
+
+   /* extract all ports from a string */
+   function extractPorts($string)
+   {
+      if($string != "" && !preg_match("/any/", $string)) {
+         $string = str_replace(" ", "", $string);
+         $ports = split(",", $string);
+
+         $targets = Array();
+         foreach($ports as $port) {
+            if(preg_match("/.*-.*/", $port)) {
+               list($start, $end) = split("-", $port);
+               for($i = $start*1; $i <= $end*1; $i++) {
+                  array_push($targets, $i);
+               }
+            }
+            else {
+               array_push($targets, $port);
+            }
+         }
+         return $targets;
+      }
+      else {
+         return NULL;
+      }
+
+   } // extractPorts()
+
+} // class MASTERSHAPER()
 
 ?>
