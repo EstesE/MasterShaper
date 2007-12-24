@@ -123,6 +123,10 @@ class MASTERSHAPER {
       }
       ini_restore('track_errors');
 
+      if(!defined(BASE_PATH)) {
+         define('BASE_PATH', getcwd());
+      }
+
       if(!is_dir(BASE_PATH ."/jpgraph")) {
          print "Can't locate jpgraph in &lt;". BASE_PATH ."/jpgraph&gt;<br />\n";
          $missing = true;
