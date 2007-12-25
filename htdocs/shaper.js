@@ -151,6 +151,19 @@ function refreshContent(req_content, options)
    content.innerHTML = HTML_AJAX.grab(encodeURI(url));
 }
 
+function ruleset(mode)
+{
+   if(mode == undefined)
+      req_content = "";
+
+   var content = document.getElementById("content");
+   content.innerHTML = "Loading...";
+   var url = 'rpc.php?action=ruleset&mode=' + mode;
+   content.innerHTML = HTML_AJAX.grab(encodeURI(url));
+}
+
+
+
 function check_login()
 {
    if(document.forms['login'].user_name.value == "") {

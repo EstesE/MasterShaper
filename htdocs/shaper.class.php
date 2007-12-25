@@ -238,10 +238,10 @@ class MASTERSHAPER {
 
          case 'rules':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem("javascript:refreshContent('ruleset');", "icons/show.gif", _("Show"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=2", "icons/enable.gif", _("Load"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=3", "icons/enable.gif", _("Load (debug)"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=7&amp;screen=4", "icons/disable.gif", _("Unload"));
+            $string.= $this->addSubMenuItem("javascript:ruleset('show');", "icons/show.gif", _("Show"));
+            $string.= $this->addSubMenuItem("javascript:ruleset('load');", "icons/enable.gif", _("Load"));
+            $string.= $this->addSubMenuItem("javascript:ruleset('loaddebug');", "icons/enable.gif", _("Load"));
+            $string.= $this->addSubMenuItem("javascript:ruleset('unload');", "icons/disable.gif", _("Unload"));
             $string.= "</tr></table>\n";
             break;
 
@@ -831,7 +831,46 @@ class MASTERSHAPER {
 
    } // getL7Protocols
 
+   /**
+    * return content around ruleset
+    */
+   public function ruleset($mode)
+   {
+      if(!$this->is_logged_in()) {
+         return $this->tmpl->fetch("login_box.tpl");
+      }
 
+      $obj = new MASTERSHAPER_RULESET($this);
+   
+      switch($mode) {
+         case 'show':
+            return $obj->show();
+            break;
+         case 'load':
+            return $obj->load();
+            break;
+         case 'loaddebug':
+            return $obj->load(1);
+            break;
+         case 'unload':
+            return $obj->unload();
+            break;
+      }
+
+   } // ruleset()
+
+   public function getActiveInterfaces()
+   {
+      $result = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."interfaces WHERE if_active='Y'");
+      return $result;
+
+   } // getActiveInterfaces()
+
+   public function setShaperStatus($status)
+   {
+      $this->setOption("status", $status);
+
+   } // setShaperStatus()
 
 
 } // class MASTERSHAPER()

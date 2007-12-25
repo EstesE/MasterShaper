@@ -85,6 +85,12 @@ class MASTERSHAPER_RPC {
             print $ms->alter_position();
             break;
 
+         case 'ruleset':
+            if(isset($_GET['mode']) && is_string($_GET['mode'])) {
+               print $ms->ruleset($_GET['mode']);
+            }
+            break;
+
       }
 
    } // process_ajax_request();

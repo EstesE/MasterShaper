@@ -24,7 +24,7 @@ define('VERSION', '0.60');
  ***************************************************************************/
 
 /* from pear "MDB2" package. use "pear install MDB2" if you don't have this! */
-require_once('MDB2.php');
+// require_once('MDB2.php');
 
 class MASTERSHAPER_DB {
 

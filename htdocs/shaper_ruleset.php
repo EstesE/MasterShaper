@@ -75,102 +75,50 @@ class MASTERSHAPER_RULESET {
 
    } // show
 
-   function somethingelse()
+   /**
+    * load MasterShaper ruleset
+    */
+   public function load($debug = null)
    {
+      /* If authentication is enabled, check permissions */
+      if($this->parent->getOption("authentication") == "Y" &&
+         !$this->parent->checkPermissions("user_load_rules")) {
 
-      switch($bla) {
-
-         /* Load ruleset */
-         case 2:
-
-            /* If authentication is enabled, check permissions */
-            if(!$this->parent->fromcmd && 
-               $this->parent->getOption("authentication") == "Y" &&
-               !$this->parent->checkPermissions("user_load_rules")) {
-
-               $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - ". _("Load rules"), _("You do not have enough permissions to access this module!"));
-               return 0;
-
-            }
-
-            if(!$this->parent->fromcmd && !isset($_GET['loading'])) {
-      
-               $this->parent->startTable("<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;". _("Loading MasterShaper Ruleset..."));
-?>
-   <table style="width: 100%; text-align: center;" class="withborder2">
-    <tr>
-     <td>
-      <?php print _("Please wait..."); ?>
-     </td>
-    </tr>
-   </table>
-   <script type="text/javascript">
-      location.href = "<?php print $_SERVER['REQUEST_URI'] . "&loading=1"; ?>";
-   </script>
-<?php
-               $this->parent->closeTable(); 
-            }
-            else {
-	            $this->initRules();
-               $retval = $this->doIt();
-               if(!$retval)
-                  $this->parent->setOption("reload_timestamp", mktime());
-            }
-            break;
-
-         /* Load ruleset (debug mode) */
-         case 3:
-
-            /* If authentication is enabled, check permissions */
-            if($this->parent->getOption("authentication") == "Y" &&
-               !$this->parent->checkPermissions("user_load_rules")) {
-
-               $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - ". _("Load rules"), _("You do not have enough permissions to access this module!"));
-               return 0;
-            }
-
-            $this->initRules();
-            $retval = $this->doItLineByLine();
-
-            if(!$retval)
-               $this->parent->setOption("reload_timestamp", mktime());
-
-            break;
-
-         /* Unload ruleset */
-         case 4:
-
-            /* If authentication is enabled, check permissions */
-            if(!$this->parent->fromcmd &&
-               $this->parent->getOption("authentication") == "Y" &&
-               !$this->parent->checkPermissions("user_load_rules")) {
-
-               $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - Unload rules", "You do not have enough permissions to access this module!");
-               return 0;
-
-            }
-
-            $this->delActiveInterfaceQdiscs();
-            $this->delIptablesRules();
-
-            if(!$this->parent->fromcmd) {
-               $this->parent->startTable("<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;". _("Unload MasterShape Ruleset"));
-	       
-?>
-    <table style="width: 100%; text-align: center;" class="withborder2">
-     <tr>
-      <td>
-       <img src="<?php print ICON_ACTIVE; ?>">&nbsp;
-       <?php print _("MasterShaper Ruleset has been unloaded."); ?>
-      </td>
-     </tr>
-    </table>
-<?php
-            $this->parent->closeTable();
-         }
-         $this->parent->setShaperStatus(false);
-         break;
+         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - ". _("Load rules"), _("You do not have enough permissions to access this module!"));
+         return 0;
       }
+
+      print _("Loading MasterShaper Ruleset");
+      print _("Please wait...");
+
+      $this->initRules();
+      $retval = $debug ? $this->doItLineByLine() : $this->doIt();
+      if(!$retval)
+         $this->parent->setOption("reload_timestamp", mktime());
+
+      return $retval;
+
+   } // load()
+
+   /**
+    * unload MasterShaper ruleset
+    */
+   public function unload()
+   {
+      /* If authentication is enabled, check permissions */
+      if($this->parent->getOption("authentication") == "Y" &&
+         !$this->parent->checkPermissions("user_load_rules")) {
+
+         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - Unload rules", "You do not have enough permissions to access this module!");
+         return 0;
+
+      }
+
+      $this->delActiveInterfaceQdiscs();
+      $this->delIptablesRules();
+
+      print "Unloading MasterShaper Ruleset";
+      $this->parent->setShaperStatus(false);
       
       return $retval;
 
@@ -331,94 +279,52 @@ class MASTERSHAPER_RULESET {
 
       /* If necessary prepare iptables batch files */
       if($this->parent->getOption("filter") == "ipt") {
-
-	 $temp_ipt = tempnam (TEMP_PATH, "FOOIPT");
-	 $output_ipt = fopen($temp_ipt, "w");
-	 
+         $temp_ipt = tempnam (TEMP_PATH, "FOOIPT");
+         $output_ipt = fopen($temp_ipt, "w");
       }
 
       foreach($this->getCompleteRuleset() as $line) {
-
-	 $line = trim($line);
-
-	 if(!preg_match("/^#/", $line)) {
-
-	    /* tc filter task */
-	    if(strstr($line, TC_BIN) !== false && $line != "") {
-
-	       $line = str_replace(TC_BIN ." ", "", $line);
-		  fputs($output_tc, $line ."\n");
-
-	    }
-
-	    /* iptables task */
-	    if(strstr($line, IPT_BIN) !== false && $this->parent->getOption("filter") == "ipt") {
-
-	       fputs($output_ipt, $line ."\n");
-
-	    }
-	 }
+         $line = trim($line);
+         if(!preg_match("/^#/", $line)) {
+            /* tc filter task */
+            if(strstr($line, TC_BIN) !== false && $line != "") {
+               $line = str_replace(TC_BIN ." ", "", $line);
+               fputs($output_tc, $line ."\n");
+	         }
+            /* iptables task */
+            if(strstr($line, IPT_BIN) !== false && $this->parent->getOption("filter") == "ipt") {
+               fputs($output_ipt, $line ."\n");
+            }
+         }
       }
 
       /* flush batch files */
       fclose($output_tc);
 
       if($this->parent->getOption("filter") == "ipt")
-	 fclose($output_ipt);
-
-      if(!$this->parent->fromcmd) {
-
-	 $this->parent->startTable("<img src=\"". ICON_OPTIONS ."\">&nbsp;". _("Loading MasterShaper Ruleset..."));
-?>
-    <table style="width: 100%; text-align: center;" class="withborder2">
-<?php
-      }
+         fclose($output_ipt);
 
       /* load tc filter rules */
       if(($error = $this->runProc("tc", TC_BIN . " -b ". $temp_tc)) != TRUE) {
-?>
-     <tr><td style="text-align: center;"><img src="<?php print ICON_INACTIVE; ?>" align="middle">&nbsp;<? print _("MasterShaper is not active!"); ?></td></tr>
-     <tr><td style="text-align: center;"><?php print _("Error on mass loading tc rules. Try load ruleset in debug mode to figure incorrect or not supported rule."); ?></td></tr>
-     <tr><td style="text-align: center;"><?php print $error; ?></td></tr>
-<?php
-	 $found_error = 1;
-
+         print _("Error on mass loading tc rules. Try load ruleset in debug mode to figure incorrect or not supported rule."); 
+         $found_error = 1;
       }
 
       /* load iptables rules */
       if($this->parent->getOption("filter") == "ipt" && !$found_error) {
-
-	 if(($error = $this->runProc("iptables", $temp_ipt)) != TRUE) {
-?>
-     <tr><td style="text-align: center;"><img src="<?php print ICON_INACTIVE ?>" align="middle">&nbsp;<? print _("MasterShaper is not active!"); ?></td></tr>
-     <tr><td style="text-align: center;"><?php print _("Error on mass loading iptables rule. Try load ruleset in debug mode to figure incorrect or not supported rule."); ?></td></tr>
-     <tr><td style="text-align: center;"><?php print $error; ?></td></tr>
-<?php
-
-	    $found_error = 1;
-
-	 }
+         if(($error = $this->runProc("iptables", $temp_ipt)) != TRUE) {
+            print _("Error on mass loading iptables rule. Try load ruleset in debug mode to figure incorrect or not supported rule.");
+            $found_error = 1;
+         }
       }
 
-      if(!$this->parent->fromcmd && !$found_error) {
-?>
-     <tr><td style="text-align: center;"><img src="<?php print ICON_ACTIVE ?>" align="middle">&nbsp;<? print _("Shaping enabled - No error found."); ?></td></tr>
-<?php
-      }
-
-      if(!$this->parent->fromcmd) {
-?>
-    </table>
-<?php
-
-	 $this->parent->closeTable();
-
+      if(!$found_error) {
+         print _("Shaping enabled");
       }
 
       unlink($temp_tc);
       if($this->parent->getOption("filter") == "ipt")
-	 unlink($temp_ipt);
-
+         unlink($temp_ipt);
 
       if(!$found_error)
          $this->parent->setShaperStatus(true);
@@ -431,8 +337,6 @@ class MASTERSHAPER_RULESET {
 
    function doItLineByLine()
    {
-      $this->parent->startTable("<img src=\"". ICON_OPTIONS ."\">&nbsp;". _("Loading MasterShaper Ruleset (debug)"));
-
       /* Delete current root qdiscs */
       $this->delActiveInterfaceQdiscs();
       $this->delIptablesRules();
@@ -440,75 +344,49 @@ class MASTERSHAPER_RULESET {
       $ipt_lines = array();
 
       foreach($this->getCompleteRuleset() as $line) {
-
-	 if(!preg_match("/^#/", $line)) {
-
-	    if(strstr($line, TC_BIN) !== false) {
-
-	       print $line."<br />\n";
-	       if(($tc = $this->runProc("tc", $line)) !== TRUE)
-		  print $tc."<br />\n";
-
-	    }
-
-	    if(strstr($line, IPT_BIN) !== false) 
-	       array_push($ipt_lines, $line);
-
-	 }
-	 else {
-
-	       print $line."<br />\n";
-
-	 }
+         if(!preg_match("/^#/", $line)) {
+            if(strstr($line, TC_BIN) !== false) {
+            print $line."<br />\n";
+               if(($tc = $this->runProc("tc", $line)) !== TRUE)
+                  print $tc."<br />\n";
+            }
+            if(strstr($line, IPT_BIN) !== false) 
+               array_push($ipt_lines, $line);
+         }
+         else {
+            print $line."<br />\n";
+         }
       }
 
       foreach($ipt_lines as $line) {
-
-	 print $line."<br />\n";
-
-	 if(($tc = $this->runProc("iptables", $line)) !== TRUE)
-	    print $tc."<br />\n";
-
+         print $line."<br />\n";
+         if(($tc = $this->runProc("iptables", $line)) !== TRUE)
+            print $tc."<br />\n";
       }
-
-      $this->parent->closeTable();
 
    } // doItLineByLine()
 
    function output($text)
    {
       if($_GET['output'] == "noisy")
-	 print $text ."\n";
+         print $text ."\n";
 
    } // output()
 
    function getCompleteRuleset()
    {
-
       $ruleset = Array();
-      
       foreach($this->ms_pre as $tmp) {
-
          array_push($ruleset, $tmp);
-
       }
-
       foreach($this->interfaces as $interface) {
-
          foreach($interface->getRules() as $rule) {
-
-	    array_push($ruleset, $rule);
-
-	 }
-
+            array_push($ruleset, $rule);
+         }
       }
-
       foreach($this->ms_post as $tmp) {
-
          array_push($ruleset, $tmp);
-
       }
-
       return $ruleset;
    
    } // getCompleteRuleset()
@@ -544,42 +422,46 @@ class MASTERSHAPER_RULESET {
    function runProc($option, $cmd = "", $ignore_err = FALSE)
    {
       $desc = array(
-	 0 => array('pipe','r'), /* STDIN */
-	 1 => array('pipe','w'), /* STDOUT */
-	 2 => array('pipe','w'), /* STDERR */ 
+         0 => array('pipe','r'), /* STDIN */
+         1 => array('pipe','w'), /* STDOUT */
+         2 => array('pipe','w'), /* STDERR */ 
       );
 
-      $process = proc_open(SUDO_BIN ." ". SHAPER_PATH ."/shaper_loader.sh ". $option ." \"". $cmd ."\"", $desc, $pipes);
+      $process = proc_open(SUDO_BIN ." ". BASE_PATH ."/shaper_loader.sh ". $option ." \"". $cmd ."\"", $desc, $pipes);
 
       if(is_resource($process)) {
+   
+         $stdin = $pipes[0];
+         $stdout = $pipes[1];
+         $stderr = $pipes[2];
 
-	 $stdout = fgets($pipes[1], 255);
-	 $stdout = trim($stdout);
-	 fclose($pipes[1]);
+         while(!feof($stdout)) {
+            $retval.= trim(fgets($stdout));
+         }
+         while(!feof($stderr)) {
+            $error.= trim(fgets($stderr));
+         }
 
-	 fclose($pipes[2]);
-	 fclose($pipes[0]);
-	 proc_close($process);
+         fclose($pipes[0]);
+         fclose($pipes[1]);
+         fclose($pipes[2]);
 
-	 if($stdout != "" && $stdout != "OK" && !$ignore_err) {
-	    return $stdout;
-	 }
+         $exit_code = proc_close($process);
 
-	 return TRUE;
       }
-
-      return "Error on executing command: ". $cmd;
+   
+      if(!empty($error) || $stdout != "OK" && !$ignore_err)
+         throw new Exception($error);
+      else
+         print $retval;
 
    } // runProc()
 
    function delActiveInterfaceQdiscs()
    {
       $result = $this->parent->getActiveInterfaces();
-
       while($row = $result->fetchRow()) {
-
-	 $this->delQdisc($row->if_name);
-
+         $this->delQdisc($row->if_name);
       }
 
    } // delActiveInterfaceQdiscs()
