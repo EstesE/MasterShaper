@@ -39,6 +39,7 @@ require_once "shaper_chains.php";
 require_once "shaper_about.php";
 require_once "shaper_ruleset.php";
 require_once "shaper_interface.php";
+require_once "shaper_monitor.php";
 
 class MASTERSHAPER {
 
@@ -230,9 +231,9 @@ class MASTERSHAPER {
 
          case 'monitoring':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=5&amp;show=chains", "icons/flag_blue.gif", _("Chains"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=5&amp;show=pipes", "icons/flag_pink.gif", _("Pipes"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=5&amp;show=bandwidth", "icons/bandwidth.gif", _("Bandwidth"));
+            $string.= $this->addSubMenuItem("javascript:monitor('chains');", "icons/flag_blue.gif", _("Chains"));
+            $string.= $this->addSubMenuItem("javascript:monitor('pipes');", "icons/flag_pink.gif", _("Pipes"));
+            $string.= $this->addSubMenuItem("javascript:monitor('bandwidth');", "icons/bandwidth.gif", _("Bandwidth"));
             $string.= "</tr></table>\n";
             break;
 
@@ -323,9 +324,6 @@ class MASTERSHAPER {
             break;
          case 'about':
             $obj = new MASTERSHAPER_ABOUT($this);
-            break;
-         case 'ruleset':
-            $obj = new MASTERSHAPER_RULESET($this);
             break;
       }
       if(isset($obj))
@@ -858,6 +856,20 @@ class MASTERSHAPER {
       }
 
    } // ruleset()
+
+   /**
+    * return content around monitor
+    */
+   public function monitor($mode)
+   {
+      if(!$this->is_logged_in()) {
+         return $this->tmpl->fetch("login_box.tpl");
+      }
+
+      $obj = new MASTERSHAPER_MONITOR($this);
+      $obj->show($mode);
+   
+   } // monitor()
 
    public function getActiveInterfaces()
    {

@@ -91,6 +91,12 @@ class MASTERSHAPER_RPC {
             }
             break;
 
+         case 'monitor':
+            if(isset($_GET['mode']) && is_string($_GET['mode'])) {
+               print $ms->monitor($_GET['mode']);
+            }
+            break;
+
       }
 
    } // process_ajax_request();

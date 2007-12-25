@@ -154,15 +154,24 @@ function refreshContent(req_content, options)
 function ruleset(mode)
 {
    if(mode == undefined)
-      req_content = "";
+      mode = "";
 
    var content = document.getElementById("content");
    content.innerHTML = "Loading...";
    var url = 'rpc.php?action=ruleset&mode=' + mode;
    content.innerHTML = HTML_AJAX.grab(encodeURI(url));
-}
+} // ruleset()
 
+function monitor(mode)
+{
+   if(mode == undefined)
+      mode = "";
 
+   var content = document.getElementById("content");
+   content.innerHTML = "Loading...";
+   var url = 'rpc.php?action=monitor&mode=' + mode;
+   content.innerHTML = HTML_AJAX.grab(encodeURI(url));
+} // monitor()
 
 function check_login()
 {
