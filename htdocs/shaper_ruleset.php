@@ -23,8 +23,6 @@
 
 define("UNIDIRECTIONAL", 1);
 define("BIDIRECTIONAL", 2);
-define("TRUE", 1);
-define("FALSE", 0);
 define("IF_NOT_USED", -1);
 
 define("MS_PRE", 10);
@@ -252,13 +250,13 @@ class MASTERSHAPER_RULESET {
    /* Delete parent qdiscs */
    function delQdisc($interface)
    {
-      $this->runProc("tc", TC_BIN . " qdisc del dev ". $interface ." root", TRUE);
+      $this->runProc("tc", TC_BIN . " qdisc del dev ". $interface ." root", true);
 
    } // delQdisc()
 
    function delIptablesRules()
    {
-      $this->runProc("cleanup");
+      $this->runProc("cleanup", null, true);
 
    } // delIptablesRules
 
@@ -305,14 +303,14 @@ class MASTERSHAPER_RULESET {
          fclose($output_ipt);
 
       /* load tc filter rules */
-      if(($error = $this->runProc("tc", TC_BIN . " -b ". $temp_tc)) != TRUE) {
+      if(($error = $this->runProc("tc", TC_BIN . " -b ". $temp_tc)) != true) {
          print _("Error on mass loading tc rules. Try load ruleset in debug mode to figure incorrect or not supported rule."); 
          $found_error = 1;
       }
 
       /* load iptables rules */
       if($this->parent->getOption("filter") == "ipt" && !$found_error) {
-         if(($error = $this->runProc("iptables", $temp_ipt)) != TRUE) {
+         if(($error = $this->runProc("iptables", $temp_ipt)) != true) {
             print _("Error on mass loading iptables rule. Try load ruleset in debug mode to figure incorrect or not supported rule.");
             $found_error = 1;
          }
@@ -347,7 +345,7 @@ class MASTERSHAPER_RULESET {
          if(!preg_match("/^#/", $line)) {
             if(strstr($line, TC_BIN) !== false) {
             print $line."<br />\n";
-               if(($tc = $this->runProc("tc", $line)) !== TRUE)
+               if(($tc = $this->runProc("tc", $line)) !== true)
                   print $tc."<br />\n";
             }
             if(strstr($line, IPT_BIN) !== false) 
@@ -360,7 +358,7 @@ class MASTERSHAPER_RULESET {
 
       foreach($ipt_lines as $line) {
          print $line."<br />\n";
-         if(($tc = $this->runProc("iptables", $line)) !== TRUE)
+         if(($tc = $this->runProc("iptables", $line)) !== true)
             print $tc."<br />\n";
       }
 
@@ -419,7 +417,7 @@ class MASTERSHAPER_RULESET {
 
    } // getColor()
 
-   function runProc($option, $cmd = "", $ignore_err = FALSE)
+   function runProc($option, $cmd = "", $ignore_err = null)
    {
       $desc = array(
          0 => array('pipe','r'), /* STDIN */
@@ -450,10 +448,12 @@ class MASTERSHAPER_RULESET {
 
       }
    
-      if(!empty($error) || $stdout != "OK" && !$ignore_err)
-         throw new Exception($error);
-      else
-         print $retval;
+      if(is_null($ignore_err)) {
+         if(!empty($error) || $retval != "OK")
+            throw new Exception($error);
+      }
+
+      print $retval;
 
    } // runProc()
 
