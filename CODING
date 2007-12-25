@@ -2,7 +2,7 @@ Following coding style shall be used:
 
 function name() {
 
-}
+} // name()
 
 while, for, if ... {
 
