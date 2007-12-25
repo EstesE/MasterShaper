@@ -453,7 +453,7 @@ class MASTERSHAPER_RULESET {
             throw new Exception($error);
       }
 
-      print $retval;
+      return $retval;
 
    } // runProc()
 
