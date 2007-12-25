@@ -861,7 +861,20 @@ class MASTERSHAPER {
 
    public function getActiveInterfaces()
    {
-      $result = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."interfaces WHERE if_active='Y'");
+      $result = $this->db->db_query("
+         SELECT DISTINCT if_name
+         FROM
+            shaper2_interfaces iface
+         INNER JOIN
+            shaper2_network_paths np
+         ON (
+            np.netpath_if1=iface.if_idx
+            OR
+            np.netpath_if2=iface.if_idx
+         )
+         WHERE
+            np.netpath_active='Y'
+      ");
       return $result;
 
    } // getActiveInterfaces()
