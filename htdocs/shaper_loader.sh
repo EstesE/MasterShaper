@@ -21,8 +21,7 @@
 # *
 # ***************************************************************************/
 
-# source mastershaper config
-. config.dat
+IPT_BIN=`xmlstarlet select -T -t -v '//ipt_bin' config.dat`
 
 if [ ! -e "${IPT_BIN}" ]
 then
