@@ -884,7 +884,7 @@ class MASTERSHAPER {
             $_SESSION['showif'] = $_POST['value'];
             break;
          case 'chain':
-            $_SESSION['showchain'] = $_POST['chain'];
+            $_SESSION['showchain'] = $_POST['value'];
             break;
       }
 
