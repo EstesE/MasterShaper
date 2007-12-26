@@ -100,12 +100,12 @@
   </tr>
   <tr>
    <td style="text-align: center;">
-    <input type="button" onclick="updateimage();" value="Reload Graph" />
+    <input type="button" onclick="image_update();" value="Reload Graph" />
    </td>
   </tr>
   <tr>
    <td style="text-align: center;">
-    <input type="checkbox" name="reload" value="Y" checked="checked" onclick="if(this.blur) this.blur();" class="radio" />Auto reload
+    <input type="checkbox" id="reload" value="Y" checked="checked" onclick="image_toggle_autoload(); if(this.blur) this.blur();" class="radio" />Auto reload
    </td>
   </tr>
  </table>

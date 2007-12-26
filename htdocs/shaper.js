@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 var NetScape4 = (navigator.appName == "Netscape" && parseInt(navigator.appVersion) < 5);
+var autoload = undefined;
 
 function addOption(theSel, theText, theValue)
 {		
@@ -171,6 +172,10 @@ function monitor(mode)
    content.innerHTML = "Loading...";
    var url = 'rpc.php?action=monitor&mode=' + mode;
    content.innerHTML = HTML_AJAX.grab(encodeURI(url));
+
+   /* now start auto image reloading */
+   image_start_autoload();
+
 } // monitor()
 
 function check_login()
@@ -416,16 +421,51 @@ function alterPosition(type, idx, to)
 
 } // alterPosition()
 
-function updateimage(singlerun)
+function image_update()
+{
+   /* get the current image url */
+   url = document.getElementById("monitor_image").src;
+   /* remove the current uniq id from the string */
+   url = url.replace(/&uniqid=.*/, '');
+   uniq = new Date();
+   uniq = "&uniqid="+uniq.getTime();
+   /* reload the image with a new uniq id */
+   document.getElementById("monitor_image").src = url + uniq;
+
+} // image_update()
+
+function image_autoload()
+{
+   image_update();
+
+   if(document.getElementById("reload").checked) {
+      autoload = undefined;
+      image_start_autoload();
+   }
+
+} // image_autoload
+
+function image_start_autoload()
+{
+   if(autoload == undefined) {
+      autoload = setTimeout("image_autoload()", 5000);
+   }
+
+} // image_start_autoload()
+
+function image_stop_autoload()
+{
+   clearTimeout(autoload);
+   autoload = undefined;
+
+} // image_stop_autoload()
+
+function image_toggle_autoload()
 {
    if(document.getElementById("reload").checked) {
-      uniq = new Date();
-      uniq = "&uniqid="+uniq.getTime();
-      document.forms['monitor'].monitor_image.src="{ $image_url }"+uniq;
+         image_start_autoload();
    }
-
-   if(singlerun == undefined) {
-      setTimeout("updateimage()", 5000);
+   else {
+      image_stop_autoload();
    }
-} // updateimage()
-
+}
