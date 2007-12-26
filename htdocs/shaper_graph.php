@@ -120,7 +120,7 @@ class MASTERSHAPER_GRAPH{
       $this->graph->SetFrame(false);
 
       // Authors note
-      $this->graph->footer->right->Set("(c) Andreas Unterkircher\nGraph by MasterShaper");
+      $this->graph->footer->right->Set("\nGraph created\n with MasterShaper");
 
       // Format the legend box
       $this->graph->legend->SetColor('navy');
