@@ -897,6 +897,20 @@ class MASTERSHAPER {
 
    } // setShaperStatus()
 
+   /**
+    * return the current process-user name
+    */
+   public function getuid()
+   {
+      if($uid = posix_getuid()) {
+         if($user = posix_getpwuid($uid)) {
+            return $user['name'];
+         }
+      }
+
+      return 'n/a';
+
+   } // getuid()
 
 } // class MASTERSHAPER()
 

@@ -37,6 +37,12 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->config_dir   = BASE_PATH .'/smarty_config';
       $this->cache_dir    = BASE_PATH .'/smarty_cache';
 
+      if(!is_writeable($this->compile_dir)) {
+         print "Smarty compile directory ". $this->compile_dir ." is not writeable for the current user (". $this->parent->getuid() .").<br />\n";
+         print "Please check that the permissions are set correctly to this directory.<br />\n";
+         exit(1);
+      }
+
       $this->assign('icon_chains', 'icons/flag_blue.gif');
       $this->assign('icon_options', 'icons/options.gif');
       $this->assign('icon_pipes', 'icons/flag_pink.gif');
