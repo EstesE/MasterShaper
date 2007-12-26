@@ -25,12 +25,14 @@ class MASTERSHAPER_MONITOR {
 
    var $db;
    var $parent;
+   var $tmpl;
 
    /* Class constructor */
    function MASTERSHAPER_MONITOR($parent)
    {
       $this->db = $parent->db;
       $this->parent = $parent;
+      $this->tmpl = $parent->tmpl;
 
    } // MASTERSHAPER_MONITOR()
 
@@ -52,7 +54,7 @@ class MASTERSHAPER_MONITOR {
       if(isset($_POST['graphmode']))
          $vars['graphmode'] = $_POST['graphmode'];
       if(isset($_GET['show']))
-         $vars['show'] = $_GET['show'];
+         $vars['show'] = $mode;
       if(isset($_POST['showchain']))
          $vars['showchain'] = $_POST['showchain'];
       if(isset($_POST['showif']))
@@ -80,14 +82,82 @@ class MASTERSHAPER_MONITOR {
             break;
       }
 
+      /* If no interface is specified use the first available interface */
+      if(!isset($vars['showif'])) 
+         $vars['showif'] = $this->getFirstInterface();
+
+      $image_loc.= "&showif=". $vars['showif'];
+      $image_loc.= "&scalemode=". $vars['scalemode'];
+      $image_loc.= "&uniqid=". mktime();
+   
+      $this->tmpl->assign('self_url', $this->parent->self ."?mode=". $this->parent->mode ."&show=". $vars['show']); 
+      $this->tmpl->assign('monitor', $mode);
+      $this->tmpl->assign('view', $view);
+      $this->tmpl->assign('graphmode', $vars['graphmode']);
+      $this->tmpl->assign('scalemode', $vars['scalemode']);
+      $this->tmpl->assign('image_loc', $image_loc);
+
+      $this->tmpl->register_function("interface_select_list", array(&$this, "smarty_interface_select_list"), false);
+      $this->tmpl->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
+
+      $this->tmpl->show("monitor.tpl");
+
+   } // show()
+
+   function getFirstChain()
+   {
+      // Get only chains which do not Ignore QoS and are active
+      $chain = $this->db->db_fetchSingleRow("
+         SELECT chain_idx
+         FROM ". MYSQL_PREFIX ."chains
+         WHERE
+            chain_sl_idx!=0
+         AND chain_active='Y'
+         ORDER BY chain_position ASC
+         LIMIT 0,1
+      ");
+      return $chain->chain_idx;
+
+   } // getFirstChain()
+
+   function getFirstInterface()
+   {
+      $interfaces = $this->parent->getActiveInterfaces();
+      $if = $interfaces->fetchRow();
+      return $if->if_name;
+
+   } // getFirstInterface()
+
+ 
+   public function smarty_chain_select_list($params, &$smarty)
+   {
+      // list only chains which do not Ignore QoS and are active
+      $chains = $this->db->db_query("
+         SELECT chain_idx, chain_name
+         FROM ". MYSQL_PREFIX ."chains
+         WHERE 
+            chain_sl_idx!='0'
+         AND
+            chain_active='Y'
+         AND
+            chain_fallback_idx<>'0'
+         ORDER BY chain_position ASC
+      ");
+
+      while($chain = $chains->fetchRow()) {
+         $string.= "<option value=\"". $chain->chain_idx ."\">". $chain->chain_name ."</option>\n";
+      }
+
+      return $string;
+
+   } // smarty_chain_select_list
+
+   public function smarty_interface_select_list($params, &$smarty)
+   {
       $interfaces = $this->parent->getActiveInterfaces();
       $if_select = "";
 
       while($interface = $interfaces->fetchRow()) {
-
-         /* If no interface is specified use the first available interface */
-         if(!isset($vars['showif'])) 
-            $vars['showif'] = $interface->if_name;
 
          $if_select.= "<option value=\"". $interface->if_name ."\"";
 	 
@@ -98,176 +168,9 @@ class MASTERSHAPER_MONITOR {
 
       }
 
-      $image_loc.= "&showif=". $vars['showif'];
+      return $if_select;
 
-      /* Start HTML Output */
-      switch($vars['show']) {
-	 case 'chains':
-	    $this->parent->startTable("<img src=\"". ICON_CHAINS ."\" alt=\"chain icon\" />&nbsp;Traffic Monitoring - ". $view);
-	    break;
-	 case 'pipes':
-	    $this->parent->startTable("<img src=\"". ICON_PIPES ."\" alt=\"pipe icon\" />&nbsp;Traffic Monitoring - ". $view);
-	    break;
-	 case 'bandwidth':
-	    $this->parent->startTable("<img src=\"". ICON_BANDWIDTH ."\" alt=\"target icon\" />&nbsp;Traffic Monitoring - ". $view);
-	    break;
-      }
-
-      $image_loc.= "&scalemode=". $vars['scalemode'];
-?>
-  <form id="monitor" action="<?php print $this->parent->self ."?mode=". $this->parent->mode ."&show=". $vars['show']; ?>" method="post">
-  <table style="width: 100%;" class="withborder">
-   <tr>
-    <td class="tablehead" style="width: 180px;">
-     Graph Options
-    </td>
-    <td style="text-align: center; width: 900px; height: 350px" rowspan="10">
-     <img src="<?php print $image_loc ."&uniqid=". mktime(); ?>" id="monitor_image" alt="monitor image" />
-     <script type="text/javascript">
-   	function updateimage()
-	{
-		if(document.forms['monitor'].reload.checked) {
-			uniq = new Date();
-			uniq = "&uniqid="+uniq.getTime();
-			document.forms['monitor'].monitor_image.src="<?php print $image_loc; ?>"+uniq;
-		}
-		setTimeout("updateimage()", 5000);
-	}
-	setTimeout("updateimage()", 5000);
-     </script>
-    </td>
-   </tr>
-   <tr>
-    <td>&nbsp;</td>
-   </tr>
-<?php
-      /* Traffic direction selection is not necessarry in bandwidth display */
-      if($vars['show'] != "bandwidth") {
-?>
-   <tr>
-    <td>
-     <table class="noborder" style="width: 100%; text-align: center;">
-      <tr>
-       <td>
-        Traffic direction:
-       </td>
-      </tr>
-      <tr>
-       <td>
-        <select name="showif">
-	 <?php print $if_select; ?>
-        </select>
-       </td>
-      </tr>
-     </table>
-    </td>
-   </tr>
-<?php
-      }
-
-      /* Chain selector for pipe view */
-      if($vars['show'] == "pipes") {
-
-         // list only chains which do not Ignore QoS and are active
-	 $chains = $this->db->db_query("SELECT chain_idx, chain_name FROM ". MYSQL_PREFIX ."chains WHERE chain_sl_idx!='0' "
-	    ."AND chain_active='Y' "
-	    ."AND chain_fallback_idx<>'0' ORDER BY chain_position ASC");
-?>
-   <tr>
-    <td style="text-align: center;">
-     <table class="noborder" style="width: 100%; text-align: center;">
-      <tr>
-       <td>
-        Chain:
-       </td>
-      </tr>
-      <tr>
-       <td>
-        <select name="showchain">
-<?php
-	 while($chain = $chains->fetchRow()) {
-?>
-         <option value="<?php print $chain->chain_idx; ?>" <? if($showchain == $chain->chain_idx) print "selected=\"selected\""; ?>><? print $chain->chain_name; ?></option>
-<?php
-	 }
-?>
-        </select>
-       </td>
-      </tr>
-     </table>
-    </td>
-   </tr>
-<?php
-      }     
-
-      if($vars['show'] == "pipes" || $vars['show'] == "chains") {
-?>
-   <tr>
-    <td>
-     <table class="noborder" style="width: 100%; text-align: center">
-      <tr>
-       <td>
-        Graph Mode:
-       </td>
-      </tr>
-      <tr>
-       <td>
-        <input type="radio" name="graphmode" value="0" <?php if($vars['graphmode'] == 0) print "checked=\"checked\""; ?> onclick="if(this.blur) this.blur();" class="radio" />Accumulated Lines<br />
-        <input type="radio" name="graphmode" value="1" <?php if($vars['graphmode'] == 1) print "checked=\"checked\""; ?> onclick="if(this.blur) this.blur();" class="radio" />Lines<br />
-        <input type="radio" name="graphmode" value="2" <?php if($vars['graphmode'] == 2) print "checked=\"checked\""; ?> onclick="if(this.blur) this.blur();" class="radio" />Bars<br />
-        <input type="radio" name="graphmode" value="3" <?php if($vars['graphmode'] == 3) print "checked=\"checked\""; ?> onclick="if(this.blur) this.blur();" class="radio" />Pie plot<br />
-       </td>
-      </tr>
-     </table>
-    </td>
-   </tr>
-<?php
-      }
-?>
-   <tr>
-    <td style="text-align: center;">
-     <table class="noborder" style="width: 100%; text-align: center">
-      <tr>
-       <td>Scale:</td>
-      </tr>
-      <tr>
-       <td>
-        <select name="scalemode">
-         <option value="bit" <?php if($vars['scalemode'] == "bit") print "selected=\"selected\""; ?>>bit/s</option>
-         <option value="byte" <?php if($vars['scalemode'] == "byte") print "selected=\"selected\""; ?>>byte/s</option>
-         <option value="kbit" <?php if($vars['scalemode'] == "kbit") print "selected=\"selected\""; ?>>kbit/s</option>
-         <option value="kbyte" <?php if($vars['scalemode'] == "kbyte") print "selected=\"selected\""; ?>>kbyte/s</option>
-         <option value="mbit" <?php if($vars['scalemode'] == "mbit") print "selected=\"selected\""; ?>>mbit/s</option>
-         <option value="mbyte" <?php if($vars['scalemode'] == "mbyte") print "selected=\"selected\""; ?>>mbyte/s</option>
-        </select>
-       </td>
-      </tr>
-     </table>
-    </td>
-   </tr>
-   <tr>
-    <td style="text-align: center;">
-     <input type="submit" value="Reload Graph" />
-    </td>
-   </tr>
-   <tr>
-    <td style="text-align: center;">
-     <input type="checkbox" name="reload" value="Y" checked="checked" onclick="if(this.blur) this.blur();" class="radio" />Auto reload
-    </td>
-   </tr>
-  </table>
-  </form>
-<?php
-
-   } // show()
-
-   function getFirstChain()
-   {
-      // Get only chains which do not Ignore QoS and are active
-      $chain = $this->db->db_fetchSingleRow("SELECT chain_idx FROM ". MYSQL_PREFIX ."chains WHERE chain_sl_idx!=0 AND chain_active='Y' ORDER BY chain_position ASC LIMIT 0,1");
-      return $chain->chain_idx;
-
-   } // getFirstChain()
+   } // smarty_interface_select_list()
 
 }
 
