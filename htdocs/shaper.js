@@ -470,7 +470,7 @@ function image_toggle_autoload()
    }
 }
 
-function setgraphmode(mode)
+function graph_set_mode(mode)
 {
    // Create object with values of the form
    var objTemp = new Object();
@@ -480,9 +480,9 @@ function setgraphmode(mode)
    var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
    image_update();
 
-} // setgraphmode()
+} // graph_set_mode()
 
-function setscalemode(obj)
+function graph_set_scalemode(obj)
 {
    // Create object with values of the form
    var objTemp = new Object();
@@ -492,4 +492,28 @@ function setscalemode(obj)
    var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
    image_update();
 
-} // setscalemode()
+} // graph_set_scalemode()
+
+function graph_set_interface(obj)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+   objTemp['action'] = 'interface';
+   objTemp['value'] = obj.options[obj.selectedIndex].value;
+
+   var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
+   image_update();
+
+} // graph_set_interface()
+
+function graph_set_chain(obj)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+   objTemp['action'] = 'chain';
+   objTemp['value'] = obj.options[obj.selectedIndex].value;
+
+   var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
+   image_update();
+
+} // graph_set_chain()

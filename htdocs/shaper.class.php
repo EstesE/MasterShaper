@@ -880,6 +880,12 @@ class MASTERSHAPER {
          case 'scalemode':
             $_SESSION['scalemode'] = $_POST['value'];
             break;
+         case 'interface':
+            $_SESSION['showif'] = $_POST['value'];
+            break;
+         case 'chain':
+            $_SESSION['showchain'] = $_POST['chain'];
+            break;
       }
 
    } // change_graph()
