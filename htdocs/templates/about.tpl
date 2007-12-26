@@ -3,9 +3,9 @@
  <tr>
   <td>
    <br />
-  Websolution for Linux network traffic shaping and QoS with iproute2.<br />
-  <a href="http://www.mastershaper.org">http://www.mastershaper.org</a><br />
-  <br />
+   Web-based network traffic shaper for Linux and QoS with iproute2.<br />
+   <a href="http://www.mastershaper.org">http://www.mastershaper.org</a><br />
+   <br />
 	<hr />
 	<br />
 	<b>Andreas Unterkircher</b>
@@ -13,8 +13,7 @@
 	<i><b>Licensed under GPL2</b></i><br />
 	(<a href="http://www.gnu.org/copyleft/gpl.html">http://www.gnu.org/copyleft/gpl.html</a>)<br />
 	<br />
-	Feedback is always appreciated! If you are willing please send some infos under which conditions<br />
-	you are using MasterShaper. This informations will be presented on the main website.<br />
+	Feedback and help are always appreciated!
 	<br />
 	<hr />
 	<br />
@@ -30,6 +29,6 @@
 	TwinHelix DHTML JavaScript Menu<br />
 	(<a href="http://www.twinhelix.com/">DHTML / JavaScript Menu by TwinHelix</a>)<br />
 	<br />
-       </td>
-      </tr>
-     </table>
+  </td>
+ </tr>
+</table>
