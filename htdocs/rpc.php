@@ -97,6 +97,10 @@ class MASTERSHAPER_RPC {
             }
             break;
 
+         case 'changegraph':
+            print $ms->change_graph();
+            break;
+
       }
 
    } // process_ajax_request();

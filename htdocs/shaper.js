@@ -426,9 +426,9 @@ function image_update()
    /* get the current image url */
    url = document.getElementById("monitor_image").src;
    /* remove the current uniq id from the string */
-   url = url.replace(/&uniqid=.*/, '');
+   url = url.replace(/\?uniqid=.*/, '');
    uniq = new Date();
-   uniq = "&uniqid="+uniq.getTime();
+   uniq = "?uniqid="+uniq.getTime();
    /* reload the image with a new uniq id */
    document.getElementById("monitor_image").src = url + uniq;
 
@@ -469,3 +469,27 @@ function image_toggle_autoload()
       image_stop_autoload();
    }
 }
+
+function setgraphmode(mode)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+   objTemp['action'] = 'graphmode';
+   objTemp['value'] = mode;
+
+   var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
+   image_update();
+
+} // setgraphmode()
+
+function setscalemode(obj)
+{
+   // Create object with values of the form
+   var objTemp = new Object();
+   objTemp['action'] = 'scalemode';
+   objTemp['value'] = obj.options[obj.selectedIndex].value;
+
+   var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
+   image_update();
+
+} // setscalemode()

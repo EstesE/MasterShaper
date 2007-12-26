@@ -46,37 +46,19 @@ class MASTERSHAPER_MONITOR {
          return 0;
       }
 
-      $vars = Array();
-
-      $vars['graphmode'] = 0;
-      $vars['scalemode'] = "kbit";
-
-      if(isset($_POST['graphmode']))
-         $vars['graphmode'] = $_POST['graphmode'];
-
-      $vars['show'] = $mode;
-
-      if(isset($_POST['showchain']))
-         $vars['showchain'] = $_POST['showchain'];
-      if(isset($_POST['showif']))
-         $vars['showif'] = $_POST['showif'];
-      if(isset($_POST['scalemode']))
-         $vars['scalemode'] = $_POST['scalemode'];
+      $_SESSION['mode'] = $mode;
 
       // graph URL
-      $image_loc = WEB_PATH ."/shaper_graph.php?show=". $vars['show'] ."&graphmode=". $vars['graphmode'];
+      $image_loc = WEB_PATH ."/shaper_graph.php";
 
-      switch($vars['show']) {
+      switch($_SESSION['mode']) {
          case 'chains':
             $view = "Chains";
             break;
          case 'pipes':
             $view = "Pipes";
-            if(!isset($vars['showchain']))
-               $showchain = $this->getFirstChain();
-            else
-               $showchain = $vars['showchain'];
-            $image_loc.= "&showchain=". $showchain;
+            if(!isset($_SESSION['showchain']) || $_SESSION['showchain'] == -1)
+               $_SESSION['showchain'] = $this->getFirstChain();
             break;
          case 'bandwidth':
             $view = "Bandwidth";
@@ -84,18 +66,15 @@ class MASTERSHAPER_MONITOR {
       }
 
       /* If no interface is specified use the first available interface */
-      if(!isset($vars['showif'])) 
-         $vars['showif'] = $this->getFirstInterface();
+      if(!isset($_SESSION['showif'])) 
+         $_SESSION['showif'] = $this->getFirstInterface();
 
-      $image_loc.= "&showif=". $vars['showif'];
-      $image_loc.= "&scalemode=". $vars['scalemode'];
-      $image_loc.= "&uniqid=". mktime();
+      $image_loc.= "?uniqid=". mktime();
    
-      $this->tmpl->assign('self_url', $this->parent->self ."?mode=". $this->parent->mode ."&show=". $vars['show']); 
-      $this->tmpl->assign('monitor', $mode);
+      $this->tmpl->assign('monitor', $_SESSION['mode']);
       $this->tmpl->assign('view', $view);
-      $this->tmpl->assign('graphmode', $vars['graphmode']);
-      $this->tmpl->assign('scalemode', $vars['scalemode']);
+      $this->tmpl->assign('graphmode', $_SESSION['graphmode']);
+      $this->tmpl->assign('scalemode', $_SESSION['scalemode']);
       $this->tmpl->assign('image_loc', $image_loc);
 
       $this->tmpl->register_function("interface_select_list", array(&$this, "smarty_interface_select_list"), false);
@@ -162,7 +141,7 @@ class MASTERSHAPER_MONITOR {
 
          $if_select.= "<option value=\"". $interface->if_name ."\"";
 	 
-         if($vars['showif'] == $interface->if_name)
+         if($_SESSION['showif'] == $interface->if_name)
             $if_select.= " selected=\"selected\"";
 	    
          $if_select.= ">". $interface->if_name ."</option>\n";

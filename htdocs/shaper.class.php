@@ -452,9 +452,9 @@ class MASTERSHAPER {
     */
    public function destroySession()
    {
-      unset($_SESSION['user_name']);
-      unset($_SESSION['user_idx']);
-      unset($_SESSION['navpoint']);
+      foreach($_SESSION as $k => $v) {
+         unset($_SESSION[$k]);
+      }
 
       session_destroy();
 
@@ -870,6 +870,19 @@ class MASTERSHAPER {
       $obj->show($mode);
    
    } // monitor()
+
+   public function change_graph()
+   {
+      switch($_POST['action']) {
+         case 'graphmode':
+            $_SESSION['graphmode'] = $_POST['value'];
+            break;
+         case 'scalemode':
+            $_SESSION['scalemode'] = $_POST['value'];
+            break;
+      }
+
+   } // change_graph()
 
    public function getActiveInterfaces()
    {

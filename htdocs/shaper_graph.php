@@ -60,17 +60,27 @@ class MASTERSHAPER_GRAPH{
    } // MASTERSHAPER_GRAPH()
 
    /* create graph */
-   function draw($mode, $graphmode, $chain)
+   function draw()
    {
       /* ****************************** */
-      /* Setup the graph                */
+      /* graphmode                      */
       /*     0  Accumulated Lines       */
       /*     1  Lines                   */
       /*     2  Bars                    */
       /*     3  Pie plots               */
       /* ****************************** */
 
-      switch($graphmode) {
+      if(!isset($_SESSION['mode']))
+         $_SESSION['mode'] = 'bandwidth';
+      if(!isset($_SESSION['graphmode']))
+         $_SESSION['graphmode'] = 0;
+      if(!isset($_SESSION['showchain']))
+         $_SESSION['showchain'] = -1;
+      if(!isset($_SESSION['scalemode']))
+         $_SESSION['scalemode'] = "kbit";
+
+      switch($_SESSION['graphmode']) {
+
          case 0:
          case 1:
          case 2:
@@ -79,13 +89,13 @@ class MASTERSHAPER_GRAPH{
             $this->graph->SetMarginColor('white');
             $this->graph->SetScale("textlin");
             $this->graph->SetShadow();
-            $this->graph->tabtitle->Set('Current Bandwidth Usage - '. strftime("%Y-%m-%d %H:%M:%S") ." - Interface ". $_GET['showif']);
+            $this->graph->tabtitle->Set('Current Bandwidth Usage - '. strftime("%Y-%m-%d %H:%M:%S") ." - Interface ". $_SESSION['showif']);
             $this->graph->tabtitle->SetWidth(TABTITLE_WIDTHFULL);
             $this->graph->xgrid->Show();
             $this->graph->xgrid->SetColor('gray@0.5');
             $this->graph->ygrid->SetColor('gray@0.5');
                    
-            switch($_GET['scalemode']) {
+            switch($_SESSION['scalemode']) {
                default:
                case 'kbit':
                   $this->graph->yaxis->title->Set("Bandwidth kbits per second");
@@ -104,6 +114,7 @@ class MASTERSHAPER_GRAPH{
             $this->graph->yaxis->HideZeroLabel();
             $this->graph->ygrid->SetFill(true,'#EFEFEF@0.9','#BBCCFF@0.9');
             break;
+
          case 3:
             $this->graph = new PieGraph(800,350);
             $this->graph->SetMargin(20,320,50,20);
@@ -144,11 +155,11 @@ class MASTERSHAPER_GRAPH{
          ORDER BY stat_time ASC
       ");
 
-      switch($_GET['show']) {
+      switch($_SESSION['mode']) {
          default:
             /* Chain & Pipe View */
             while($row = $data->fetchRow()) {
-               if($stat = $this->extract_tc_stat($row->stat_data, $_GET['showif'] ."_")) {
+               if($stat = $this->extract_tc_stat($row->stat_data, $_SESSION['showif'] ."_")) {
                   $tc_ids = array_keys($stat);
                   foreach($tc_ids as $tc_id) {
                      if(!isset($bigdata[$row->stat_time]))
@@ -188,7 +199,7 @@ class MASTERSHAPER_GRAPH{
             if(!isset($plot_array[$tc_id]))
                $plot_array[$tc_id] = array();
             $bw = $bigdata[$timestamp][$tc_id];
-            switch($_GET['scalemode']) {
+            switch($_SESSION['scalemode']) {
                case 'bit':
                   break;
                case 'byte':
@@ -213,25 +224,25 @@ class MASTERSHAPER_GRAPH{
       }
 
       /* What shell we graph? */
-      switch($mode) {
+      switch($_SESSION['mode']) {
          case 'pipes':
-            switch($graphmode) {
+            switch($_SESSION['graphmode']) {
                case 0:
                case 1:
                   foreach($tc_ids as $tc_id) {
                      if(array_sum($plot_array[$tc_id]) > 0) {
-                        if($this->isPipe($tc_id, $_GET['showif'], $chain)) {
+                        if($this->isPipe($tc_id, $_SESSION['showif'], $_SESSION['showchain'])) {
                            $p[$tc_id] = new LinePlot($plot_array[$tc_id]);
-                           if($graphmode == 0) {
+                           if($_SESSION['graphmode'] == 0) {
                               $p[$tc_id]->SetColor("black");
-                              $p[$tc_id]->SetFillColor($this->getColor($tc_id, $_GET['showif']));
+                              $p[$tc_id]->SetFillColor($this->getColor($tc_id, $_SESSION['showif']));
                               $p[$tc_id]->SetWeight(1);
                            }
                            else {
-                              $p[$tc_id]->SetColor($this->getColor($tc_id, $_GET['showif']));
+                              $p[$tc_id]->SetColor($this->getColor($tc_id, $_SESSION['showif']));
                               $p[$tc_id]->SetWeight(2);
                            }
-                           $p[$tc_id]->SetLegend($this->findname($tc_id, $_GET['showif']));
+                           $p[$tc_id]->SetLegend($this->findname($tc_id, $_SESSION['showif']));
                            array_push($this->total, $p[$tc_id]);
 			               }
                      }
@@ -243,14 +254,14 @@ class MASTERSHAPER_GRAPH{
                case 2:
                case 3:
                   foreach($tc_ids as $tc_id) {
-                     if($this->isPipe($tc_id, $_GET['showif'], $chain)) {
+                     if($this->isPipe($tc_id, $_SESSION['showif'], $_SESSION['showchain'])) {
                         $bps = round(array_sum($plot_array[$tc_id])/count($plot_array[$tc_id]), 0);
                         if($bps > 0) {
-                           if($graphmode == 3)
-                              array_push($this->names, $this->findname($tc_id, $_GET['showif']) ." (%d". $this->getScaleName($_GET['scalemode']) .")");
+                           if($_SESSION['graphmode'] == 3)
+                              array_push($this->names, $this->findname($tc_id, $_SESSION['showif']) ." (%d". $this->getScaleName($_SESSION['scalemode']) .")");
                            else 
-                              array_push($this->names, $this->findname($tc_id, $_GET['showif']));
-                           array_push($this->colors, $this->getColor($tc_id, $_GET['showif']));
+                              array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
+                           array_push($this->colors, $this->getColor($tc_id, $_SESSION['showif']));
                            array_push($this->total, $bps);
                         }
                      }
@@ -266,7 +277,7 @@ class MASTERSHAPER_GRAPH{
                $null_data[0] = 0;
                $null_data[1] = 0;
 
-               switch($graphmode) {
+               switch($_SESSION['graphmode']) {
                   case 0:
                   case 1:
                      $p[0] = new LinePlot($null_data);
@@ -284,25 +295,25 @@ class MASTERSHAPER_GRAPH{
 
          case 'chains':
 
-            switch($graphmode) {
+            switch($_SESSION['graphmode']) {
                case 0:
                case 1:
                   $counter = 0;
                   foreach($tc_ids as $tc_id) {
-                     if($this->isChain($tc_id, $_GET['showif']) && !preg_match("/1:.*99/", $row->stat_id)) {
+                     if($this->isChain($tc_id, $_SESSION['showif']) && !preg_match("/1:.*99/", $row->stat_id)) {
                         $p[$tc_id] = new LinePlot($plot_array[$tc_id]);
-                        if($graphmode == 0) {
+                        if($_SESSION['graphmode'] == 0) {
                            $p[$tc_id]->SetColor("black");
-                           $p[$tc_id]->SetFillColor($this->getColor($tc_id, $_GET['showif']));
+                           $p[$tc_id]->SetFillColor($this->getColor($tc_id, $_SESSION['showif']));
                            $p[$tc_id]->SetWeight(1);
                         }
                         else {
-                           $p[$tc_id]->SetColor($this->getColor($tc_id, $_GET['showif']));
+                           $p[$tc_id]->SetColor($this->getColor($tc_id, $_SESSION['showif']));
                            $p[$tc_id]->SetWeight(1);
                         }
 
                         if($counter < 15) {
-                           $p[$tc_id]->SetLegend($this->findname($tc_id, $_GET['showif']));
+                           $p[$tc_id]->SetLegend($this->findname($tc_id, $_SESSION['showif']));
                            array_push($this->total, $p[$tc_id]);
                         }
                         $counter++;
@@ -317,16 +328,16 @@ class MASTERSHAPER_GRAPH{
                case 3:
 
                   foreach($tc_ids as $tc_id) {
-                     if($this->isChain($tc_id, $_GET['showif']) && !preg_match("/1:.*99/", $row->stat_id)) {
+                     if($this->isChain($tc_id, $_SESSION['showif']) && !preg_match("/1:.*99/", $row->stat_id)) {
                         $bps = round(array_sum($plot_array[$tc_id])/count($plot_array[$tc_id]), 0);
                         if($bps > 0 || preg_match("/1:.*99/", $tc_id)) {
                            if($counter < 15) {
-                              if($graphmode == 3)
-                                 array_push($this->names, $this->findname($tc_id, $_GET['showif']) ." (%dkbit/s)");
+                              if($_SESSION['graphmode'] == 3)
+                                 array_push($this->names, $this->findname($tc_id, $_SESSION['showif']) ." (%dkbit/s)");
                               else
-                                 array_push($this->names, $this->findname($tc_id, $_GET['showif']));
+                                 array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
 
-                              array_push($this->colors, $this->getColor($tc_id, $_GET['showif']));
+                              array_push($this->colors, $this->getColor($tc_id, $_SESSION['showif']));
                               array_push($this->total, $bps);
                            }
                            $counter++;
@@ -357,7 +368,7 @@ class MASTERSHAPER_GRAPH{
             break;
       }
 
-      switch($_GET['graphmode']) {
+      switch($_SESSION['graphmode']) {
 
          default:
          case 0:
@@ -661,18 +672,6 @@ class MASTERSHAPER_GRAPH{
 }
 
 $stat = new MASTERSHAPER_GRAPH;
-
-if($stat != 0) {
-   
-   if(!isset($_GET['show']))
-      $_GET['show'] = 'bandwidth';
-   if(!isset($_GET['graphmode']))
-      $_GET['graphmode'] = 0;
-   if(!isset($_GET['showchain']))
-      $_GET['showchain'] = -1;
-
-   $stat->draw($_GET['show'], $_GET['graphmode'], $_GET['showchain']);
-
-}
+$stat->draw();
 
 ?>
