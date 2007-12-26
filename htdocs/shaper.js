@@ -415,3 +415,17 @@ function alterPosition(type, idx, to)
    }
 
 } // alterPosition()
+
+function updateimage(singlerun)
+{
+   if(document.getElementById("reload").checked) {
+      uniq = new Date();
+      uniq = "&uniqid="+uniq.getTime();
+      document.forms['monitor'].monitor_image.src="{ $image_url }"+uniq;
+   }
+
+   if(singlerun == undefined) {
+      setTimeout("updateimage()", 5000);
+   }
+} // updateimage()
+

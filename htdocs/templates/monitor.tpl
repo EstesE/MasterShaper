@@ -5,7 +5,6 @@
 { elseif $monitor == "bandwidth" }
  {start_table icon=$icon_bandwidth alt="bandwidth icon" title="Traffic Monitoring - $view" }
 { /if }
-<form id="monitor" action="{ $self_url }" method="post">
  <table style="width: 100%;" class="withborder">
   <tr>
    <td class="tablehead" style="width: 180px;">
@@ -13,20 +12,6 @@
    </td>
    <td style="text-align: center; width: 900px; height: 350px" rowspan="10">
     <img src="{ $image_loc }" id="monitor_image" alt="monitor image" />
-    <script type="text/javascript">
-    { literal }
-      function updateimage()
-      {
-         if(document.forms['monitor'].reload.checked) {
-            uniq = new Date();
-            uniq = "&uniqid="+uniq.getTime();
-            document.forms['monitor'].monitor_image.src="{ $image_url }"+uniq;
-         }
-         setTimeout("updateimage()", 5000);
-      }
-      setTimeout("updateimage()", 5000);
-    { /literal }
-    </script>
    </td>
   </tr>
   <tr>
@@ -115,7 +100,7 @@
   </tr>
   <tr>
    <td style="text-align: center;">
-    <input type="submit" value="Reload Graph" />
+    <input type="button" onclick="updateimage();" value="Reload Graph" />
    </td>
   </tr>
   <tr>
@@ -124,4 +109,3 @@
    </td>
   </tr>
  </table>
-</form>
