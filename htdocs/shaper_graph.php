@@ -512,7 +512,7 @@ class MASTERSHAPER_GRAPH{
          return "Fallback";
       }
 
-      if($tc_id = $this->db->db_fetchSingeRow("
+      if($tc_id = $this->db->db_fetchSingleRow("
          SELECT id_pipe_idx, id_chain_idx
          FROM ". MYSQL_PREFIX ."tc_ids
          WHERE

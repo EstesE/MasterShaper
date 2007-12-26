@@ -53,8 +53,9 @@ class MASTERSHAPER_MONITOR {
 
       if(isset($_POST['graphmode']))
          $vars['graphmode'] = $_POST['graphmode'];
-      if(isset($_GET['show']))
-         $vars['show'] = $mode;
+
+      $vars['show'] = $mode;
+
       if(isset($_POST['showchain']))
          $vars['showchain'] = $_POST['showchain'];
       if(isset($_POST['showif']))
