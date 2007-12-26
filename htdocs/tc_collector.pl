@@ -71,24 +71,18 @@ getopts("hdv:l:",\%options);
 
 # shuld we display
 if(defined($options{h})) {
-
    show_help();
    exit(0);
-   
 }
 
 # should we fork now?
 if(defined($options{d})) {
-
    &daemonize;
-
 }
 
 # should we output something?
 if(defined($options{v})) {
-
    $verbose = $options{v};
-
 }
 
 # read options from the config file
@@ -257,20 +251,26 @@ mysql_disconnect();
 sub getInterfaces() {
 
    my @temp = ();
-
-   $interface = $dbh->prepare("SELECT if_name FROM ". $config{'mysql_prefix'} ."interfaces WHERE if_active='Y'");
+   $interface = $dbh->prepare("
+      SELECT DISTINCT if_name
+      FROM
+         $config{'mysql_prefix'}interfaces iface
+      INNER JOIN
+         $config{'mysql_prefix'}network_paths np
+      ON (
+         np.netpath_if1=iface.if_idx
+         OR
+         np.netpath_if2=iface.if_idx
+      )
+      WHERE
+         np.netpath_active='Y'
+   ");
    $interface->execute();
-
    while(@result = $interface->fetchrow_array()) {
-
       push(@temp, $result[0]);
-
    }
-
    $interface->finish();
-	
    return @temp;
-
 }
 
 sub readCfg {
