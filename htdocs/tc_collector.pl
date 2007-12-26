@@ -362,11 +362,9 @@ sub daemonize {
 }
 
 sub cleanup {
-
    mysql_disconnect();
    unlink("/var/run/mastershaper.pid");
    exit(0);
-
 }
 
 sub printMsg {
