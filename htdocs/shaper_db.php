@@ -70,7 +70,7 @@ class MASTERSHAPER_DB {
    {
       $options = array(
          'debug' => 2,
-         'portability' => DB_PORTABILITY_ALL,
+         'portability' => 'DB_PORTABILITY_ALL'
       );
 
       $dsn = "mysql://". MYSQL_USER .":". MYSQL_PASS ."@". MYSQL_HOST ."/". MYSQL_DB;
