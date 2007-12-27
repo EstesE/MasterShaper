@@ -119,22 +119,22 @@ class MASTERSHAPER_CHAINS {
             WHERE
                chain_idx='". $idx ."'
          ");
-      }
-      else {
-         $chain->chain_active = "Y";
-         $chain->chain_fallback_idx = -1;
-         $chain->chain_direction = 2;
-      }
 
-      $this->tmpl->assign('chain_idx', $idx);
-      $this->tmpl->assign('chain_name', $chain->chain_name);
-      $this->tmpl->assign('chain_active', $chain->chain_active);
-      $this->tmpl->assign('chain_direction', $chain->chain_direction);
-      $this->tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
-      $this->tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
-      $this->tmpl->assign('chain_src_target', $chain->chain_src_target);
-      $this->tmpl->assign('chain_dst_target', $chain->chain_dst_target);
-      $this->tmpl->assign('chain_netpath_idx', $chain->chain_netpath_idx);
+         $this->tmpl->assign('chain_idx', $idx);
+         $this->tmpl->assign('chain_name', $chain->chain_name);
+         $this->tmpl->assign('chain_active', $chain->chain_active);
+         $this->tmpl->assign('chain_direction', $chain->chain_direction);
+         $this->tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
+         $this->tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
+         $this->tmpl->assign('chain_src_target', $chain->chain_src_target);
+         $this->tmpl->assign('chain_dst_target', $chain->chain_dst_target);
+         $this->tmpl->assign('chain_netpath_idx', $chain->chain_netpath_idx);
+     }
+      else {
+         $this->tmpl->assign('chain_active', 'Y');
+         $this->tmpl->assign('chain_fallback_idx', -1);
+         $this->tmpl->assign('chain_direction', 2);
+      }
 
       $this->tmpl->show("chains_edit.tpl");
 
