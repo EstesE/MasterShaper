@@ -431,7 +431,136 @@ class MASTERSHAPER_OVERVIEW {
       return "ok";
 
    } // alter_position()
-   
+
+   /**
+    * handle updates
+    */
+   public function store()
+   {
+      /* save all chain service levels */
+      foreach($_POST['chain_sl_idx'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."chains
+            SET
+               chain_sl_idx='". $v ."'
+            WHERE
+               chain_idx='". $k ."'
+         ");
+      }
+
+      /* save all chain fallback service levels */
+      foreach($_POST['chain_fallback_idx'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."chains
+            SET
+               chain_fallback_idx='". $v ."'
+            WHERE
+               chain_idx='". $k ."'
+         ");
+      }
+
+      /* save all chain fallback service levels */
+      foreach($_POST['chain_src_target'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."chains
+            SET
+               chain_src_target='". $v ."'
+            WHERE
+               chain_idx='". $k ."'
+         ");
+      }
+
+      /* save all chain fallback service levels */
+      foreach($_POST['chain_dst_target'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."chains
+            SET
+               chain_dst_target='". $v ."'
+            WHERE
+               chain_idx='". $k ."'
+         ");
+      }
+
+      /* save all chain fallback service levels */
+      foreach($_POST['chain_direction'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."chains
+            SET
+               chain_direction='". $v ."'
+            WHERE
+               chain_idx='". $k ."'
+         ");
+      }
+
+      /* save all chain fallback service levels */
+      foreach($_POST['chain_action'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."chains
+            SET
+               chain_action='". $v ."'
+            WHERE
+               chain_idx='". $k ."'
+         ");
+      }
+
+      /* save all pipe service levels */
+      foreach($_POST['pipe_sl_idx'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."pipes
+            SET
+               pipe_sl_idx='". $v ."'
+            WHERE
+               pipe_idx='". $k ."'
+         ");
+      }
+
+      /* save all pipe fallback service levels */
+      foreach($_POST['pipe_src_target'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."pipes
+            SET
+               pipe_src_target='". $v ."'
+            WHERE
+               pipe_idx='". $k ."'
+         ");
+      }
+
+      /* save all pipe fallback service levels */
+      foreach($_POST['pipe_dst_target'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."pipes
+            SET
+               pipe_dst_target='". $v ."'
+            WHERE
+               pipe_idx='". $k ."'
+         ");
+      }
+
+      /* save all pipe fallback service levels */
+      foreach($_POST['pipe_direction'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."pipes
+            SET
+               pipe_direction='". $v ."'
+            WHERE
+               pipe_idx='". $k ."'
+         ");
+      }
+
+      /* save all pipe fallback service levels */
+      foreach($_POST['pipe_action'] as $k => $v) {
+         $this->db->db_query("
+            UPDATE ". MYSQL_PREFIX ."pipes
+            SET
+               pipe_action='". $v ."'
+            WHERE
+               pipe_idx='". $k ."'
+         ");
+      }
+
+      return "ok";
+
+   } // store()
 }
 
 ?>

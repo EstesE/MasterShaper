@@ -375,6 +375,9 @@ class MASTERSHAPER {
             case 'chain':
                $obj = new MASTERSHAPER_CHAINS($this);
                break;
+            case 'overview':
+               $obj = new MASTERSHAPER_OVERVIEW($this);
+               break;
          }
 
          if(isset($obj)) {

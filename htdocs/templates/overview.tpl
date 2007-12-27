@@ -1,8 +1,8 @@
+<form action="rpc.php?action=store" id="overview" onsubmit="saveForm(this, 'overview'); return false;" method="post">
+<input type="hidden" name="module" value="overview" />
+<input type="hidden" name="action" value="modify" />
 {start_table icon=$icon_home alt="home icon" title="MasterShaper Ruleset Overview" }
-<form>
-
-{ov_netpath }
-
+{ ov_netpath }
 <table style="width: 100%;">
  <tr>
   <td style="height: 15px;" />
@@ -71,13 +71,13 @@
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="chain_dst_target[<?php print $chain->chain_idx; ?>]">
+      <select name="chain_dst_target[{ $chain_idx }]">
        <option value="0">any</option>
        { target_list idx=$chain_dst_target }
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="chain_action[<?php print $chain->chain_idx; ?>]">
+      <select name="chain_action[{ $chain_idx }]">
        <option value="accept" { if $chain_action == "accept" } selected="selected" { /if }>Accept</option>
        <option value="drop" { if $chain_action == "drop" } selected="selected" { /if }>Drop</option>
        <option value="reject" { if $chain_action == "reject" } selected="selected" { /if }>Reject</option>
@@ -108,19 +108,19 @@
      </td>
      <td>&nbsp;</td>
      <td style="text-align: center;">
-      <select name="pipe_src_target[{ $pipe_idx }">
+      <select name="pipe_src_target[{ $pipe_idx }]">
        <option value="0">any</option>
        { target_list idx=$pipe_src_target }
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="pipe_direction[<?php print $pipe->pipe_idx; ?>]">
+      <select name="pipe_direction[{ $pipe_idx }]">
        <option value="1" { if $pipe_direction == 1 } selected="selected" { /if }>--&gt;</option>
        <option value="2" { if $pipe_direction == 2 } selected="selected" { /if }>&lt;-&gt;</option>
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="pipe_dst_target[<?php print $pipe->pipe_idx; ?>]">
+      <select name="pipe_dst_target[{ $pipe_idx }]">
        <option value="0">any</option>
        { target_list idx=$pipe_dst_target }
       </select>
@@ -162,8 +162,5 @@
    { include file=savebutton.tpl }
   </td>
  </tr>
-  </table>
-
+</table>
 </form>
-
-
