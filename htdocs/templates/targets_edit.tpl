@@ -1,5 +1,5 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="targets" onsubmit="saveTarget(this); return false;" method="post">
+<form action="rpc.php?action=store" id="targets" onsubmit="saveForm(this, 'targets'); return false;" method="post">
 <input type="hidden" name="module" value="target" />
 <input type="hidden" name="action" value="modify" />
 { if ! $target_idx }
