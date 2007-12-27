@@ -326,7 +326,7 @@ class MASTERSHAPER_GRAPH{
 
                case 2:
                case 3:
-
+                  $counter = 0;
                   foreach($tc_ids as $tc_id) {
                      if($this->isChain($tc_id, $_SESSION['showif']) && !preg_match("/1:.*99/", $tc_id)) {
                         $bps = round(array_sum($plot_array[$tc_id])/count($plot_array[$tc_id]), 0);
@@ -466,7 +466,7 @@ class MASTERSHAPER_GRAPH{
             id_if='". $interface ."'
       ");
 		
-      if($color->id_color != "") {
+      if(isset($color->id_color) && $color->id_color != "") {
          return $color->id_color;
       }
       else {
