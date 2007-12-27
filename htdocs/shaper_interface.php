@@ -36,9 +36,8 @@ class MASTERSHAPER_INTERFACE {
     *
     * Initialize the MASTERSHAPER_INTERFACE class
     */
-   function __construct($if_id, &$db, &$parent) 
+   public function __construct($if_id, &$db, &$parent) 
    {
-
       $this->db          = $db;
       $this->parent      = $parent;
 
@@ -59,7 +58,7 @@ class MASTERSHAPER_INTERFACE {
       $this->if_speed       = $if->if_speed;
       $this->if_active      = $if->if_active;
 
-   } // MASTERSHAPER_INTERFACE()
+   } // __construct()
 
    /**
     * set the status of the interface
@@ -69,7 +68,7 @@ class MASTERSHAPER_INTERFACE {
     *
     * @param bool new status
     */ 
-   function setStatus($status) 
+   private function setStatus($status) 
    {
       if($status == true or $status == false) 
          $this->initialized = $status;      
@@ -82,55 +81,66 @@ class MASTERSHAPER_INTERFACE {
     * this function return the current state of the "initialized flag to
     * indicate whether the interface has been already initialized or not.
     */
-   function getStatus() 
+   public function getStatus() 
    {
       return $this->initialized;
 
    } // getStatus()
 
-   function getNextClassId()
+   private function getNextClassId()
    {
       $this->minor_class++;
       return $this->major_class .":". $this->minor_class;
 
    } // getNextClassId()
 
-   function getRules()
+   /**
+    * return ruleset
+    *
+    * this function will return the buffer in which all
+    * the generated rules for this interface are stored.
+    */
+   public function getRules()
    {
-
       return $this->rules;
 
    } // getRules()
 
-   function isActive()
+   /**
+    * check if interface is active
+    *
+    * will return, if the interface assigned to this
+    * class is enabled or disabled in MasterShaper
+    * config.
+    */
+   public function isActive()
    {
-
       return $this->if_active;
 
    } // isActive()
 
-   function getSpeed()
+   private function getSpeed()
    {
 
       return $this->parent->getKbit($this->if_speed);
 
    } // getSpeed()
 
-   function getId()
+   private function getId()
    {
 
       return $this->if_id;
 
    } // getId()
 
-   function getName()
+   private function getName()
    {
 
       return $this->if_name;
 
    } // getName()
 
-   function getInterfaceDetails($if_idx)
+   private function getInterfaceDetails($if_idx)
    {
 
       return $this->db->db_fetchSingleRow("SELECT * FROM ". MYSQL_PREFIX ."interfaces WHERE if_idx='". $if_idx ."'");
@@ -138,20 +148,20 @@ class MASTERSHAPER_INTERFACE {
    } // getInterfaceDetails()
 
 
-   function addRuleComment($text)
+   private function addRuleComment($text)
    {
       $this->addRule("######### ". $text);
 
    } // addRuleComment()
 
-   function addRule($cmd)
+   private function addRule($cmd)
    {
 
       array_push($this->rules, $cmd);
 
    } // addRule()
 
-   function addRootQdisc($id)
+   private function addRootQdisc($id)
    {
 
       switch($this->parent->getOption("classifier")) {
@@ -176,7 +186,7 @@ class MASTERSHAPER_INTERFACE {
 
    } // addRootQdisc()
 
-   function addInitClass($parent, $classid)
+   private function addInitClass($parent, $classid)
    {
       
       $bw = $this->getSpeed();
@@ -204,7 +214,7 @@ class MASTERSHAPER_INTERFACE {
    } // addInitClass()
 
    /* Adds the top level filter which brings traffic into the initClass */
-   function addInitFilter($parent)
+   private function addInitFilter($parent)
    {
 
       $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
@@ -212,7 +222,7 @@ class MASTERSHAPER_INTERFACE {
    } // addInitFilter()
 
    /* Adds a class definition for a inbound chain */
-   function addClass($parent, $classid, $sl, $direction = "in")
+   private function addClass($parent, $classid, $sl, $direction = "in")
    {
       $string = TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid;
 
@@ -360,7 +370,7 @@ class MASTERSHAPER_INTERFACE {
    } // addClass()
 
    /* Adds qdisc at the end of class for final queuing mechanism */
-   function addSubQdisc($child, $parent, $sl)
+   private function addSubQdisc($child, $parent, $sl)
    {
       $string = TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $child ." parent ". $parent ." ";
 
@@ -389,7 +399,7 @@ class MASTERSHAPER_INTERFACE {
 
    } // addSubQdisc()
 
-   function addAckFilter($parent, $option, $id = "")
+   private function addAckFilter($parent, $option, $id = "")
    {
       switch($this->parent->getOption("filter")) {
 
@@ -411,7 +421,7 @@ class MASTERSHAPER_INTERFACE {
    } // addAckFilter()
 	
    /* create IP/host matching filters */
-   function addHostFilter($parent, $option, $params1 = "", $params2 = "", $chain_direction = "")
+   private function addHostFilter($parent, $option, $params1 = "", $params2 = "", $chain_direction = "")
    {
 
       switch($this->parent->getOption("filter")) {
@@ -652,14 +662,14 @@ class MASTERSHAPER_INTERFACE {
    } // getTargetHosts()
 
    /* set the actually tc handle ID for a chain */
-   function setChainID($chain_idx, $chain_tc_id)
+   private function setChainID($chain_idx, $chain_tc_id)
    {
       $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."tc_ids (id_pipe_idx, id_chain_idx, id_if, id_tc_id) "
 			 ."VALUES ('0', '". $chain_idx ."', '". $this->getName() ."', '". $chain_tc_id ."')");
    } // setChainID()
 
    /* set the actually tc handle ID for a pipe */ 
-   function setPipeID($pipe_idx, $chain_tc_id, $pipe_tc_id)
+   private function setPipeID($pipe_idx, $chain_tc_id, $pipe_tc_id)
    {
       $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."tc_ids (id_pipe_idx, id_chain_idx, id_if, id_tc_id) "
 			 ."VALUES ('". $pipe_idx ."', '". $chain_tc_id ."', '". $this->getName() ."', '". $pipe_tc_id ."')");
@@ -1188,7 +1198,7 @@ class MASTERSHAPER_INTERFACE {
 
    } // addPipeFilter()
 
-   function addFallbackFilter($parent, $filter = "")
+   private function addFallbackFilter($parent, $filter = "")
    {
       switch($this->parent->getOption("filter")) {
 
@@ -1204,7 +1214,7 @@ class MASTERSHAPER_INTERFACE {
 
    } // addFallbackFilter()
 
-   function addMatchallFilter($parent, $filter = "")
+   private function addMatchallFilter($parent, $filter = "")
    {
       switch($this->parent->getOption("filter")) {
 	 case 'tc':
@@ -1231,8 +1241,13 @@ class MASTERSHAPER_INTERFACE {
 
    } // addMatchallFilter()
 
-   /* new incoming chain */
-   function buildChains($netpath_idx, $direction)
+   /**
+    * build chain-ruleset
+    *
+    * this function will build up the chain-ruleset necessary
+    * for the provided network path and direction.
+    */
+   public function buildChains($netpath_idx, $direction)
    {
       $this->addRuleComment("Rules for interface ". $this->getName());
       $chains = $this->getChains($netpath_idx);
@@ -1291,7 +1306,7 @@ class MASTERSHAPER_INTERFACE {
 
    } // buildChains()
 
-   function getChains($netpath_idx)
+   private function getChains($netpath_idx)
    {
       return $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."chains WHERE chain_active='Y' AND "
          ."chain_netpath_idx='". $netpath_idx ."' ORDER BY chain_position ASC");
@@ -1299,7 +1314,7 @@ class MASTERSHAPER_INTERFACE {
    } // getChains()
 
    /* build ruleset for incoming pipes */
-   function buildPipes($chain_idx, $my_parent, $chain_direction)
+   private function buildPipes($chain_idx, $my_parent, $chain_direction)
    {
       /* get all active pipes for this chain */
       $pipes = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."pipes WHERE pipe_active='Y' AND pipe_chain_idx='". $chain_idx ."' ORDER BY pipe_position ASC");
@@ -1342,7 +1357,7 @@ class MASTERSHAPER_INTERFACE {
 
    } // buildPipes()
 
-   function iptInitRulesIf() 
+   private function iptInitRulesIf() 
    {
 
       if($this->parent->getOption("msmode") == "router") {
@@ -1359,7 +1374,14 @@ class MASTERSHAPER_INTERFACE {
 
    } // iptInitRulesIf()
 
-   function Initialize($direction)
+   /**
+    * initialize the current interface
+    *
+    * this function which initialize the current interface, which means
+    * to prepare all the necessary tc-rules and add them to the buffer
+    * to be executed later when loading the rules.
+    */
+   public function Initialize($direction)
    {
       $ack_sl = $this->parent->getOption("ack_sl");
 
