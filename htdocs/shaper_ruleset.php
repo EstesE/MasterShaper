@@ -30,17 +30,21 @@ define("MS_POST", 13);
 
 class MASTERSHAPER_RULESET {
 
-   var $db;
-   var $parent;
-   var $tmpl;
-   var $ms_pre;
-   var $ms_post;
-   var $classes;
-   var $filters;
-   var $interfaces;
+   private $db;
+   private $parent;
+   private $tmpl;
+   private $ms_pre;
+   private $ms_post;
+   private $classes;
+   private $filters;
+   private $interfaces;
 
-   /* Class constructor */
-   function MASTERSHAPER_RULESET($parent)
+   /**
+    * MASTERSHAPER_RULESET constructor
+    *
+    * Initialize the MASTERSHAPER_RULESET class
+    */
+   public function __construct(&$parent)
    {
       $this->db = $parent->db;
       $this->tmpl = $parent->tmpl;
@@ -54,10 +58,10 @@ class MASTERSHAPER_RULESET {
       $this->filters = Array();
       $this->interfaces = Array();
 
-   } // MASTERSHAPER_RULESET()
+   } // __construct()
 
    /* This function prepares the rule setup according configuration and calls tc with a batchjob */
-   function show($state = 0)
+   public function show($state = 0)
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -120,7 +124,7 @@ class MASTERSHAPER_RULESET {
       
    } // show()
 
-   function iptInitRules()
+   private function iptInitRules()
    {
       $this->addRule(MS_PRE, IPT_BIN ." -t mangle -N ms-all");
       $this->addRule(MS_PRE, IPT_BIN ." -t mangle -N ms-all-chains");
@@ -133,13 +137,13 @@ class MASTERSHAPER_RULESET {
 
    } // iptInitRules()
 
-   function addRuleComment($ruleset, $text)
+   private function addRuleComment($ruleset, $text)
    {
       $this->addRule($ruleset, "######### ". $text);
 
    } // addRuleComment()
 
-   function addRule($rule, $cmd)
+   private function addRule($rule, $cmd)
    {
 
       switch($rule) {
@@ -156,7 +160,7 @@ class MASTERSHAPER_RULESET {
 
    } // addRule()
 
-   function getRules($rules)
+   private function getRules($rules)
    {
 
       switch($rules) {
@@ -175,7 +179,7 @@ class MASTERSHAPER_RULESET {
       
    } // getRules()
 
-   function initRules()
+   private function initRules()
    {
       /* The most tc_ids will change, so we delete the current known tc_ids */
       $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."tc_ids");
@@ -246,19 +250,19 @@ class MASTERSHAPER_RULESET {
    } // initRules()
 
    /* Delete parent qdiscs */
-   function delQdisc($interface)
+   private function delQdisc($interface)
    {
       $this->runProc("tc", TC_BIN . " qdisc del dev ". $interface ." root", true);
 
    } // delQdisc()
 
-   function delIptablesRules()
+   private function delIptablesRules()
    {
       $this->runProc("cleanup", null, true);
 
    } // delIptablesRules
 
-   function doIt()
+   private function doIt()
    {
 
       $error = Array();
@@ -331,7 +335,7 @@ class MASTERSHAPER_RULESET {
 
    } // doIt()
 
-   function doItLineByLine()
+   private function doItLineByLine()
    {
       /* Delete current root qdiscs */
       $this->delActiveInterfaceQdiscs();
@@ -362,14 +366,14 @@ class MASTERSHAPER_RULESET {
 
    } // doItLineByLine()
 
-   function output($text)
+   private function output($text)
    {
       if($_GET['output'] == "noisy")
          print $text ."\n";
 
    } // output()
 
-   function getCompleteRuleset()
+   private function getCompleteRuleset()
    {
       $ruleset = Array();
       foreach($this->ms_pre as $tmp) {
@@ -387,7 +391,7 @@ class MASTERSHAPER_RULESET {
    
    } // getCompleteRuleset()
 
-   function showIt()
+   private function showIt()
    {
       $string = "";
       foreach($this->getCompleteRuleset() as $tmp) {
@@ -402,7 +406,7 @@ class MASTERSHAPER_RULESET {
 
    } // showIt()
 
-   function getColor($text)
+   private function getColor($text)
    {
       if(strstr($text, "########"))
 	 return "#666666";
@@ -415,7 +419,7 @@ class MASTERSHAPER_RULESET {
 
    } // getColor()
 
-   function runProc($option, $cmd = "", $ignore_err = null)
+   private function runProc($option, $cmd = "", $ignore_err = null)
    {
       $retval = "";
       $error = "";
@@ -458,7 +462,7 @@ class MASTERSHAPER_RULESET {
 
    } // runProc()
 
-   function delActiveInterfaceQdiscs()
+   private function delActiveInterfaceQdiscs()
    {
       $result = $this->parent->getActiveInterfaces();
       while($row = $result->fetchRow()) {
@@ -467,7 +471,7 @@ class MASTERSHAPER_RULESET {
 
    } // delActiveInterfaceQdiscs()
 
-   function getActiveNetpaths()
+   private function getActiveNetpaths()
    {
       return $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."network_paths WHERE netpath_active='Y' ORDER BY netpath_position");
 
