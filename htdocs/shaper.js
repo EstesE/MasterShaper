@@ -517,3 +517,18 @@ function graph_set_chain(obj)
    image_update();
 
 } // graph_set_chain()
+
+/**
+ * set focus to specified object
+ *
+ * this function will search for the first matching
+ * object and if possible, set the focus to it.
+ */
+function setFocus(obj)
+{
+   if(el = document.getElementsByName(obj)) {
+      if(el.item(0).focus) {
+         el.item(0).focus();
+      }
+   }
+} // setFocus()

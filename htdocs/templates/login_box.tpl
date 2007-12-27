@@ -31,4 +31,5 @@
    </td>
   </tr>
  </table>
+ <img src="images/1x1.png" onload="setFocus('user_name');" />
 </form>
