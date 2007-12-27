@@ -27,7 +27,8 @@ class MASTERSHAPER_RPC {
 
    public function __construct()
    {
-      session_start();
+      if(session_id() == "")
+         session_start();
 
    } // __construct()
 

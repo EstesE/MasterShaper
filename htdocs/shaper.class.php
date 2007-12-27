@@ -65,7 +65,8 @@ class MASTERSHAPER {
       $this->db  = new MASTERSHAPER_DB(&$this);
       $this->tmpl = new MASTERSHAPER_TMPL($this);
 
-      session_start();
+      if(session_id() == "")
+         session_start();
 
    } // __construct()
 
