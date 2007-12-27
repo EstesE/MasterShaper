@@ -105,51 +105,53 @@ class MASTERSHAPER_FILTERS {
    private function showEdit($idx)
    {
       if($idx != 0) {
+
          $filter = $this->db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."filters
             WHERE
                filter_idx='". $idx ."'
          ");
+
+         $this->tmpl->assign('filter_idx', $idx);
+         $this->tmpl->assign('filter_mode', $this->parent->getOption("filter"));
+         $this->tmpl->assign('filter_name', $filter->filter_name);
+         $this->tmpl->assign('filter_active', $filter->filter_active);
+         $this->tmpl->assign('filter_protocol_id', $filter->filter_protocol_id);
+         $this->tmpl->assign('filter_tos', $filter->filter_tos);
+         $this->tmpl->assign('filter_tcpflag_syn', $filter->filter_tcpflag_syn);
+         $this->tmpl->assign('filter_tcpflag_ack', $filter->filter_tcpflag_ack);
+         $this->tmpl->assign('filter_tcpflag_fin', $filter->filter_tcpflag_fin);
+         $this->tmpl->assign('filter_tcpflag_rst', $filter->filter_tcpflag_rst);
+         $this->tmpl->assign('filter_tcpflag_urg', $filter->filter_tcpflag_urg);
+         $this->tmpl->assign('filter_tcpflag_psh', $filter->filter_tcpflag_psh);
+         $this->tmpl->assign('filter_packet_length', $filter->filter_packet_length);
+         $this->tmpl->assign('filter_p2p_edk', $filter->filter_p2p_edk);
+         $this->tmpl->assign('filter_p2p_kazaa', $filter->filter_p2p_kazaa);
+         $this->tmpl->assign('filter_p2p_dc', $filter->filter_p2p_dc);
+         $this->tmpl->assign('filter_p2p_gnu', $filter->filter_p2p_gnu);
+         $this->tmpl->assign('filter_p2p_bit', $filter->filter_p2p_bit);
+         $this->tmpl->assign('filter_p2p_apple', $filter->filter_p2p_apple);
+         $this->tmpl->assign('filter_p2p_soul', $filter->filter_p2p_soul);
+         $this->tmpl->assign('filter_p2p_winmx', $filter->filter_p2p_winmx);
+         $this->tmpl->assign('filter_p2p_ares', $filter->filter_p2p_ares);
+         $this->tmpl->assign('filter_time_use_range', $filter->filter_time_use_range);
+         $this->tmpl->assign('filter_time_start', $filter->filter_time_start);
+         $this->tmpl->assign('filter_time_stop', $filter->filter_time_stop);
+         $this->tmpl->assign('filter_time_day_mon', $filter->filter_time_day_mon);
+         $this->tmpl->assign('filter_time_day_tue', $filter->filter_time_day_tue);
+         $this->tmpl->assign('filter_time_day_wed', $filter->filter_time_day_wed);
+         $this->tmpl->assign('filter_time_day_thu', $filter->filter_time_day_thu);
+         $this->tmpl->assign('filter_time_day_fri', $filter->filter_time_day_fri);
+         $this->tmpl->assign('filter_time_day_sat', $filter->filter_time_day_sat);
+         $this->tmpl->assign('filter_time_day_sun', $filter->filter_time_day_sun);
+         $this->tmpl->assign('filter_match_ftp_data', $filter->filter_match_ftp_data);
+         $this->tmpl->assign('filter_match_sip', $filter->filter_match_sip);
+
       }
       else {
-         $filter->filter_active = 'Y'; 
+         $this->tmpl->assign('filter_active', 'Y');
       }
-
-      $this->tmpl->assign('filter_idx', $idx);
-      $this->tmpl->assign('filter_mode', $this->parent->getOption("filter"));
-      $this->tmpl->assign('filter_name', $filter->filter_name);
-      $this->tmpl->assign('filter_active', $filter->filter_active);
-      $this->tmpl->assign('filter_protocol_id', $filter->filter_protocol_id);
-      $this->tmpl->assign('filter_tos', $filter->filter_tos);
-      $this->tmpl->assign('filter_tcpflag_syn', $filter->filter_tcpflag_syn);
-      $this->tmpl->assign('filter_tcpflag_ack', $filter->filter_tcpflag_ack);
-      $this->tmpl->assign('filter_tcpflag_fin', $filter->filter_tcpflag_fin);
-      $this->tmpl->assign('filter_tcpflag_rst', $filter->filter_tcpflag_rst);
-      $this->tmpl->assign('filter_tcpflag_urg', $filter->filter_tcpflag_urg);
-      $this->tmpl->assign('filter_tcpflag_psh', $filter->filter_tcpflag_psh);
-      $this->tmpl->assign('filter_packet_length', $filter->filter_packet_length);
-      $this->tmpl->assign('filter_p2p_edk', $filter->filter_p2p_edk);
-      $this->tmpl->assign('filter_p2p_kazaa', $filter->filter_p2p_kazaa);
-      $this->tmpl->assign('filter_p2p_dc', $filter->filter_p2p_dc);
-      $this->tmpl->assign('filter_p2p_gnu', $filter->filter_p2p_gnu);
-      $this->tmpl->assign('filter_p2p_bit', $filter->filter_p2p_bit);
-      $this->tmpl->assign('filter_p2p_apple', $filter->filter_p2p_apple);
-      $this->tmpl->assign('filter_p2p_soul', $filter->filter_p2p_soul);
-      $this->tmpl->assign('filter_p2p_winmx', $filter->filter_p2p_winmx);
-      $this->tmpl->assign('filter_p2p_ares', $filter->filter_p2p_ares);
-      $this->tmpl->assign('filter_time_use_range', $filter->filter_time_use_range);
-      $this->tmpl->assign('filter_time_start', $filter->filter_time_start);
-      $this->tmpl->assign('filter_time_stop', $filter->filter_time_stop);
-      $this->tmpl->assign('filter_time_day_mon', $filter->filter_time_day_mon);
-      $this->tmpl->assign('filter_time_day_tue', $filter->filter_time_day_tue);
-      $this->tmpl->assign('filter_time_day_wed', $filter->filter_time_day_wed);
-      $this->tmpl->assign('filter_time_day_thu', $filter->filter_time_day_thu);
-      $this->tmpl->assign('filter_time_day_fri', $filter->filter_time_day_fri);
-      $this->tmpl->assign('filter_time_day_sat', $filter->filter_time_day_sat);
-      $this->tmpl->assign('filter_time_day_sun', $filter->filter_time_day_sun);
-      $this->tmpl->assign('filter_match_ftp_data', $filter->filter_match_ftp_data);
-      $this->tmpl->assign('filter_match_sip', $filter->filter_match_sip);
 
       $this->tmpl->register_function("protocol_select_list", array(&$this, "smarty_protocol_select_list"), false);
       $this->tmpl->register_function("port_select_list", array(&$this, "smarty_port_select_list"), false);
@@ -207,7 +209,7 @@ class MASTERSHAPER_FILTERS {
          return _("This filter has nothing to do. Please select at least one match!");
       }
       /* Ports can only be used with TCP, UDP or IP protocol */
-      if(count($_POST['used']) > 1 &&
+      if(isset($_POST['used']) && count($_POST['used']) > 1 &&
          (
             $this->parent->getProtocolNumberById($_POST['filter_protocol_id']) != 4 &&
             $this->parent->getProtocolNumberById($_POST['filter_protocol_id']) != 17 &&
@@ -216,7 +218,7 @@ class MASTERSHAPER_FILTERS {
          return _("Ports can only be used in combination with IP, TCP or UDP protocol!");
       }
       /* TCP-flags can only be used with TCP protocol */
-      if((
+      if(isset($_POST['filter_ipt']) && (
             $_POST['filter_tcpflag_syn'] ||
             $_POST['filter_tcpflag_ack'] ||
             $_POST['filter_tcpflag_fin'] ||
@@ -228,7 +230,7 @@ class MASTERSHAPER_FILTERS {
          return _("TCP-Flags can only be used in combination with TCP protocol!");
       }
       /* ipp2p can only be used with no ports, no l7 filters and tcp &| udp protocol */
-      if((
+      if(isset($_POST['filter_ipt']) && (
             $_POST['filter_p2p_edk'] ||
             $_POST['filter_p2p_kazaa'] ||
             $_POST['filter_p2p_dc'] ||
@@ -253,22 +255,26 @@ class MASTERSHAPER_FILTERS {
          return _("IPP2P match can only be used with no ports select and only with protocols TCP or UDP or completly ignoring protocols!<br />Also IPP2P can not be used in combination with layer7 filters.");
       }
       /* layer7 protocol match can only be used with no ports and no tcp &| udp protocols */
-      if(count($_POST['filter_l7_used']) > 1 &&
+      if(isset($_POST['filter_ipt']) &&
+         count($_POST['filter_l7_used']) > 1 &&
          $_POST['filter_protocol_id'] != -1) {
             return _("Layer7 match can only be used with no ports select and no protocol definitions!");
       }
-      $start_time = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00", 
-         $_POST['filter_time_start_year'],
-         $_POST['filter_time_start_month'],
-         $_POST['filter_time_start_day'],
-         $_POST['filter_time_start_hour'], 
-         $_POST['filter_time_start_minute']));
-      $stop_time = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00",
-         $_POST['filter_time_stop_year'],
-         $_POST['filter_time_stop_month'],
-         $_POST['filter_time_stop_day'],
-         $_POST['filter_time_stop_hour'],
-         $_POST['filter_time_stop_minute']));
+
+      if(isset($_POST['filter_ipt'])) {
+         $start_time = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00", 
+            $_POST['filter_time_start_year'],
+            $_POST['filter_time_start_month'],
+            $_POST['filter_time_start_day'],
+            $_POST['filter_time_start_hour'], 
+            $_POST['filter_time_start_minute']));
+         $stop_time = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00",
+            $_POST['filter_time_stop_year'],
+            $_POST['filter_time_stop_month'],
+            $_POST['filter_time_stop_day'],
+            $_POST['filter_time_stop_hour'],
+            $_POST['filter_time_stop_minute']));
+      }
 
       if(isset($new)) {
          $this->db->db_query("
@@ -384,7 +390,7 @@ class MASTERSHAPER_FILTERS {
          }
       }
 
-      if($_POST['used']) {
+      if(isset($_POST['used']) && $_POST['used']) {
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_ports
             WHERE
@@ -423,10 +429,9 @@ class MASTERSHAPER_FILTERS {
                }
             }
          }
-   
-         return "ok";
-
       }
+
+      return "ok";
 
    } // store()
 

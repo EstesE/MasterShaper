@@ -1,5 +1,5 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="filters" onsubmit="saveFilter(this); return false;" method="post">
+<form action="rpc.php?action=store" id="filters" onsubmit="saveForm(this, 'filters'); return false;" method="post">
 <input type="hidden" name="module" value="filter" />
 <input type="hidden" name="action" value="modify" />
 { if !$filter_idx }
@@ -108,6 +108,7 @@
   </td>
  </tr>
  { if $filter_mode == "ipt" }
+ <input type="hidden" name="filter_ipt" value="true" />
  <tr>
   <td style="white-space: nowrap;">
    TCP flags:
