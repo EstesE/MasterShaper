@@ -65,9 +65,20 @@ class MASTERSHAPER_MONITOR {
             break;
       }
 
-      /* If no interface is specified use the first available interface */
+      /* pre-set some variables with default values, if not yet set.
+         shaper_graph.php is designed to stop execution, if this vars
+         are not set.
+      */
       if(!isset($_SESSION['showif'])) 
          $_SESSION['showif'] = $this->getFirstInterface();
+      if(!isset($_SESSION['mode']))
+         $_SESSION['mode'] = 'bandwidth';
+      if(!isset($_SESSION['graphmode']))
+         $_SESSION['graphmode'] = 0;
+      if(!isset($_SESSION['showchain']))
+         $_SESSION['showchain'] = -1;
+      if(!isset($_SESSION['scalemode']))
+         $_SESSION['scalemode'] = "kbit";
 
       $image_loc.= "?uniqid=". mktime();
    

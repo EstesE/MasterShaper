@@ -70,14 +70,13 @@ class MASTERSHAPER_GRAPH{
       /*     3  Pie plots               */
       /* ****************************** */
 
-      if(!isset($_SESSION['mode']))
-         $_SESSION['mode'] = 'bandwidth';
-      if(!isset($_SESSION['graphmode']))
-         $_SESSION['graphmode'] = 0;
-      if(!isset($_SESSION['showchain']))
-         $_SESSION['showchain'] = -1;
-      if(!isset($_SESSION['scalemode']))
-         $_SESSION['scalemode'] = "kbit";
+      if(!isset($_SESSION['mode']) ||
+         !isset($_SESSION['graphmode']) ||
+         !isset($_SESSION['showchain']) ||
+         !isset($_SESSION['scalemode'])) {
+         $this->showTextBox("some necessary variables are not set. stopping here.");
+         exit(1);
+      }
 
       switch($_SESSION['graphmode']) {
 
