@@ -187,7 +187,7 @@ class MASTERSHAPER_GRAPH{
 		
       /* If we have no data here, maybe the tc_collector is not running. Stop here. */
       if(!isset($bigdata)) {
-         $this->showTextBox("tc_collecotr.pl is inactive!");
+         $this->showTextBox("tc_collector.pl is inactive!");
          exit(1);
       }
 		
