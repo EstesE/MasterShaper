@@ -62,7 +62,7 @@ class MASTERSHAPER {
          exit(1);
       }
 
-      $this->db  = new MASTERSHAPER_DB(&$this, $this->cfg->fspot_db);
+      $this->db  = new MASTERSHAPER_DB(&$this);
       $this->tmpl = new MASTERSHAPER_TMPL($this);
 
       session_start();
