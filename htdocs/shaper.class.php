@@ -244,7 +244,7 @@ class MASTERSHAPER {
             $string = "<table class=\"submenu\"><tr>\n";
             $string.= $this->addSubMenuItem("javascript:ruleset('show');", "icons/show.gif", _("Show"));
             $string.= $this->addSubMenuItem("javascript:ruleset('load');", "icons/enable.gif", _("Load"));
-            $string.= $this->addSubMenuItem("javascript:ruleset('loaddebug');", "icons/enable.gif", _("Load"));
+            $string.= $this->addSubMenuItem("javascript:ruleset('loaddebug');", "icons/enable.gif", _("Load (debug)"));
             $string.= $this->addSubMenuItem("javascript:ruleset('unload');", "icons/disable.gif", _("Unload"));
             $string.= "</tr></table>\n";
             break;
