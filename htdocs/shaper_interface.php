@@ -126,9 +126,14 @@ class MASTERSHAPER_INTERFACE {
 
    } // getSpeed()
 
+   /**
+    * return interface id
+    *
+    * return the unique primary database key
+    * as interface id.
+    */
    private function getId()
    {
-
       return $this->if_id;
 
    } // getId()
@@ -521,16 +526,16 @@ class MASTERSHAPER_INTERFACE {
 
                foreach($hosts as $host) {
                   if($this->check_if_mac($host)) {
-                     $this->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                     $this->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                      $this->addRule($string ." -m mac --mac-source ". $host ." -j RETURN");
                   }
                   else{
                      if(strstr($host, "-") === false) {
-                        $this->addRule($string ." -s ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                        $this->addRule($string ." -s ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                         $this->addRule($string ." -s ". $host ." -j RETURN");
                      }
                      else {
-                        $this->addRule($string ." -m iprange --src-range ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                        $this->addRule($string ." -m iprange --src-range ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                         $this->addRule($string ." -m iprange --src-range ". $host ." -j RETURN");
                      }
                   }
@@ -542,16 +547,16 @@ class MASTERSHAPER_INTERFACE {
 
                foreach($hosts as $host) {
                   if($this->check_if_mac($host)) {
-                     $this->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                     $this->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                      $this->addRule($string ." -m mac --mac-source ". $host ." -j RETURN");
                   }
                   else {
                      if(strstr($host, "-") === false) {
-                        $this->addRule($string ." -d ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                        $this->addRule($string ." -d ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                         $this->addRule($string ." -d ". $host ." -j RETURN");
                      }
                      else {
-                        $this->addRule($string ." -m iprange --dst-range ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                        $this->addRule($string ." -m iprange --dst-range ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                         $this->addRule($string ." -m iprange --dst-range ". $host ." -j RETURN");
                      }
                   }
@@ -566,16 +571,16 @@ class MASTERSHAPER_INTERFACE {
                   if(!$this->check_if_mac($src_host)) {
                      foreach($dst_hosts as $dst_host) {
                         if($this->check_if_mac($dst_host)) {
-                           $this->addRule($string ." -m mac --mac-source ". $src_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                           $this->addRule($string ." -m mac --mac-source ". $src_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                            $this->addRule($string ." -m mac --mac-source ". $dst_host ." -j RETURN");
                         }
                         else {
                            if(strstr($host, "-") === false) {
-                              $this->addRule($string ." -s ". $src_host ." -d ". $dst_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                              $this->addRule($string ." -s ". $src_host ." -d ". $dst_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                               $this->addRule($string ." -s ". $src_host ." -d ". $dst_host ." -j RETURN");
                            }
                            else {
-                              $this->addRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $params2));
+                              $this->addRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
                               $this->addRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j RETURN");
                            }
                         }
@@ -1222,10 +1227,12 @@ class MASTERSHAPER_INTERFACE {
 
          case 'ipt':
             if($this->parent->getOption("msmode") == "router") {
-               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j ms-chain-". $this->getName() ."-". $filter);
+               //$this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j ms-chain-". $this->getName() ."-". $filter);
+               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $filter));
+               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j RETURN");
             }
             elseif($this->parent->getOption("msmode") == "bridge") {
-               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $filter));
+               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $filter));
                $this->addRule(IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getName() ." -j RETURN");
             }
             break;
@@ -1352,17 +1359,13 @@ class MASTERSHAPER_INTERFACE {
 
    private function iptInitRulesIf() 
    {
-
       if($this->parent->getOption("msmode") == "router") {
-
-	 $this->addRule(IPT_BIN ." -t mangle -A FORWARD -o ". $this->getName() ." -j ms-forward");
-	 $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -o ". $this->getName() ." -j ms-postrouting");
-
+         $this->addRule(IPT_BIN ." -t mangle -A FORWARD -o ". $this->getName() ." -j ms-forward");
+         $this->addRule(IPT_BIN ." -t mangle -A OUTPUT -o ". $this->getName() ." -j ms-forward");
+         $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -o ". $this->getName() ." -j ms-postrouting");
       }
       else {
-
-	 $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -m physdev --physdev-out ". $this->getName() ." -j ms-postrouting");
-
+         $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -m physdev --physdev-out ". $this->getName() ." -j ms-postrouting");
       }
 
    } // iptInitRulesIf()

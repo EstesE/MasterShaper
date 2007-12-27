@@ -39,6 +39,12 @@ case "$1" in
          ${IPT_BIN} -t mangle -D POSTROUTING ${PR_RULES}
       done
 
+      # Remove the ms-postrouting entries from OUTPUT chain
+      for PR_RULES in `${IPT_BIN} -t mangle -L OUTPUT -v -n --line-numbers | grep -i ms-forward | grep -iv ^chain | awk '{ print $1 }' | sort -r`; do
+         ${IPT_BIN} -t mangle -D OUTPUT ${PR_RULES}
+      done
+
+
       # Remove the ms-forward entries from FORWARD chain
       for FWD_RULES in `${IPT_BIN} -t mangle -L FORWARD -v -n --line-numbers |grep -i ms-forward | grep -iv ^chain | awk '{ print $1 }' | sort -r`; do
          ${IPT_BIN} -t mangle -D FORWARD ${FWD_RULES}
