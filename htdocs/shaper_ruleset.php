@@ -118,8 +118,6 @@ class MASTERSHAPER_RULESET {
       print "Unloading MasterShaper Ruleset";
       $this->parent->setShaperStatus(false);
       
-      return $retval;
-
    } // show()
 
    function iptInitRules()
@@ -419,6 +417,9 @@ class MASTERSHAPER_RULESET {
 
    function runProc($option, $cmd = "", $ignore_err = null)
    {
+      $retval = "";
+      $error = "";
+
       $desc = array(
          0 => array('pipe','r'), /* STDIN */
          1 => array('pipe','w'), /* STDOUT */
