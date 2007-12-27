@@ -100,3 +100,4 @@
   <td>Save your settings.</td>
  </tr>
 </table>
+{ page_end focus_to='netpath_name' }

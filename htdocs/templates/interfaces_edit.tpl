@@ -87,3 +87,4 @@
   <td>Save your settings.</td>
  </tr>
 </table>
+{ page_end focus_to='if_name' }

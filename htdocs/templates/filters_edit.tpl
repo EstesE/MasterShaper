@@ -327,3 +327,4 @@
   <td>Save settings.</td>
  </tr>
 </table> 
+{ page_end focus_to='filter_name' }

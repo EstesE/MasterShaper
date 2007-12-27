@@ -105,3 +105,4 @@
  </tr>
 </table>
 </form>
+{ page_end focus_to='chain_name' }
