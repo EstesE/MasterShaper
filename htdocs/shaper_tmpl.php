@@ -72,6 +72,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_treeend', 'icons/tree_end.gif');
 
       $this->register_function("start_table", array(&$this, "smarty_startTable"), false); 
+      $this->register_function("page_end", array(&$this, "smarty_page_end"), false); 
       $this->register_function("year_select", array(&$this, "smarty_year_select"), false); 
       $this->register_function("month_select", array(&$this, "smarty_month_select"), false); 
       $this->register_function("day_select", array(&$this, "smarty_day_select"), false); 
@@ -96,7 +97,19 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon', $params['icon']);
       $this->assign('alt', $params['alt']);
       $this->show('start_table.tpl');
+
    } // smarty_function_startTable() 
+
+   public function smarty_page_end($params, &$smarty)
+   {  
+      if(isset($params['focus_to'])) {
+         $this->assign('focus_to', $params['focus_to']);
+      }
+
+      $this->show('page_end.tpl');
+
+   } // smarty_function_startTable() 
+
 
    public function smarty_year_select($params, &$smarty)
    {
