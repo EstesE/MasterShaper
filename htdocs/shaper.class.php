@@ -477,7 +477,11 @@ class MASTERSHAPER {
          WHERE setting_key like '". $object ."'
       ");
 
-      return $result->setting_value;
+      if(isset($result->setting_value)) {
+         return $result->setting_value;
+      }
+
+      return "unkown";
 
    } // getOption() 
 
