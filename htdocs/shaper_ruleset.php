@@ -197,7 +197,8 @@ class MASTERSHAPER_RULESET {
 
          if(!isset($this->interfaces[$netpath->netpath_if1])) 
             $this->interfaces[$netpath->netpath_if1] = new MASTERSHAPER_INTERFACE($netpath->netpath_if1, $this->db, $this->parent);
-         if(!isset($this->interfaces[$netpath->netpath_if2])) 
+         /* the second interface of the interface is no must, only create it when necessary */
+         if($netpath->netpath_if2 != -1 && !isset($this->interfaces[$netpath->netpath_if2])) 
             $this->interfaces[$netpath->netpath_if2] = new MASTERSHAPER_INTERFACE($netpath->netpath_if2, $this->db, $this->parent);
 
          /* get interface 2 parameters (if available) */
