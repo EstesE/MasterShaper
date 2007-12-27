@@ -538,8 +538,10 @@ function graph_set_chain(obj)
 function setFocus(obj)
 {
    if(el = document.getElementsByName(obj)) {
-      if(el.item(0).focus) {
-         el.item(0).focus();
+      if(el.item(0)) {
+         if(el.item(0).focus) {
+            el.item(0).focus();
+         }
       }
    }
 } // setFocus()
