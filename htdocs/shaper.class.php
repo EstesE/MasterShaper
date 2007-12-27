@@ -124,7 +124,7 @@ class MASTERSHAPER {
       }
       ini_restore('track_errors');
 
-      if(!defined(BASE_PATH)) {
+      if(!defined('BASE_PATH')) {
          define('BASE_PATH', getcwd());
       }
 
