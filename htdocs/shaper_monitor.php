@@ -73,9 +73,11 @@ class MASTERSHAPER_MONITOR {
    
       $this->tmpl->assign('monitor', $_SESSION['mode']);
       $this->tmpl->assign('view', $view);
-      $this->tmpl->assign('graphmode', $_SESSION['graphmode']);
-      $this->tmpl->assign('scalemode', $_SESSION['scalemode']);
       $this->tmpl->assign('image_loc', $image_loc);
+      if(isset($_SESSION['graphmode']))
+         $this->tmpl->assign('graphmode', $_SESSION['graphmode']);
+      if(isset($_SESSION['scalemode']))
+         $this->tmpl->assign('scalemode', $_SESSION['scalemode']);
 
       $this->tmpl->register_function("interface_select_list", array(&$this, "smarty_interface_select_list"), false);
       $this->tmpl->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
