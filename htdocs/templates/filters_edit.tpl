@@ -117,7 +117,7 @@
    <table class="noborder">
     <tr>
      <td><input type="checkbox" name="filter_tcpflag_syn" value="Y" { if $filter_tcpflag_syn == "Y" } checked="checked" { /if } />SYN</td>
-<td><input type="checkbox" name="filter_tcpflag_ack" value="Y" { if $filter_tcpflag_ack == "Y" } checked="checked" { /if } ?> />ACK</td>
+     <td><input type="checkbox" name="filter_tcpflag_ack" value="Y" { if $filter_tcpflag_ack == "Y" } checked="checked" { /if } />ACK</td>
      <td><input type="checkbox" name="filter_tcpflag_fin" value="Y" { if $filter_tcpflag_fin == "Y" }  checked="checked" { /if } />FIN</td>
     </tr>
     <tr>
