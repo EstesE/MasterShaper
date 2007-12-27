@@ -126,8 +126,8 @@ class MASTERSHAPER_RULESET {
 
    private function iptInitRules()
    {
-      $this->addRule(MS_PRE, IPT_BIN ." -t mangle -N ms-all");
-      $this->addRule(MS_PRE, IPT_BIN ." -t mangle -N ms-all-chains");
+      $this->addRule(MS_PRE, IPT_BIN ." -t mangle -N ms-forward");
+      $this->addRule(MS_PRE, IPT_BIN ." -t mangle -N ms-postrouting");
       $this->addRule(MS_PRE, IPT_BIN ." -t mangle -N ms-prerouting");
       $this->addRule(MS_PRE, IPT_BIN ." -t mangle -A PREROUTING -j ms-prerouting");
 

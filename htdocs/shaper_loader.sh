@@ -34,13 +34,13 @@ case "$1" in
    # Cleanup existing residues from previous rules
    cleanup)
 
-      # Remove the ms-all-chains entries from POSTROUTING chain
-      for PR_RULES in `${IPT_BIN} -t mangle -L POSTROUTING -v -n --line-numbers | grep -i ms-all-chains | grep -iv ^chain | awk '{ print $1 }' | sort -r`; do
+      # Remove the ms-postrouting entries from POSTROUTING chain
+      for PR_RULES in `${IPT_BIN} -t mangle -L POSTROUTING -v -n --line-numbers | grep -i ms-postrouting | grep -iv ^chain | awk '{ print $1 }' | sort -r`; do
          ${IPT_BIN} -t mangle -D POSTROUTING ${PR_RULES}
       done
 
-      # Remove the ms-all entries from FORWARD chain
-      for FWD_RULES in `${IPT_BIN} -t mangle -L FORWARD -v -n --line-numbers |grep -i ms-all | grep -iv ^chain | awk '{ print $1 }' | sort -r`; do
+      # Remove the ms-forward entries from FORWARD chain
+      for FWD_RULES in `${IPT_BIN} -t mangle -L FORWARD -v -n --line-numbers |grep -i ms-forward | grep -iv ^chain | awk '{ print $1 }' | sort -r`; do
          ${IPT_BIN} -t mangle -D FORWARD ${FWD_RULES}
       done
 
@@ -54,11 +54,11 @@ case "$1" in
          ${IPT_BIN} -t mangle -X ms-prerouting
       fi
 
-      # Get all available MasterShaper chains and removed them from ms-all-chains
-      MS_CHAINS=`${IPT_BIN} -t mangle -L ms-all-chains -n 2>/dev/null | grep -i ^ms-chain | awk '{ print $1 }'`
+      # Get all available MasterShaper chains and removed them from ms-postrouting
+      MS_CHAINS=`${IPT_BIN} -t mangle -L ms-postrouting -n 2>/dev/null | grep -i ^ms-chain | awk '{ print $1 }'`
 
-      for PR_RULES in `${IPT_BIN} -t mangle -L ms-all-chains -v -n --line-numbers 2>/dev/null | grep -i ^ms-chain | awk '{ print $1 }' | sort -r `; do
-         ${IPT_BIN} -t mangle -D ms-all-chains ${PR_RULES}
+      for PR_RULES in `${IPT_BIN} -t mangle -L ms-postrouting -v -n --line-numbers 2>/dev/null | grep -i ^ms-chain | awk '{ print $1 }' | sort -r `; do
+         ${IPT_BIN} -t mangle -D ms-postrouting ${PR_RULES}
       done
 
       # Empty all MasterShaper chains
@@ -67,18 +67,18 @@ case "$1" in
       done
 
       # Remove MasterShaper traffic chains
-      ${IPT_BIN} -t mangle -L ms-all -n >/dev/null 2>&1
+      ${IPT_BIN} -t mangle -L ms-forward -n >/dev/null 2>&1
 
       if [ $? == 0 ]; then
-         ${IPT_BIN} -t mangle -F ms-all
-         ${IPT_BIN} -t mangle -X ms-all >/dev/null 2>&1
+         ${IPT_BIN} -t mangle -F ms-forward
+         ${IPT_BIN} -t mangle -X ms-forward >/dev/null 2>&1
       fi
 
-      ${IPT_BIN} -t mangle -L ms-all-chains -n > /dev/null 2>&1
+      ${IPT_BIN} -t mangle -L ms-postrouting -n > /dev/null 2>&1
 
       if [ $? == 0 ]; then
-         ${IPT_BIN} -t mangle -F ms-all-chains
-         ${IPT_BIN} -t mangle -X ms-all-chains >/dev/null 2>&1
+         ${IPT_BIN} -t mangle -F ms-postrouting
+         ${IPT_BIN} -t mangle -X ms-postrouting >/dev/null 2>&1
       fi
 
       # Remove any still existing chain rule

@@ -412,8 +412,8 @@ class MASTERSHAPER_INTERFACE {
 
 	 case 'ipt':
 
-	    $this->addRule(IPT_BIN ." -t mangle -A ms-all-chains -p tcp -m length --length :64 -j CLASSIFY --set-class ". $id);
-	    $this->addRule(IPT_BIN ." -t mangle -A ms-all-chains -p tcp -m length --length :64 -j RETURN");
+	    $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -p tcp -m length --length :64 -j CLASSIFY --set-class ". $id);
+	    $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -p tcp -m length --length :64 -j RETURN");
 	    break;
 
       }
@@ -505,9 +505,9 @@ class MASTERSHAPER_INTERFACE {
          case 'ipt':
 
             if($this->parent->getOption("msmode") == "router") 
-               $string = IPT_BIN ." -t mangle -A ms-all -o ". $this->getName();
+               $string = IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName();
             elseif($this->parent->getOption("msmode") == "bridge") 
-               $string = IPT_BIN ." -t mangle -A ms-all -m physdev --physdev-in ". $params5;
+               $string = IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $params5;
 
             if($chain_direction == "out") {
                $tmp = $params1->chain_src_target;
@@ -1222,11 +1222,11 @@ class MASTERSHAPER_INTERFACE {
 
          case 'ipt':
             if($this->parent->getOption("msmode") == "router") {
-               $this->addRule(IPT_BIN ." -t mangle -A ms-all -o ". $this->getName() ." -j ms-chain-". $this->getName() ."-". $filter);
+               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j ms-chain-". $this->getName() ."-". $filter);
             }
             elseif($this->parent->getOption("msmode") == "bridge") {
-               $this->addRule(IPT_BIN ." -t mangle -A ms-all -m physdev --physdev-in ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $filter));
-               $this->addRule(IPT_BIN ." -t mangle -A ms-all -m physdev --physdev-in ". $this->getName() ." -j RETURN");
+               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $filter));
+               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getName() ." -j RETURN");
             }
             break;
 
@@ -1256,7 +1256,7 @@ class MASTERSHAPER_INTERFACE {
 
          if($this->parent->getOption("filter") == "ipt") {
             $this->addRule(IPT_BIN ." -t mangle -N ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
-            $this->addRule(IPT_BIN ." -t mangle -A ms-all-chains -m connmark --mark ". $this->parent->getConnmarkId($this->getId(), "1:". $this->current_chain . $this->current_filter) ." -j ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
+            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -m connmark --mark ". $this->parent->getConnmarkId($this->getId(), "1:". $this->current_chain . $this->current_filter) ." -j ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
          }
 		   
          /* setup the filter definition to match traffic which should go into this chain */
@@ -1355,13 +1355,13 @@ class MASTERSHAPER_INTERFACE {
 
       if($this->parent->getOption("msmode") == "router") {
 
-	 $this->addRule(IPT_BIN ." -t mangle -A FORWARD -o ". $this->getName() ." -j ms-all");
-	 $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -o ". $this->getName() ." -j ms-all-chains");
+	 $this->addRule(IPT_BIN ." -t mangle -A FORWARD -o ". $this->getName() ." -j ms-forward");
+	 $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -o ". $this->getName() ." -j ms-postrouting");
 
       }
       else {
 
-	 $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -m physdev --physdev-out ". $this->getName() ." -j ms-all-chains");
+	 $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -m physdev --physdev-out ". $this->getName() ." -j ms-postrouting");
 
       }
 
