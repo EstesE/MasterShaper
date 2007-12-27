@@ -41,9 +41,11 @@ class MASTERSHAPER_RPC {
 
       $ms = new MASTERSHAPER;
 
-      if(isset($_GET['action']) && (!is_string($_GET['action']))) {
+      if(!isset($_GET['action']))
          return;
-      }
+
+      if(!is_string($_GET['action']))
+         return;
 
       switch($_GET['action']) {
    
@@ -103,9 +105,7 @@ class MASTERSHAPER_RPC {
             break;
 
       }
-
    } // process_ajax_request();
-
 }
 
 $rpc = new MASTERSHAPER_RPC();
