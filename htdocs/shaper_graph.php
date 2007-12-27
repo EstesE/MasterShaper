@@ -300,7 +300,7 @@ class MASTERSHAPER_GRAPH{
                case 1:
                   $counter = 0;
                   foreach($tc_ids as $tc_id) {
-                     if($this->isChain($tc_id, $_SESSION['showif']) && !preg_match("/1:.*99/", $row->stat_id)) {
+                     if($this->isChain($tc_id, $_SESSION['showif']) && !preg_match("/1:.*99/", $tc_id)) {
                         $p[$tc_id] = new LinePlot($plot_array[$tc_id]);
                         if($_SESSION['graphmode'] == 0) {
                            $p[$tc_id]->SetColor("black");
@@ -328,7 +328,7 @@ class MASTERSHAPER_GRAPH{
                case 3:
 
                   foreach($tc_ids as $tc_id) {
-                     if($this->isChain($tc_id, $_SESSION['showif']) && !preg_match("/1:.*99/", $row->stat_id)) {
+                     if($this->isChain($tc_id, $_SESSION['showif']) && !preg_match("/1:.*99/", $tc_id)) {
                         $bps = round(array_sum($plot_array[$tc_id])/count($plot_array[$tc_id]), 0);
                         if($bps > 0 || preg_match("/1:.*99/", $tc_id)) {
                            if($counter < 15) {
