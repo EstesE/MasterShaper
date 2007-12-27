@@ -423,7 +423,6 @@ class MASTERSHAPER_INTERFACE {
    /* create IP/host matching filters */
    private function addHostFilter($parent, $option, $params1 = "", $params2 = "", $chain_direction = "")
    {
-
       switch($this->parent->getOption("filter")) {
 	 
          default:
@@ -1122,7 +1121,7 @@ class MASTERSHAPER_INTERFACE {
                default:
 
                   // is there any l7 filter protocol we have to attach to the filter? 
-                  if($l7_cnt > 0) {
+                  if(isset($l7_cnt) && $l7_cnt > 0) {
                      foreach($l7_protos as $l7_proto) {
                         array_push($match_ary, $match_str ." -m layer7 --l7proto ". $l7_proto);
                      }
@@ -1217,25 +1216,19 @@ class MASTERSHAPER_INTERFACE {
    private function addMatchallFilter($parent, $filter = "")
    {
       switch($this->parent->getOption("filter")) {
-	 case 'tc':
+         case 'tc':
+            $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0 0 classid ". $filter);
+            break;
 
-	    $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0 0 classid ". $filter);
-	    break;
-
-	 case 'ipt':
-
-	    if($this->parent->getOption("msmode") == "router") {
-
-	       $this->addRule(IPT_BIN ." -t mangle -A ms-all -o ". $this->getName() ." -j ms-chain-". $this->getName() ."-". $filter);
-
-	    }
-	    elseif($this->parent->getOption("msmode") == "bridge") {
-
-	       $this->addRule(IPT_BIN ." -t mangle -A ms-all -m physdev --physdev-in ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $filter));
-	       $this->addRule(IPT_BIN ." -t mangle -A ms-all -m physdev --physdev-in ". $this->getName() ." -j RETURN");
-
-	    }
-	    break;
+         case 'ipt':
+            if($this->parent->getOption("msmode") == "router") {
+               $this->addRule(IPT_BIN ." -t mangle -A ms-all -o ". $this->getName() ." -j ms-chain-". $this->getName() ."-". $filter);
+            }
+            elseif($this->parent->getOption("msmode") == "bridge") {
+               $this->addRule(IPT_BIN ." -t mangle -A ms-all -m physdev --physdev-in ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getName(), $filter));
+               $this->addRule(IPT_BIN ." -t mangle -A ms-all -m physdev --physdev-in ". $this->getName() ." -j RETURN");
+            }
+            break;
 
       }
 
@@ -1263,7 +1256,7 @@ class MASTERSHAPER_INTERFACE {
 
          if($this->parent->getOption("filter") == "ipt") {
             $this->addRule(IPT_BIN ." -t mangle -N ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
-            $this->addRule(IPT_BIN ." -t mangle -A ms-all-chains -m connmark --mark ". $this->parent->getConnmarkId($this->getId(), "1:". $this->current_chain . $this->current_filter) ." -j ms-chain-". $this->getId() ."-1:". $this->current_chain . $this->current_filter);
+            $this->addRule(IPT_BIN ." -t mangle -A ms-all-chains -m connmark --mark ". $this->parent->getConnmarkId($this->getId(), "1:". $this->current_chain . $this->current_filter) ." -j ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
          }
 		   
          /* setup the filter definition to match traffic which should go into this chain */
