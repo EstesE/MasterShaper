@@ -423,14 +423,16 @@ function alterPosition(type, idx, to)
 
 function image_update()
 {
-   /* get the current image url */
-   url = document.getElementById("monitor_image").src;
-   /* remove the current uniq id from the string */
-   url = url.replace(/\?uniqid=.*/, '');
-   uniq = new Date();
-   uniq = "?uniqid="+uniq.getTime();
-   /* reload the image with a new uniq id */
-   document.getElementById("monitor_image").src = url + uniq;
+   if(document.getElementById("monitor_image")) {
+      /* get the current image url */
+      url = document.getElementById("monitor_image").src;
+      /* remove the current uniq id from the string */
+      url = url.replace(/\?uniqid=.*/, '');
+      uniq = new Date();
+      uniq = "?uniqid="+uniq.getTime();
+      /* reload the image with a new uniq id */
+      document.getElementById("monitor_image").src = url + uniq;
+   }
 
 } // image_update()
 
@@ -438,9 +440,11 @@ function image_autoload()
 {
    image_update();
 
-   if(document.getElementById("reload").checked) {
-      autoload = undefined;
-      image_start_autoload();
+   if(document.getElementById("reload")) {
+      if(document.getElementById("reload").checked) {
+         autoload = undefined;
+         image_start_autoload();
+      }
    }
 
 } // image_autoload
