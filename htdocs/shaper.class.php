@@ -208,6 +208,8 @@ class MASTERSHAPER {
     */
    public function get_sub_menu($navpoint)
    {
+      $string = "";
+
       switch($navpoint) {
          case 'manage':
             $string = "<table class=\"submenu\"><tr>\n";
