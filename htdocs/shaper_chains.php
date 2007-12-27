@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_CHAINS {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_CHAINS($parent)
+   /**
+    * MASTERSHAPER_CHAINS constructor
+    *
+    * Initialize the MASTERSHAPER_CHAINS class
+    */
+   public function __construct(&$parent)
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$parent->tmpl;
+      $this->parent = $parent;
+      $this->db = $parent->db;
+      $this->tmpl = $parent->tmpl;
 
-   } // MASTERSHAPER_CHAINS()
+   } // __construct()
 
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" && 
