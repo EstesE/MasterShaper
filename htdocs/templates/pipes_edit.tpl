@@ -1,5 +1,5 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="pipes" onsubmit="saveForm(this, 'pipes'); return false;" method="post">
+<form action="rpc.php?action=store" id="pipes" onsubmit="selectAll('used[]'); saveForm(this, 'pipes'); return false;" method="post">
 <input type="hidden" name="module" value="pipe" />
 <input type="hidden" name="action" value="modify" />
 { if !$pipe_idx }

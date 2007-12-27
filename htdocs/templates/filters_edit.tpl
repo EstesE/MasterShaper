@@ -1,5 +1,5 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="filters" onsubmit="saveForm(this, 'filters'); return false;" method="post">
+<form action="rpc.php?action=store" id="filters" onsubmit="selectAll('used[]'); selectAll('filter_l7_used[]'); saveForm(this, 'filters'); return false;" method="post">
 <input type="hidden" name="module" value="filter" />
 <input type="hidden" name="action" value="modify" />
 { if !$filter_idx }

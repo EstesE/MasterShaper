@@ -70,14 +70,21 @@ function moveOptions(theSelFrom, theSelTo)
 	if(NetScape4) history.go(0);
 }	
 
-function selectAll(theSelForm)
+/**
+ * this function will select all available
+ * options within a select-form
+ */
+function selectAll(obj)
 {
-	var lent = theSelForm.length ;
- 
-	for (var i=0; i<lent; i++) {
-		theSelForm.options[i].selected = true;
-	}
-}
+   if(el = document.getElementsByName(obj)) {
+      if(el.item(0)) {
+         var lent = el.item(0).length ;
+         for (var i=0; i<lent; i++) {
+            el.item(0).options[i].selected = true;
+         }
+      }
+   }
+} // selectAll
 
 function setBackGrdColor(item, color)
 {
