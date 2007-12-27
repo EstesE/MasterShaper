@@ -110,24 +110,25 @@ class MASTERSHAPER_USERS {
             WHERE
                user_idx='". $idx ."'
          ");
+
+         $this->tmpl->assign('user_idx', $idx);
+         $this->tmpl->assign('user_name', $user->user_name);
+         $this->tmpl->assign('user_active', $user->user_active);
+         $this->tmpl->assign('user_manage_chains', $user->user_manage_chains);
+         $this->tmpl->assign('user_manage_pipes', $user->user_manage_pipes);
+         $this->tmpl->assign('user_manage_filters', $user->user_manage_filters);
+         $this->tmpl->assign('user_manage_ports', $user->user_manage_ports);
+         $this->tmpl->assign('user_manage_protocols', $user->user_manage_protocols);
+         $this->tmpl->assign('user_manage_targets', $user->user_manage_targets);
+         $this->tmpl->assign('user_manage_users', $user->user_manage_users);
+         $this->tmpl->assign('user_manage_options', $user->user_manage_options);
+         $this->tmpl->assign('user_manage_servicelevels', $user->user_manage_servicelevels);
+         $this->tmpl->assign('user_load_rules', $user->user_load_rules);
+         $this->tmpl->assign('user_show_rules', $user->user_show_rules);
+         $this->tmpl->assign('user_show_monitor', $user->user_show_monitor);
+
       }
    
-      $this->tmpl->assign('user_idx', $idx);
-      $this->tmpl->assign('user_name', $user->user_name);
-      $this->tmpl->assign('user_active', $user->user_active);
-      $this->tmpl->assign('user_manage_chains', $user->user_manage_chains);
-      $this->tmpl->assign('user_manage_pipes', $user->user_manage_pipes);
-      $this->tmpl->assign('user_manage_filters', $user->user_manage_filters);
-      $this->tmpl->assign('user_manage_ports', $user->user_manage_ports);
-      $this->tmpl->assign('user_manage_protocols', $user->user_manage_protocols);
-      $this->tmpl->assign('user_manage_targets', $user->user_manage_targets);
-      $this->tmpl->assign('user_manage_users', $user->user_manage_users);
-      $this->tmpl->assign('user_manage_options', $user->user_manage_options);
-      $this->tmpl->assign('user_manage_servicelevels', $user->user_manage_servicelevels);
-      $this->tmpl->assign('user_load_rules', $user->user_load_rules);
-      $this->tmpl->assign('user_show_rules', $user->user_show_rules);
-      $this->tmpl->assign('user_show_monitor', $user->user_show_monitor);
-
       $this->tmpl->show("users_edit.tpl");
 
    } // showEdit()

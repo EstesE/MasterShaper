@@ -116,16 +116,18 @@ class MASTERSHAPER_PROTOCOLS {
             WHERE
                proto_idx='". $idx ."'
          ");
+
+         $this->tmpl->assign('proto_idx', $idx);
+         $this->tmpl->assign('proto_name', $protocol->proto_name);
+         $this->tmpl->assign('proto_desc', $protocol->proto_desc);
+         $this->tmpl->assign('proto_number', $protocol->proto_number);
+ 
       }
       else {
          /* preset values here */
       }
 
-      $this->tmpl->assign('proto_idx', $idx);
-      $this->tmpl->assign('proto_name', $protocol->proto_name);
-      $this->tmpl->assign('proto_desc', $protocol->proto_desc);
-      $this->tmpl->assign('proto_number', $protocol->proto_number);
-      $this->tmpl->show("protocols_edit.tpl");
+     $this->tmpl->show("protocols_edit.tpl");
 
    } // showEdit()
 

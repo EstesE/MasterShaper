@@ -140,16 +140,18 @@ class MASTERSHAPER_PORTS {
             WHERE
                port_idx='". $idx ."'
          ");
+
+         $this->tmpl->assign('port_idx', $idx);
+         $this->tmpl->assign('port_name', $port->port_name);
+         $this->tmpl->assign('port_desc', $port->port_desc);
+         $this->tmpl->assign('port_number', $port->port_number);
+ 
       }
       else {
          /* preset values here */
       }
 
-      $this->tmpl->assign('port_idx', $idx);
-      $this->tmpl->assign('port_name', $port->port_name);
-      $this->tmpl->assign('port_desc', $port->port_desc);
-      $this->tmpl->assign('port_number', $port->port_number);
-      $this->tmpl->show("ports_edit.tpl");
+     $this->tmpl->show("ports_edit.tpl");
 
    } // showEdit()
 

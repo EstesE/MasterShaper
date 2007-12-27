@@ -114,6 +114,44 @@ class MASTERSHAPER_SERVICELEVELS {
             WHERE
                sl_idx='". $idx ."'
          ");
+
+         $this->tmpl->assign('sl_idx', $idx);
+         $this->tmpl->assign('sl_name', $sl->sl_name);
+         $this->tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
+         $this->tmpl->assign('sl_htb_bw_in_ceil', $sl->sl_htb_bw_in_ceil);
+         $this->tmpl->assign('sl_htb_bw_in_burst', $sl->sl_htb_bw_in_burst);
+         $this->tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
+         $this->tmpl->assign('sl_htb_bw_out_ceil', $sl->sl_htb_bw_out_ceil);
+         $this->tmpl->assign('sl_htb_bw_out_burst', $sl->sl_htb_bw_out_burst);
+         $this->tmpl->assign('sl_htb_priority', $sl->sl_htb_priority);
+         $this->tmpl->assign('sl_hfsc_in_umax', $sl->sl_hfsc_in_umax);
+         $this->tmpl->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
+         $this->tmpl->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
+         $this->tmpl->assign('sl_hfsc_in_ulrate', $sl->sl_hfsc_in_ulrate);
+         $this->tmpl->assign('sl_hfsc_out_umax', $sl->sl_hfsc_out_umax);
+         $this->tmpl->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
+         $this->tmpl->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
+         $this->tmpl->assign('sl_hfsc_out_ulrate', $sl->sl_hfsc_out_ulrate);
+         $this->tmpl->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
+         $this->tmpl->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
+         $this->tmpl->assign('sl_cbq_in_priority', $sl->sl_cbq_in_priority);
+         $this->tmpl->assign('sl_cbq_out_priority', $sl->sl_cbq_out_priority);
+         $this->tmpl->assign('sl_cbq_bounded', $sl->sl_cbq_bounded);
+         $this->tmpl->assign('sl_netem_delay', $sl->sl_netem_delay);
+         $this->tmpl->assign('sl_netem_jitter', $sl->sl_netem_jitter);
+         $this->tmpl->assign('sl_netem_random', $sl->sl_netem_random);
+         $this->tmpl->assign('sl_netem_distribution', $sl->sl_netem_distribution);
+         $this->tmpl->assign('sl_netem_loss', $sl->sl_netem_loss);
+         $this->tmpl->assign('sl_netem_duplication', $sl->sl_netem_duplication);
+         $this->tmpl->assign('sl_netem_gap', $sl->sl_netem_gap);
+         $this->tmpl->assign('sl_netem_reorder_percentage', $sl->sl_netem_reorder_percentage);
+         $this->tmpl->assign('sl_netem_reorder_correlation', $sl->sl_netem_reorder_correlation);
+         $this->tmpl->assign('sl_esfq_perturb', $sl->sl_esfq_perturb);
+         $this->tmpl->assign('sl_esfq_limit', $sl->sl_esfq_limit);
+         $this->tmpl->assign('sl_esfq_depth', $sl->sl_esfq_depth);
+         $this->tmpl->assign('sl_esfq_divisor', $sl->sl_esfq_divisor);
+         $this->tmpl->assign('sl_esfq_hash', $sl->sl_esfq_hash);
+
       }
       else {
          /* preset values here */
@@ -125,47 +163,12 @@ class MASTERSHAPER_SERVICELEVELS {
       else
          $this->tmpl->assign('classifier', $_GET['classifier']);
 
-      if(!isset($_GET['qdiscmode']))
-         $this->tmpl->assign('qdiscmode', $sl->sl_qdisc);
+      if(!isset($_GET['qdiscmode'])) {
+         if(isset($sl))
+            $this->tmpl->assign('qdiscmode', $sl->sl_qdisc);
+      }
       else
          $this->tmpl->assign('qdiscmode', $_GET['qdiscmode']);
-
-      $this->tmpl->assign('sl_idx', $idx);
-      $this->tmpl->assign('sl_name', $sl->sl_name);
-      $this->tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
-      $this->tmpl->assign('sl_htb_bw_in_ceil', $sl->sl_htb_bw_in_ceil);
-      $this->tmpl->assign('sl_htb_bw_in_burst', $sl->sl_htb_bw_in_burst);
-      $this->tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
-      $this->tmpl->assign('sl_htb_bw_out_ceil', $sl->sl_htb_bw_out_ceil);
-      $this->tmpl->assign('sl_htb_bw_out_burst', $sl->sl_htb_bw_out_burst);
-      $this->tmpl->assign('sl_htb_priority', $sl->sl_htb_priority);
-      $this->tmpl->assign('sl_hfsc_in_umax', $sl->sl_hfsc_in_umax);
-      $this->tmpl->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
-      $this->tmpl->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
-      $this->tmpl->assign('sl_hfsc_in_ulrate', $sl->sl_hfsc_in_ulrate);
-      $this->tmpl->assign('sl_hfsc_out_umax', $sl->sl_hfsc_out_umax);
-      $this->tmpl->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
-      $this->tmpl->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
-      $this->tmpl->assign('sl_hfsc_out_ulrate', $sl->sl_hfsc_out_ulrate);
-      $this->tmpl->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
-      $this->tmpl->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
-      $this->tmpl->assign('sl_cbq_in_priority', $sl->sl_cbq_in_priority);
-      $this->tmpl->assign('sl_cbq_out_priority', $sl->sl_cbq_out_priority);
-      $this->tmpl->assign('sl_cbq_bounded', $sl->sl_cbq_bounded);
-      $this->tmpl->assign('sl_netem_delay', $sl->sl_netem_delay);
-      $this->tmpl->assign('sl_netem_jitter', $sl->sl_netem_jitter);
-      $this->tmpl->assign('sl_netem_random', $sl->sl_netem_random);
-      $this->tmpl->assign('sl_netem_distribution', $sl->sl_netem_distribution);
-      $this->tmpl->assign('sl_netem_loss', $sl->sl_netem_loss);
-      $this->tmpl->assign('sl_netem_duplication', $sl->sl_netem_duplication);
-      $this->tmpl->assign('sl_netem_gap', $sl->sl_netem_gap);
-      $this->tmpl->assign('sl_netem_reorder_percentage', $sl->sl_netem_reorder_percentage);
-      $this->tmpl->assign('sl_netem_reorder_correlation', $sl->sl_netem_reorder_correlation);
-      $this->tmpl->assign('sl_esfq_perturb', $sl->sl_esfq_perturb);
-      $this->tmpl->assign('sl_esfq_limit', $sl->sl_esfq_limit);
-      $this->tmpl->assign('sl_esfq_depth', $sl->sl_esfq_depth);
-      $this->tmpl->assign('sl_esfq_divisor', $sl->sl_esfq_divisor);
-      $this->tmpl->assign('sl_esfq_hash', $sl->sl_esfq_hash);
 
       $this->tmpl->show("service_levels_edit.tpl");
 

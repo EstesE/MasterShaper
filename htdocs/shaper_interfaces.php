@@ -103,13 +103,15 @@ class MASTERSHAPER_INTERFACES {
             FROM ". MYSQL_PREFIX ."interfaces
             WHERE 
                if_idx='". $idx ."'");
+
+         $this->tmpl->assign('if_idx', $idx);
+         $this->tmpl->assign('if_name', $if->if_name);
+         $this->tmpl->assign('if_speed', $if->if_speed);
+         $this->tmpl->assign('if_active', $if->if_active);
+         $this->tmpl->assign('if_ifb', $if->if_ifb);
+    
       }
 
-      $this->tmpl->assign('if_idx', $idx);
-      $this->tmpl->assign('if_name', $if->if_name);
-      $this->tmpl->assign('if_speed', $if->if_speed);
-      $this->tmpl->assign('if_active', $if->if_active);
-      $this->tmpl->assign('if_ifb', $if->if_ifb);
       $this->tmpl->show("interfaces_edit.tpl");
 
    } // showEdit()

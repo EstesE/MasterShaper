@@ -105,14 +105,16 @@ class MASTERSHAPER_NETPATHS {
             WHERE
                netpath_idx='". $idx ."'
          ");
+
+         $this->tmpl->assign('netpath_idx', $idx);
+         $this->tmpl->assign('netpath_name', $np->netpath_name);
+         $this->tmpl->assign('netpath_if1', $np->netpath_if1);
+         $this->tmpl->assign('netpath_if2', $np->netpath_if2);
+         $this->tmpl->assign('netpath_imq', $np->netpath_imq);
+         $this->tmpl->assign('netpath_active', $np->netpath_active);
+    
       }
 
-      $this->tmpl->assign('netpath_idx', $idx);
-      $this->tmpl->assign('netpath_name', $np->netpath_name);
-      $this->tmpl->assign('netpath_if1', $np->netpath_if1);
-      $this->tmpl->assign('netpath_if2', $np->netpath_if2);
-      $this->tmpl->assign('netpath_imq', $np->netpath_imq);
-      $this->tmpl->assign('netpath_active', $np->netpath_active);
       $this->tmpl->register_function("if_select_list", array(&$this, "smarty_if_select_list"), false);
       $this->tmpl->show("net_paths_edit.tpl");
 

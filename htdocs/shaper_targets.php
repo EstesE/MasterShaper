@@ -124,7 +124,7 @@ class MASTERSHAPER_TARGETS {
             return _("You have selected MAC match but specified a INVALID MAC address! Please specify a correct MAC address!");
          }
       }
-      if($_POST['target_match'] == "GROUP" && count($_POST['target_used']) < 1) {
+      if($_POST['target_match'] == "GROUP" && isset($_POST['used']) && count($_POST['used']) < 1) {
          return _("You have selected Group match but didn't selected at least one target from the list!");
       }
 
@@ -154,13 +154,13 @@ class MASTERSHAPER_TARGETS {
          ");
       }
 
-      if($_POST['target_used']) {
+      if(isset($_POST['used']) && $_POST['used']) {
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_target_groups
             WHERE
                atg_group_idx='". $_POST['target_idx'] ."'
          ");
-         foreach($_POST['target_used'] as $use) {
+         foreach($_POST['used'] as $use) {
             if($use != "") {
                $this->db->db_query("
                   INSERT INTO ". MYSQL_PREFIX ."assign_target_groups
@@ -227,16 +227,16 @@ class MASTERSHAPER_TARGETS {
             WHERE
                target_idx='". $idx ."'
          ");
+         $this->tmpl->assign('target_idx', $idx);
+         $this->tmpl->assign('target_name', $target->target_name);
+         $this->tmpl->assign('target_match', $target->target_match);
+         $this->tmpl->assign('target_ip', $target->target_ip);
+         $this->tmpl->assign('target_mac', $target->target_mac);
       }
       else {
-         $target->target_match = "IP";
+         $this->tmpl->assign('target_match', 'IP');
       }
 
-      $this->tmpl->assign('target_idx', $idx);
-      $this->tmpl->assign('target_name', $target->target_name);
-      $this->tmpl->assign('target_match', $target->target_match);
-      $this->tmpl->assign('target_ip', $target->target_ip);
-      $this->tmpl->assign('target_mac', $target->target_mac);
       $this->tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
       $this->tmpl->show("targets_edit.tpl");
 

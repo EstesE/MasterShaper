@@ -115,19 +115,19 @@ class MASTERSHAPER_PIPES {
             WHERE
                pipe_idx='". $idx ."'
          ");
+         $this->tmpl->assign('pipe_idx', $idx);
+         $this->tmpl->assign('pipe_name', $pipe->pipe_name);
+         $this->tmpl->assign('pipe_active', $pipe->pipe_active);
+         $this->tmpl->assign('pipe_direction', $pipe->pipe_direction);
+         $this->tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
+         $this->tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
+         $this->tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
+
       }
       else {
-         $pipe->pipe_active = 'Y';
-         $pipe->pipe_direction = 2;
+         $this->tmpl->assign('pipe_active', 'Y');
+         $this->tmpl->assign('pipe_direction', 2);
       }
-
-      $this->tmpl->assign('pipe_idx', $idx);
-      $this->tmpl->assign('pipe_name', $pipe->pipe_name);
-      $this->tmpl->assign('pipe_active', $pipe->pipe_active);
-      $this->tmpl->assign('pipe_direction', $pipe->pipe_direction);
-      $this->tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
-      $this->tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
-      $this->tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
 
       $this->tmpl->register_function("unused_filters_select_list", array(&$this, "smarty_unused_filters_select_list"), false);
       $this->tmpl->register_function("used_filters_select_list", array(&$this, "smarty_used_filters_select_list"), false);
@@ -303,7 +303,7 @@ class MASTERSHAPER_PIPES {
 
       }
 
-      if($_POST['used']) {
+      if(isset($_POST['used']) && $_POST['used']) {
          $this->db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_filters
             WHERE

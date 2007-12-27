@@ -410,7 +410,7 @@ class MASTERSHAPER_FILTERS {
             }
          }
 
-         if($_POST['filter_l7_used']) {
+         if(isset($_POST['filter_l7_used']) && $_POST['filter_l7_used']) {
             $this->db->db_query("
                DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols
                WHERE
