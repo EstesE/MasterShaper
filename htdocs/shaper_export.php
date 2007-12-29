@@ -35,7 +35,7 @@ class MASTERSHAPER_EXPORT {
     *
     * Initialize the MASTERSHAPER_EXPORT class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
       $this->parent = new MASTERSHAPER;
       $this->db = $this->parent->db;
