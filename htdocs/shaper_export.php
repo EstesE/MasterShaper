@@ -30,8 +30,12 @@ class MASTERSHAPER_EXPORT {
    private $config;
    private $root;
 
-   /* Class constructor */
-   function MASTERSHAPER_EXPORT()
+   /**
+    * MASTERSHAPER_EXPORT constructor
+    *
+    * Initialize the MASTERSHAPER_EXPORT class
+    */
+   public function __construct(&$parent)
    {
       $this->parent = new MASTERSHAPER;
       $this->db = $this->parent->db;
@@ -43,7 +47,7 @@ class MASTERSHAPER_EXPORT {
 
       $this->saveConfig();
 
-   } // MASTERSHAPER_EXPORT()
+   } // __construct()
 
    /**
     * export current MasterShaper ruleset & configuration
@@ -342,7 +346,7 @@ class MASTERSHAPER_EXPORT {
 
    } // addSubChild()
 
-} // MASTERSHAPER_EXPORT()
+} // class MASTERSHAPER_EXPORT
 
 $obj = new MASTERSHAPER_EXPORT();
 $obj->show();

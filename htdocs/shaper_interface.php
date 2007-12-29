@@ -1423,6 +1423,6 @@ class MASTERSHAPER_INTERFACE {
 
    } // check_if_mac()
 
-} // class MASTERSHAPER_INTERFACE()
+} // class MASTERSHAPER_INTERFACE
 
 ?>

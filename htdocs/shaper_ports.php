@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_PORTS {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_PORTS($parent)
+   /**
+    * MASTERSHAPER_PORTS constructor
+    *
+    * Initialize the MASTERSHAPER_PORTS class
+    */
+   public function __construct(&$parent)
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$this->parent->tmpl;
+      $this->parent = $parent;
+      $this->db = $parent->db;
+      $this->tmpl = $this->parent->tmpl;
 
-   } // MASTERSHAPER_PORTS()
+   } // __construct()
 
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -123,7 +127,7 @@ class MASTERSHAPER_PORTS {
    /**
     * display interface to create or edit ports
     */
-   function showEdit($idx)
+   public function showEdit($idx)
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -302,6 +306,7 @@ class MASTERSHAPER_PORTS {
       return "unkown error";
 
    } // delete()
-}
+
+} // class MASTERSHAPER_PORTS
 
 ?>

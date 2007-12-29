@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_TARGETS {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_TARGETS($parent)
+   /**
+    * MASTERSHAPER_TARGETS constructor
+    *
+    * Initialize the MASTERSHAPER_TARGETS class
+    */
+   public function __construct(&$parent)
    {
-      $this->db = &$parent->db;
-      $this->parent = &$parent;
-      $this->tmpl = &$this->parent->tmpl;
+      $this->db = $parent->db;
+      $this->parent = $parent;
+      $this->tmpl = $this->parent->tmpl;
 
-   } //MASTERSHAPER_TARGETS()
+   } // __construct()
 
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -211,7 +215,7 @@ class MASTERSHAPER_TARGETS {
    /**
     * display interface to create or edit targets
     */
-   function showEdit($idx)
+   public function showEdit($idx)
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -378,6 +382,6 @@ class MASTERSHAPER_TARGETS {
       return false;
    } // checkTargetExists()
 
-}
+} // class MASTERSHAPER_TARGETS
 
 ?>

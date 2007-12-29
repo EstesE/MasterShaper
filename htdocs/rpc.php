@@ -32,7 +32,7 @@ class MASTERSHAPER_RPC {
 
    } // __construct()
 
-   function process_ajax_request()
+   public function process_ajax_request()
    {
       require_once 'HTML/AJAX/Server.php';
 

@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_INTERFACES {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_INTERFACES($parent)
+   /**
+    * MASTERSHAPER_INTERFACES constructor
+    *
+    * Initialize the MASTERSHAPER_INTERFACES class
+    */
+   public function __construct(&$parent)
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$parent->tmpl;
+      $this->parent =&$parent;
+      $this->db = $parent->db;
+      $this->tmpl = $parent->tmpl;
 
-   } // MASTERSHAPER_INTERFACES()
+   } // __construct()
   
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -271,6 +275,6 @@ class MASTERSHAPER_INTERFACES {
 
    } // toggleStatus()
 
-}
+} // class MASTERSHAPER_INTERFACES
 
 ?>

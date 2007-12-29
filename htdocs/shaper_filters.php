@@ -27,17 +27,21 @@ class MASTERSHAPER_FILTERS {
    var $parent;
    var $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_FILTERS($parent)
+   /**
+    * MASTERSHAPER_FILTERS constructor
+    *
+    * Initialize the MASTERSHAPER_FILTERS class
+    */
+   public function __construct(&$parent)
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$parent->tmpl;
+      $this->parent = $parent;
+      $this->db = $parent->db;
+      $this->tmpl = $parent->tmpl;
 
-   } // MASTERSHAPER_FILTERS()
+   } // __constrcut()
 
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -672,6 +676,6 @@ class MASTERSHAPER_FILTERS {
 
    } // smarty_l7_select_list()
    
-}
+} // class MASTERSHAPER_FILTERS
 
 ?>

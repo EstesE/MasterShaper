@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_NETPATHS {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_NETPATHS($parent)
+   /**
+    * MASTERSHAPER_NETPATHS constructor
+    *
+    * Initialize the MASTERSHAPER_NETPATHS class
+    */
+   public function __construct(&$parent)
    {
       $this->parent = &$parent;
       $this->db = &$parent->db;
       $this->tmpl = &$parent->tmpl;
 
-   } // MASTERSHAPER_NETPATHS()
+   } // __construct()
 
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -305,9 +309,6 @@ class MASTERSHAPER_NETPATHS {
       return false;
    } // checkNetworkPathExists()
 
-
-
-
-}
+} // class MASTERSHAPER_NETPATHS
 
 ?>

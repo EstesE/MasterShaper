@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_MONITOR {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_MONITOR($parent)
+   /**
+    * MASTERSHAPER_MONITOR constructor
+    *
+    * Initialize the MASTERSHAPER_MONITOR class
+    */
+   public function __construct(&$parent)
    {
       $this->db = $parent->db;
       $this->parent = $parent;
       $this->tmpl = $parent->tmpl;
 
-   } // MASTERSHAPER_MONITOR()
+   } // __construct()
 
    /* interface output */
-   function show($mode)
+   public function show($mode)
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -97,7 +101,7 @@ class MASTERSHAPER_MONITOR {
 
    } // show()
 
-   function getFirstChain()
+   private function getFirstChain()
    {
       // Get only chains which do not Ignore QoS and are active
       $chain = $this->db->db_fetchSingleRow("
@@ -113,7 +117,7 @@ class MASTERSHAPER_MONITOR {
 
    } // getFirstChain()
 
-   function getFirstInterface()
+   private function getFirstInterface()
    {
       $interfaces = $this->parent->getActiveInterfaces();
       $if = $interfaces->fetchRow();
@@ -165,6 +169,6 @@ class MASTERSHAPER_MONITOR {
 
    } // smarty_interface_select_list()
 
-}
+} // class MASTERSHAPER_MONITOR
 
 ?>

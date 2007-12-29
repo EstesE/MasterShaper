@@ -23,23 +23,28 @@
 
 class MASTERSHAPER_ABOUT {
 
-   var $parent;
-   var $tmpl;
-
-   function MASTERSHAPER_ABOUT($parent)
+   private $parent;
+   private $tmpl;
+   
+   /**
+    * MASTERSHAPER_ABOUT constructor
+    *
+    * Initialize the MASTERSHAPER_ABOUT class
+    */
+   public function __construct(&$parent)
    {
-      $this->parent = &$parent;
-      $this->tmpl = &$parent->tmpl;
+      $this->parent = $parent;
+      $this->tmpl = $parent->tmpl;
 
-   } // MASTERSHAPER_ABOUT()
+   } // __construct()
 
-   function show()
+   public function show()
    {
       $this->tmpl->assign('version', VERSION);
       $this->tmpl->show("about.tpl");
 
    } // show()
 
-}
+} // class MASTERSHAPER_ABOUT
 
 ?>

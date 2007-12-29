@@ -522,7 +522,7 @@ class MASTERSHAPER {
    /**
     * return human readable priority name
     */
-   function getPriorityName($prio)
+   public function getPriorityName($prio)
    {
       switch($prio) {
          case 0: return _("Ignored"); break;
@@ -569,7 +569,7 @@ class MASTERSHAPER {
 
    } // getInterfaceName() 
 
-   function getYearList($current = "")
+   public function getYearList($current = "")
    {
       $string = "";
       for($i = date("Y"); $i <= date("Y")+2; $i++) {
@@ -582,7 +582,7 @@ class MASTERSHAPER {
 
    } // getYearList()
 
-   function getMonthList($current = "")
+   public function getMonthList($current = "")
    {
       $string = "";
       for($i = 1; $i <= 12; $i++) {
@@ -597,7 +597,7 @@ class MASTERSHAPER {
 
    } // getMonthList()
 
-   function getDayList($current = "")
+   public function getDayList($current = "")
    {
       $string = "";
       for($i = 1; $i <= 31; $i++) {
@@ -612,7 +612,7 @@ class MASTERSHAPER {
 
    } // getDayList()
 
-   function getHourList($current = "")
+   public function getHourList($current = "")
    {
       $string = "";
       for($i = 0; $i <= 23; $i++) {
@@ -627,7 +627,7 @@ class MASTERSHAPER {
 
    } // getHourList()
 
-   function getMinuteList($current = "")
+   public function getMinuteList($current = "")
    {
       $string = "";
       for($i = 0; $i <= 59; $i++) {
@@ -686,7 +686,7 @@ class MASTERSHAPER {
     * this function will transform user entered bandwidth
     * values (kilobit, megabit) into integer values).
     */
-   function getKbit($bw)
+   public function getKbit($bw)
    {
       if(preg_match("/^(\d+)k$/i", $bw))
          return preg_replace("/k/i", "", $bw);
@@ -703,7 +703,7 @@ class MASTERSHAPER {
     * this function will return all details of the requested
     * service level.
     */
-   function getServiceLevel($sl_idx)
+   public function getServiceLevel($sl_idx)
    {
       return $this->db->db_fetchSingleRow("
          SELECT *
@@ -720,7 +720,7 @@ class MASTERSHAPER {
     * this function will return the name of the requested
     * service level.
     */
-   function getServiceLevelName($sl_idx)
+   public function getServiceLevelName($sl_idx)
    {
       if($sl = $this->db->db_fetchSingleRow("
          SELECT sl_name
@@ -738,7 +738,7 @@ class MASTERSHAPER {
     * this function will return the name of the requested
     * target.
     */
-   function getTargetName($target_idx)
+   public function getTargetName($target_idx)
    {
       if($target = $this->db->db_fetchSingleRow("
          SELECT target_name
@@ -756,7 +756,7 @@ class MASTERSHAPER {
     * this function will return the name of the requested
     * chain.
     */
-   function getChainName($chain_idx)
+   public function getChainName($chain_idx)
    {
       if($chain = $this->db->db_fetchSingleRow("
          SELECT chain_name
@@ -773,7 +773,7 @@ class MASTERSHAPER {
     * this function will return all details of the requested
     * filter
    */
-   function getFilter($filter_idx)
+   public function getFilter($filter_idx)
    {
       return $this->db->db_fetchSingleRow("
          SELECT *
@@ -789,7 +789,7 @@ class MASTERSHAPER {
     * this function will return all assigned filters
     * for the specified pipe
     */
-   function getFilters($pipe_idx)
+   public function getFilters($pipe_idx)
    {
       return $this->db->db_query("
          SELECT af.apf_filter_idx as apf_filter_idx
@@ -809,7 +809,7 @@ class MASTERSHAPER {
     * this function will return all assigned ports
     * for the specified filter
     */
-   function getPorts($filter_idx)
+   public function getPorts($filter_idx)
    {
       $list = NULL;
       $numbers = "";
@@ -841,7 +841,7 @@ class MASTERSHAPER {
    } // getPorts()
 
    /* extract all ports from a string */
-   function extractPorts($string)
+   public function extractPorts($string)
    {
       if($string != "" && !preg_match("/any/", $string)) {
          $string = str_replace(" ", "", $string);
@@ -870,7 +870,7 @@ class MASTERSHAPER {
    /**
     * this function generates the value used for CONNMARK
     */
-   function getConnmarkId($string1, $string2)
+   public function getConnmarkId($string1, $string2)
    {
       return "0x". dechex(crc32($string1 . str_replace(":", "", $string2))* -1);
 
@@ -882,7 +882,7 @@ class MASTERSHAPER {
     * this function will return all assigned l7 protocol which
     * are assigned to the provided filter
     */
-   function getL7Protocols($filter_idx)
+   public function getL7Protocols($filter_idx)
    {
       $list = NULL;
       $numbers = "";
@@ -1013,6 +1013,6 @@ class MASTERSHAPER {
 
    } // getuid()
 
-} // class MASTERSHAPER()
+} // class MASTERSHAPER
 
 ?>

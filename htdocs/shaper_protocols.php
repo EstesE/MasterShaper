@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_PROTOCOLS {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_PROTOCOLS($parent)
+   /**
+    * MASTERSHAPER_PROTOCOLS constructor
+    *
+    * Initialize the MASTERSHAPER_PROTOCOLS class
+    */
+   public function __construct(&$parent)
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$this->parent->tmpl;
+      $this->parent = $parent;
+      $this->db = $parent->db;
+      $this->tmpl = $this->parent->tmpl;
 
-   } // MASTERSHAPER_PROTOCOLS()
+   } // __construct()
 
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -99,7 +103,7 @@ class MASTERSHAPER_PROTOCOLS {
    /**
     * display interface to create or edit protocols
     */
-   function showEdit($idx)
+   public function showEdit($idx)
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -247,6 +251,7 @@ class MASTERSHAPER_PROTOCOLS {
       return "unkown error";
 
    } // delete()
-}
+
+} // class MASTERSHAPER_PROTOCOLS
 
 ?>

@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_OVERVIEW {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_OVERVIEW($parent)
+   /**
+    * MASTERSHAPER_OVERVIEW constructor
+    *
+    * Initialize the MASTERSHAPER_OVERVIEW class
+    */
+   public function __construct(&$parent)
    {
       $this->db = $parent->db;
-      $this->parent = &$parent;
-      $this->tmpl = &$this->parent->tmpl;
+      $this->parent = $parent;
+      $this->tmpl = $this->parent->tmpl;
 
-   } //MASTERSHAPER_OVERVIEW()
+   } // __construct()
 
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -561,6 +565,7 @@ class MASTERSHAPER_OVERVIEW {
       return "ok";
 
    } // store()
-}
+
+} // class MASTERSHAPER_OVERVIEW
 
 ?>

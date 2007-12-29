@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_PIPES {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_PIPES($parent)
+   /**
+    * MASTERSHAPER_PIPES constructor
+    *
+    * Initialize the MASTERSHAPER_PIPES class
+    */
+   public function __construct(&$parent)
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$parent->tmpl;
+      $this->parent = $parent;
+      $this->db = $parent->db;
+      $this->tmpl = $parent->tmpl;
 
-   } // MASTERSHAPER_PIPES()
+   } // __construct()
 
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -403,6 +407,6 @@ class MASTERSHAPER_PIPES {
 
    } // checkPipeExists()
 
-}
+} // class MASTERSHAPER_PIPES
 
 ?>

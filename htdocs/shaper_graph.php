@@ -34,14 +34,18 @@ require_once "jpgraph/src/jpgraph_bar.php";
 
 class MASTERSHAPER_GRAPH{
 
-   var $config;
-   var $db;
-   var $total;
-   var $colorid;
-   var $graph;
+   private $config;
+   private $db;
+   private $total;
+   private $colorid;
+   private $graph;
 
-   /* Class constructor */
-   function MASTERSHAPER_GRAPH()
+   /**
+    * MASTERSHAPER_GRAPH constructor
+    *
+    * Initialize the MASTERSHAPER_GRAPH class
+    */
+   public function __construct()
    {
       $this->ms     = new MASTERSHAPER;
       $this->db     = $this->ms->db;
@@ -57,10 +61,10 @@ class MASTERSHAPER_GRAPH{
          exit(0);
       }
 
-   } // MASTERSHAPER_GRAPH()
+   } // __construct()
 
    /* create graph */
-   function draw()
+   public function draw()
    {
       /* ****************************** */
       /* graphmode                      */
@@ -434,7 +438,7 @@ class MASTERSHAPER_GRAPH{
    } // draw()
 
    /* returns a new color for the graph */
-   function getColor($id, $interface)
+   private function getColor($id, $interface)
    {
       $colors = Array(
          "#CC2222",
@@ -485,7 +489,7 @@ class MASTERSHAPER_GRAPH{
    } // getColor()
 
    /* remember the used color */
-   function setColor($color, $id, $interface)
+   private function setColor($color, $id, $interface)
    {
       $this->db->db_query("
          UPDATE ". MYSQL_PREFIX ."tc_ids
@@ -499,7 +503,7 @@ class MASTERSHAPER_GRAPH{
    } // setColor()
 
    /* check if color is already used */
-   function checkColor($color, $interface)
+   private function checkColor($color, $interface)
    {
       if($this->db->db_fetchSingleRow("
          SELECT id_color
@@ -516,7 +520,7 @@ class MASTERSHAPER_GRAPH{
    } // checkColor()
 
    /* returns pipe/chain name according tc_id */
-   function findName($id, $interface)
+   private function findName($id, $interface)
    {
       if(preg_match("/1:.*99/", $id)) {
          return "Fallback";
@@ -555,7 +559,7 @@ class MASTERSHAPER_GRAPH{
    } // findName()
 
    /* splitup tc_collector string */
-   function extract_tc_stat($line, $limit_to = "")
+   private function extract_tc_stat($line, $limit_to = "")
    {
       $data  = Array();
       $pairs = Array();
@@ -578,7 +582,7 @@ class MASTERSHAPER_GRAPH{
    } // extract_tc_stat()
 
    /* check if tc_id is a pipe */
-   function isPipe($tc_id, $if, $chain)
+   private function isPipe($tc_id, $if, $chain)
    {
       if($this->db->db_fetchSingleRow("
          SELECT id_tc_id
@@ -600,7 +604,7 @@ class MASTERSHAPER_GRAPH{
    } // isPipe() 
 
    /* check if tc_id is a chain */
-   function isChain($tc_id, $if)
+   private function isChain($tc_id, $if)
    {
       if($this->db->db_fetchSingleRow("
          SELECT id_tc_id
@@ -620,7 +624,7 @@ class MASTERSHAPER_GRAPH{
 
    } // isChain()
 
-   function getScaleName($scalemode)
+   private function getScaleName($scalemode)
    {
       switch($scalemode) {
          case 'bit':
@@ -640,7 +644,7 @@ class MASTERSHAPER_GRAPH{
 
    } // getScaleName()
 
-   function showTextBox($txt, $color=000000, $space=4, $font=4, $w=300) 
+   private function showTextBox($txt, $color=000000, $space=4, $font=4, $w=300) 
    {
       if (strlen($color) != 6) {
          $color = 000000;
@@ -668,7 +672,7 @@ class MASTERSHAPER_GRAPH{
 
    } // showTextBox()
 		
-}
+} // class MASTERSHAPER_GRAPH
 
 $stat = new MASTERSHAPER_GRAPH;
 $stat->draw();

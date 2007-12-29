@@ -23,15 +23,19 @@
 
 class MASTERSHAPER_CFG {
 
-   /* Class constructor */
-   function MASTERSHAPER_CFG($file)
+   /**
+    * MASTERSHAPER_CFG constructor
+    *
+    * Initialize the MASTERSHAPER_CFG class
+    */
+   public function __construct($file)
    {
       $this->readCfg($file);
 
-   } // MASTERSHAPER_CFG()
+   } // __construct()
 
    /* reads key=value pairs from config file */
-   function readCfg($file)
+   private function readCfg($file)
    {
       if(file_exists($file) && ($xml = simplexml_load_file($file)) !== false) {
          $vars = get_object_vars($xml);
@@ -46,11 +50,11 @@ class MASTERSHAPER_CFG {
    } // readCfg()
 
    /* split key=value pair */
-   function getParams($line)
+   private function getParams($line)
    {
       return split("=", $line);
    } // getParams()
 
-}
+} // class MASTERSHAPER_CFG
 
 ?>

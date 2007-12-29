@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_USERS {
 
-   var $db;
-   var $parent;
-   var $tmpl;
+   private $db;
+   private $parent;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_USERS($parent)
+   /**
+    * MASTERSHAPER_USERS constructor
+    *
+    * Initialize the MASTERSHAPER_USERS class
+    */
+   public function __construct(&$parent)
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$parent->tmpl;
+      $this->parent = $parent;
+      $this->db = $parent->db;
+      $this->tmpl = $parent->tmpl;
 
-   } // MASTERSHAPER_USERS()
+   } // __construct()
   
    /* interface output */
-   function show()
+   public function show()
    {
       /* If authentication is enabled, check permissions */
       if($this->parent->getOption("authentication") == "Y" &&
@@ -299,7 +303,7 @@ class MASTERSHAPER_USERS {
    } // smarty_user_list()
 
 
-   function getPermissions($user_idx)
+   private function getPermissions($user_idx)
    {
 
       $string = "";
@@ -355,6 +359,6 @@ class MASTERSHAPER_USERS {
       return false;
    } // checkTargetExists()
 
-}
+} // class MASTERSHAPER_USERS
 
 ?>

@@ -23,21 +23,25 @@
 
 class MASTERSHAPER_OPTIONS {
 
-   var $parent;
-   var $db;
-   var $tmpl;
+   private $parent;
+   private $db;
+   private $tmpl;
 
-   /* Class constructor */
-   function MASTERSHAPER_OPTIONS($parent)
+   /**
+    * MASTERSHAPER_OPTIONS constructor
+    *
+    * Initialize the MASTERSHAPER_OPTIONS class
+    */
+   public function __construct(&$parent)
    {
       $this->parent = &$parent;
       $this->db = &$parent->db;
       $this->tmpl = &$parent->tmpl;
 
-   } // MASTERSHAPER_OPTIONS()
+   } // __construct()
 
    /* interface output */
-   function show()
+   public function show()
    {
       if($this->parent->getOption("authentication") == "Y" &&
 	 !$this->parent->checkPermissions("user_manage_options")) {
@@ -106,7 +110,7 @@ class MASTERSHAPER_OPTIONS {
    } // store()
 
    /* restore configuration from user upload */
-   function restoreConfig()
+   public function restoreConfig()
    {
 
       /* If authentication is enabled, check permissions */
@@ -178,7 +182,7 @@ class MASTERSHAPER_OPTIONS {
    } // restoreConfig()
 
    /* write configuration into database */
-   function loadConfig($set, $object)
+   public function loadConfig($set, $object)
    {
       switch($set) {
          case 'Settings':
@@ -358,7 +362,7 @@ class MASTERSHAPER_OPTIONS {
    } // loadConfig()
 
    /* remove existing configuration */
-   function resetConfig($doit = 0)
+   public function resetConfig($doit = 0)
    {
 
       /* If authentication is enabled, check permissions */
@@ -403,13 +407,13 @@ class MASTERSHAPER_OPTIONS {
 
    } // resetConfig()
 
-   function Add($option, $object)
+   private function Add($option, $object)
    {
       $object = addslashes(serialize($object));
       $this->string.= $option .":". $object ."\n";
    } // Add()
 
-   function updateL7Protocols()
+   public function updateL7Protocols()
    {
 
       /* If authentication is enabled, check permissions */
@@ -515,7 +519,7 @@ class MASTERSHAPER_OPTIONS {
 
    } // updateL7Protocols()
 
-   function findPatFiles(&$files, $path)
+   private function findPatFiles(&$files, $path)
    {
 
       if(is_dir($path) && $dir = opendir($path)) {
@@ -581,6 +585,6 @@ class MASTERSHAPER_OPTIONS {
 
    } // smarty_sl_list
 
-}
+} // class MASTERSHAPER_OPTIONS
 
 ?>
