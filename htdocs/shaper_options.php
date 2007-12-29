@@ -209,8 +209,8 @@ class MASTERSHAPER_OPTIONS {
 	    break;
          case 'Protocols':
             $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."protocols (proto_name, proto_number, "
-                               ."proto_desc, proto_user_defined) VALUES ('". $object->proto_name ."', "
-                               ."'". $object->proto_name ."', '". $object->proto_desc ."', 'Y')");
+                               ."proto_user_defined) VALUES ('". $object->proto_name ."', "
+                               ."'". $object->proto_name ."', 'Y')");
             break;
          case 'Ports':
             $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."ports (port_name, port_desc, port_number, "
