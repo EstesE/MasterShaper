@@ -140,6 +140,8 @@ class MASTERSHAPER_TARGETS {
             )
             ");
 
+         $_POST['target_idx'] = $this->db->db_getId();
+
       }
       else {
          $this->db->db_query("
@@ -322,43 +324,40 @@ class MASTERSHAPER_TARGETS {
       if(isset($params['idx']) && is_numeric($params['idx']))
          $idx = $params['idx'];
 
-      $result = $this->db->db_query("
-         SELECT target_idx, target_name
-         FROM ". MYSQL_PREFIX ."targets 
-         WHERE
-            target_match<>'GROUP'
-         AND
-            target_idx<>'". $idx ."'
-         ORDER BY target_name ASC
-      ");
+      switch($group) {
+
+         case 'unused':
+            $result = $this->db->db_query("
+               SELECT t.target_idx, t.target_name
+               FROM ". MYSQL_PREFIX ."targets t
+               LEFT JOIN ". MYSQL_PREFIX ."assign_target_groups atg
+                  ON t.target_idx=atg.atg_target_idx
+               WHERE
+                  atg.atg_group_idx <> '". $idx ."'
+               OR
+                  ISNULL(atg.atg_group_idx)
+               ORDER BY t.target_name ASC
+            ");
+            break;
+         case 'used':
+            $result = $this->db->db_query("
+               SELECT t.target_idx, t.target_name
+               FROM ". MYSQL_PREFIX ."assign_target_groups atg
+               LEFT JOIN ". MYSQL_PREFIX ."targets t
+                  ON t.target_idx = atg.atg_target_idx
+               WHERE
+                  atg_group_idx = '". $idx ."'
+               ORDER BY t.target_name ASC
+            ");
+            break;
+      }
 
       while($row = $result->fetchRow()) {
-         
-         /* unused targets */
-         if($group == "unused" && !$this->db->db_fetchSingleRow("
-            SELECT atg_idx
-            FROM ". MYSQL_PREFIX ."assign_target_groups
-            WHERE 
-               atg_group_idx='". $idx ."'
-            AND
-               atg_target_idx='". $row->target_idx ."'   
-            ")) {
-            $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
-         }
-         /* used targets */
-         elseif($group == "used"  &&  $this->db->db_fetchSingleRow("
-            SELECT atg_idx
-            FROM ". MYSQL_PREFIX ."assign_target_groups
-            WHERE
-               atg_group_idx='". $idx ."'
-            AND
-               atg_target_idx='". $row->target_idx ."'
-            ")) {
-            $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
-         }
+         $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
       }
 
       return $string;
+
    } // smarty_target_select_list()
 
    /**
