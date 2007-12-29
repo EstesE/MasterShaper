@@ -107,7 +107,16 @@ class MASTERSHAPER_DB {
       if($this->getConnStatus()) {
 
          $this->db->setFetchMode($mode);
-         $result = $this->db->query($query);
+
+         /* for manipulating queries use exec instead of query. can save
+          * some resource because nothing has to be allocated for results.
+          */
+         if(preg_match('/^(update|insert)i/', $query)) {
+            $result = $this->db->exec($query);
+         }
+         else {
+            $result = $this->db->query($query);
+         }
 			
          if(PEAR::isError($result))
             $this->throwError($result->getMessage());
