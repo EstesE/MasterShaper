@@ -134,16 +134,24 @@ class MASTERSHAPER_DB {
     * This function will execute the given but only return the
     * first result.
     */
-   public function db_fetchSingleRow($query = "") 
+   public function db_fetchSingleRow($query = "", $mode = MDB2_FETCHMODE_OBJECT)
    {
       if($this->getConnStatus()) {
 
-         $result = $this->db_query($query);
-         $row = $result->fetchRow();
-         return $row;
+         $this->db->setFetchMode($mode);
+
+         if($row = $this->db->queryRow($query))
+            return $row;
+
+         if(PEAR::isError($row))
+            $this->throwError($row->getMessage());
+	
       }
-      else 
+      else {
+   
          $this->ThrowError("Can't fetch row - we are not connected!");
+      
+      }
       
    } // db_fetchSingleRow()
 
