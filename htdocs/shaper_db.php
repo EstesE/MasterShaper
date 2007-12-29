@@ -77,7 +77,7 @@ class MASTERSHAPER_DB {
       $this->db = MDB2::connect($dsn, $options);
 
       if(PEAR::isError($this->db)) {
-         $this->throwError("Unable to connect to database: ". $this->db->getMessage());
+         $this->throwError("Unable to connect to database: ". $this->db->getMessage() .' - '. $this->db->getUserInfo());
          $this->setConnStatus(false);
       }
 
@@ -119,7 +119,7 @@ class MASTERSHAPER_DB {
          }
 			
          if(PEAR::isError($result))
-            $this->throwError($result->getMessage());
+            $this->throwError($result->getMessage() .' - '. $result->getUserInfo());
 	
          return $result;
       }
@@ -141,7 +141,7 @@ class MASTERSHAPER_DB {
          $row = $this->db->queryRow($query, array(), $mode);
 
          if(PEAR::isError($row))
-            $this->throwError($row->getMessage());
+            $this->throwError($row->getMessage() .' - '. $row->getUserInfo());
 
          return $row;
 	
@@ -167,7 +167,7 @@ class MASTERSHAPER_DB {
 
       /* Errors? */
       if(PEAR::isError($result)) 
-         $this->throwError($result->getMessage());
+         $this->throwError($result->getMessage() .' - '. $result->getUserInfo());
 
       return $result->numRows();
 
