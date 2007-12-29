@@ -119,7 +119,6 @@ class MASTERSHAPER_PROTOCOLS {
 
          $this->tmpl->assign('proto_idx', $idx);
          $this->tmpl->assign('proto_name', $protocol->proto_name);
-         $this->tmpl->assign('proto_desc', $protocol->proto_desc);
          $this->tmpl->assign('proto_number', $protocol->proto_number);
  
       }
@@ -149,7 +148,6 @@ class MASTERSHAPER_PROTOCOLS {
 
          $this->tmpl->assign('proto_idx', $proto_idx);
          $this->tmpl->assign('proto_name', $protocol->proto_name);
-         $this->tmpl->assign('proto_desc', $protocol->proto_desc);
          $this->tmpl->assign('proto_number', $protocol->proto_number);
 
          $index++;
@@ -189,10 +187,9 @@ class MASTERSHAPER_PROTOCOLS {
 
          $this->db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."protocols 
-               (proto_name, proto_desc, proto_number, proto_user_defined)
+               (proto_name, proto_number, proto_user_defined)
             VALUES (
                '". $_POST['proto_name'] ."',
-               '". $_POST['proto_desc'] ."',
                '". $_POST['proto_number'] ."',
                'Y')
          ");
@@ -202,7 +199,6 @@ class MASTERSHAPER_PROTOCOLS {
                UPDATE ". MYSQL_PREFIX ."protocols
                SET 
                   proto_name='". $_POST['proto_name'] ."',
-                  proto_desc='". $_POST['proto_desc'] ."',
                   proto_number='". $_POST['proto_number'] ."',
                   proto_user_defined='Y'
                WHERE
