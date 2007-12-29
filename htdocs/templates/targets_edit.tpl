@@ -63,7 +63,7 @@
 	     <td>
 	      <select name="avail[]" size="5" multiple="multiple">
 	       <option value="">********* Unused *********</option>
-          { target_select_list group=unused }
+          { target_select_list group=unused idx=$target_idx }
          </select>
 	     </td>
 	     <td>&nbsp;</td>
@@ -75,7 +75,7 @@
 	     <td>
 	      <select name="used[]" size="5" multiple="multiple">
 	       <option value="">********* Used *********</option>
-          { target_select_list group=used }
+          { target_select_list group=used idx=$target_idx }
 	      </select>
         </td>
        </tr>

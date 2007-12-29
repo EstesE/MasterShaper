@@ -139,7 +139,6 @@ class MASTERSHAPER_TARGETS {
                '". $_POST['target_mac'] ."'
             )
             ");
-         $_GET['idx'] = $this->db->db_getid();
 
       }
       else {
@@ -227,6 +226,7 @@ class MASTERSHAPER_TARGETS {
             WHERE
                target_idx='". $idx ."'
          ");
+
          $this->tmpl->assign('target_idx', $idx);
          $this->tmpl->assign('target_name', $target->target_name);
          $this->tmpl->assign('target_match', $target->target_match);
@@ -305,6 +305,9 @@ class MASTERSHAPER_TARGETS {
    
    } // delete()
 
+   /**
+    * return select-list of available or used targets assigned to a target-group
+    */
    public function smarty_target_select_list($params, &$smarty)
    {
       if(!array_key_exists('group', $params)) {
@@ -312,33 +315,42 @@ class MASTERSHAPER_TARGETS {
          $repeat = false;
          return;
       }
+
+      /* either "used" or "unused" */
       $group = $params['group'];
+
+      if(isset($params['idx']) && is_numeric($params['idx']))
+         $idx = $params['idx'];
+
       $result = $this->db->db_query("
          SELECT target_idx, target_name
          FROM ". MYSQL_PREFIX ."targets 
          WHERE
             target_match<>'GROUP'
          AND
-            target_idx<>'". $_GET['idx'] ."'
+            target_idx<>'". $idx ."'
          ORDER BY target_name ASC
       ");
 
       while($row = $result->fetchRow()) {
+         
+         /* unused targets */
          if($group == "unused" && !$this->db->db_fetchSingleRow("
             SELECT atg_idx
             FROM ". MYSQL_PREFIX ."assign_target_groups
             WHERE 
-               atg_group_idx='". $_GET['idx'] ."'
+               atg_group_idx='". $idx ."'
             AND
                atg_target_idx='". $row->target_idx ."'   
             ")) {
             $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
          }
+         /* used targets */
          elseif($group == "used"  &&  $this->db->db_fetchSingleRow("
             SELECT atg_idx
             FROM ". MYSQL_PREFIX ."assign_target_groups
             WHERE
-               atg_group_idx='". $_GET['idx'] ."'
+               atg_group_idx='". $idx ."'
             AND
                atg_target_idx='". $row->target_idx ."'
             ")) {
