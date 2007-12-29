@@ -251,12 +251,11 @@ class MASTERSHAPER {
 
          case 'others':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=12", "icons/disk.gif", _("Save Configuration"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=13", "icons/restore.gif", _("Restore Configuration"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=14", "icons/reset.gif", _("Reset Configuration"));
-            $string.= $this->addSubMenuItem($navurl ."&amp;mode=15", "icons/update.gif", _("Update L7 Protocols"));
+            $string.= $this->addSubMenuItem("javascript:config('save');", "icons/disk.gif", _("Save Configuration"));
+            $string.= $this->addSubMenuItem("javascript:config('restore');", "icons/restore.gif", _("Restore Configuration"));
+            $string.= $this->addSubMenuItem("javascript:config('reset');", "icons/reset.gif", _("Reset Configuration"));
+            $string.= $this->addSubMenuItem("javascript:config('updatel7');", "icons/update.gif", _("Update L7 Protocols"));
             $string.= $this->addSubMenuItem("http://www.mastershaper.org/MasterShaper_documentation.pdf", "icons/page_white_acrobat.gif", _("Documentation (PDF)"));
-            $string.= $this->addSubMenuItem("http://www.mastershaper.org/forum/", "icons/ms_users_14.gif", _("Support Forum"));
             $string.= $this->addSubMenuItem("javascript:refreshContent('about');", "icons/ms_users_14.gif", _("About"));
             $string.= "</tr></table>\n";
             break;
