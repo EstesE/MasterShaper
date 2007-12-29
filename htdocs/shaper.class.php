@@ -251,7 +251,7 @@ class MASTERSHAPER {
 
          case 'others':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem("javascript:config('save');", "icons/disk.gif", _("Save Configuration"));
+            $string.= $this->addSubMenuItem("shaper_export.php", "icons/disk.gif", _("Save Configuration"));
             $string.= $this->addSubMenuItem("javascript:config('restore');", "icons/restore.gif", _("Restore Configuration"));
             $string.= $this->addSubMenuItem("javascript:config('reset');", "icons/reset.gif", _("Reset Configuration"));
             $string.= $this->addSubMenuItem("javascript:config('updatel7');", "icons/update.gif", _("Update L7 Protocols"));
@@ -662,6 +662,25 @@ class MASTERSHAPER {
    } // getProtocolNumberById()
 
    /**
+    * return IANA protocol name
+    *
+    * this function returns the IANA protocol name
+    * for the specified database entry in the protocol table
+    */
+   public function getProtocolNameById($proto_idx)
+   {
+      if($proto = $this->db->db_fetchSingleRow("
+         SELECT proto_name
+         FROM ". MYSQL_PREFIX ."protocols
+         WHERE
+            proto_idx LIKE '". $proto_idx ."'"))
+         return $proto->proto_name;
+
+      return '';
+
+   } // getProtocolNameById()
+
+   /**
     * return kbit/s in integer value
     *
     * this function will transform user entered bandwidth
@@ -694,6 +713,60 @@ class MASTERSHAPER {
       ");
 
    } // getServiceLevel()
+
+   /** 
+    * get service level name
+    *
+    * this function will return the name of the requested
+    * service level.
+    */
+   function getServiceLevelName($sl_idx)
+   {
+      if($sl = $this->db->db_fetchSingleRow("
+         SELECT sl_name
+         FROM ". MYSQL_PREFIX ."service_levels
+         WHERE
+            sl_idx='". $sl_idx ."'
+      "))
+         return $sl->sl_name;
+
+   } // getServiceLevelName()
+
+   /** 
+    * get target name
+    *
+    * this function will return the name of the requested
+    * target.
+    */
+   function getTargetName($target_idx)
+   {
+      if($target = $this->db->db_fetchSingleRow("
+         SELECT target_name
+         FROM ". MYSQL_PREFIX ."targets
+         WHERE
+            target_idx='". $target_idx ."'
+      "))
+         return $target->target_name;
+
+   } // getTargetName()
+
+   /** 
+    * get chain name
+    *
+    * this function will return the name of the requested
+    * chain.
+    */
+   function getChainName($chain_idx)
+   {
+      if($chain = $this->db->db_fetchSingleRow("
+         SELECT chain_name
+         FROM ". MYSQL_PREFIX ."chains
+         WHERE
+            chain_idx='". $chain_idx ."'
+      "))
+         return $chain->chain_name;
+
+   } // getChainName()
 
    /** get filter information
     *

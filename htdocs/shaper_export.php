@@ -25,14 +25,21 @@ require_once "shaper.class.php";
 
 class MASTERSHAPER_EXPORT {
 
-   var $parent;
-   var $db;
+   private $parent;
+   private $db;
+   private $config;
+   private $root;
 
    /* Class constructor */
    function MASTERSHAPER_EXPORT()
    {
       $this->parent = new MASTERSHAPER;
       $this->db = $this->parent->db;
+
+      if(!$this->parent->is_logged_in()) {
+         print "You are not logged in.";
+         exit(1);
+      }
 
       $this->saveConfig();
 
@@ -45,7 +52,7 @@ class MASTERSHAPER_EXPORT {
     * and sends it as downloadable file to the browser
     *    
     */
-   function saveConfig()
+   private function saveConfig()
    {
       if($this->parent->getOption("authentication") == "Y" &&
          !$this->parent->checkPermissions("user_manage_options")) {
@@ -55,267 +62,233 @@ class MASTERSHAPER_EXPORT {
 
       }
 
-      $config = new DOMDocument('1.0');
-      $config->formatOutput = true;
-
-      $comment = $config->createComment("MasterShaper configured, dumped on ". strftime("%Y-%m-%d %H:%M"));
-      $config->appendChild($comment);
-
-      $root = $config->createElement('config');
-      $config->appendChild($root);
-      $settings = $config->createElement('settings');
-      $settings = $root->appendChild($settings);
+      // start XML document
+      $config = $this->startXml();
+      $this->addElement('config');
 
       // Settings
+      $settings = $this->addRootChild('settings');
       $result = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."settings");
       while($row = $result->fetchRow()) {
-
-         $temp = $config->createElement($row->setting_key, $row->setting_value);
-         $settings->appendChild($temp);
-
+         $this->addValue($settings, $row->setting_key, $row->setting_value);
       }
 
-      $config->appendChild($root);
-      $users = $config->createElement('users');
-      $users = $root->appendChild($users);
-
       // Users
-      $result = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."users", MDB2_FETCHMODE_ASSOC);
-      while($row = $result->fetchRow()) {
+      $users = $this->addRootChild('users');
+      $result = $this->db->db_query("
+            SELECT *
+            FROM ". MYSQL_PREFIX ."users
+      ");
 
-         $user = $config->createElement('user', $row['user_idx']);
-         $user = $users->appendChild($user);
-
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+         $user = $this->addSubChild('user', $users);
          $keys = array_keys($row);
          foreach($keys as $key) {
-            $temp = $config->createElement(htmlspecialchars($key), htmlspecialchars($row[$key]));
-            $user->appendChild($temp);
+            $this->addValue($user, htmlspecialchars($key), htmlspecialchars($row[$key]));
          }
       }
 
-      Header("Content-type: text/xml; charset=utf-8");
-      print $config->saveXML();
-      exit;
-
       // User definied protocols
+      $protocols = $this->addRootChild('protocols');
       $result = $this->db->db_query("
-         SELECT proto_name, proto_number, proto_desc
+         SELECT *
          FROM ". MYSQL_PREFIX ."protocols
          WHERE proto_user_defined='Y'
       ");
 
-      while($row = $result->fetchRow()) {
-
-         $this->Add("Protocols", $row);
-
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+         $proto = $this->addSubChild('protocol', $protocols);
+         $keys = array_keys($row);
+         foreach($keys as $key) {
+            $this->addValue($proto, htmlspecialchars($key), htmlspecialchars($row[$key]));
+         }
       }
 
       // User definied ports 
+      $ports = $this->addRootChild('ports');
       $result = $this->db->db_query("
-         SELECT port_name, port_desc, port_number
+         SELECT *
          FROM ". MYSQL_PREFIX ."ports 
          WHERE port_user_defined='Y'
       ");
 
-      while($row = $result->fetchRow()) {
-
-         $this->Add("Ports", $row);
-
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+         $port = $this->addSubChild('port', $ports);
+         $keys = array_keys($row);
+         foreach($keys as $key) {
+            $this->addValue($port, htmlspecialchars($key), htmlspecialchars($row[$key]));
+         }
       }
 
       // Service Levels 
       $result = $this->db->db_query("
-         SELECT sl_name, sl_htb_bw_in_rate, sl_htb_bw_in_ceil,
-         sl_htb_bw_in_burst, sl_htb_bw_out_rate, sl_htb_bw_out_ceil,
-         sl_htb_bw_out_burst, sl_htb_priority, sl_hfsc_in_umax,
-         sl_hfsc_in_dmax, sl_hfsc_in_rate, sl_hfsc_in_ulrate,
-         sl_hfsc_out_umax, sl_hfsc_out_dmax, sl_hfsc_out_rate,
-         sl_hfsc_out_ulrate, sl_cbq_in_rate, sl_cbq_in_priority,
-         sl_cbq_out_rate, sl_cbq_out_priority, sl_cbq_bounded,
-         sl_netem_delay, sl_netem_jitter, sl_netem_random, sl_qdisc,
-         sl_netem_distribution, sl_netem_loss, sl_netem_duplication,
-         sl_netem_gap, sl_netem_reorder_percentage,
-         sl_netem_reorder_correlation, sl_esfq_perturb, sl_esfq_limit,
-         sl_esfq_depth, sl_esfq_divisor, sl_esfq_hash
-
+         SELECT *
          FROM ". MYSQL_PREFIX ."service_levels
       ");
 
-      while($row = $result->fetchRow()) {
-
-         $this->Add("Servicelevels", $row);
-
+      $servicelevels = $this->addRootChild('servicelevels');
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+         $servicelevel = $this->addSubChild('servicelevel', $servicelevels);
+         $keys = array_keys($row);
+         foreach($keys as $key) {
+            $this->addValue($servicelevel, htmlspecialchars($key), htmlspecialchars($row[$key]));
+         }
       }
 
       // Targets, reverse order so groups are on the last position! 
+      $targets = $this->addRootChild('targets');
       $result = $this->db->db_query("
-         SELECT target_idx, target_name, target_match, target_ip,
-         target_mac
-
-         FROM ". MYSQL_PREFIX ."targets ORDER BY target_match DESC
+         SELECT *
+         FROM ". MYSQL_PREFIX ."targets
+         ORDER BY target_match DESC
       ");
 
-      while($row = $result->fetchRow()) {
-
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
          $members = $this->db->db_query("
+            SELECT t.target_name
+            FROM ". MYSQL_PREFIX ."targets t
+            INNER JOIN ". MYSQL_PREFIX ."assign_target_groups atg
+               ON atg.atg_group_idx='". $row['target_idx'] ."'
+            AND
+               atg.atg_target_idx=t.target_idx");
 
-            SELECT a.target_name FROM ". MYSQL_PREFIX ."targets a,
-            ". MYSQL_PREFIX ."assign_target_groups b
-            
-            WHERE b.atg_group_idx='". $row->target_idx ."'
-            AND b.atg_target_idx=a.target_idx
+         if($member = $members->fetchAll(MDB2_FETCHMODE_ORDERED)) {
+            $row['target_members'] = implode('#', $member[0]);
+         }
 
-         ");
-
-         $string = '';
-
-         while($member = $members->fetchRow()) {
-
-            $string.= $member->target_name ."#";
-          }
-
-         $string = substr($string, 0, strlen($string)-1);
-         $row->target_members = $string;
-         $this->Add("Targets", $row);
-
+         $target = $this->addSubChild('target', $targets);
+         $keys = array_keys($row);
+         foreach($keys as $key) {
+            $this->addValue($target, htmlspecialchars($key), htmlspecialchars($row[$key]));
+         }
       }
 
       /* L7 Protocol definitions */
+      $l7protocols = $this->addRootChild('l7protocols');
       $result = $this->db->db_query("
-         SELECT l7proto_idx, l7proto_name FROM ". MYSQL_PREFIX ."l7_protocols
+         SELECT *
+         FROM ". MYSQL_PREFIX ."l7_protocols
          ORDER BY l7proto_name ASC
       ");
 
-      while($row = $result->fetchRow()) {
-
-         $this->Add("L7Proto", $row);
-
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+         $l7proto = $this->addSubChild('l7protocol', $l7protocols);
+         $keys = array_keys($row);
+         foreach($keys as $key) {
+            $this->addValue($l7proto, htmlspecialchars($key), htmlspecialchars($row[$key]));
+         }
       }
-		
-      // Filters 
+
+      /* filter definition */
+      $filters = $this->addRootChild('filters');
       $result = $this->db->db_query("
-         SELECT filter_idx, filter_name, filter_protocol_id, filter_tos,
-         filter_tcpflag_syn, filter_tcpflag_ack, filter_tcpflag_fin,
-         filter_tcpflag_rst, filter_tcpflag_urg, filter_tcpflag_psh,
-         filter_packet_length, filter_p2p_edk, filter_p2p_kazaa,
-         filter_p2p_dc, filter_p2p_gnu, filter_p2p_bit, filter_p2p_apple,
-         filter_p2p_soul, filter_p2p_winmx, filter_p2p_ares,
-         filter_time_use_range, filter_time_start, filter_time_stop,
-         filter_time_day_mon, filter_time_day_tue, filter_time_day_wed,
-         filter_time_day_thu, filter_time_day_fri, filter_time_day_sat,
-         filter_time_day_sun, filter_match_ftp_data, filter_active 
+         SELECT *
          FROM ". MYSQL_PREFIX ."filters
+         ORDER BY filter_name ASC
       ");
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
 
-         $row->filter_protocol_id = $this->parent->getProtocolById($row->filter_protocol_id);
+         $row['filter_protocol_id'] = $this->parent->getProtocolNameById($row['filter_protocol_id']);
 
          $ports = $this->db->db_query("
-            SELECT b.port_name FROM ". MYSQL_PREFIX ."assign_ports a,
-             ". MYSQL_PREFIX ."ports b 
-
-            WHERE a.afp_filter_idx='". $row->filter_idx ."'
-            AND b.port_idx=a.afp_port_idx
+            SELECT p.port_name
+            FROM ". MYSQL_PREFIX ."ports p 
+            INNER JOIN ". MYSQL_PREFIX ."assign_ports afp 
+            ON
+               p.port_idx=afp.afp_port_idx
+            WHERE afp.afp_filter_idx='". $row['filter_idx'] ."'
          ");
 
          $l7protos = $this->db->db_query("
-            SELECT b.l7proto_name FROM ". MYSQL_PREFIX ."assign_l7_protocols a,
-            ". MYSQL_PREFIX ."l7_protocols b
-
-            WHERE a.afl7_filter_idx='". $row->filter_idx ."' 
-            AND b.l7proto_idx=a.afl7_l7proto_idx
+            SELECT l7.l7proto_name
+            FROM ". MYSQL_PREFIX ."l7_protocols l7
+            INNER JOIN ". MYSQL_PREFIX ."assign_l7_protocols afl7
+               ON l7.l7proto_idx=afl7.afl7_l7proto_idx
+            WHERE afl7.afl7_filter_idx='". $row['filter_idx'] ."' 
          ");
 
-         $string = '';
-
-         while($port = $ports->fetchRow()) {
-   
-            $string .= $port->port_name ."#";
-   
-         }
-   
-         $string = substr($string, 0, strlen($string)-1);
-         $row->filter_ports = $string;
-         $string = '';
-
-         while($l7proto = $l7protos->fetchRow()) {
-
-            $string .= $l7proto->l7proto_name ."#";
-
+         if($ports = $ports->fetchCol(0)) {
+            $row['filter_ports'] = implode('#', $ports);
          }
 
-         $string = substr($string, 0, strlen($string)-1);
-         $row->l7_protocols = $string;
-         $this->Add("Filters", $row);
+         if($l7protos = $l7protos->fetchCol(0)) {
+            $row['l7_protocols'] = implode('#', $l7protos);
+         }
 
+         $filter = $this->addSubChild('filter', $filters);
+         $keys = array_keys($row);
+         foreach($keys as $key) {
+            $this->addValue($filter, htmlspecialchars($key), htmlspecialchars($row[$key]));
+         }
+ 
       }
 
       // Chains 
+      $chains = $this->addRootChild('chains');
       $result = $this->db->db_query("
-         SELECT chain_name, chain_sl_idx, chain_fallback_idx, chain_src_target,
-         chain_dst_target, chain_direction, chain_position, chain_active 
+         SELECT *
          FROM ". MYSQL_PREFIX ."chains
+         ORDER BY chain_name
       ");
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
 
-         $row->sl_name  = $this->parent->getServiceLevelName($row->chain_sl_idx);
-         $row->fb_name  = $this->parent->getServiceLevelName($row->chain_fallback_idx);
-         $row->src_name = $this->parent->getTargetName($row->chain_src_target);
-         $row->dst_name = $this->parent->getTargetName($row->chain_dst_target);
-         $this->Add("Chains", $row);
+         $row['sl_name']  = $this->parent->getServiceLevelName($row['chain_sl_idx']);
+         $row['fb_name']  = $this->parent->getServiceLevelName($row['chain_fallback_idx']);
+         $row['src_name'] = $this->parent->getTargetName($row['chain_src_target']);
+         $row['dst_name'] = $this->parent->getTargetName($row['chain_dst_target']);
 
+         $chain = $this->addSubChild('chain', $chains);
+         $keys = array_keys($row);
+         foreach($keys as $key) {
+            $this->addValue($chain, htmlspecialchars($key), htmlspecialchars($row[$key]));
+         }
       }
 
       // Pipes 
+      $pipes = $this->addRootChild('pipes');
       $result = $this->db->db_query("
-         SELECT pipe_idx, pipe_name, pipe_chain_idx, pipe_sl_idx, pipe_direction,
-         pipe_position, pipe_src_target, pipe_dst_target, pipe_direction, pipe_active 
-
+         SELECT *
          FROM ". MYSQL_PREFIX ."pipes
+         ORDER BY pipe_name ASC
       ");
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
 
-         $string = "";
          $filters = $this->db->db_query("
-            SELECT b.filter_name FROM ". MYSQL_PREFIX ."assign_filters a,
-            ". MYSQL_PREFIX ."filters b 
-            
-            WHERE a.apf_pipe_idx='". $row->pipe_idx ."'
-            AND a.apf_filter_idx=b.filter_idx
+            SELECT f.filter_name
+            FROM ". MYSQL_PREFIX ."filters f
+            INNER JOIN ". MYSQL_PREFIX ."assign_filters apf
+            ON f.filter_idx=apf.apf_filter_idx
+            WHERE apf.apf_pipe_idx='". $row['pipe_idx'] ."'
          ");
 
-         while($filter = $filters->fetchRow()) {
-
-            $string .= $filter->filter_name ."#";
-
+         if($filters = $filters->fetchCol(0)) {
+            $row['filters'] = implode('#', $filters);
          }
 
-         $string = substr($string, 0, strlen($string)-1);
-         $row->chain_name = $this->parent->getChainName($row->pipe_chain_idx);
-         $row->sl_name    = $this->parent->getServiceLevelName($row->pipe_sl_idx);
-         $row->filters   = $string;
-         $this->Add("Pipes", $row);
+         $row['chain_name'] = $this->parent->getChainName($row['pipe_chain_idx']);
+         $row['sl_name']    = $this->parent->getServiceLevelName($row['pipe_sl_idx']);
 
+         $pipe = $this->addSubChild('pipe', $pipes);
+         $keys = array_keys($row);
+         foreach($keys as $key) {
+            $this->addValue($pipe, htmlspecialchars($key), htmlspecialchars($row[$key]));
+         }
       }
 		
       /* create output */
-      $this->string = "# MasterShaper ". $this->parent->version ." configuration\n" 
-                     ."# Andreas Unterkircher, unki@netshadow.at\n"
-                     ."# \n"
-                     ."# dumped on ". strftime("%Y-%m-%d %H:%M") ."\n\n" . $this->string;
-		
-      Header("Content-Type: application/octet-stream");
+      Header("Content-type: text/xml; charset=utf-8");
+      //Header("Content-Type: application/octet-stream");
       Header("Content-Transfer-Encoding: binary\n");
       $user_agent = strtolower ($_SERVER["HTTP_USER_AGENT"]);
-      if ((is_integer (strpos($user_agent, "msie"))) && (is_integer (strpos($user_agent, "win"))))
+      /*if ((is_integer (strpos($user_agent, "msie"))) && (is_integer (strpos($user_agent, "win"))))
          Header("Content-Disposition: inline; filename=\"ms_config_". strftime("%Y%m%d") .".cfg\"");
       else
-         Header("Content-Disposition: attachement; filename=\"ms_config_". strftime("%Y%m%d") .".cfg\"");
-      Header("Content-Length: ". strlen($this->string));
-      Header("Content-Description: PHP4 Download Data" );
+         Header("Content-Disposition: attachement; filename=\"ms_config_". strftime("%Y%m%d") .".cfg\"");*/
+      Header("Content-Length: ". strlen($this->config->saveXML()));
+      Header("Content-Description: MasterShaper XML Config Dump" );
       Header("Accept-Ranges: bytes");
       Header("Pragma: no-cache");
       Header("Cache-Control: no-cache, must-revalidate");
@@ -323,17 +296,53 @@ class MASTERSHAPER_EXPORT {
       Header("Cache-Control: private");
       Header("Connection: close");
 
-      print $this->string;
+      print $this->config->saveXML();
+      exit(0);
 
    } // saveConfig()
 
-   function Add($option, $object)
+   private function startXml()
    {
-      $object = addslashes(serialize($object));
-      $this->string.= $option .":". $object ."\n";
-   } // Add()
+      $this->config = new DOMDocument('1.0');
+      $this->config->formatOutput = true;
 
-}
+      $comment = $this->config->createComment("MasterShaper configured, dumped on ". strftime("%Y-%m-%d %H:%M"));
+      $this->config->appendChild($comment);
+
+   } // startXml();
+
+   private function addElement($name)
+   {
+      $this->root = $this->config->createElement($name);
+      $this->config->appendChild($this->root);
+   } // addElement()
+
+   private function addRootChild($name)
+   {
+      $child = $this->config->createElement($name);
+      $child = $this->root->appendChild($child);
+
+      return $child;
+
+   } // addRootChild()
+
+   private function addValue(&$obj, $key, $value)
+   {
+      $temp = $this->config->createElement($key, $value);
+      $obj->appendChild($temp);
+
+   } // addValue()
+
+   private function addSubChild($child, &$parent)
+   {
+      $temp = $this->config->createElement($child);
+      $temp = $parent->appendChild($temp);
+
+      return $temp;
+
+   } // addSubChild()
+
+} // MASTERSHAPER_EXPORT()
 
 $obj = new MASTERSHAPER_EXPORT();
 $obj->show();
