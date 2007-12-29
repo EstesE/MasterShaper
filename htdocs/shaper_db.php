@@ -138,13 +138,12 @@ class MASTERSHAPER_DB {
    {
       if($this->getConnStatus()) {
 
-         $this->db->setFetchMode($mode);
-
-         if($row = $this->db->queryRow($query))
-            return $row;
+         $row = $this->db->queryRow($query, array(), $mode);
 
          if(PEAR::isError($row))
             $this->throwError($row->getMessage());
+
+         return $row;
 	
       }
       else {
