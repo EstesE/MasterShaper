@@ -23,7 +23,6 @@
 
 require_once "shaper_cfg.php";
 require_once "shaper_db.php";
-require_once "shaper_tmpl.php";
 require_once "shaper_overview.php";
 require_once "shaper_targets.php";
 require_once "shaper_ports.php";
@@ -63,6 +62,8 @@ class MASTERSHAPER {
       }
 
       $this->db  = new MASTERSHAPER_DB(&$this);
+
+      require_once "shaper_tmpl.php";
       $this->tmpl = new MASTERSHAPER_TMPL($this);
 
       if(session_id() == "")
@@ -121,6 +122,11 @@ class MASTERSHAPER {
       @include_once 'Net/IPv4.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "PEAR Net_IPv4 package is missing<br />\n";
+         $missing = true;
+      }
+      @include_once 'smarty/libs/Smarty.class.php';
+      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
+         print "Smarty template engine is missing<br />\n";
          $missing = true;
       }
       ini_restore('track_errors');

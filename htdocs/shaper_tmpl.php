@@ -21,8 +21,6 @@
  *
  ***************************************************************************/
 
-require 'smarty/libs/Smarty.class.php';
-
 class MASTERSHAPER_TMPL extends Smarty {
 
    var $parent;
