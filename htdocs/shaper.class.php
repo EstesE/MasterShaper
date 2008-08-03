@@ -57,7 +57,7 @@ class MASTERSHAPER {
       $this->cfg = new MASTERSHAPER_CFG("config.dat");
 
       /* Check necessary requirements */
-      if(!$this->checkRequirements()) {
+      if(!$this->check_requirements()) {
          exit(1);
       }
 
@@ -95,15 +95,10 @@ class MASTERSHAPER {
    /**
     * check if all requirements are met
     */
-   private function checkRequirements()
+   private function check_requirements()
    {
       if(!function_exists("imagecreatefromjpeg")) {
          print "PHP GD library extension is missing<br />\n";
-         $missing = true;
-      }
-
-      if(!function_exists("sqlite3_open")) {
-         print "PHP SQLite3 library extension is missing<br />\n";
          $missing = true;
       }
 
@@ -113,21 +108,25 @@ class MASTERSHAPER {
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "PEAR HTML_AJAX package is missing<br />\n";
          $missing = true;
+         unset($php_errormsg);
       }
       @include_once 'MDB2.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "PEAR MDB2 package is missing<br />\n";
          $missing = true;
+         unset($php_errormsg);
       }
       @include_once 'Net/IPv4.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "PEAR Net_IPv4 package is missing<br />\n";
          $missing = true;
+         unset($php_errormsg);
       }
       @include_once 'smarty/libs/Smarty.class.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "Smarty template engine is missing<br />\n";
          $missing = true;
+         unset($php_errormsg);
       }
       ini_restore('track_errors');
 
@@ -145,7 +144,7 @@ class MASTERSHAPER {
 
       return true;
 
-   } // checkRequirements()
+   } // check_requirements()
 
    /**
     * check login status
