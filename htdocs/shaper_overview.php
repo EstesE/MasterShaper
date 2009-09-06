@@ -259,9 +259,10 @@ class MASTERSHAPER_OVERVIEW {
          $this->tmpl->assign('chain_direction', $chain->chain_direction);
          $this->tmpl->assign('chain_action', $chain->chain_action);
 
-         if($chain->chain_sl_idx != 0) {
-            $this->tmpl->assign('chain_has_sl', 'true');
-         }
+         if($chain->chain_sl_idx != 0)
+            $this->tmpl->assign('chain_has_sl', true);
+         else
+            $this->tmpl->assign('chain_has_sl', false);
 
          $index++;
          $this->tmpl->assign('smarty.IB.ov_chain.index-'. $np_idx, $index);
