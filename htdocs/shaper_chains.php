@@ -207,8 +207,12 @@ class MASTERSHAPER_CHAINS {
       if(isset($new)) {
 						
          $max_pos = $this->db->db_fetchSingleRow("
-            SELECT MAX(chain_position) as pos
-            FROM ". MYSQL_PREFIX ."chains
+            SELECT
+               MAX(chain_position) as pos
+            FROM
+               ". MYSQL_PREFIX ."chains
+            WHERE
+               chain_netpath_idx='". $_POST['chain_netpath_idx'] ."'
          ");
 
          $this->db->db_query("

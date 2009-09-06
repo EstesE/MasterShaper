@@ -266,8 +266,10 @@ class MASTERSHAPER_PIPES {
          
       if(isset($new)) {
          $max_pos = $this->db->db_fetchSingleRow("
-            SELECT MAX(pipe_position) as pos
-            FROM ". MYSQL_PREFIX ."pipes 
+            SELECT
+               MAX(pipe_position) as pos
+            FROM
+               ". MYSQL_PREFIX ."pipes
             WHERE
                pipe_chain_idx='". $_POST['pipe_chain_idx'] ."'
          ");

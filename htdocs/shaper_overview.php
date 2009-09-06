@@ -379,11 +379,15 @@ class MASTERSHAPER_OVERVIEW {
 
    public function alter_position()
    {
+      if(!isset($_POST['type']))
+         return "Missing object-type to alter position off";
+
       switch($_POST['type']) {
 
          case 'chain':
             $obj_table = "chains";
             $obj_col = "chain";
+            $obj_parent = 'chain_netpath_idx';
             break;
 
          case 'netpath':
@@ -394,36 +398,93 @@ class MASTERSHAPER_OVERVIEW {
          case 'pipe':
             $obj_table = "pipes";
             $obj_col = "pipe";
+            $obj_parent = 'pipe_chain_idx';
+            break;
+
+         default:
+            return "Unkown object-type";
             break;
 
       }
 
       if(!isset($_POST['idx']) || !is_numeric($_POST['idx']))
-         return;
+         return "Id to alter position is missing or not numeric!";
+
+      if(!isset($_POST['to']) || !in_array($_POST['to'], array('up','down')))
+         return "Don't know in which direction I shall alter position!";
 
       $idx = $_POST['idx'];
 
-      // get my current position
-      $my_pos = $this->db->db_fetchSingleRow("
-         SELECT ". $obj_col ."_position as position
-         FROM ". MYSQL_PREFIX .  $obj_table ."
-         WHERE
-            ". $obj_col ."_idx='". $idx ."'
-      ");
+      // get objects current position
+      switch($_POST['type']) {
+         case 'chain':
+         case 'pipe':
+            $query = "
+               SELECT
+                  ". $obj_col ."_position as position,
+                  ". $obj_parent ." as parent_idx
+               FROM
+                  ". MYSQL_PREFIX .  $obj_table ."
+               WHERE
+                  ". $obj_col ."_idx='". $idx ."'
+            ";
+            break;
+         case 'netpath':
+            $query = "
+               SELECT
+                  ". $obj_col ."_position as position
+               FROM
+                  ". MYSQL_PREFIX .  $obj_table ."
+               WHERE
+                  ". $obj_col ."_idx='". $idx ."'
+            ";
+            break;
+      }
 
-      if($_POST['to'] == 1)
+      if(!isset($query))
+         return;
+
+      $my_pos = $this->db->db_fetchSingleRow($query);
+
+      if($_POST['to'] == 'up')
          $new_pos = $my_pos->position - 1;
-      else 
+      elseif($_POST['to'] == 'down')
          $new_pos = $my_pos->position + 1;
+      else
+         $new_pos = $my_pos->position;
 
-      $this->db->db_query("
-         UPDATE ". MYSQL_PREFIX . $obj_table ."
-         SET
-            ". $obj_col ."_position='". $my_pos->position ."'
-         WHERE
-            ". $obj_col ."_position='". $new_pos ."'
-      ");
+      /* new position can not be below null */
+      if($new_pos < 1)
+         $new_pos = 1;
 
+      /* move all other objects away */
+      switch($_POST['type']) {
+         case 'chain':
+         case 'pipe':
+            $this->db->db_query("
+               UPDATE
+                  ". MYSQL_PREFIX . $obj_table ."
+               SET
+                  ". $obj_col ."_position='". $my_pos->position ."'
+               WHERE
+                  ". $obj_col ."_position='". $new_pos ."'
+               AND
+                  ". $obj_parent ."=". $my_pos->parent_idx ."
+            ");
+            break;
+         case 'netpath':
+            $this->db->db_query("
+               UPDATE
+                  ". MYSQL_PREFIX . $obj_table ."
+               SET
+                  ". $obj_col ."_position='". $my_pos->position ."'
+               WHERE
+                  ". $obj_col ."_position='". $new_pos ."'
+            ");
+            break;
+      }
+
+      /* set objects new position */
       $this->db->db_query("
          UPDATE ". MYSQL_PREFIX . $obj_table ."
          SET
