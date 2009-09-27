@@ -143,8 +143,10 @@ class MASTERSHAPER_TMPL extends Smarty {
       }
 
       $result = $this->parent->db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."chains
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."chains
       ");
 
       while($row = $result->fetchrow()) {

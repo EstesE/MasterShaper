@@ -120,6 +120,7 @@ class MASTERSHAPER_PIPES {
                pipe_idx='". $idx ."'
          ");
          $this->tmpl->assign('pipe_idx', $idx);
+         $this->tmpl->assign('pipe_chain_idx', $pipe->pipe_chain_idx);
          $this->tmpl->assign('pipe_name', $pipe->pipe_name);
          $this->tmpl->assign('pipe_active', $pipe->pipe_active);
          $this->tmpl->assign('pipe_direction', $pipe->pipe_direction);
