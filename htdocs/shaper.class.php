@@ -797,12 +797,17 @@ class MASTERSHAPER {
    public function getFilters($pipe_idx)
    {
       return $this->db->db_query("
-         SELECT af.apf_filter_idx as apf_filter_idx
-         FROM ". MYSQL_PREFIX ."assign_filters af
-         INNER JOIN ". MYSQL_PREFIX ."filters f
-            ON af.apf_filter_idx=f.filter_idx
+         SELECT
+            af.apf_filter_idx as apf_filter_idx
+         FROM
+            ". MYSQL_PREFIX ."assign_filters af
+         INNER JOIN
+            ". MYSQL_PREFIX ."filters f
+         ON
+            af.apf_filter_idx=f.filter_idx
          WHERE
-            af.apf_pipe_idx='". $pipe_idx ."' AND 
+            af.apf_pipe_idx='". $pipe_idx ."'
+         AND
             f.filter_active='Y'
       ");
 

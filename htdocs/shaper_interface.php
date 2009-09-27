@@ -1321,38 +1321,58 @@ class MASTERSHAPER_INTERFACE {
 
       while($pipe = $pipes->fetchRow()) {
 
-	 $this->current_pipe+=1;
-	 $my_id = "1:". $this->current_chain . $this->current_pipe;
-	 $this->addRuleComment("pipe ". $pipe->pipe_name ."");
+         $this->current_pipe+=1;
+         $my_id = "1:". $this->current_chain . $this->current_pipe;
+         $this->addRuleComment("pipe ". $pipe->pipe_name ."");
 
-	 $sl = $this->parent->getServiceLevel($pipe->pipe_sl_idx);
+         $sl = $this->parent->getServiceLevel($pipe->pipe_sl_idx);
 
-	 /* add a new class for this pipe */
-	 $this->addClass($my_parent, $my_id, $sl, $chain_direction);
-	 $this->addSubQdisc($this->current_chain . $this->current_pipe .":", $my_id, $sl);
-	 $this->setPipeID($pipe->pipe_idx, $chain_idx, "1:". $this->current_chain . $this->current_pipe); 
+         /* add a new class for this pipe */
+         $this->addClass($my_parent, $my_id, $sl, $chain_direction);
+         $this->addSubQdisc($this->current_chain . $this->current_pipe .":", $my_id, $sl);
+         $this->setPipeID($pipe->pipe_idx, $chain_idx, "1:". $this->current_chain . $this->current_pipe);
 
-	 /* get the nescassary parameters */
-	 $filters = $this->parent->getFilters($pipe->pipe_idx);
+         /* get the nescassary parameters */
+         $filters = $this->parent->getFilters($pipe->pipe_idx);
 
-	 while($filter = $filters->fetchRow()) {
+         if($filters->numRows() > 0) {
 
-	    $detail = $this->parent->getFilter($filter->apf_filter_idx);
+            while($filter = $filters->fetchRow()) {
 
-	    $detail->pipe_src_target = $pipe->pipe_src_target;
-	    $detail->pipe_dst_target = $pipe->pipe_dst_target;
+               $detail = $this->parent->getFilter($filter->apf_filter_idx);
 
-	    /* If this filter matches bidirectional, we src & dst target has to be swapped */
-	    if($pipe->pipe_direction == BIDIRECTIONAL && $chain_direction == "out") {
+               $detail->pipe_src_target = $pipe->pipe_src_target;
+               $detail->pipe_dst_target = $pipe->pipe_dst_target;
 
-	       $tmp = $detail->pipe_src_target;
-	       $detail->pipe_src_target = $detail->pipe_dst_target;
-	       $detail->pipe_dst_target = $tmp;
+               /* If this filter matches bidirectional, we src & dst target has to be swapped */
+               if($pipe->pipe_direction == BIDIRECTIONAL && $chain_direction == "out") {
 
-	    }
+                  $tmp = $detail->pipe_src_target;
+                  $detail->pipe_src_target = $detail->pipe_dst_target;
+                  $detail->pipe_dst_target = $tmp;
 
-	    $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe->pipe_direction, $pipe->pipe_idx);
-	 }
+               }
+
+               $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe->pipe_direction, $pipe->pipe_idx);
+            }
+         }
+         else {
+
+            $detail->pipe_src_target = $pipe->pipe_src_target;
+            $detail->pipe_dst_target = $pipe->pipe_dst_target;
+
+            /* If this filter matches bidirectional, we src & dst target has to be swapped */
+            if($pipe->pipe_direction == BIDIRECTIONAL && $chain_direction == "out") {
+
+               $tmp = $detail->pipe_src_target;
+               $detail->pipe_src_target = $detail->pipe_dst_target;
+               $detail->pipe_dst_target = $tmp;
+
+            }
+
+            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe->pipe_direction, $pipe->pipe_idx);
+
+         }
       }
 
    } // buildPipes()
