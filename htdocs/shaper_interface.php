@@ -469,10 +469,26 @@ class MASTERSHAPER_INTERFACE {
                   if(!$this->check_if_mac($host)) {
                      if($this->isGRE()) {
                         $hex_host = $this->convertIpToHex($host);
-                        $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2 ."");
+                        switch($params1->chain_direction) {
+                           case UNIDIRECTIONAL:
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2 ."");
+                              break;
+                           case BIDIRECTIONAL:
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2 ."");
+                              break;
+                        }
                      }
                      else {
-                     $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2 ."");
+                        switch($params1->chain_direction) {
+                           case UNIDIRECTIONAL:
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2 ."");
+                              break;
+                           case BIDIRECTIONAL:
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                              break;
+                        }
                      }
                   }
                   else {
@@ -493,10 +509,26 @@ class MASTERSHAPER_INTERFACE {
                   if(!$this->check_if_mac($host)) {
                      if($this->isGRE()) {
                         $hex_host = $this->convertIpToHex($host);
-                        $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2 ."");
+                        switch($params1->chain_direction) {
+                           case UNIDIRECTIONAL:
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2 ."");
+                              break;
+                           case BIDIRECTIONAL:
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2 ."");
+                              break;
+                        }
                      }
                      else {
-                        $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                        switch($params1->chain_direction) {
+                           case UNIDIRECTIONAL:
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                              break;
+                           case BIDIRECTIONAL:
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                              break;
+                        }
                      }
                   }
                   else {
@@ -1476,7 +1508,7 @@ class MASTERSHAPER_INTERFACE {
             $detail->pipe_src_target = $pipe->pipe_src_target;
             $detail->pipe_dst_target = $pipe->pipe_dst_target;
 
-            /* If this filter matches bidirectional, we src & dst target has to be swapped */
+            /* If this filter matches bidirectional, src & dst target has to be swapped */
             if($pipe->pipe_direction == BIDIRECTIONAL && $chain_direction == "out") {
 
                $tmp = $detail->pipe_src_target;
