@@ -22,10 +22,10 @@
    <a href="javaScript:refreshContent('networkpaths', '&mode=edit&idx={ $netpath_idx }');">{ $netpath_name }</a>
   </td>
   <td>
-   { $netpath_if1 }
+   { $netpath_if1 } { if $netpath_if1_inside_gre == 'Y' }(inside GRE){ /if }
   </td>
   <td>
-   { $netpath_if2 }
+   { $netpath_if2 } { if $netpath_if2_inside_gre == 'Y' }(inside GRE){ /if }
   </td>
   <td style="text-align: center;">
    <a href="javascript:deleteObj('networkpath', 'networkpaths', '{ $netpath_idx }');"><img src="{ $icon_delete }" alt="delete icon" /></a>

@@ -113,7 +113,9 @@ class MASTERSHAPER_NETPATHS {
          $this->tmpl->assign('netpath_idx', $idx);
          $this->tmpl->assign('netpath_name', $np->netpath_name);
          $this->tmpl->assign('netpath_if1', $np->netpath_if1);
+         $this->tmpl->assign('netpath_if1_inside_gre', $np->netpath_if1_inside_gre);
          $this->tmpl->assign('netpath_if2', $np->netpath_if2);
+         $this->tmpl->assign('netpath_if2_inside_gre', $np->netpath_if2_inside_gre);
          $this->tmpl->assign('netpath_imq', $np->netpath_imq);
          $this->tmpl->assign('netpath_active', $np->netpath_active);
     
@@ -143,7 +145,9 @@ class MASTERSHAPER_NETPATHS {
          $this->tmpl->assign('netpath_name', $netpath->netpath_name);
          $this->tmpl->assign('netpath_active', $netpath->netpath_active);
          $this->tmpl->assign('netpath_if1', $this->parent->getInterfaceName($netpath->netpath_if1));
+         $this->tmpl->assign('netpath_if1_inside_gre', $netpath->netpath_if1_inside_gre);
          $this->tmpl->assign('netpath_if2', $this->parent->getInterfaceName($netpath->netpath_if2));
+         $this->tmpl->assign('netpath_if2_inside_gre', $netpath->netpath_if2_inside_gre);
 
          $index++;
          $this->tmpl->assign('smarty.IB.netpath_list.index', $index);
@@ -185,12 +189,15 @@ class MASTERSHAPER_NETPATHS {
          ");
          $this->db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."network_paths (
-               netpath_name, netpath_if1, netpath_if2, netpath_position,
+               netpath_name, netpath_if1, netpath_if1_inside_gre,
+               netpath_if2, netpath_if2_inside_gre, netpath_position,
                netpath_imq, netpath_active
             ) VALUES (
                '". $_POST['netpath_name'] ."',
                '". $_POST['netpath_if1'] ."',
+               '". $_POST['netpath_if1_inside_gre'] ."',
                '". $_POST['netpath_if2'] ."',
+               '". $_POST['netpath_if2_inside_gre'] ."',
                '". ($max_pos->pos+1) ."',
                '". $_POST['netpath_imq'] ."',
                '". $_POST['netpath_active'] ."'
@@ -203,7 +210,9 @@ class MASTERSHAPER_NETPATHS {
             SET
                netpath_name='". $_POST['netpath_name'] ."',
                netpath_if1='". $_POST['netpath_if1'] ."',
+               netpath_if1_inside_gre='". $_POST['netpath_if1_inside_gre'] ."',
                netpath_if2='". $_POST['netpath_if2'] ."',
+               netpath_if2_inside_gre='". $_POST['netpath_if2_inside_gre'] ."',
                netpath_imq='". $_POST['netpath_imq'] ."',
                netpath_active='". $_POST['netpath_active'] ."'
             WHERE

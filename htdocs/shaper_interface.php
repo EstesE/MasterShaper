@@ -36,7 +36,7 @@ class MASTERSHAPER_INTERFACE {
     *
     * Initialize the MASTERSHAPER_INTERFACE class
     */
-   public function __construct($if_id, &$db, &$parent) 
+   public function __construct($if_id, $if_gre, &$db, &$parent)
    {
       $this->db          = $db;
       $this->parent      = $parent;
@@ -57,6 +57,7 @@ class MASTERSHAPER_INTERFACE {
       $this->if_name        = $if->if_name;
       $this->if_speed       = $if->if_speed;
       $this->if_active      = $if->if_active;
+      $this->if_gre         = $if_gre;
 
    } // __construct()
 
@@ -138,12 +139,33 @@ class MASTERSHAPER_INTERFACE {
 
    } // getId()
 
+   /**
+    * return interface name
+    *
+    * returns the current interface name (ipsec0, eth0, ...)
+    *
+    * @return string
+    */
    private function getName()
    {
 
       return $this->if_name;
 
    } // getName()
+
+   /**
+    * is matching inside GRE tunnel
+    *
+    * @param bool
+    */
+   private function isGRE()
+   {
+      if($this->if_gre == 'Y')
+         return true;
+
+      return false;
+
+   } // isGRE()
 
    private function getInterfaceDetails($if_idx)
    {
@@ -444,8 +466,15 @@ class MASTERSHAPER_INTERFACE {
                $hosts = $this->getTargetHosts($params1->chain_src_target);
 
                foreach($hosts as $host) {
-                  if(!$this->check_if_mac($host))
+                  if(!$this->check_if_mac($host)) {
+                     if($this->isGRE()) {
+                        $hex_host = $this->convertIpToHex($host);
+                        $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2 ."");
+                     }
+                     else {
                      $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2 ."");
+                     }
+                  }
                   else {
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host))
                         list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $host);
@@ -461,8 +490,15 @@ class MASTERSHAPER_INTERFACE {
                $hosts = $this->getTargetHosts($params1->chain_dst_target);
 
                foreach($hosts as $host) {
-                  if(!$this->check_if_mac($host))
-                     $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                  if(!$this->check_if_mac($host)) {
+                     if($this->isGRE()) {
+                        $hex_host = $this->convertIpToHex($host);
+                        $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2 ."");
+                     }
+                     else {
+                        $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                     }
+                  }
                   else {
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host))
                         list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $host);
@@ -478,8 +514,15 @@ class MASTERSHAPER_INTERFACE {
                $src_hosts = $this->getTargetHosts($params1->chain_src_target);
 
                foreach($src_hosts as $src_host) {
-                  if(!$this->check_if_mac($src_host))
-                    $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $src_host ." ";
+                  if(!$this->check_if_mac($src_host)) {
+                     if($this->isGRE()) {
+                        $hex_host = $this->convertIpToHex($src_host);
+                        $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 ";
+                     }
+                     else {
+                        $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $src_host ." ";
+                     }
+                  }
                   else {
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host))
                         list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $src_host);
@@ -492,8 +535,15 @@ class MASTERSHAPER_INTERFACE {
 
                   foreach($dst_hosts as $dst_host) {
 
-                     if(!$this->check_if_mac($dst_host))
-                        $this->addRule($string . "match ip dst ". $dst_host ." flowid ". $params2 ."");
+                     if(!$this->check_if_mac($dst_host)) {
+                        if($this->isGRE()) {
+                           $hex_host = $this->convertIpToHex($dst_host);
+                           $this->addRule($string . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
+                        }
+                        else {
+                           $this->addRule($string . "match ip dst ". $dst_host ." flowid ". $params2);
+                        }
+                     }
                      else {
                         if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $dst_host))
                            list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $dst_host);
@@ -754,16 +804,31 @@ class MASTERSHAPER_INTERFACE {
                $hosts = $this->getTargetHosts($filter->pipe_src_target);
                foreach($hosts as $host) {
                   if(!$this->check_if_mac($host)) {
-                     foreach($tmp_array as $tmp_arr) {
-		     
-                        switch($direction) {
-                           case UNIDIRECTIONAL:
-                              $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
-                              break;
-                           case BIDIRECTIONAL:
-                              $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
-                              $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
-                              break;
+                     if($this->isGRE()) {
+                        foreach($tmp_array as $tmp_arr) {
+                           $hex_host = $this->convertIpToHex($host);
+                           switch($direction) {
+                              case UNIDIRECTIONAL:
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
+                                 break;
+                              case BIDIRECTIONAL:
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 break;
+                           }
+                        }
+                     }
+                     else {
+                        foreach($tmp_array as $tmp_arr) {
+                           switch($direction) {
+                              case UNIDIRECTIONAL:
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 break;
+                              case BIDIRECTIONAL:
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 break;
+                           }
                         }
                      }  
                   }		 
@@ -793,16 +858,32 @@ class MASTERSHAPER_INTERFACE {
                $hosts = $this->getTargetHosts($filter->pipe_dst_target);
                foreach($hosts as $host) {
                   if(!$this->check_if_mac($host)) {
-                     foreach($tmp_array as $tmp_arr) {
+                     if($this->isGRE()) {
+                        foreach($tmp_array as $tmp_arr) {
+                           $hex_host = $this->convertIpToHex($host);
+                           switch($direction) {
+                              case UNIDIRECTIONAL:
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 break;
+                              case BIDIRECTIONAL:
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
+                                 break;
+                           }
+                        }
+                     }
+                     else {
+                        foreach($tmp_array as $tmp_arr) {
 
-                        switch($direction) {
-                           case UNIDIRECTIONAL:
-                              $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
-                              break;
-                           case BIDIRECTIONAL:
-                              $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
-                              $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
-                              break;
+                           switch($direction) {
+                              case UNIDIRECTIONAL:
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 break;
+                              case BIDIRECTIONAL:
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 break;
+                           }
                         }
                      }
                   }
@@ -834,7 +915,13 @@ class MASTERSHAPER_INTERFACE {
 
                foreach($src_hosts as $src_host) {
                   if(!$this->check_if_mac($src_host)) {
-                     $tmp_str = "u32 match ip [DIR1] ". $src_host ." ";
+                     if($this->isGRE()) {
+                        $hex_host = $this->convertIpToHex($src_host);
+                        $tmp_str = "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR1] ";
+                     }
+                     else {
+                        $tmp_str = "u32 match ip [DIR1] ". $src_host ." ";
+                     }
                   }
                   else {
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host))
@@ -850,27 +937,55 @@ class MASTERSHAPER_INTERFACE {
 
                      if(!$this->check_if_mac($dst_host)) {
 
-                        foreach($tmp_array as $tmp_arr) {
+                        if($this->isGRE()) {
+                           foreach($tmp_array as $tmp_arr) {
+                              $hex_host = $this->convertIpToHex($dst_host);
+                              switch($direction) {
 
-                           switch($direction) {
+                                 case UNIDIRECTIONAL:
+                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
+                                    $string = str_replace("[DIR1]", "36", $string);
+                                    $string = str_replace("[DIR2]", "40", $string);
+                                    $this->addRule($string ." flowid ". $my_id);
+                                    break;
 
-                              case UNIDIRECTIONAL:
-                                 $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
-                                 $string = str_replace("[DIR1]", "src", $string);
-                                 $string = str_replace("[DIR2]", "dst", $string);
-                                 $this->addRule($string ." flowid ". $my_id);
-                                 break;
+                                 case BIDIRECTIONAL:
+                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
+                                    $string = str_replace("[DIR1]", "36", $string);
+                                    $string = str_replace("[DIR2]", "40", $string);
+                                    $this->addRule($string ." flowid ". $my_id);
+                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
+                                    $string = str_replace("[DIR1]", "40", $string);
+                                    $string = str_replace("[DIR2]", "36", $string);
+                                    $this->addRule($string ." flowid ". $my_id);
+                                    break;
+                              }
+                           }
+                        }
+                        else {
 
-                              case BIDIRECTIONAL:
-                                 $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
-                                 $string = str_replace("[DIR1]", "src", $string);
-                                 $string = str_replace("[DIR2]", "dst", $string);
-                                 $this->addRule($string ." flowid ". $my_id);
-                                 $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
-                                 $string = str_replace("[DIR1]", "dst", $string);
-                                 $string = str_replace("[DIR2]", "src", $string);
-                                 $this->addRule($string ." flowid ". $my_id);
-                                 break;
+                           foreach($tmp_array as $tmp_arr) {
+
+                              switch($direction) {
+
+                                 case UNIDIRECTIONAL:
+                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
+                                    $string = str_replace("[DIR1]", "src", $string);
+                                    $string = str_replace("[DIR2]", "dst", $string);
+                                    $this->addRule($string ." flowid ". $my_id);
+                                    break;
+
+                                 case BIDIRECTIONAL:
+                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
+                                    $string = str_replace("[DIR1]", "src", $string);
+                                    $string = str_replace("[DIR2]", "dst", $string);
+                                    $this->addRule($string ." flowid ". $my_id);
+                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
+                                    $string = str_replace("[DIR1]", "dst", $string);
+                                    $string = str_replace("[DIR2]", "src", $string);
+                                    $this->addRule($string ." flowid ". $my_id);
+                                    break;
+                              }
                            }
                         }
                      }
@@ -1442,6 +1557,31 @@ class MASTERSHAPER_INTERFACE {
       return false;
 
    } // check_if_mac()
+
+   /**
+    * convert an IP address into a hex value
+    *
+    * @param string $IP
+    * @return string
+    */
+   private function convertIpToHex($host)
+   {
+      $ipv4 = new Net_IPv4;
+      $parsed = $ipv4->parseAddress($host);
+      if(!$ipv4->validateIP($parsed->ip))
+         return _("Incorrect IP address! Can not convert it to hex!");
+      if(!$ipv4->validateNetmask($parsed->netmask))
+         return _("Incorrect Netmask! Can not convert it to hex!");
+
+      if(($hex_host = $ipv4->atoh($parsed->ip)) == false)
+         die(_("Failed to convert ". $parsed->ip ." to hex!"));
+
+      if(($hex_subnet = $ipv4->atoh($parsed->netmask)) == false)
+         die(_("Failed to convert ". $parsed->netmask ." to hex!"));
+
+      return array('ip' => $hex_host, 'netmask' => $hex_subnet);
+
+   } // convertIpToHex
 
 } // class MASTERSHAPER_INTERFACE
 
