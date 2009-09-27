@@ -197,18 +197,36 @@ class MASTERSHAPER_PIPES {
          return;
       }
 
-      $unused_filters = $this->db->db_query("
-         SELECT DISTINCT f.filter_idx, f.filter_name
-         FROM ". MYSQL_PREFIX ."filters f
-         INNER JOIN (
-            SELECT apf_filter_idx
-            FROM ". MYSQL_PREFIX ."assign_filters
+      if(!isset($params['pipe_idx'])) {
+         $unused_filters = $this->db->db_query("
+            SELECT
+               filter_idx, filter_name
+            FROM
+               ". MYSQL_PREFIX ."filters
+            ORDER BY
+               filter_name
+         ");
+      }
+      else {
+         $unused_filters = $this->db->db_query("
+            SELECT DISTINCT
+               f.filter_idx, f.filter_name
+            FROM
+               ". MYSQL_PREFIX ."filters f
+            LEFT OUTER JOIN (
+               SELECT DISTINCT
+                  apf_filter_idx, apf_pipe_idx
+               FROM
+                  ". MYSQL_PREFIX ."assign_filters
+               WHERE
+                  apf_pipe_idx=". $this->db->db_quote($params['pipe_idx']) ."
+            ) apf
+            ON
+               apf.apf_filter_idx=f.filter_idx
             WHERE
-               apf_pipe_idx!='". $params['pipe_idx'] ."'
-         ) apf
-         ON
-            apf.apf_filter_idx=f.filter_idx
-      ");
+               apf.apf_pipe_idx IS NULL
+         ");
+      }
          
       while($filter = $unused_filters->fetchrow()) {
          $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
@@ -227,12 +245,17 @@ class MASTERSHAPER_PIPES {
       }
 
       $used_filters = $this->db->db_query("
-         SELECT DISTINCT f.filter_idx, f.filter_name
-         FROM ". MYSQL_PREFIX ."filters f
+         SELECT DISTINCT
+            f.filter_idx, f.filter_name
+         FROM
+            ". MYSQL_PREFIX ."filters f
          INNER JOIN (
-            SELECT apf_filter_idx
-            FROM ". MYSQL_PREFIX ."assign_filters
-            WHERE apf_pipe_idx='". $params['pipe_idx'] ."'
+            SELECT
+               apf_filter_idx
+            FROM
+               ". MYSQL_PREFIX ."assign_filters
+            WHERE
+               apf_pipe_idx='". $params['pipe_idx'] ."'
          ) apf
          ON
             apf.apf_filter_idx=f.filter_idx
