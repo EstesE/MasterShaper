@@ -423,9 +423,26 @@ class MASTERSHAPER_OVERVIEW {
             $query = "
                SELECT
                   ". $obj_col ."_position as position,
-                  ". $obj_parent ." as parent_idx
+                  ". $obj_parent ." as parent_idx,
+                  (
+                     /* get colums max position */
+                     SELECT
+                        MAX(". $obj_col ."_position)
+                     FROM
+                        ". MYSQL_PREFIX . $obj_table ."
+                     WHERE
+                        /* but only for our parents objects */
+                        ". $obj_parent ." = (
+                        SELECT
+                           ". $obj_parent ."
+                        FROM
+                           ". MYSQL_PREFIX . $obj_table ."
+                        WHERE
+                           ". $obj_col ."_idx='". $idx ."'
+                     )
+                  ) as max
                FROM
-                  ". MYSQL_PREFIX .  $obj_table ."
+                  ". MYSQL_PREFIX . $obj_table ."
                WHERE
                   ". $obj_col ."_idx='". $idx ."'
             ";
@@ -433,7 +450,14 @@ class MASTERSHAPER_OVERVIEW {
          case 'netpath':
             $query = "
                SELECT
-                  ". $obj_col ."_position as position
+                  ". $obj_col ."_position as position,
+                  (
+                     /* get colums max position */
+                     SELECT
+                        MAX(". $obj_col ."_position)
+                     FROM
+                        ". MYSQL_PREFIX . $obj_table ."
+                  ) as max
                FROM
                   ". MYSQL_PREFIX .  $obj_table ."
                WHERE
@@ -447,43 +471,99 @@ class MASTERSHAPER_OVERVIEW {
 
       $my_pos = $this->db->db_fetchSingleRow($query);
 
-      if($_POST['to'] == 'up')
-         $new_pos = $my_pos->position - 1;
-      elseif($_POST['to'] == 'down')
-         $new_pos = $my_pos->position + 1;
+      if($_POST['to'] == 'up') {
+         /* if we are not at the top most position */
+         if($my_pos->position != 1)
+            $new_pos = $my_pos->position - 1;
+         else
+            $new_pos = -1;
+      }
+      elseif($_POST['to'] == 'down') {
+         /* if we are not at the bottom most position */
+         if($my_pos->position != $my_pos->max)
+            $new_pos = $my_pos->position + 1;
+         else
+            $new_pos = -2;
+      }
       else
          $new_pos = $my_pos->position;
 
+      /* if no position will be changed, return */
+      if($new_pos == $my_pos->position)
+         return "ok";
+
+      //return $new_pos ." ". $my_pos->position ." ". $my_pos->max;
       /* new position can not be below null */
-      if($new_pos < 1)
+      if($new_pos == 0)
          $new_pos = 1;
 
-      /* move all other objects away */
-      switch($_POST['type']) {
-         case 'chain':
-         case 'pipe':
-            $this->db->db_query("
-               UPDATE
-                  ". MYSQL_PREFIX . $obj_table ."
-               SET
-                  ". $obj_col ."_position='". $my_pos->position ."'
-               WHERE
-                  ". $obj_col ."_position='". $new_pos ."'
-               AND
-                  ". $obj_parent ."=". $my_pos->parent_idx ."
-            ");
-            break;
-         case 'netpath':
-            $this->db->db_query("
-               UPDATE
-                  ". MYSQL_PREFIX . $obj_table ."
-               SET
-                  ". $obj_col ."_position='". $my_pos->position ."'
-               WHERE
-                  ". $obj_col ."_position='". $new_pos ."'
-            ");
-            break;
+      /* just moving ... */
+      if($new_pos > 0) {
+         /* move all other objects away */
+         switch($_POST['type']) {
+            case 'chain':
+            case 'pipe':
+               $this->db->db_query("
+                  UPDATE
+                     ". MYSQL_PREFIX . $obj_table ."
+                  SET
+                     ". $obj_col ."_position='". $my_pos->position ."'
+                  WHERE
+                     ". $obj_col ."_position='". $new_pos ."'
+                  AND
+                     ". $obj_parent ."=". $my_pos->parent_idx ."
+               ");
+               break;
+            case 'netpath':
+               $this->db->db_query("
+                  UPDATE
+                     ". MYSQL_PREFIX . $obj_table ."
+                  SET
+                     ". $obj_col ."_position='". $my_pos->position ."'
+                  WHERE
+                     ". $obj_col ."_position='". $new_pos ."'
+               ");
+               break;
+         }
       }
+      else {
+
+         /* move all object one position up/down */
+         if($_POST['to'] == 'up')
+            $dir = "-1";
+         elseif($_POST['to'] == 'down')
+            $dir = "+1";
+
+         switch($_POST['type']) {
+            case 'chain':
+            case 'pipe':
+               $this->db->db_query("
+                  UPDATE
+                     ". MYSQL_PREFIX . $obj_table ."
+                  SET
+                     ". $obj_col ."_position=". $obj_col ."_position" . $dir ."
+                  WHERE
+                     ". $obj_parent ."=". $my_pos->parent_idx ."
+               ");
+               break;
+            case 'netpath':
+               $this->db->db_query("
+                  UPDATE
+                     ". MYSQL_PREFIX . $obj_table ."
+                  SET
+                     ". $obj_col ."_position=". $obj_col ."_position" . $dir ."
+                  WHERE
+                     ". $obj_col ."_position='". $new_pos ."'
+               ");
+               break;
+         }
+
+      }
+
+      if($new_pos == -1)
+         $new_pos = $my_pos->max;
+      if($new_pos == -2)
+         $new_pos = 1;
 
       /* set objects new position */
       $this->db->db_query("
