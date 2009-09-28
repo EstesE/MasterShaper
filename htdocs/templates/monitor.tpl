@@ -58,6 +58,14 @@
   { /if }
   { if $monitor == "pipes" || $monitor == "chains" }
   <tr>
+   <td style="text-align: center;">
+    Interface:<br />
+    <select name="showif" onchange="graph_set_interface(this);">
+     { interface_select_list }
+    </select>
+   </td>
+  </tr>
+  <tr>
    <td>
     <table class="noborder" style="width: 100%; text-align: center">
      <tr>

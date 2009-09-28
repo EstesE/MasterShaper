@@ -965,6 +965,11 @@ class MASTERSHAPER {
 
    public function change_graph()
    {
+      if(!isset($_POST['action']))
+         return "missing action";
+      if(!isset($_POST['value']))
+         return "missing value";
+
       switch($_POST['action']) {
          case 'graphmode':
             $_SESSION['graphmode'] = $_POST['value'];
