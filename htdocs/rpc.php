@@ -100,6 +100,10 @@ class MASTERSHAPER_RPC {
             }
             break;
 
+         case 'jqplot':
+            print $ms->get_jqplot_values();
+            break;
+
          case 'changegraph':
             print $ms->change_graph();
             break;

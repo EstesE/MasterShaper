@@ -185,6 +185,134 @@ function monitor(mode)
 
 } // monitor()
 
+function draw_jqplot()
+{
+   var url        = 'rpc.php?action=jqplot';
+   var values     = HTML_AJAX.grab(encodeURI(url));
+   var data       = parse_json(values);
+
+   if(data == undefined)
+      return "Something went wrong when fetching values from server!";
+
+   var start_time  = data.start_time;
+   var end_time    = data.end_time;
+   var interface   = data.interface;
+   var scalemode   = data.scalemode;
+   var graphmode   = data.graphmode;
+
+   if(data.names)
+      var names_obj= parse_json(data.names);
+
+   /* default values */
+   var seriesStack = false;
+   var seriesFill  = true;
+   var seriesRenderer        = $.jqplot.LineRenderer;
+   var seriesRendererOptions = {};
+
+   if(!data.data) {
+      window.alert(values);
+      return;
+   }
+
+   var plot_obj  = parse_json(data.data);
+   var plot_arr  = new Array();
+   var names_arr = new Array();
+
+   var title = 'Current Bandwidth Usage - '+ end_time +" - Interface "+ interface;
+
+   if(scalemode == "kbit")
+      ylabel = "Bandwidth kbits per second";
+   if(scalemode == "kbyte")
+      ylabel = "Bandwidth kbytes per second";
+   if(scalemode == "Mbit")
+      ylabel = "Bandwidth Mbits per second";
+   if(scalemode == "Mbyte")
+      ylabel = "Bandwidth Mbytes per second";
+   if(scalemode == undefined)
+      ylabel = "Bandwidth per second";
+
+   /* transform object to array */
+   var j = 0;
+   for (var i in plot_obj) {
+      plot_arr[j] = plot_obj[i];
+      j++;
+   }
+   j = 0;
+   for (var i in names_obj) {
+      names_arr[j] = { label: names_obj[i] };
+      j++;
+   }
+
+   if(plot_arr.length < 1) {
+      document.getElementById("jqp_monitor").innerHTML = 'No data to display';
+   }
+
+   /* accumulated lines */
+   if(graphmode == 0) {
+      seriesStack = true;
+   }
+   /* simple lines */
+   if(graphmode == 1) {
+      seriesFill = false;
+   }
+   /* bars */
+   if(graphmode == 2) {
+      seriesRenderer          = $.jqplot.BarRenderer;
+      seriesRendererOptions   = { barPadding: 8, barMargin: 20 };
+   }
+   /* pie */
+   if(graphmode == 3) {
+      seriesRenderer          = $.jqplot.PieRenderer;
+      seriesRendererOptions   = { sliceMargin:8 };
+   }
+
+   $('#jqp_monitor').empty();
+   $.jqplot('jqp_monitor', plot_arr, {
+      title:       title,
+      stackSeries: seriesStack,
+      axes:{
+         yaxis: {
+            labelRenderer:     $.jqplot.CanvasAxisLabelRenderer,
+            label:             ylabel,
+            autoscale:         true,
+            min:               0,
+            angel:             90,
+            enableFontSupport: true
+         },
+         xaxis: {
+            autoscale:  false,
+         }
+      },
+      seriesDefaults: {
+         fill:       seriesFill,
+         showMarker: false,
+         renderer:   seriesRenderer,
+         rendererOptions: seriesRendererOptions
+      },
+      series: names_arr,
+      cursor:{
+         zoom:        true,
+         showTooltip: true
+      },
+      /*legend:{
+         show:       true,
+         location:   'ne',
+         xoffset:    -70
+      }*/
+    }
+   );
+
+   var legend = document.getElementById('jqp_legend');
+
+   legend.innerHTML = '';
+
+   for(var arrkey in names_arr) {
+      legend.innerHTML+= "<br />" + names_arr[arrkey].label;
+   }
+
+
+}
+
 function check_login()
 {
    if(document.forms['login'].user_name.value == "") {
@@ -253,7 +381,8 @@ function WSR_getElementsByClassName(oElm, strTagName, oClassNames){
          arrReturnElements.push(oElement);
       }
    }
-   return (arrReturnElements)
+
+   return (arrReturnElements);
 }
 
 function updateSubMenu(mode)
@@ -278,6 +407,7 @@ function deleteObj(module, target, idx)
    else {
       window.alert(retr);
    }
+
 } // delete()
 
 function currentRadio(obj)
@@ -440,6 +570,9 @@ function image_update()
       /* reload the image with a new uniq id */
       document.getElementById("monitor_image").src = url + uniq;
    }
+   if(document.getElementById("jqp_monitor")) {
+      draw_jqplot();
+   }
 
 } // image_update()
 
@@ -460,6 +593,11 @@ function image_start_autoload()
 {
    if(autoload == undefined) {
       autoload = setTimeout("image_autoload()", 5000);
+   }
+
+   /* load jqplot for first time */
+   if(document.getElementById("jqp_monitor")) {
+      draw_jqplot();
    }
 
 } // image_start_autoload()
@@ -545,3 +683,24 @@ function setFocus(obj)
       }
    }
 } // setFocus()
+
+function parse_json(values)
+{
+   if(!values)
+      return;
+
+   // use browser-built in function if it supports it
+   if(typeof JSON === "object" && JSON.parse) {
+      var data = JSON.parse(values);
+   }
+   else {
+      // sanitize string and eval it
+      var data = !(
+            /[^,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]/.test(
+               values.replace(/"(\\.|[^"\\])*"/g, '')
+            )
+         ) && eval('(' + values + ')');
+   }
+   
+   return data;
+}

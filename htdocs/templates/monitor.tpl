@@ -1,8 +1,8 @@
-{ if $monitor == "chains" }
+{ if $monitor == "chains" || $monitor == "chainsjqp" }
  {start_table icon=$icon_chains alt="chain icon" title="Traffic Monitoring - $view" }
-{ elseif $monitor == "pipes" }
+{ elseif $monitor == "pipes" || $monitor == "pipesjqp" }
  {start_table icon=$icon_pipes alt="pipe icon" title="Traffic Monitoring - $view" }
-{ elseif $monitor == "bandwidth" }
+{ elseif $monitor == "bandwidth" || $monitor == "bandwidthjqp" }
  {start_table icon=$icon_bandwidth alt="bandwidth icon" title="Traffic Monitoring - $view" }
 { /if }
  <table style="width: 100%;" class="withborder">
@@ -11,13 +11,22 @@
     Graph Options
    </td>
    <td style="text-align: center; width: 900px; height: 350px" rowspan="10">
-    <img src="{ $image_loc }" id="monitor_image" alt="monitor image" />
+    { if $monitor == "chainsjqp" || $monitor == "pipesjqp" || $monitor == "bandwidthjqp" }
+     <div id="jqp_monitor"></div>
+    { else }
+     <img src="{ $image_loc }" id="monitor_image" alt="monitor image" />
+    { /if }
+   </td>
+   <td style="height: 350px" rowspan="10">
+    { if $monitor == "chainsjqp" || $monitor == "pipesjqp" || $monitor == "bandwidthjqp" }
+     <div id="jqp_legend"></div>
+    { /if }
    </td>
   </tr>
   <tr>
    <td>&nbsp;</td>
   </tr>
-  { if $monitor == "bandwidth" } 
+  { if $monitor == "bandwidth" || $monitor == "bandwidthjqp" } 
   <tr>
    <td>
     <table class="noborder" style="width: 100%; text-align: center;">
@@ -36,7 +45,7 @@
     </table>
    </td>
   </tr>
-  { elseif $monitor == "pipes" }
+  { elseif $monitor == "pipes" || $monitor == "pipesjqp" }
   <tr>
    <td style="text-align: center;">
     <table class="noborder" style="width: 100%; text-align: center;">
@@ -47,8 +56,8 @@
      </tr>
      <tr>
       <td>
-       <select name="showchain" onchange="graph_set_chain(this);">
         { chain_select_list }
+       <select name="showchain" onchange="graph_set_chain(this);">
        </select>
       </td>
      </tr>
@@ -56,7 +65,7 @@
    </td>
   </tr>
   { /if }
-  { if $monitor == "pipes" || $monitor == "chains" }
+  { if $monitor == "pipes" || $monitor == "chains" || $monitor == "pipesjqp" || $monitor == "chainsjqp" }
   <tr>
    <td style="text-align: center;">
     Interface:<br />

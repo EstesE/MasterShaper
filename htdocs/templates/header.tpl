@@ -8,6 +8,17 @@
   <script type="text/javascript" src="shaper.js"></script>
   <link rel="shortcut icon" href="icons/favicon.ico" type="image/png" />
   <link rel="icon" href="icons/favicon.ico" type="image/png" />
+  <!--[if IE]><script language="javascript" type="text/javascript" src="excanvas.js"></script><![endif]-->
+  <script language="javascript" type="text/javascript" src="jqplot/jquery-1.3.2.min.js"></script>
+  <script language="javascript" type="text/javascript" src="jqplot/jquery.jqplot.min.js"></script>
+  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.cursor.min.js"></script>
+  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+  <!--<script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>-->
+  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.pieRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.barRenderer.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="jqplot/jquery.jqplot.css" />
  </head>
  <body onload="init_shaper();">
   <!-- header cell -->

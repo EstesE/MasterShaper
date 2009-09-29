@@ -20,6 +20,7 @@
 	tc is part of the iproute2 utilities (<a href="http://linux-net.osdl.org/index.php/Iproute2">osdl.org</a>).<br />
 	MySQL is a product of MySQL AB (<a href="http://www.mysql.com">http://www.mysql.com</a>).<br />
 	PHP is a product of The PHP Group (<a href="http://www.php.net">http://www.php.net</a>).<br />
+   jqPlot is a project Chris Leonello (<a href="http://www.jqplot.com">http://www.jqplot.com</a>).<br />
 	<br />
 	<hr />
 	<br />

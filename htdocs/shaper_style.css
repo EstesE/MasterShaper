@@ -125,3 +125,9 @@ div#submenubox {
 	width:			100%;
 	background-color: 	#dddddd;
 }
+
+div#jqp_monitor {
+   height:           350px;
+   width:            900px;
+   padding:          15px;
+}

@@ -242,6 +242,9 @@ class MASTERSHAPER {
             $string.= $this->addSubMenuItem("javascript:monitor('chains');", "icons/flag_blue.gif", _("Chains"));
             $string.= $this->addSubMenuItem("javascript:monitor('pipes');", "icons/flag_pink.gif", _("Pipes"));
             $string.= $this->addSubMenuItem("javascript:monitor('bandwidth');", "icons/bandwidth.gif", _("Bandwidth"));
+            $string.= $this->addSubMenuItem("javascript:monitor('chainsjqp');", "icons/flag_blue.gif", _("Chains jqPlot"));
+            $string.= $this->addSubMenuItem("javascript:monitor('pipesjqp');", "icons/flag_pink.gif", _("Pipes jqPlot"));
+            $string.= $this->addSubMenuItem("javascript:monitor('bandwidthjqp');", "icons/bandwidth.gif", _("Bandwidth jqPlot"));
             $string.= "</tr></table>\n";
             break;
 
@@ -962,6 +965,22 @@ class MASTERSHAPER {
       $obj->show($mode);
    
    } // monitor()
+
+   /**
+    * return JSON data for jqPlot
+    *
+    * @return string
+    */
+   public function get_jqplot_values()
+   {
+      if(!$this->is_logged_in()) {
+         return _("not logged in");
+      }
+
+      $obj = new MASTERSHAPER_MONITOR($this);
+      return $obj->get_jqplot_values($mode);
+ 
+   } // get_jqplot_values()
 
    public function change_graph()
    {
