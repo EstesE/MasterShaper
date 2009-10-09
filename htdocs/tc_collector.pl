@@ -128,17 +128,16 @@ while(1) {
             # extract class id from the line string
             $class_id = extract_class_id($line);
 
-            if($class_id ne 0) {
+            if($class_id eq 0) {
+               next;
+            }
 
-               printMsg(LOG_DEBUG, "Fetching data interface: ". $tc_if .", class: ". $class_id);
+            printMsg(LOG_DEBUG, "Fetching data interface: ". $tc_if .", class: ". $class_id);
 
-               # we already counting this class?
-               if(!defined($counter{$tc_if ."_". $class_id})) {
-
-                  $counter{$tc_if ."_". $class_id} = 0;
-                  $last_bytes{$tc_if ."_". $class_id} = 0;
-
-               }
+            # we already counting this class?
+            if(!defined($counter{$tc_if ."_". $class_id})) {
+               $counter{$tc_if ."_". $class_id} = 0;
+               $last_bytes{$tc_if ."_". $class_id} = 0;
             }
          }
          else {
@@ -176,68 +175,67 @@ while(1) {
       }
    }
 
-   if($sec_counter eq 10) {
+   if($sec_counter ne 10) {
+      next;
+   }
 
-      @tcs = keys(%bandwidth);
-      $data = "";
+   @tcs = keys(%bandwidth);
+   $data = "";
 
-      printMsg(LOG_WARN, "Storing tc statistic now.");
+   printMsg(LOG_WARN, "Storing tc statistic now.");
 
-      foreach $tc (@tcs) {
+   foreach $tc (@tcs) {
 
-         ($tc_if, $class_id) = split('_', $tc);
+      ($tc_if, $class_id) = split('_', $tc);
 
-         # calculate the average bandwidth
-         if($counter{$tc_if ."_". $class_id} > 0) {
-            $aver_bw = $bandwidth{$tc_if ."_". $class_id}/($counter{$tc_if ."_". $class_id}); 
-         } else {
-            $aver_bw = 0;
-         }
-			
-         # bytes to bits
-         $aver_bw = round($aver_bw*8);
-
-         printMsg(LOG_DEBUG, "Interface: ". $tc_if .", class: ". $class_id .", Bandwidth: ". $aver_bw ."bit/s");
-
-         $data.= $tc_if ."_". $class_id ."=". $aver_bw .",";
-
-         # this class has been calculated, make all ready for the next one
-         $counter{$tc_if ."_". $class_id} = 0;
-         $bandwidth{$tc_if ."_". $class_id} = 0;
-
+      # calculate the average bandwidth
+      if($counter{$tc_if ."_". $class_id} > 0) {
+         $aver_bw = $bandwidth{$tc_if ."_". $class_id}/($counter{$tc_if ."_". $class_id});
+      } else {
+         $aver_bw = 0;
       }
 
-      if($data ne "") {
-         $data = substr($data, 0, length($data)-1);
-      }
-		     
-      if($data ne "") {
-         # printMsg($data);
-         $sth = $dbh->prepare("
-            INSERT INTO ". $config{'mysql_prefix'} ."stats (stat_data, stat_time) 
-            VALUES ('". $data ."', '". $now ."')
-         ") || printMsg(LOG_WARN, "Error on preparing data: ". $dbh->errstr);
+      # bytes to bits
+      $aver_bw = round($aver_bw*8);
 
-         $sth->execute() || printMsg(LOG_WARN, "Error on inserting data: ". $sth->errstr);
-         $sth->finish();
+      printMsg(LOG_DEBUG, "Interface: ". $tc_if .", class: ". $class_id .", Bandwidth: ". $aver_bw ."bit/s");
 
-         printMsg(LOG_WARN, "Statistics stored in MySQL database.");
-      }
-      else {
-         printMsg(LOG_WARN, "No data available for statistics. tc rules loaded?");
-      }
+      $data.= $tc_if ."_". $class_id ."=". $aver_bw .",";
 
-      # delete old samples
-      $dbh->do("DELETE FROM ". $config{'mysql_prefix'} ."stats WHERE stat_time < ". ($now-300) ."");
-
-      # reset helper vars
-      %bandwidth = ();
-      $sec_counter = 0;
+      # this class has been calculated, make all ready for the next one
+      $counter{$tc_if ."_". $class_id} = 0;
+      $bandwidth{$tc_if ."_". $class_id} = 0;
 
    }
 
-   sleep(1);
+   if($data ne "") {
+      $data = substr($data, 0, length($data)-1);
+   }
 
+   if($data ne "") {
+      # printMsg($data);
+      $sth = $dbh->prepare("
+         INSERT INTO ". $config{'mysql_prefix'} ."stats (stat_data, stat_time)
+         VALUES ('". $data ."', '". $now ."')
+      ") || printMsg(LOG_WARN, "Error on preparing data: ". $dbh->errstr);
+
+      $sth->execute() || printMsg(LOG_WARN, "Error on inserting data: ". $sth->errstr);
+      $sth->finish();
+
+      printMsg(LOG_WARN, "Statistics stored in MySQL database.");
+   }
+   else {
+      printMsg(LOG_WARN, "No data available for statistics. tc rules loaded?");
+   }
+
+   # delete old samples
+   $dbh->do("DELETE FROM ". $config{'mysql_prefix'} ."stats WHERE stat_time < ". ($now-300) ."");
+
+   # reset helper vars
+   %bandwidth = ();
+   $sec_counter = 0;
+
+   sleep(1);
 }
 
 # disconnect from database
@@ -299,30 +297,27 @@ sub extract_class_id {
 
    $line = shift;
 
-   if($line =~ /class/) {
-
-      @temp_array = ();
-      @temp_array = split(' ', $line);
-      return $temp_array[2];
-
+   if($line !~ /class/) {
+      return 0;
    }
 
-   return 0;
+   @temp_array = ();
+   @temp_array = split(' ', $line);
+   return $temp_array[2];
 }
 
 sub extract_bytes {
 
    $line = shift;
 
-   if($line =~ /Sent/) {
-
-      @temp_array = ();
-      @temp_array = split(' ', $line);
-      return $temp_array[1];
-
+   if($line !~ /Sent/) {
+      return -1;
    }
 
-   return -1;
+   @temp_array = ();
+   @temp_array = split(' ', $line);
+   return $temp_array[1];
+
 }
 
 sub getOption {
