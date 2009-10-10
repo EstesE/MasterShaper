@@ -1,0 +1,145 @@
+,0,HOPOPT,"IPv6\ Hop\-by\-Hop\ Option\ RFC1883",N
+,1,ICMP,"Internet\ Control\ Message\ RFC792",N
+,2,IGMP,"Internet\ Group\ Management\ RFC1112",N
+,3,GGP,"Gateway\-to\-Gateway\ RFC823",N
+,4,IP,"IP\ in\ IP\ encapsulation\ RFC2003",N
+,5,ST,"Stream\ RFC1190RFC1819",N
+,6,TCP,"Transmission\ Control\ RFC793",N
+,7,CBT,"CBT\ Ballardie",N
+,8,EGP,"Exterior\ Gateway\ Protocol\ RFC888DLM1",N
+,9,IGP,"any\ private\ interior\ gateway\ IANA",N
+,10,BBN-RCC-MON,"BBN\ RCC\ Monitoring\ SGC",N
+,11,NVP-II,"Network\ Voice\ Protocol\ RFC741SC3",N
+,12,PUP,"PUP\ PUPXEROX",N
+,13,ARGUS,"ARGUS\ RWS4",N
+,14,EMCON,"EMCON\ BN7",N
+,15,XNET,"Cross\ Net\ Debugger\ IEN158JFH2",N
+,16,CHAOS,"Chaos\ NC3",N
+,17,UDP,"User\ Datagram\ RFC768JBP",N
+,18,MUX,"Multiplexing\ IEN90JBP",N
+,19,DCN-MEAS,"DCN\ Measurement\ Subsystems\ DLM1",N
+,20,HMP,"Host\ Monitoring\ RFC869RH6",N
+,21,PRM,"Packet\ Radio\ Measurement\ ZSU",N
+,22,XNS-IDP,"XEROX\ NS\ IDP\ ETHERNETXEROX",N
+,23,TRUNK-1,"Trunk\-1\ BWB6",N
+,24,TRUNK-2,"Trunk\-2\ BWB6",N
+,25,LEAF-1,"Leaf\-1\ BWB6",N
+,26,LEAF-2,"Leaf\-2\ BWB6",N
+,27,RDP,"Reliable\ Data\ Protocol\ RFC908RH6",N
+,28,IRTP,"Internet\ Reliable\ Transaction\ RFC938TXM",N
+,29,ISO-TP4,"ISO\ Transport\ Protocol\ Class\ 4\ RFC905RC77",N
+,30,NETBLT,"Bulk\ Data\ Transfer\ Protocol\ RFC969DDC1",N
+,31,MFE-NSP,"MFE\ Network\ Services\ Protocol\ MFENETBCH2",N
+,32,MERIT-INP,"MERIT\ Internodal\ Protocol\ HWB",N
+,33,DCCP,"Datagram\ Congestion\ Control\ Protocol\ RFC4340",N
+,34,3PC,"Third\ Party\ Connect\ Protocol\ SAF3",N
+,35,IDPR,"Inter\-Domain\ Policy\ Routing\ Protocol\ MXS1",N
+,36,XTP,"XTP\ GXC",N
+,37,DDP,"Datagram\ Delivery\ Protocol\ WXC",N
+,38,IDPR-CMTP,"IDPR\ Control\ Message\ Transport\ Proto\ MXS1",N
+,39,TP++,"TP\ Transport\ Protocol\ DXF",N
+,40,IL,"IL\ Transport\ Protocol\ Presotto",N
+,41,IPv6,"Ipv6\ Deering",N
+,42,SDRP,"Source\ Demand\ Routing\ Protocol\ DXE1",N
+,43,IPv6-Route,"Routing\ Header\ for\ IPv6\ Deering",N
+,44,IPv6-Frag,"Fragment\ Header\ for\ IPv6\ Deering",N
+,45,IDRP,"Inter\-Domain\ Routing\ Protocol\ Hares",N
+,46,RSVP,"Reservation\ Protocol\ Braden",N
+,47,GRE,"General\ Routing\ Encapsulation\ Li",N
+,48,DSR,"Dynamic\ Source\ Routing\ Protocol\ RFC4728",N
+,49,BNA,"BNA\ Salamon",N
+,50,ESP,"Encap\ Security\ Payload\ RFC4303",N
+,51,AH,"Authentication\ Header\ RFC4302",N
+,52,I-NLSP,"Integrated\ Net\ Layer\ Security\ TUBA\ GLENN",N
+,53,SWIPE,"IP\ with\ Encryption\ JI6",N
+,54,NARP,"NBMA\ Address\ Resolution\ Protocol\ RFC1735",N
+,55,MOBILE,"IP\ Mobility\ Perkins",N
+,56,TLSP,"Transport\ Layer\ Security\ Protocol\ Oberg",N
+,57,SKIP,"SKIP\ Markson",N
+,58,IPv6-ICMP,"ICMP\ for\ IPv6\ RFC1883",N
+,59,IPv6-NoNxt,"No\ Next\ Header\ for\ IPv6\ RFC1883",N
+,60,IPv6-Opts,"Destination\ Options\ for\ IPv6\ RFC1883",N
+,61,any,"host\ internal\ protocol\ IANA",N
+,62,CFTP,"CFTP\ CFTPHCF2",N
+,63,any,"local\ network\ IANA",N
+,64,SAT-EXPAK,"SATNET\ and\ Backroom\ EXPAK\ SHB",N
+,65,KRYPTOLAN,"Kryptolan\ PXL1",N
+,66,RVD,"MIT\ Remote\ Virtual\ Disk\ Protocol\ MBG",N
+,67,IPPC,"Internet\ Pluribus\ Packet\ Core\ SHB",N
+,68,any,"distributed\ file\ system\ IANA",N
+,69,SAT-MON,"SATNET\ Monitoring\ SHB",N
+,70,VISA,"VISA\ Protocol\ GXT1",N
+,71,IPCV,"Internet\ Packet\ Core\ Utility\ SHB",N
+,72,CPNX,"Computer\ Protocol\ Network\ Executive\ DXM2",N
+,73,CPHB,"Computer\ Protocol\ Heart\ Beat\ DXM2",N
+,74,WSN,"Wang\ Span\ Network\ VXD",N
+,75,PVP,"Packet\ Video\ Protocol\ SC3",N
+,76,BR-SAT-MON,"Backroom\ SATNET\ Monitoring\ SHB",N
+,77,SUN-ND,"SUN\ ND\ PROTOCOL\-Temporary\ WM3",N
+,78,WB-MON,"WIDEBAND\ Monitoring\ SHB",N
+,79,WB-EXPAK,"WIDEBAND\ EXPAK\ SHB",N
+,80,ISO-IP,"ISO\ Internet\ Protocol\ MTR",N
+,81,VMTP,"VMTP\ DRC3",N
+,82,SECURE-VMTP,"SECURE\-VMTP\ DRC3",N
+,83,VINES,"VINES\ BXH",N
+,84,TTP,"TTP\ JXS",N
+,85,NSFNET-IGP,"NSFNET\-IGP\ HWB",N
+,86,DGP,"Dissimilar\ Gateway\ Protocol\ DGPML109",N
+,87,TCF,"TCF\ GAL5",N
+,88,EIGRP,"EIGRP\ CISCOGXS",N
+,89,OSPFIGP,"OSPFIGP\ RFC1583JTM4",N
+,90,Sprite-RPC,"Sprite\ RPC\ Protocol\ SPRITEBXW",N
+,91,LARP,"Locus\ Address\ Resolution\ Protocol\ BXH",N
+,92,MTP,"Multicast\ Transport\ Protocol\ SXA",N
+,93,AX.25,"AX25\ Frames\ BK29",N
+,94,IPIP,"IP\-within\-IP\ Encapsulation\ Protocol\ JI6",N
+,95,MICP,"Mobile\ Internetworking\ Control\ Pro\ JI6",N
+,96,SCC-SP,"Semaphore\ Communications\ Sec\ Pro\ HXH",N
+,97,ETHERIP,"Ethernet\-within\-IP\ Encapsulation\ RFC3378",N
+,98,ENCAP,"Encapsulation\ Header\ RFC1241RXB3",N
+,99,any,"private\ encryption\ scheme\ IANA",N
+,100,GMTP,"GMTP\ RXB5",N
+,101,IFMP,"Ipsilon\ Flow\ Management\ Protocol\ Hinden",N
+,102,PNNI,"PNNI\ over\ IP\ Callon",N
+,103,PIM,"Protocol\ Independent\ Multicast\ Farinacci",N
+,104,ARIS,"ARIS\ Feldman",N
+,105,SCPS,"SCPS\ Durst",N
+,106,QNX,"QNX\ Hunter",N
+,107,A/N,"Active\ Networks\ Braden",N
+,108,IPComp,"IP\ Payload\ Compression\ Protocol\ RFC2393",N
+,109,SNP,"Sitara\ Networks\ Protocol\ Sridhar",N
+,110,Compaq-Peer,"Compaq\ Peer\ Protocol\ Volpe",N
+,111,IPX-in-IP,"IPX\ in\ IP\ Lee",N
+,112,VRRP,"Virtual\ Router\ Redundancy\ Protocol\ RFC3768",N
+,113,PGM,"PGM\ Reliable\ Transport\ Protocol\ Speakman",N
+,114,any,"0\-hop\ protocol\ IANA",N
+,115,L2TP,"Layer\ Two\ Tunneling\ Protocol\ Aboba",N
+,116,DDX,"D\-II\ Data\ Exchange\ DDX\ Worley",N
+,117,IATP,"Interactive\ Agent\ Transfer\ Protocol\ Murphy",N
+,118,STP,"Schedule\ Transfer\ Protocol\ JMP",N
+,119,SRP,"SpectraLink\ Radio\ Protocol\ Hamilton",N
+,120,UTI,"UTI\ Lothberg",N
+,121,SMP,"Simple\ Message\ Protocol\ Ekblad",N
+,122,SM,"SM\ Crowcroft",N
+,123,PTP,"Performance\ Transparency\ Protocol\ Welzl",N
+,124,ISIS,"over\ IPv4\ Przygienda",N
+,125,FIRE,Partridge,N
+,126,CRTP,"Combat\ Radio\ Transport\ Protocol\ Sautter",N
+,127,CRUDP,"Combat\ Radio\ User\ Datagram\ Sautter",N
+,128,SSCOPMCE,Waber,N
+,129,IPLT,Hollbach,N
+,130,SPS,"Secure\ Packet\ Shield\ McIntosh",N
+,131,PIPE,"Private\ IP\ Encapsulation\ within\ IP\ Petri",N
+,132,SCTP,"Stream\ Control\ Transmission\ Protocol\ Stewart",N
+,133,FC,"Fibre\ Channel\ Rajagopal",N
+,134,RSVP-E2E-IGNORE,RFC3175,N
+,135,Mobility,"Header\ RFC3775",N
+,136,UDPLite,RFC3828,N
+,137,MPLS-in-IP,RFC4023,N
+,138,manet,"MANET\ Protocols\ RFC5498",N
+,139,HIP,"Host\ Identity\ Protocol\ RFC5201",N
+,140,Shim6,"Shim6\ Protocol\ RFC5533",N
+,141-252,Unassigned,IANA,N
+,253,Use,"for\ experimentation\ and\ testing\ RFC3692",N
+,254,Use,"for\ experimentation\ and\ testing\ RFC3692",N
+,255,Reserved,IANA,N
