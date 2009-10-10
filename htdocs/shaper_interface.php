@@ -1464,7 +1464,22 @@ class MASTERSHAPER_INTERFACE {
    private function buildPipes($chain_idx, $my_parent, $chain_direction)
    {
       /* get all active pipes for this chain */
-      $pipes = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."pipes WHERE pipe_active='Y' AND pipe_chain_idx='". $chain_idx ."' ORDER BY pipe_position ASC");
+      $pipes = $this->db->db_query("
+         SELECT
+            p.*
+         FROM
+            ". MYSQL_PREFIX ."pipes p
+         INNER JOIN
+            ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+         ON
+            p.pipe_idx=apc.apc_pipe_idx
+         WHERE
+            p.pipe_active='Y'
+         AND
+            apc.apc_chain_idx='". $chain_idx ."'
+         ORDER BY
+            p.pipe_position ASC"
+      );
 
       while($pipe = $pipes->fetchRow()) {
 

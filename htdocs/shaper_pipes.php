@@ -85,13 +85,21 @@ class MASTERSHAPER_PIPES {
       $this->pipes = Array();
 
       $res_pipes = $this->db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."pipes p
-         LEFT JOIN ". MYSQL_PREFIX ."chains c
-            ON
-               p.pipe_chain_idx=c.chain_idx
+         SELECT
+            p.*
+         FROM
+            ". MYSQL_PREFIX ."pipes p
+         LEFT JOIN
+            ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+         ON
+            p.pipe_idx=apc.apc_pipe_idx
+         LEFT JOIN
+            ". MYSQL_PREFIX ."chains c
+         ON
+            apc.apc_chain_idx=c.chain_idx
          ORDER BY
-            p.pipe_chain_idx ASC, p.pipe_name ASC
+            apc.apc_chain_idx ASC,
+            p.pipe_name ASC
       ");
 
       $cnt_pipes = 0;
@@ -120,7 +128,6 @@ class MASTERSHAPER_PIPES {
                pipe_idx='". $idx ."'
          ");
          $this->tmpl->assign('pipe_idx', $idx);
-         $this->tmpl->assign('pipe_chain_idx', $pipe->pipe_chain_idx);
          $this->tmpl->assign('pipe_name', $pipe->pipe_name);
          $this->tmpl->assign('pipe_active', $pipe->pipe_active);
          $this->tmpl->assign('pipe_direction', $pipe->pipe_direction);
@@ -291,21 +298,20 @@ class MASTERSHAPER_PIPES {
       if(isset($new)) {
          $max_pos = $this->db->db_fetchSingleRow("
             SELECT
-               MAX(pipe_position) as pos
+               MAX(apc_pipe_pos) as pos
             FROM
-               ". MYSQL_PREFIX ."pipes
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
             WHERE
-               pipe_chain_idx='". $_POST['pipe_chain_idx'] ."'
+               apc_chain_idx='". $_POST['chain_idx'] ."'
          ");
 
          $this->db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."pipes (
-               pipe_name, pipe_chain_idx, pipe_sl_idx, pipe_position,
+               pipe_name, pipe_sl_idx, pipe_position,
                pipe_src_target, pipe_dst_target, pipe_direction,
                pipe_active
             ) VALUES (
                '". $_POST['pipe_name'] ."', 
-               '". $_POST['pipe_chain_idx'] ."', 
                '". $_POST['pipe_sl_idx'] ."', 
                '". ($max_pos->pos+1) ."', 
                '". $_POST['pipe_src_target'] ."', 
@@ -314,14 +320,13 @@ class MASTERSHAPER_PIPES {
                '". $_POST['pipe_active'] ."')
          ");
 
-         $_POST['idx'] = $this->db->db_getid();
+         $_POST['pipe_idx'] = $this->db->db_getid();
       }
       else {
          $this->db->db_query("
             UPDATE ". MYSQL_PREFIX ."pipes
             SET 
                pipe_name='". $_POST['pipe_name'] ."', 
-               pipe_chain_idx='". $_POST['pipe_chain_idx'] ."', 
                pipe_sl_idx='". $_POST['pipe_sl_idx'] ."', 
                pipe_src_target='". $_POST['pipe_src_target'] ."', 
                pipe_dst_target='". $_POST['pipe_dst_target'] ."', 
@@ -335,7 +340,8 @@ class MASTERSHAPER_PIPES {
 
       if(isset($_POST['used']) && $_POST['used']) {
          $this->db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_filters_to_pipes
+            DELETE FROM
+               ". MYSQL_PREFIX ."assign_filters_to_pipes
             WHERE
                apf_pipe_idx='". $_POST['pipe_idx'] ."'
          ");
@@ -352,7 +358,6 @@ class MASTERSHAPER_PIPES {
                ");
             }
          }
-
       }
 
       return "ok";
@@ -377,7 +382,12 @@ class MASTERSHAPER_PIPES {
             WHERE
                apf_pipe_idx='". $idx ."'
          ");
-
+         $this->db->db_query("
+            DELETE FROM
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            WHERE
+               apc_pipe_idx='". $idx ."'
+         ");
          return "ok";
 
       }

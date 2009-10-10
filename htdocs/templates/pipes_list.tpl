@@ -11,7 +11,6 @@
  </tr>
  <tr>
   <td><img src="{ $icon_pipes }" alt="pipe icon" />&nbsp;<i>Pipes</i></td>
-  <td><img src="{ $icon_chains }" alt="chain icon" />&nbsp;<i>Chains</i></td>
   <td><img src="{ $icon_filters }" alt="filter icon" />&nbsp;<i>Filters</i></td>
   <td style="text-align: center;"><i>Options</i></td>
  </tr>
@@ -20,10 +19,6 @@
   <td>
    <img src="{ $icon_pipes }" alt="pipe icon" />
    <a href="javascript:refreshContent('pipes', '&mode=edit&idx={ $pipe_idx }');">{ $pipe_name }</a>
-  </td>
-  <td>
-   <img src="{ $icon_chains }" alt="chain icon" />
-   <a href="javascript:refreshContent('chains', '&mode=edit&idx={ $pipe_chain_idx }');">{ $chain_name }</a>
   </td>
   <td>
    <img src="{ $icon_filters }" alt="filter icon" />

@@ -344,10 +344,9 @@ class MASTERSHAPER_OPTIONS {
                                ."', '". $this->parent->getServiceLevelByName($object->fb_name) ."')");
             break;
          case 'Pipes':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."pipes (pipe_name, pipe_chain_idx, pipe_sl_idx, "
+            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."pipes (pipe_name, pipe_sl_idx, "
                                ."pipe_position, pipe_src_target, pipe_dst_target, pipe_direction, pipe_active)
              VALUES ('". $object->pipe_name 
-                               ."', '". $this->parent->getChainByName($object->chain_name) 
                                ."', '". $this->parent->getServiceLevelByName($object->sl_name) 
                                ."', '". $object->pipe_position ."', '". $object->pipe_src_target ."', '". $object->pipe_dst_target ."', '". $object->pipe_direction ."', '". $object->pipe_active ."')");
             $id = $this->db->db_getid();

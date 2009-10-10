@@ -136,6 +136,9 @@ class MASTERSHAPER_CHAINS {
          $this->tmpl->assign('chain_direction', 2);
       }
 
+      $this->tmpl->register_function("unused_pipes_select_list", array(&$this, "smarty_unused_pipes_select_list"), false);
+      $this->tmpl->register_function("used_pipes_select_list", array(&$this, "smarty_used_pipes_select_list"), false);
+
       $this->tmpl->show("chains_edit.tpl");
 
    } // showEdit() 
@@ -239,7 +242,8 @@ class MASTERSHAPER_CHAINS {
       else {
 
          $this->db->db_query("
-            UPDATE ". MYSQL_PREFIX ."chains
+            UPDATE
+               ". MYSQL_PREFIX ."chains
             SET
                chain_name='". $_POST['chain_name'] ."',
                chain_sl_idx='". $_POST['chain_sl_idx'] ."',
@@ -251,7 +255,28 @@ class MASTERSHAPER_CHAINS {
                chain_fallback_idx='". $_POST['chain_fallback_idx'] ."'
             WHERE
                chain_idx='". $_POST['chain_idx'] ."'");
+      }
 
+      if(isset($_POST['used']) && $_POST['used']) {
+         $this->db->db_query("
+            DELETE FROM
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            WHERE
+               apc_chain_idx='". $_POST['chain_idx'] ."'
+         ");
+
+         foreach($_POST['used'] as $use) {
+            if($use != "") {
+               $this->db->db_query("
+                  INSERT INTO ". MYSQL_PREFIX ."assign_pipes_to_chains (
+                     apc_pipe_idx, apc_chain_idx
+                  ) VALUES (
+                     '". $use ."',
+                     '". $_POST['chain_idx'] ."'
+                  )
+               ");
+            }
+         }
       }
 
       return "ok";
@@ -271,7 +296,12 @@ class MASTERSHAPER_CHAINS {
             WHERE
                chain_idx='". $idx ."'
          ");
-
+         $this->db->db_query("
+            DELETE FROM
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            WHERE
+               apc_chain_idx='". $idx ."'
+         ");
          return "ok";
 
       }
@@ -327,6 +357,88 @@ class MASTERSHAPER_CHAINS {
       return false;
 
    } // checkChainExists()
+
+   public function smarty_unused_pipes_select_list($params, &$smarty)
+   {
+      if(!array_key_exists('chain_idx', $params)) {
+         $this->tmpl->trigger_error("smarty_unused_pipes_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+
+      if(!isset($params['chain_idx'])) {
+         $unused_pipes = $this->db->db_query("
+            SELECT
+               pipe_idx,
+               pipe_name
+            FROM
+               ". MYSQL_PREFIX ."pipes
+            ORDER BY
+               pipe_name ASC
+         ");
+      }
+      else {
+         $unused_pipes = $this->db->db_query("
+            SELECT DISTINCT
+               p.pipe_idx,
+               p.pipe_name
+            FROM
+               ". MYSQL_PREFIX ."pipes p
+            LEFT OUTER JOIN (
+               SELECT DISTINCT
+                  apc_pipe_idx, apc_chain_idx
+               FROM
+                  ". MYSQL_PREFIX ."assign_pipes_to_chains
+               WHERE
+                  apc_chain_idx=". $this->db->db_quote($params['chain_idx']) ."
+            ) apc
+            ON
+               apc.apc_pipe_idx=p.pipe_idx
+            WHERE
+               apc.apc_chain_idx IS NULL
+         ");
+      }
+
+      while($pipe = $unused_pipes->fetchrow()) {
+         $string.= "<option value=\"". $pipe->pipe_idx ."\">". $pipe->pipe_name ."</option>\n";
+      }
+
+      return $string;
+
+   } // smarty_unused_pipes_select_list()
+
+   public function smarty_used_pipes_select_list($params, &$smarty)
+   {
+      if(!array_key_exists('chain_idx', $params)) {
+         $this->tmpl->trigger_error("smarty_used_pipes_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+
+      $used_pipes = $this->db->db_query("
+         SELECT DISTINCT
+            p.pipe_idx, p.pipe_name
+         FROM
+            ". MYSQL_PREFIX ."pipes p
+         INNER JOIN (
+            SELECT
+               apc_pipe_idx
+            FROM
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            WHERE
+               apc_chain_idx='". $params['chain_idx'] ."'
+         ) apc
+         ON
+            apc.apc_pipe_idx=p.pipe_idx
+         ");
+
+      while($pipe = $used_pipes->fetchrow()) {
+         $string.= "<option value=\"". $pipe->pipe_idx ."\">". $pipe->pipe_name ."</option>\n";
+      }
+
+      return $string;
+
+   } // smarty_used_pipes_select_list()
 
 }
 

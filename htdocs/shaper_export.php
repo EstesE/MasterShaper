@@ -253,9 +253,17 @@ class MASTERSHAPER_EXPORT {
       // Pipes 
       $pipes = $this->addRootChild('pipes');
       $result = $this->db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."pipes
-         ORDER BY pipe_name ASC
+         SELECT
+            p.*,
+            apc.apc_chain_idx as pipe_chain_idx
+         FROM
+            ". MYSQL_PREFIX ."pipes p
+         LEFT JOIN
+            ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+         ON
+            p.pipe_idx=apc.apc_pipe_idx
+         ORDER BY
+            pipe_name ASC
       ");
 
       while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {

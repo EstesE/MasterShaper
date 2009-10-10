@@ -36,15 +36,6 @@
   </td>
  </tr>
  <tr>
-  <td>Chain:</td>
-  <td>
-   <select name="pipe_chain_idx">
-    { chain_select_list chain_idx=$pipe_chain_idx }
-   </select>
-  </td>
-  <td>Select a chain which the pipe will be assigned to. Only chains which use fallback service levels are able to contain pipes.</td>
- </tr>
- <tr>
   <td style="white-space: nowrap;">
    Target:
   </td>

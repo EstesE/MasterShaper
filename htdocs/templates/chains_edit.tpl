@@ -1,5 +1,5 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="chains" onsubmit="saveForm(this, 'chains'); return false;" method="post">
+<form action="rpc.php?action=store" id="chains" onsubmit="selectAll('used[]'); saveForm(this, 'chains'); return false;" method="post">
 <input type="hidden" name="module" value="chain" />
 <input type="hidden" name="action" value="modify" />
 { if !$chain_idx }
@@ -90,6 +90,33 @@
       <select name="chain_dst_target">
        <option value="0">any</option>
        { target_select_list target_idx=$chain_dst_target }
+      </select>
+     </td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+ <tr>
+  <td>Pipes:</td>
+  <td>
+   <table class="noborder">
+    <tr>
+     <td>
+      <select size="10" name="avail[]" multiple="multiple">
+       <option value="">********* Unused *********</option>
+       { unused_pipes_select_list chain_idx=$chain_idx }
+      </select>
+     </td>
+     <td>&nbsp;</td>
+     <td>
+      <input type="button" value="&gt;&gt;" onclick="moveOptions(document.forms['chains'].elements['avail[]'], document.forms['chains'].elements['used[]']);" /><br />
+      <input type="button" value="&lt;&lt;" onclick="moveOptions(document.forms['chains'].elements['used[]'], document.forms['chains'].elements['avail[]']);" />
+     </td>
+     <td>&nbsp;</td>
+     <td>
+      <select size="10" name="used[]" multiple="multiple">
+       <option value="">********* Used *********</option>
+       { used_pipes_select_list chain_idx=$chain_idx }
       </select>
      </td>
     </tr>

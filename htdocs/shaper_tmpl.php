@@ -77,6 +77,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->register_function("hour_select", array(&$this, "smarty_hour_select"), false); 
       $this->register_function("minute_select", array(&$this, "smarty_minute_select"), false); 
       $this->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
+      $this->register_function("pipe_select_list", array(&$this, "smarty_pipe_select_list"), false);
       $this->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
       $this->register_function("service_level_select_list", array(&$this, "smarty_service_level_select_list"), false);
       $this->register_function("network_path_select_list", array(&$this, "smarty_network_path_select_list"), false);
@@ -160,6 +161,33 @@ class MASTERSHAPER_TMPL extends Smarty {
       return $string;
 
    } // smarty_chain_select_list()
+
+   public function smarty_pipe_select_list($params, &$smarty)
+   {
+      if(!array_key_exists('pipe_idx', $params)) {
+         $this->trigger_error("smarty_pipe_select_list: missing 'pipe_idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+
+      $result = $this->parent->db->db_query("
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."pipes
+      ");
+
+      while($row = $result->fetchrow()) {
+         $string.= "<option value='". $row->pipe_idx ."'";
+         if($row->pipe_idx == $params['pipe_idx']) {
+            $string.= " selected=\"selected\"";
+         }
+         $string.= ">". $row->pipe_idx ."</option>\n";
+      }
+
+      return $string;
+
+   } // smarty_pipe_select_list()
 
    public function smarty_target_select_list($params, &$smarty)
    {

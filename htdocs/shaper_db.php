@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '2');
+define('SCHEMA_VERSION', '4');
 
 /***************************************************************************
  *
@@ -430,8 +430,11 @@ class MASTERSHAPER_DB {
    {
       $this->schema_version = $this->getVersion();
 
-      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'meta'))
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'meta') ||
+         $this->getVersion() < SCHEMA_VERSION) {
+
          $this->install_tables();
+      }
 
       $this->upgrade_schema();
 
@@ -450,7 +453,7 @@ class MASTERSHAPER_DB {
               PRIMARY KEY  (`apf_idx`),
               KEY `apf_pipe_idx` (`apf_pipe_idx`),
               KEY `apf_filter_idx` (`apf_filter_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=62 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_l7_protocols_to_filters')) {
@@ -474,7 +477,7 @@ class MASTERSHAPER_DB {
               PRIMARY KEY  (`afp_idx`),
               KEY `afp_filter_idx` (`afp_filter_idx`),
               KEY `afp_port_idx` (`afp_port_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=82 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_target_groups')) {
@@ -484,7 +487,16 @@ class MASTERSHAPER_DB {
               `atg_group_idx` int(11) NOT NULL,
               `atg_target_idx` int(11) NOT NULL,
               PRIMARY KEY  (`atg_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX .'assign_pipes_to_chains')) {
+         $this->db_query("
+             CREATE TABLE `". MYSQL_PREFIX ."assign_pipes_to_chains` (
+              `apc_pipe_idx` int(11) NOT NULL,
+              `apc_chain_idx` int(11) NOT NULL,
+              PRIMARY KEY  (`apc_pipe_idx`,`apc_chain_idx`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'chains')) {
@@ -503,7 +515,7 @@ class MASTERSHAPER_DB {
               `chain_tc_id` varchar(16) default NULL,
               `chain_netpath_idx` int(11) default NULL,
               PRIMARY KEY  (`chain_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'filters')) {
@@ -543,7 +555,7 @@ class MASTERSHAPER_DB {
               `filter_match_sip` char(1) default NULL,
               `filter_active` char(1) default NULL,
               PRIMARY KEY  (`filter_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'interfaces')) {
@@ -555,7 +567,7 @@ class MASTERSHAPER_DB {
               `if_ifb` char(1) default NULL,
               `if_active` char(1) default NULL,
               PRIMARY KEY  (`if_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");   
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'l7_protocols')) {
@@ -578,14 +590,13 @@ class MASTERSHAPER_DB {
               `netpath_imq` varchar(1) default NULL,
               `netpath_active` varchar(1) default NULL,
               PRIMARY KEY  (`netpath_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'pipes')) {
          $this->db_query("
             CREATE TABLE `". MYSQL_PREFIX ."pipes` (
               `pipe_idx` int(11) NOT NULL auto_increment,
-              `pipe_chain_idx` int(11) default NULL,
               `pipe_name` varchar(255) default NULL,
               `pipe_sl_idx` int(11) default NULL,
               `pipe_position` int(11) default NULL,
@@ -596,7 +607,7 @@ class MASTERSHAPER_DB {
               `pipe_active` char(1) default NULL,
               `pipe_tc_id` varchar(16) default NULL,
               PRIMARY KEY  (`pipe_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'ports')) {
@@ -608,7 +619,7 @@ class MASTERSHAPER_DB {
               `port_number` varchar(255) default NULL,
               `port_user_defined` char(1) default NULL,
               PRIMARY KEY  (`port_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=4483 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
          $this->db_query(" 
             LOAD DATA INFILE
@@ -629,7 +640,7 @@ class MASTERSHAPER_DB {
               `proto_desc` varchar(255) default NULL,
               `proto_user_defined` char(1) default NULL,
               PRIMARY KEY  (`proto_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=147 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
          $this->db_query("
             LOAD DATA INFILE
@@ -682,7 +693,7 @@ class MASTERSHAPER_DB {
               `sl_esfq_divisor` varchar(255) default NULL,
               `sl_esfq_hash` varchar(255) default NULL,
               PRIMARY KEY  (`sl_idx`)
-               ) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+               ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'settings')) {
@@ -712,7 +723,7 @@ class MASTERSHAPER_DB {
               `target_ip` varchar(255) default NULL,
               `target_mac` varchar(255) default NULL,
               PRIMARY KEY  (`target_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'tc_ids')) {
@@ -751,7 +762,7 @@ class MASTERSHAPER_DB {
               `user_show_monitor` char(1) default NULL,
               `user_active` char(1) default NULL,
               PRIMARY KEY  (`user_idx`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
          $this->db_query("
             INSERT INTO ". MYSQL_PREFIX ."users VALUES (
@@ -782,7 +793,7 @@ class MASTERSHAPER_DB {
                `meta_value` varchar(255) default NULL,
                PRIMARY KEY  (`meta_idx`),
                UNIQUE KEY `meta_key` (`meta_key`)
-            ) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
          ");
          $this->setVersion(SCHEMA_VERSION);
       }
@@ -795,18 +806,51 @@ class MASTERSHAPER_DB {
 
          $this->db_query("
             RENAME TABLE
-               shaper2_assign_filters
+               ". MYSQL_PREFIX ."assign_filters
             TO
-               shaper2_assign_filters_to_pipes,
-               shaper2_assign_l7_protocols
+               ". MYSQL_PREFIX ."assign_filters_to_pipes,
+               ". MYSQL_PREFIX ."assign_l7_protocols
             TO
-               shaper2_assign_l7_protocols_to_filters,
-               shaper2_assign_ports
+               ". MYSQL_PREFIX ."assign_l7_protocols_to_filters,
+               ". MYSQL_PREFIX ."assign_ports
             TO
-               shaper2_assign_ports_to_filters;
+               ". MYSQL_PREFIX ."assign_ports_to_filters;
          ");
 
          $this->setVersion(2);
+      }
+
+      if($this->schema_version < 3) {
+
+         $this->db_query("
+            INSERT INTO ". MYSQL_PREFIX ."assign_pipes_to_chains
+            SELECT
+               pipe_idx, pipe_chain_idx
+            FROM
+               ". MYSQL_PREFIX ."pipes
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."pipes
+            DROP
+               pipe_chain_idx
+         ");
+
+         $this->setVersion(3);
+
+      }
+
+      if($this->schema_version < 4) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            ADD
+               apc_pipe_pos int(11) default NULL
+         ");
+
+         $this->setVersion(4);
       }
 
    } // upgrade_schema()

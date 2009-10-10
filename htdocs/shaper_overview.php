@@ -110,13 +110,20 @@ class MASTERSHAPER_OVERVIEW {
             if($chain->chain_sl_idx != 0 && $chain->chain_fallback_idx != 0) {
     
                $res_pipes = $this->db->db_query("
-                     SELECT *
-                     FROM ". MYSQL_PREFIX ."pipes
+                     SELECT
+                        p.*
+                     FROM
+                        ". MYSQL_PREFIX ."pipes p
+                     INNER JOIN
+                        ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+                     ON
+                        p.pipe_idx=apc.apc_pipe_idx
                      WHERE
-                        pipe_chain_idx='". $chain->chain_idx ."' 
+                        apc.apc_chain_idx='". $chain->chain_idx ."'
                      AND
-                        pipe_active='Y'
-                     ORDER BY pipe_position ASC
+                        p.pipe_active='Y'
+                     ORDER BY
+                        p.pipe_position ASC
                ");
 
                while($pipe = $res_pipes->fetchRow()) {
