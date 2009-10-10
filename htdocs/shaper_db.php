@@ -1,6 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
+define('SCHEMA_VERSION', '1');
 
 /***************************************************************************
  *
@@ -32,6 +33,10 @@ class MASTERSHAPER_DB {
    private $parent;
    private $is_connected;
    private $last_error;
+   /* the _real_ schema version is defined as constant */
+   /* that one just holds the "current" version number */
+   /* during upgrades.                                 */
+   private $schema_version;
 
    /**
     * MASTERSHAPER_DB class constructor
@@ -345,16 +350,19 @@ class MASTERSHAPER_DB {
     */
    public function getVersion()
    {
-      if($this->db_check_table_exists(MYSQL_PREFIX ."settings")) {
+      if($this->db_check_table_exists(MYSQL_PREFIX ."meta")) {
          $result = $this->db_fetchSingleRow("
-            SELECT setting_value 
-            FROM ". MYSQL_PREFIX ."settings 
-            WHERE setting_key LIKE 'version'
+            SELECT
+               meta_value 
+            FROM
+               ". MYSQL_PREFIX ."meta 
+            WHERE
+               meta_key LIKE 'schema version'
          ");
          return $result->setting_value;
       }
-      else
-         return 0;
+
+      return 0;
 	 
    } // getVersion()
 
@@ -366,9 +374,12 @@ class MASTERSHAPER_DB {
    public function setVersion($version)
    {
       $this->db_query("
-         REPLACE INTO ". MYSQL_PREFIX ."settings 
-            (setting_key, setting_value)
-         VALUES ('version', '". $version ."')
+         REPLACE INTO ". MYSQL_PREFIX ."settings (
+            setting_key, setting_value
+         ) VALUES (
+            'schema version',
+            '". $version ."'
+         )
       ");
       
    } // setVersion()
@@ -411,6 +422,380 @@ class MASTERSHAPER_DB {
       return $this->db->quote($obj);
 
    } // db_quote()
+
+   public function install_schema()
+   {
+      $this->schema_version = $this->getVersion();
+
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'meta'))
+         $this->install_tables();
+
+      $this->upgrade_schema();
+
+      return true;
+
+   } // install_schema()
+
+   private function install_tables()
+   {
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_filters')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX . "assign_filters` (
+              `apf_idx` int(11) NOT NULL auto_increment,
+              `apf_pipe_idx` int(11) default NULL,
+              `apf_filter_idx` int(11) default NULL,
+              PRIMARY KEY  (`apf_idx`),
+              KEY `apf_pipe_idx` (`apf_pipe_idx`),
+              KEY `apf_filter_idx` (`apf_filter_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=62 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_l7_protocols')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."assign_l7_protocols` (
+              `afl7_idx` int(11) NOT NULL auto_increment,
+              `afl7_filter_idx` int(11) NOT NULL,
+              `afl7_l7proto_idx` int(11) NOT NULL,
+              PRIMARY KEY  (`afl7_idx`),
+              KEY `afl7_filter_idx` (`afl7_filter_idx`),
+              KEY `afl7_l7proto_idx` (`afl7_l7proto_idx`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_ports')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."assign_ports` (
+              `afp_idx` int(11) NOT NULL auto_increment,
+              `afp_filter_idx` int(11) default NULL,
+              `afp_port_idx` int(11) default NULL,
+              PRIMARY KEY  (`afp_idx`),
+              KEY `afp_filter_idx` (`afp_filter_idx`),
+              KEY `afp_port_idx` (`afp_port_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=82 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_target_groups')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."assign_target_groups` (
+              `atg_idx` int(11) NOT NULL auto_increment,
+              `atg_group_idx` int(11) NOT NULL,
+              `atg_target_idx` int(11) NOT NULL,
+              PRIMARY KEY  (`atg_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'chains')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."chains` (
+              `chain_idx` int(11) NOT NULL auto_increment,
+              `chain_name` varchar(255) default NULL,
+              `chain_active` char(1) default NULL,
+              `chain_sl_idx` int(11) default NULL,
+              `chain_src_target` int(11) default NULL,
+              `chain_dst_target` int(11) default NULL,
+              `chain_position` int(11) default NULL,
+              `chain_direction` int(11) default NULL,
+              `chain_fallback_idx` int(11) default NULL,
+              `chain_action` varchar(16) default NULL,
+              `chain_tc_id` varchar(16) default NULL,
+              `chain_netpath_idx` int(11) default NULL,
+              PRIMARY KEY  (`chain_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'filters')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."filters` (
+              `filter_idx` int(11) NOT NULL auto_increment,
+              `filter_name` varchar(255) default NULL,
+              `filter_protocol_id` int(11) default NULL,
+              `filter_tos` varchar(4) default NULL,
+              `filter_tcpflag_syn` char(1) default NULL,
+              `filter_tcpflag_ack` char(1) default NULL,
+              `filter_tcpflag_fin` char(1) default NULL,
+              `filter_tcpflag_rst` char(1) default NULL,
+              `filter_tcpflag_urg` char(1) default NULL,
+              `filter_tcpflag_psh` char(1) default NULL,
+              `filter_packet_length` varchar(255) default NULL,
+              `filter_p2p_edk` char(1) default NULL,
+              `filter_p2p_kazaa` char(1) default NULL,
+              `filter_p2p_dc` char(1) default NULL,
+              `filter_p2p_gnu` char(1) default NULL,
+              `filter_p2p_bit` char(1) default NULL,
+              `filter_p2p_apple` char(1) default NULL,
+              `filter_p2p_soul` char(1) default NULL,
+              `filter_p2p_winmx` char(1) default NULL,
+              `filter_p2p_ares` char(1) default NULL,
+              `filter_time_use_range` char(1) default NULL,
+              `filter_time_start` int(11) default NULL,
+              `filter_time_stop` int(11) default NULL,
+              `filter_time_day_mon` char(1) default NULL,
+              `filter_time_day_tue` char(1) default NULL,
+              `filter_time_day_wed` char(1) default NULL,
+              `filter_time_day_thu` char(1) default NULL,
+              `filter_time_day_fri` char(1) default NULL,
+              `filter_time_day_sat` char(1) default NULL,
+              `filter_time_day_sun` char(1) default NULL,
+              `filter_match_ftp_data` char(1) default NULL,
+              `filter_match_sip` char(1) default NULL,
+              `filter_active` char(1) default NULL,
+              PRIMARY KEY  (`filter_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'interfaces')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."interfaces` (
+              `if_idx` int(11) NOT NULL auto_increment,
+              `if_name` varchar(255) default NULL,
+              `if_speed` varchar(255) default NULL,
+              `if_ifb` char(1) default NULL,
+              `if_active` char(1) default NULL,
+              PRIMARY KEY  (`if_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+         ");   
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'l7_protocols')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."l7_protocols` (
+              `l7proto_idx` int(11) NOT NULL auto_increment,
+              `l7proto_name` varchar(255) default NULL,
+              PRIMARY KEY  (`l7proto_idx`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'network_paths')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."network_paths` (
+              `netpath_idx` int(11) NOT NULL auto_increment,
+              `netpath_name` varchar(255) default NULL,
+              `netpath_if1` int(11) default NULL,
+              `netpath_if2` int(11) default NULL,
+              `netpath_position` int(11) default NULL,
+              `netpath_imq` varchar(1) default NULL,
+              `netpath_active` varchar(1) default NULL,
+              PRIMARY KEY  (`netpath_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'pipes')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."pipes` (
+              `pipe_idx` int(11) NOT NULL auto_increment,
+              `pipe_chain_idx` int(11) default NULL,
+              `pipe_name` varchar(255) default NULL,
+              `pipe_sl_idx` int(11) default NULL,
+              `pipe_position` int(11) default NULL,
+              `pipe_src_target` int(11) default NULL,
+              `pipe_dst_target` int(11) default NULL,
+              `pipe_direction` int(11) default NULL,
+              `pipe_action` varchar(15) default NULL,
+              `pipe_active` char(1) default NULL,
+              `pipe_tc_id` varchar(16) default NULL,
+              PRIMARY KEY  (`pipe_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'ports')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."ports` (
+              `port_idx` int(11) NOT NULL auto_increment,
+              `port_name` varchar(255) default NULL,
+              `port_desc` varchar(255) default NULL,
+              `port_number` varchar(255) default NULL,
+              `port_user_defined` char(1) default NULL,
+              PRIMARY KEY  (`port_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=4483 DEFAULT CHARSET=latin1;
+         ");
+         $this->db_query(" 
+            LOAD DATA INFILE
+               '". BASE_PATH ."/contrib/port-numbers.csv'
+            IGNORE INTO TABLE
+               ". MYSQL_PREFIX ."ports
+            FIELDS TERMINATED BY ','
+            ENCLOSED BY '\"' LINES
+            TERMINATED BY '\r\n'
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'protocols')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."protocols` (
+              `proto_idx` int(11) NOT NULL auto_increment,
+              `proto_number` varchar(255) default NULL,
+              `proto_name` varchar(255) default NULL,
+              `proto_desc` varchar(255) default NULL,
+              `proto_user_defined` char(1) default NULL,
+              PRIMARY KEY  (`proto_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=147 DEFAULT CHARSET=latin1;
+         ");
+         $this->db_query("
+            LOAD DATA INFILE
+               '". BASE_PATH ."/contrib/protocol-numbers.csv'
+            IGNORE INTO TABLE
+               ". MYSQL_PREFIX ."protocols
+            FIELDS TERMINATED BY ','
+            ENCLOSED BY '\"'
+            LINES TERMINATED BY '\r\n'
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'service_levels')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."service_levels` (
+              `sl_idx` int(11) NOT NULL auto_increment,
+              `sl_name` varchar(255) default NULL,
+              `sl_htb_bw_in_rate` varchar(255) default NULL,
+              `sl_htb_bw_in_ceil` varchar(255) default NULL,
+              `sl_htb_bw_in_burst` varchar(255) default NULL,
+              `sl_htb_bw_out_rate` varchar(255) default NULL,
+              `sl_htb_bw_out_ceil` varchar(255) default NULL,
+              `sl_htb_bw_out_burst` varchar(255) default NULL,
+              `sl_htb_priority` varchar(255) default NULL,
+              `sl_hfsc_in_umax` varchar(255) default NULL,
+              `sl_hfsc_in_dmax` varchar(255) default NULL,
+              `sl_hfsc_in_rate` varchar(255) default NULL,
+              `sl_hfsc_in_ulrate` varchar(255) default NULL,
+              `sl_hfsc_out_umax` varchar(255) default NULL,
+              `sl_hfsc_out_dmax` varchar(255) default NULL,
+              `sl_hfsc_out_rate` varchar(255) default NULL,
+              `sl_hfsc_out_ulrate` varchar(255) default NULL,
+              `sl_cbq_in_rate` varchar(255) default NULL,
+              `sl_cbq_in_priority` varchar(255) default NULL,
+              `sl_cbq_out_rate` varchar(255) default NULL,
+              `sl_cbq_out_priority` varchar(255) default NULL,
+              `sl_cbq_bounded` char(1) default NULL,
+              `sl_qdisc` varchar(255) default NULL,
+              `sl_netem_delay` varchar(255) default NULL,
+              `sl_netem_jitter` varchar(255) default NULL,
+              `sl_netem_random` varchar(255) default NULL,
+              `sl_netem_distribution` varchar(255) default NULL,
+              `sl_netem_loss` varchar(255) default NULL,
+              `sl_netem_duplication` varchar(255) default NULL,
+              `sl_netem_gap` varchar(255) default NULL,
+              `sl_netem_reorder_percentage` varchar(255) default NULL,
+              `sl_netem_reorder_correlation` varchar(255) default NULL,
+              `sl_esfq_perturb` varchar(255) default NULL,
+              `sl_esfq_limit` varchar(255) default NULL,
+              `sl_esfq_depth` varchar(255) default NULL,
+              `sl_esfq_divisor` varchar(255) default NULL,
+              `sl_esfq_hash` varchar(255) default NULL,
+              PRIMARY KEY  (`sl_idx`)
+               ) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'settings')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."settings` (
+              `setting_key` varchar(255) NOT NULL default '',
+              `setting_value` varchar(255) default NULL,
+              PRIMARY KEY  (`setting_key`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'stats')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."stats` (
+              `stat_time` int(11) NOT NULL default '0',
+              `stat_data` text,
+              PRIMARY KEY  (`stat_time`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'targets')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."targets` (
+              `target_idx` int(11) NOT NULL auto_increment,
+              `target_name` varchar(255) default NULL,
+              `target_match` varchar(16) default NULL,
+              `target_ip` varchar(255) default NULL,
+              `target_mac` varchar(255) default NULL,
+              PRIMARY KEY  (`target_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'tc_ids')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."tc_ids` (
+              `id_pipe_idx` int(11) default NULL,
+              `id_chain_idx` int(11) default NULL,
+              `id_if` varchar(255) default NULL,
+              `id_tc_id` varchar(255) default NULL,
+              `id_color` varchar(7) default NULL,
+              KEY `id_pipe_idx` (`id_pipe_idx`),
+              KEY `id_chain_idx` (`id_chain_idx`),
+              KEY `id_if` (`id_if`),
+              KEY `id_tc_id` (`id_tc_id`),
+              KEY `id_color` (`id_color`)
+            ) ENGINE=MEMORY DEFAULT CHARSET=latin1;
+         ");
+      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'users')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."users` (
+              `user_idx` int(11) NOT NULL auto_increment,
+              `user_name` varchar(32) default NULL,
+              `user_pass` varchar(32) default NULL,
+              `user_manage_chains` char(1) default NULL,
+              `user_manage_pipes` char(1) default NULL,
+              `user_manage_filters` char(1) default NULL,
+              `user_manage_ports` char(1) default NULL,
+              `user_manage_protocols` char(1) default NULL,
+              `user_manage_targets` char(1) default NULL,
+              `user_manage_users` char(1) default NULL,
+              `user_manage_options` char(1) default NULL,
+              `user_manage_servicelevels` char(1) default NULL,
+              `user_show_rules` char(1) default NULL,
+              `user_load_rules` char(1) default NULL,
+              `user_show_monitor` char(1) default NULL,
+              `user_active` char(1) default NULL,
+              PRIMARY KEY  (`user_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+         ");
+         $this->db_query("
+            INSERT INTO ". MYSQL_PREFIX ."users VALUES (
+               NULL,
+               'admin',
+               MD5('admin'),
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y',
+               'Y'
+            )");
+      }
+
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'meta')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."meta` (
+               `meta_idx` int(11) NOT NULL auto_increment,
+               `meta_key` varchar(255) default NULL,
+               `meta_value` varchar(255) default NULL,
+               PRIMARY KEY  (`meta_idx`)
+            ) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
+         ");
+         $this->db_query("
+            INSERT INTO ". MYSQL_PREFIX ."meta VALUES (
+               NULL,
+               'schema version',
+               '". SCHEMA_VERSION ."'
+            )
+         ");
+      }
+
+   } // install_schema()
+
+   private function upgrade_schema()
+   {
+      /* no work yet */
+
+   } // upgrade_schema()
 
 }
 

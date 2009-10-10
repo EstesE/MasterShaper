@@ -52,7 +52,7 @@ class MASTERSHAPER {
     * and will check requirements, loads configuration,
     * open databases and start the user session
     */
-   public function __construct()
+   public function __construct($mode = null)
    {
       $this->cfg = new MASTERSHAPER_CFG($this, "config.dat");
 
@@ -62,6 +62,14 @@ class MASTERSHAPER {
       }
 
       $this->db  = new MASTERSHAPER_DB(&$this);
+
+      if($mode == 'install') {
+         if($this->db->install_schema()) {
+            $this->_print("Successfully installed database tables");
+            exit(0);
+         }
+         $this->throwError("Failed installing database tables");
+      }
 
       require_once "shaper_tmpl.php";
       $this->tmpl = new MASTERSHAPER_TMPL($this);
@@ -1074,7 +1082,7 @@ class MASTERSHAPER {
          }
          catch(MASTERSHAPER_EXCEPTION $e) {
             print "<br /><br />\n";
-            $this->_error($e);
+            $this->_print($e);
             die;
          }
       }
@@ -1084,11 +1092,11 @@ class MASTERSHAPER {
    } // throwError()
 
    /**
-    * general error output function
+    * general output function
     *
     * @param string $text
     */
-   private function _error($text)
+   public function _print($text)
    {
       switch($this->cfg->logging) {
          default:
@@ -1105,8 +1113,6 @@ class MASTERSHAPER {
             error_log($text, 3, $his->cfg->log_file);
             break;
       }
-
-      $this->runtime_error = true;
 
    } // _error()
 
