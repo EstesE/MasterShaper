@@ -323,12 +323,12 @@ class MASTERSHAPER_OPTIONS {
             $id = $this->db->db_getid();
             $ports = split('#', $object->filter_ports);
             foreach($ports as $port) {
-               $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_ports (afp_filter_idx, afp_port_idx) "
+               $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (afp_filter_idx, afp_port_idx) "
                                   ."VALUES ('". $id ."', '". $this->parent->getPortByName($port) ."')");
             }
 	    $l7protos = split('#', $object->l7_protocols);
 	    foreach($l7protos as $l7proto) {
-	       $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols (afl7_filter_idx, afl7_l7proto_idx) "
+	       $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (afl7_filter_idx, afl7_l7proto_idx) "
 	                          ."VALUES ('". $id ."', '". $this->parent->getL7ProtocolByName($l7proto) ."')");
             }
             break;
@@ -353,7 +353,7 @@ class MASTERSHAPER_OPTIONS {
             $id = $this->db->db_getid();
             $filters = split('#', $object->filters);
             foreach($filters as $filter) {
-               $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_filters (apf_pipe_idx, apf_filter_idx) "
+               $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (apf_pipe_idx, apf_filter_idx) "
                                   ."VALUES ('". $id ."', '". $this->parent->getFilterByName($filter) ."')");
             }
             break;
@@ -380,8 +380,8 @@ class MASTERSHAPER_OPTIONS {
       }
       else {
 
-         $this->db->db_truncate_table(MYSQL_PREFIX ."assign_ports");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."assign_filters");
+         $this->db->db_truncate_table(MYSQL_PREFIX ."assign_ports_to_filters");
+         $this->db->db_truncate_table(MYSQL_PREFIX ."assign_filters_to_pipes");
          $this->db->db_truncate_table(MYSQL_PREFIX ."assign_target_groups");
          $this->db->db_truncate_table(MYSQL_PREFIX ."chains");
          $this->db->db_truncate_table(MYSQL_PREFIX ."pipes");
@@ -392,7 +392,7 @@ class MASTERSHAPER_OPTIONS {
          $this->db->db_truncate_table(MYSQL_PREFIX ."targets");
          $this->db->db_truncate_table(MYSQL_PREFIX ."tc_ids");
 	 $this->db->db_truncate_table(MYSQL_PREFIX ."l7_protocols");
-	 $this->db->db_truncate_table(MYSQL_PREFIX ."assign_l7_protocols");
+	 $this->db->db_truncate_table(MYSQL_PREFIX ."assign_l7_protocols_to_filters");
 	 $this->db->db_truncate_table(MYSQL_PREFIX ."users");
 	 $this->db->db_truncate_table(MYSQL_PREFIX ."interfaces");
 	 $this->db->db_truncate_table(MYSQL_PREFIX ."network_paths");

@@ -295,7 +295,7 @@ class MASTERSHAPER_PORTS {
                port_idx='". $idx ."'
          ");
          $this->db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_ports
+            DELETE FROM ". MYSQL_PREFIX ."assign_ports_to_filters
             WHERE
                afp_port_idx='". $idx ."'
          ");

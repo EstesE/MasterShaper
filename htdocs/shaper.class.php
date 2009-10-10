@@ -829,7 +829,7 @@ class MASTERSHAPER {
          SELECT
             af.apf_filter_idx as apf_filter_idx
          FROM
-            ". MYSQL_PREFIX ."assign_filters af
+            ". MYSQL_PREFIX ."assign_filters_to_pipes af
          INNER JOIN
             ". MYSQL_PREFIX ."filters f
          ON
@@ -856,7 +856,7 @@ class MASTERSHAPER {
       /* first get all the port id's for that filter */
       $ports = $this->db->db_query("
          SELECT afp_port_idx
-         FROM ". MYSQL_PREFIX ."assign_ports
+         FROM ". MYSQL_PREFIX ."assign_ports_to_filters
          WHERE
             afp_filter_idx='". $filter_idx ."'
       ");
@@ -928,7 +928,7 @@ class MASTERSHAPER {
 
       $protocols = $this->db->db_query("  
          SELECT afl7_l7proto_idx
-         FROM ". MYSQL_PREFIX ."assign_l7_protocols
+         FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
          WHERE
             afl7_filter_idx='". $filter_idx ."'");
 

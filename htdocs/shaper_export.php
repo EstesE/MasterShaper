@@ -198,7 +198,7 @@ class MASTERSHAPER_EXPORT {
          $ports = $this->db->db_query("
             SELECT p.port_name
             FROM ". MYSQL_PREFIX ."ports p 
-            INNER JOIN ". MYSQL_PREFIX ."assign_ports afp 
+            INNER JOIN ". MYSQL_PREFIX ."assign_ports_to_filters afp
             ON
                p.port_idx=afp.afp_port_idx
             WHERE afp.afp_filter_idx='". $row['filter_idx'] ."'
@@ -207,7 +207,7 @@ class MASTERSHAPER_EXPORT {
          $l7protos = $this->db->db_query("
             SELECT l7.l7proto_name
             FROM ". MYSQL_PREFIX ."l7_protocols l7
-            INNER JOIN ". MYSQL_PREFIX ."assign_l7_protocols afl7
+            INNER JOIN ". MYSQL_PREFIX ."assign_l7_protocols_to_filters afl7
                ON l7.l7proto_idx=afl7.afl7_l7proto_idx
             WHERE afl7.afl7_filter_idx='". $row['filter_idx'] ."' 
          ");
@@ -263,7 +263,7 @@ class MASTERSHAPER_EXPORT {
          $filters = $this->db->db_query("
             SELECT f.filter_name
             FROM ". MYSQL_PREFIX ."filters f
-            INNER JOIN ". MYSQL_PREFIX ."assign_filters apf
+            INNER JOIN ". MYSQL_PREFIX ."assign_filters_to_pipes apf
             ON f.filter_idx=apf.apf_filter_idx
             WHERE apf.apf_pipe_idx='". $row['pipe_idx'] ."'
          ");

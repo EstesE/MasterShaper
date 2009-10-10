@@ -130,7 +130,7 @@ class MASTERSHAPER_OVERVIEW {
 
                   $res_filters = $this->db->db_query("
                      SELECT a.filter_idx as filter_idx, a.filter_name as filter_name
-                     FROM ". MYSQL_PREFIX ."filters a, ". MYSQL_PREFIX ."assign_filters b
+                     FROM ". MYSQL_PREFIX ."filters a, ". MYSQL_PREFIX ."assign_filters_to_pipes b
                      WHERE
                         b.apf_pipe_idx='". $pipe->pipe_idx ."'
                      AND

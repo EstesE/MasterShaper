@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '1');
+define('SCHEMA_VERSION', '2');
 
 /***************************************************************************
  *
@@ -377,8 +377,8 @@ class MASTERSHAPER_DB {
    private function setVersion($version)
    {
       $this->db_query("
-         REPLACE INTO ". MYSQL_PREFIX ."settings (
-            setting_key, setting_value
+         REPLACE INTO ". MYSQL_PREFIX ."meta (
+            meta_key, meta_value
          ) VALUES (
             'schema version',
             '". $version ."'
@@ -441,9 +441,9 @@ class MASTERSHAPER_DB {
 
    private function install_tables()
    {
-      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_filters')) {
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_filters_to_pipes')) {
          $this->db_query("
-            CREATE TABLE `". MYSQL_PREFIX . "assign_filters` (
+            CREATE TABLE `". MYSQL_PREFIX . "assign_filters_to_pipes` (
               `apf_idx` int(11) NOT NULL auto_increment,
               `apf_pipe_idx` int(11) default NULL,
               `apf_filter_idx` int(11) default NULL,
@@ -453,9 +453,9 @@ class MASTERSHAPER_DB {
             ) ENGINE=MyISAM AUTO_INCREMENT=62 DEFAULT CHARSET=latin1;
          ");
       }
-      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_l7_protocols')) {
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_l7_protocols_to_filters')) {
          $this->db_query("
-            CREATE TABLE `". MYSQL_PREFIX ."assign_l7_protocols` (
+            CREATE TABLE `". MYSQL_PREFIX ."assign_l7_protocols_to_filters` (
               `afl7_idx` int(11) NOT NULL auto_increment,
               `afl7_filter_idx` int(11) NOT NULL,
               `afl7_l7proto_idx` int(11) NOT NULL,
@@ -465,9 +465,9 @@ class MASTERSHAPER_DB {
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
-      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_ports')) {
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_ports_to_filters')) {
          $this->db_query("
-            CREATE TABLE `". MYSQL_PREFIX ."assign_ports` (
+            CREATE TABLE `". MYSQL_PREFIX ."assign_ports_to_filters` (
               `afp_idx` int(11) NOT NULL auto_increment,
               `afp_filter_idx` int(11) default NULL,
               `afp_port_idx` int(11) default NULL,
@@ -780,23 +780,34 @@ class MASTERSHAPER_DB {
                `meta_idx` int(11) NOT NULL auto_increment,
                `meta_key` varchar(255) default NULL,
                `meta_value` varchar(255) default NULL,
-               PRIMARY KEY  (`meta_idx`)
+               PRIMARY KEY  (`meta_idx`),
+               UNIQUE KEY `meta_key` (`meta_key`)
             ) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
          ");
-         $this->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."meta VALUES (
-               NULL,
-               'schema version',
-               '". SCHEMA_VERSION ."'
-            )
-         ");
+         $this->setVersion(SCHEMA_VERSION);
       }
 
    } // install_schema()
 
    private function upgrade_schema()
    {
-      /* no work yet */
+      if($this->schema_version < 2) {
+
+         $this->db_query("
+            RENAME TABLE
+               shaper2_assign_filters
+            TO
+               shaper2_assign_filters_to_pipes,
+               shaper2_assign_l7_protocols
+            TO
+               shaper2_assign_l7_protocols_to_filters,
+               shaper2_assign_ports
+            TO
+               shaper2_assign_ports_to_filters;
+         ");
+
+         $this->setVersion(2);
+      }
 
    } // upgrade_schema()
 

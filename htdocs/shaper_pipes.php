@@ -160,7 +160,7 @@ class MASTERSHAPER_PIPES {
             SELECT
                filter_idx, filter_name
             FROM ". MYSQL_PREFIX ."filters f
-            INNER JOIN ". MYSQL_PREFIX ."assign_filters apf
+            INNER JOIN ". MYSQL_PREFIX ."assign_filters_to_pipes apf
                ON
                   apf.apf_filter_idx=f.filter_idx
             WHERE
@@ -218,7 +218,7 @@ class MASTERSHAPER_PIPES {
                SELECT DISTINCT
                   apf_filter_idx, apf_pipe_idx
                FROM
-                  ". MYSQL_PREFIX ."assign_filters
+                  ". MYSQL_PREFIX ."assign_filters_to_pipes
                WHERE
                   apf_pipe_idx=". $this->db->db_quote($params['pipe_idx']) ."
             ) apf
@@ -254,7 +254,7 @@ class MASTERSHAPER_PIPES {
             SELECT
                apf_filter_idx
             FROM
-               ". MYSQL_PREFIX ."assign_filters
+               ". MYSQL_PREFIX ."assign_filters_to_pipes
             WHERE
                apf_pipe_idx='". $params['pipe_idx'] ."'
          ) apf
@@ -335,7 +335,7 @@ class MASTERSHAPER_PIPES {
 
       if(isset($_POST['used']) && $_POST['used']) {
          $this->db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_filters
+            DELETE FROM ". MYSQL_PREFIX ."assign_filters_to_pipes
             WHERE
                apf_pipe_idx='". $_POST['pipe_idx'] ."'
          ");
@@ -343,7 +343,7 @@ class MASTERSHAPER_PIPES {
          foreach($_POST['used'] as $use) {
             if($use != "") {
                $this->db->db_query("
-                  INSERT INTO ". MYSQL_PREFIX ."assign_filters (
+                  INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (
                      apf_pipe_idx, apf_filter_idx
                   ) VALUES (
                      '". $_POST['pipe_idx'] ."',
@@ -373,7 +373,7 @@ class MASTERSHAPER_PIPES {
                pipe_idx='". $idx ."'
          ");
          $this->db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_filters
+            DELETE FROM ". MYSQL_PREFIX ."assign_filters_to_pipes
             WHERE
                apf_pipe_idx='". $idx ."'
          ");

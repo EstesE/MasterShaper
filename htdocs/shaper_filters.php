@@ -396,7 +396,7 @@ class MASTERSHAPER_FILTERS {
 
       if(isset($_POST['used']) && $_POST['used']) {
          $this->db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_ports
+            DELETE FROM ". MYSQL_PREFIX ."assign_ports_to_filters
             WHERE
                afp_filter_idx='". $_POST['filter_idx'] ."'
          ");
@@ -404,7 +404,7 @@ class MASTERSHAPER_FILTERS {
          foreach($_POST['used'] as $use) {
             if($use != "") {
                $this->db->db_query("
-                  INSERT INTO ". MYSQL_PREFIX ."assign_ports (
+                  INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (
                      afp_filter_idx, afp_port_idx
                   ) VALUES (
                      '". $_POST['filter_idx'] ."',
@@ -416,14 +416,14 @@ class MASTERSHAPER_FILTERS {
 
          if(isset($_POST['filter_l7_used']) && $_POST['filter_l7_used']) {
             $this->db->db_query("
-               DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols
+               DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
                WHERE
                   afl7_filter_idx='". $_POST['filter_idx'] ."'
             ");
             foreach($_POST['filter_l7_used'] as $use) {
                if($use != "") {
                   $this->db->db_query("
-                     INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols (
+                     INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (
                         afl7_filter_idx, afl7_l7proto_idx
                      ) VALUES (
                         '". $_POST['filter_idx'] ."',
@@ -453,17 +453,17 @@ class MASTERSHAPER_FILTERS {
                filter_idx='". $idx ."'
          ");
          $this->db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_ports
+            DELETE FROM ". MYSQL_PREFIX ."assign_ports_to_filters
             WHERE
                afp_filter_idx='". $idx ."'
          ");
          $this->db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols
+            DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
             WHERE
                afl7_filter_idx='". $idx ."'
          ");
          $this->db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_filters
+            DELETE FROM ". MYSQL_PREFIX ."assign_filters_to_pipes
             WHERE
                apf_filter_idx='". $idx ."'
          ");
@@ -598,19 +598,19 @@ class MASTERSHAPER_FILTERS {
             $ports = $this->db->db_query("
                SELECT port_idx, port_name, port_number
                FROM ". MYSQL_PREFIX ."ports
-               LEFT JOIN ". MYSQL_PREFIX ."assign_ports
-                  ON port_idx=". MYSQL_PREFIX ."assign_ports.afp_port_idx
+               LEFT JOIN ". MYSQL_PREFIX ."assign_ports_to_filters
+                  ON port_idx=". MYSQL_PREFIX ."assign_ports_to_filters.afp_port_idx
                WHERE
-                  ". MYSQL_PREFIX ."assign_ports.afp_filter_idx <> '". $params['filter_idx'] ."'
+                  ". MYSQL_PREFIX ."assign_ports_to_filters.afp_filter_idx <> '". $params['filter_idx'] ."'
                OR
-                  ISNULL(". MYSQL_PREFIX ."assign_ports.afp_filter_idx)
+                  ISNULL(". MYSQL_PREFIX ."assign_ports_to_filters.afp_filter_idx)
                ORDER BY port_name ASC
             ");
             break;
          case 'used':
             $ports = $this->db->db_query("
                SELECT p.port_idx, p.port_name, p.port_number
-               FROM ". MYSQL_PREFIX ."assign_ports
+               FROM ". MYSQL_PREFIX ."assign_ports_to_filters
                LEFT JOIN ". MYSQL_PREFIX ."ports p
                   ON p.port_idx = afp_port_idx
                WHERE
@@ -647,7 +647,7 @@ class MASTERSHAPER_FILTERS {
             $l7protos = $this->db->db_query("
                SELECT l7proto_idx, l7proto_name
                FROM ". MYSQL_PREFIX ."l7_protocols
-               LEFT JOIN ". MYSQL_PREFIX ."assign_l7_protocols
+               LEFT JOIN ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
                   ON l7proto_idx=afl7_l7proto_idx
                      AND afl7_filter_idx = '". $params['filter_idx'] ."'
                WHERE
@@ -659,7 +659,7 @@ class MASTERSHAPER_FILTERS {
          case 'used':
             $l7protos = $this->db->db_query("
                SELECT l7proto_idx, l7proto_name
-               FROM ". MYSQL_PREFIX ."assign_l7_protocols
+               FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
                LEFT JOIN ". MYSQL_PREFIX ."l7_protocols
                   ON l7proto_idx=afl7_l7proto_idx
                WHERE afl7_filter_idx = '". $params['filter_idx'] ."'
