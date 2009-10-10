@@ -1058,6 +1058,90 @@ class MASTERSHAPER {
 
    } // getuid()
 
+   /**
+    * throw error
+    *
+    * This function shows up error messages and afterwards outputs exceptions.
+    *
+    * @param string $string
+    */
+   public function throwError($string)
+   {
+      if(!defined('DB_NOERROR'))  {
+         print "<br /><br />". $string ."<br /><br />\n";
+         try {
+            throw new MASTERSHAPER_EXCEPTION;
+         }
+         catch(MASTERSHAPER_EXCEPTION $e) {
+            print "<br /><br />\n";
+            $this->_error($e);
+            die;
+         }
+      }
+
+      $this->last_error = $string;
+
+   } // throwError()
+
+   /**
+    * general error output function
+    *
+    * @param string $text
+    */
+   private function _error($text)
+   {
+      switch($this->cfg->logging) {
+         default:
+         case 'display':
+            print $text;
+            if(!$this->is_cmdline())
+               print "<br />";
+            print "\n";
+            break;
+         case 'errorlog':
+            error_log($text);
+            break;
+         case 'logfile':
+            error_log($text, 3, $his->cfg->log_file);
+            break;
+      }
+
+      $this->runtime_error = true;
+
+   } // _error()
+
+   /**
+    * check if called from command line
+    *
+    * this function will return true, if called from command line
+    * otherwise false.
+    * @return boolean
+    */
+   private function is_cmdline()
+   {
+      if(isset($_ENV['SHELL']) && !empty($_ENV['SHELL']))
+         return true;
+
+      return false;
+
+   } // is_cmdline()
+
 } // class MASTERSHAPER
 
+/***************************************************************************
+ *
+ * MASTERSHAPER_EXCEPTION class, inherits PHP's Exception class
+ *
+ ***************************************************************************/
+
+class MASTERSHAPER_EXCEPTION extends Exception {
+
+   // custom string representation of object
+   public function __toString() {
+      return "Backtrace:<br />\n". str_replace("\n", "<br />\n", parent::getTraceAsString());
+   }
+
+} // class MASTERSHAPER_EXCEPTION
+
+// vim: set filetype=php expandtab softtabstop=3 tabstop=3 shiftwidth=3 autoindent smartindent:
 ?>

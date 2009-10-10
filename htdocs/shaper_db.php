@@ -77,7 +77,7 @@ class MASTERSHAPER_DB {
       $this->db = MDB2::connect($dsn, $options);
 
       if(PEAR::isError($this->db)) {
-         $this->throwError("Unable to connect to database: ". $this->db->getMessage() .' - '. $this->db->getUserInfo());
+         $this->parent->throwError("Unable to connect to database: ". $this->db->getMessage() .' - '. $this->db->getUserInfo());
          $this->setConnStatus(false);
       }
 
@@ -119,12 +119,12 @@ class MASTERSHAPER_DB {
          }
 			
          if(PEAR::isError($result))
-            $this->throwError($result->getMessage() .' - '. $result->getUserInfo());
+            $this->parent->throwError($result->getMessage() .' - '. $result->getUserInfo());
 	
          return $result;
       }
       else 
-         $this->ThrowError("Can't execute query - we are not connected!");
+         $this->parent->throwError("Can't execute query - we are not connected!");
 
    } // db_query()
 
@@ -141,14 +141,14 @@ class MASTERSHAPER_DB {
          $row = $this->db->queryRow($query, array(), $mode);
 
          if(PEAR::isError($row))
-            $this->throwError($row->getMessage() .' - '. $row->getUserInfo());
+            $this->parent->throwError($row->getMessage() .' - '. $row->getUserInfo());
 
          return $row;
 	
       }
       else {
    
-         $this->ThrowError("Can't fetch row - we are not connected!");
+         $this->parent->throwError("Can't fetch row - we are not connected!");
       
       }
       
@@ -167,7 +167,7 @@ class MASTERSHAPER_DB {
 
       /* Errors? */
       if(PEAR::isError($result)) 
-         $this->throwError($result->getMessage() .' - '. $result->getUserInfo());
+         $this->parent->throwError($result->getMessage() .' - '. $result->getUserInfo());
 
       return $result->numRows();
 
@@ -207,7 +207,7 @@ class MASTERSHAPER_DB {
          return false;
       }
       else
-         $this->ThrowError("Can't check table - we are not connected!");
+         $this->parent->throwError("Can't check table - we are not connected!");
 	 
    } // db_check_table_exists()
 
@@ -223,7 +223,7 @@ class MASTERSHAPER_DB {
          if(!$this->db_check_table_exists($new))
             $this->db_query("RENAME TABLE ". $old ." TO ". $new);
          else
-            $this->ThrowError("Can't rename table ". $old ." - ". $new ." already exists!");
+            $this->parent->throwError("Can't rename table ". $old ." - ". $new ." already exists!");
       }
 	 
    } // db_rename_table()
@@ -402,26 +402,6 @@ class MASTERSHAPER_DB {
       return $this->db->quote($obj);
 
    } // db_quote()
-
-   /**
-    * MASTERSHAPER_DB throw error
-    *
-    * This function shows up error messages and afterwards through exceptions.
-    */
-   private function ThrowError($string)
-   {
-      if(!defined('DB_NOERROR'))  {
-         print "<br /><br />". $string ."<br /><br />\n";
-         try {
-            throw new Exception;
-         }
-         catch(Exectpion $e) {
-         }
-      }
-
-      $this->last_error = $string;
-	 
-   } // ThrowError()
 
 }
 
