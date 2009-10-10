@@ -74,6 +74,14 @@ class MASTERSHAPER_DB {
          'portability' => 'DB_PORTABILITY_ALL'
       );
 
+      if(!defined('MYSQL_USER') ||
+         !defined('MYSQL_PASS') ||
+         !defined('MYSQL_HOST') ||
+         !defined('MYSQL_DB')) {
+
+         $this->parent->throwError("Missing MySQL configuration");
+      }
+
       $dsn = "mysql://". MYSQL_USER .":". MYSQL_PASS ."@". MYSQL_HOST ."/". MYSQL_DB;
       $this->db = MDB2::connect($dsn, $options);
 
