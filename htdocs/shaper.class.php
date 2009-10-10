@@ -102,6 +102,11 @@ class MASTERSHAPER {
          $missing = true;
       }
 
+      if(!function_exists("mysql_connect")) {
+         print "PHP MySQL extension is missing<br />\n";
+         $missing = true;
+      }
+
       /* Check for HTML_AJAX PEAR package, lent from Horde project */
       ini_set('track_errors', 1);
       @include_once 'HTML/AJAX/Server.php';
@@ -113,6 +118,12 @@ class MASTERSHAPER {
       @include_once 'MDB2.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "PEAR MDB2 package is missing<br />\n";
+         $missing = true;
+         unset($php_errormsg);
+      }
+      @include_once 'MDB2/Driver/mysql.php';
+      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
+         print "PEAR MDB2 MySQL driver is missing<br />\n";
          $missing = true;
          unset($php_errormsg);
       }
