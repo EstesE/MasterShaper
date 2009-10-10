@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<config>
+  <mysql_host></mysql_host>
+  <mysql_user></mysql_user>
+  <mysql_pass></mysql_pass>
+  <mysql_db></mysql_db>
+  <mysql_prefix>shaper2_</mysql_prefix>
+  <base_path>/srv/shaper/htdocs</base_path>
+  <web_path>/shaper</web_path>
+  <tc_bin>/sbin/tc</tc_bin>
+  <ipt_bin>/sbin/iptables</ipt_bin>
+  <sudo_bin>/usr/bin/sudo</sudo_bin>
+  <temp_path>/tmp</temp_path>
+</config>
