@@ -54,7 +54,7 @@ class MASTERSHAPER {
     */
    public function __construct()
    {
-      $this->cfg = new MASTERSHAPER_CFG("config.dat");
+      $this->cfg = new MASTERSHAPER_CFG($this, "config.dat");
 
       /* Check necessary requirements */
       if(!$this->check_requirements()) {

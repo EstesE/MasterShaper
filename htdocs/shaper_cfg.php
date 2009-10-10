@@ -23,14 +23,32 @@
 
 class MASTERSHAPER_CFG {
 
+   var $parent;
+
    /**
     * MASTERSHAPER_CFG constructor
     *
     * Initialize the MASTERSHAPER_CFG class
     */
-   public function __construct($file)
+   public function __construct($parent, $file)
    {
-      $this->readCfg($file);
+      $this->parent = $parent;
+
+      if(!file_exists($file)) {
+         $this->parent->throwError("Can not locate MasterShaper's config file at: ". getcwd() ."/". $file);
+         return false;
+      }
+
+      if(!is_readable($file)) {
+         $this->parent->throwError("Can not read MasterShaper's config file at: ". getcwd() ."/". $file);
+         return false;
+      }
+
+      if($this->readCfg($file))
+         return true;
+
+      /* unknown reror */
+      return false;
 
    } // __construct()
 
