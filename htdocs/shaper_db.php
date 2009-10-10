@@ -57,7 +57,8 @@ class MASTERSHAPER_DB {
     */ 
    public function __destruct()
    {
-      $this->db_disconnect();
+      if($this->getConnStatus())
+         $this->db_disconnect();
 
    } // _destruct()
 
