@@ -71,6 +71,13 @@ class MASTERSHAPER {
          $this->throwError("Failed installing database tables");
       }
 
+      /* alert if meta table is missing */
+      if(!$this->db->db_check_table_exists(MYSQL_PREFIX ."meta"))
+         $this->throwError("You are missing table ". MYSQL_PREFIX ."meta! You may run install.php again.");
+
+      if($this->db->getVersion() < SCHEMA_VERSION)
+         $this->throwError("The local schema version is lower (". $this->db->getVersion() .") then the programs schema version (". SCHEMA_VERSION ."). You may run install.php again.");
+
       require_once "shaper_tmpl.php";
       $this->tmpl = new MASTERSHAPER_TMPL($this);
 

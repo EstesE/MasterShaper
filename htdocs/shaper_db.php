@@ -350,17 +350,20 @@ class MASTERSHAPER_DB {
     */
    public function getVersion()
    {
-      if($this->db_check_table_exists(MYSQL_PREFIX ."meta")) {
-         $result = $this->db_fetchSingleRow("
-            SELECT
-               meta_value 
-            FROM
-               ". MYSQL_PREFIX ."meta 
-            WHERE
-               meta_key LIKE 'schema version'
-         ");
-         return $result->setting_value;
-      }
+      if(!$this->db_check_table_exists(MYSQL_PREFIX ."meta"))
+         return false;
+
+      $result = $this->db_fetchSingleRow("
+         SELECT
+            meta_value
+         FROM
+            ". MYSQL_PREFIX ."meta
+         WHERE
+            meta_key LIKE 'schema version'
+      ");
+
+      if(isset($result->meta_value))
+         return $result->meta_value;
 
       return 0;
 	 
@@ -371,7 +374,7 @@ class MASTERSHAPER_DB {
     *
     * This function sets the version name of MasterShaper (DB)
     */
-   public function setVersion($version)
+   private function setVersion($version)
    {
       $this->db_query("
          REPLACE INTO ". MYSQL_PREFIX ."settings (
