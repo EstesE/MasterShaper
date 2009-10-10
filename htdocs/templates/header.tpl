@@ -23,7 +23,7 @@
  <body onload="init_shaper();">
   <!-- header cell -->
   <div style="height: 10px;"></div>
-  <div style="width: 100%; height: 90px;">
+  <div style="width: 100%; height: 70px;">
   <img src="images/ms_logo.png"></div>
   <!-- /header cell -->   
 
