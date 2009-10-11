@@ -1,7 +1,7 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="users" onsubmit="saveForm(this, 'users'); return false;" method="post">
+<form action="{$page->uri}" id="users" method="post">
 <input type="hidden" name="module" value="user" />
-<input type="hidden" name="action" value="modify" />
+<input type="hidden" name="action" value="store" />
 { if ! $user_idx }
  {start_table icon=$icon_users alt="user icon" title="Create a new User" }
  <input type="hidden" name="user_new" value="1" />

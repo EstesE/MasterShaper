@@ -21,61 +21,26 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_TARGETS {
-
-   private $db;
-   private $parent;
-   private $tmpl;
+class MASTERSHAPER_TARGETS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_TARGETS constructor
     *
     * Initialize the MASTERSHAPER_TARGETS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->db = $parent->db;
-      $this->parent = $parent;
-      $this->tmpl = $this->parent->tmpl;
+      $this->rights = 'user_manage_targets';
 
    } // __construct()
-
-   /* interface output */
-   public function show()
-   {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_targets")) {
-
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset targets"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
-
-      if(!isset($_GET['mode'])) {
-         $_GET['mode'] = "show";
-      }
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-
-   } // show()
 
    /**
     * handle updates
     */
    public function store()
    {
+      global $db;
+
       isset($_POST['target_new']) && $_POST['target_new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['target_name']) || $_POST['target_name'] == "") {
@@ -133,7 +98,7 @@ class MASTERSHAPER_TARGETS {
       }
 
       if(isset($new)) {
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."targets
                (target_name, target_match, target_ip, target_mac)
             VALUES  (
@@ -144,11 +109,11 @@ class MASTERSHAPER_TARGETS {
             )
             ");
 
-         $_POST['target_idx'] = $this->db->db_getId();
+         $_POST['target_idx'] = $db->db_getId();
 
       }
       else {
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."targets
             SET 
                target_name='". $_POST['target_name'] ."',
@@ -160,14 +125,14 @@ class MASTERSHAPER_TARGETS {
       }
 
       if(isset($_POST['used']) && $_POST['used']) {
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_target_groups
             WHERE
                atg_group_idx='". $_POST['target_idx'] ."'
          ");
          foreach($_POST['used'] as $use) {
             if($use != "") {
-               $this->db->db_query("
+               $db->db_query("
                   INSERT INTO ". MYSQL_PREFIX ."assign_target_groups
                      (atg_group_idx, atg_target_idx) 
                   VALUES (
@@ -187,13 +152,15 @@ class MASTERSHAPER_TARGETS {
     */
    public function showList()
    {
+      global $db, $tmpl;
+
       if(!isset($this->parent->screen))
          $this->parent->screen = 0;
 
       $this->avail_targets = Array();
       $this->targets = Array(); 
 
-      $res_targets = $this->db->db_query("
+      $res_targets = $db->db_query("
          SELECT target_idx, target_name, target_match
          FROM ". MYSQL_PREFIX ."targets
          ORDER BY target_name ASC
@@ -207,44 +174,41 @@ class MASTERSHAPER_TARGETS {
          $cnt_targets++;
       }
 
-      $this->tmpl->register_block("target_list", array(&$this, "smarty_target_list"));
-      $this->tmpl->show("targets_list.tpl");
+      $tmpl->register_block("target_list", array(&$this, "smarty_target_list"));
+      return $tmpl->fetch("targets_list.tpl");
 
    } // showList()
 
    /**
     * display interface to create or edit targets
     */
-   public function showEdit($idx)
+   public function showEdit()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_targets")) {
+      if($this->is_storing())
+         $this->store();
 
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset targets"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
+      global $db, $tmpl, $page;
       
-      if($idx != 0) {
-         $target = $this->db->db_fetchSingleRow("
+      if($page->id != 0) {
+         $target = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."targets
             WHERE
-               target_idx='". $idx ."'
+               target_idx='". $page->id ."'
          ");
 
-         $this->tmpl->assign('target_idx', $idx);
-         $this->tmpl->assign('target_name', $target->target_name);
-         $this->tmpl->assign('target_match', $target->target_match);
-         $this->tmpl->assign('target_ip', $target->target_ip);
-         $this->tmpl->assign('target_mac', $target->target_mac);
+         $tmpl->assign('target_idx', $page->id);
+         $tmpl->assign('target_name', $target->target_name);
+         $tmpl->assign('target_match', $target->target_match);
+         $tmpl->assign('target_ip', $target->target_ip);
+         $tmpl->assign('target_mac', $target->target_mac);
       }
       else {
-         $this->tmpl->assign('target_match', 'IP');
+         $tmpl->assign('target_match', 'IP');
       }
 
-      $this->tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
-      $this->tmpl->show("targets_edit.tpl");
+      $tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
+      return $tmpl->fetch("targets_edit.tpl");
 
    } // showEdit()
 
@@ -253,7 +217,9 @@ class MASTERSHAPER_TARGETS {
     */
    public function smarty_target_list($params, $content, &$smarty, &$repeat) 
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.target_list.index');
+      global $tmpl;
+
+      $index = $smarty->get_template_vars('smarty.IB.target_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -263,16 +229,16 @@ class MASTERSHAPER_TARGETS {
         $target_idx = $this->avail_targets[$index];
         $target =  $this->targets[$target_idx];
          
-         $this->tmpl->assign('target_idx', $target_idx);
-         $this->tmpl->assign('target_name', $target->target_name);
+         $tmpl->assign('target_idx', $target_idx);
+         $tmpl->assign('target_name', $target->target_name);
          switch($target->target_match) {
-            case 'IP':    $this->tmpl->assign('target_type', _("IP match")); break;
-            case 'MAC':   $this->tmpl->assign('target_type', _("MAC match")); break;
-            case 'GROUP': $this->tmpl->assign('target_type', _("Target Group")); break;
+            case 'IP':    $tmpl->assign('target_type', _("IP match")); break;
+            case 'MAC':   $tmpl->assign('target_type', _("MAC match")); break;
+            case 'GROUP': $tmpl->assign('target_type', _("Target Group")); break;
          }
 
          $index++;
-         $this->tmpl->assign('smarty.IB.target_list.index', $index);
+         $tmpl->assign('smarty.IB.target_list.index', $index);
          $repeat = true;
       }
       else {
@@ -285,20 +251,22 @@ class MASTERSHAPER_TARGETS {
 
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx'])) {
          $idx = $_POST['idx'];
 
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."targets
             WHERE
                target_idx='". $idx ."'
          ");
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_target_groups
             WHERE
                atg_group_idx='". $idx ."'
          ");
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_target_groups
             WHERE
                atg_target_idx='". $idx ."'
@@ -317,10 +285,12 @@ class MASTERSHAPER_TARGETS {
    public function smarty_target_select_list($params, &$smarty)
    {
       if(!array_key_exists('group', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'group' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("getSLList: missing 'group' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
+
+      global $db;
 
       /* either "used" or "unused" */
       $group = $params['group'];
@@ -331,7 +301,7 @@ class MASTERSHAPER_TARGETS {
       switch($group) {
 
          case 'unused':
-            $result = $this->db->db_query("
+            $result = $db->db_query("
                SELECT t.target_idx, t.target_name
                FROM ". MYSQL_PREFIX ."targets t
                LEFT JOIN ". MYSQL_PREFIX ."assign_target_groups atg
@@ -344,7 +314,7 @@ class MASTERSHAPER_TARGETS {
             ");
             break;
          case 'used':
-            $result = $this->db->db_query("
+            $result = $db->db_query("
                SELECT t.target_idx, t.target_name
                FROM ". MYSQL_PREFIX ."assign_target_groups atg
                LEFT JOIN ". MYSQL_PREFIX ."targets t
@@ -370,7 +340,9 @@ class MASTERSHAPER_TARGETS {
     */
    private function checkTargetExists($target_name)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT target_idx
          FROM ". MYSQL_PREFIX ."targets
          WHERE
@@ -383,5 +355,8 @@ class MASTERSHAPER_TARGETS {
    } // checkTargetExists()
 
 } // class MASTERSHAPER_TARGETS
+
+$obj = new MASTERSHAPER_TARGETS();
+$obj->handler();
 
 ?>

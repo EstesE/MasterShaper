@@ -1,7 +1,7 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="protocols" onsubmit="saveForm(this, 'protocols'); return false;" method="post">
+<form action="{$page->uri}" id="protocols" method="post">
 <input type="hidden" name="module" value="protocol" />
-<input type="hidden" name="action" value="modify" />
+<input type="hidden" name="action" value="store" />
 { if ! $proto_idx }
  {start_table icon=$icon_protocols alt="protocol icon" title="Create a new Protocol" }
  <input type="hidden" name="proto_new" value="1" />

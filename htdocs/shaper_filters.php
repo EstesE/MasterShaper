@@ -21,70 +21,30 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_FILTERS {
-
-   var $db;
-   var $parent;
-   var $tmpl;
+class MASTERSHAPER_FILTERS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_FILTERS constructor
     *
     * Initialize the MASTERSHAPER_FILTERS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent = $parent;
-      $this->db = $parent->db;
-      $this->tmpl = $parent->tmpl;
+      $this->rights = 'user_manage_filters';
 
    } // __constrcut()
-
-   /* interface output */
-   public function show()
-   {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_filters")) {
-
-         $this->parent->printError("<img src=\"". ICON_FILTERS ."\"
-            alt=\"filter icon\" />&nbsp;". _("Manage Filters"),
-            _("You do not have enough permissions to access this module!")
-         );
-         
-         return 0;
-
-      }
-
-      if(!isset($_GET['mode'])) {
-         $_GET['mode'] = "show";
-      }
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-      
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-   
-   } // show()
 
    /**
     * display all filters
     */
-   private function showList()
+   public function showList()
    {
+      global $db, $tmpl;
+
       $this->avail_filters = Array();
       $this->filters = Array();
 
-      $res_filters = $this->db->db_query("
+      $res_filters = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."filters
          ORDER BY filter_name ASC
@@ -98,69 +58,74 @@ class MASTERSHAPER_FILTERS {
          $cnt_filters++;
       }
 
-      $this->tmpl->register_block("filter_list", array(&$this, "smarty_filter_list"));
-      $this->tmpl->show("filters_list.tpl");
+      $tmpl->register_block("filter_list", array(&$this, "smarty_filter_list"));
+      return $tmpl->fetch("filters_list.tpl");
 
    } // showList()
 
    /** 
     * filter for handling
     */
-   private function showEdit($idx)
+   public function showEdit()
    {
-      if($idx != 0) {
+      if($this->is_storing())
+         $this->store();
 
-         $filter = $this->db->db_fetchSingleRow("
+      global $ms, $db, $tmpl, $page;
+
+      if($page->id != 0) {
+
+         $filter = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."filters
             WHERE
-               filter_idx='". $idx ."'
+               filter_idx='". $page->id ."'
          ");
 
-         $this->tmpl->assign('filter_idx', $idx);
-         $this->tmpl->assign('filter_mode', $this->parent->getOption("filter"));
-         $this->tmpl->assign('filter_name', $filter->filter_name);
-         $this->tmpl->assign('filter_active', $filter->filter_active);
-         $this->tmpl->assign('filter_protocol_id', $filter->filter_protocol_id);
-         $this->tmpl->assign('filter_tos', $filter->filter_tos);
-         $this->tmpl->assign('filter_tcpflag_syn', $filter->filter_tcpflag_syn);
-         $this->tmpl->assign('filter_tcpflag_ack', $filter->filter_tcpflag_ack);
-         $this->tmpl->assign('filter_tcpflag_fin', $filter->filter_tcpflag_fin);
-         $this->tmpl->assign('filter_tcpflag_rst', $filter->filter_tcpflag_rst);
-         $this->tmpl->assign('filter_tcpflag_urg', $filter->filter_tcpflag_urg);
-         $this->tmpl->assign('filter_tcpflag_psh', $filter->filter_tcpflag_psh);
-         $this->tmpl->assign('filter_packet_length', $filter->filter_packet_length);
-         $this->tmpl->assign('filter_p2p_edk', $filter->filter_p2p_edk);
-         $this->tmpl->assign('filter_p2p_kazaa', $filter->filter_p2p_kazaa);
-         $this->tmpl->assign('filter_p2p_dc', $filter->filter_p2p_dc);
-         $this->tmpl->assign('filter_p2p_gnu', $filter->filter_p2p_gnu);
-         $this->tmpl->assign('filter_p2p_bit', $filter->filter_p2p_bit);
-         $this->tmpl->assign('filter_p2p_apple', $filter->filter_p2p_apple);
-         $this->tmpl->assign('filter_p2p_soul', $filter->filter_p2p_soul);
-         $this->tmpl->assign('filter_p2p_winmx', $filter->filter_p2p_winmx);
-         $this->tmpl->assign('filter_p2p_ares', $filter->filter_p2p_ares);
-         $this->tmpl->assign('filter_time_use_range', $filter->filter_time_use_range);
-         $this->tmpl->assign('filter_time_start', $filter->filter_time_start);
-         $this->tmpl->assign('filter_time_stop', $filter->filter_time_stop);
-         $this->tmpl->assign('filter_time_day_mon', $filter->filter_time_day_mon);
-         $this->tmpl->assign('filter_time_day_tue', $filter->filter_time_day_tue);
-         $this->tmpl->assign('filter_time_day_wed', $filter->filter_time_day_wed);
-         $this->tmpl->assign('filter_time_day_thu', $filter->filter_time_day_thu);
-         $this->tmpl->assign('filter_time_day_fri', $filter->filter_time_day_fri);
-         $this->tmpl->assign('filter_time_day_sat', $filter->filter_time_day_sat);
-         $this->tmpl->assign('filter_time_day_sun', $filter->filter_time_day_sun);
-         $this->tmpl->assign('filter_match_ftp_data', $filter->filter_match_ftp_data);
-         $this->tmpl->assign('filter_match_sip', $filter->filter_match_sip);
+         $tmpl->assign('filter_idx', $page->id);
+         $tmpl->assign('filter_mode', $ms->getOption("filter"));
+         $tmpl->assign('filter_name', $filter->filter_name);
+         $tmpl->assign('filter_active', $filter->filter_active);
+         $tmpl->assign('filter_protocol_id', $filter->filter_protocol_id);
+         $tmpl->assign('filter_tos', $filter->filter_tos);
+         $tmpl->assign('filter_tcpflag_syn', $filter->filter_tcpflag_syn);
+         $tmpl->assign('filter_tcpflag_ack', $filter->filter_tcpflag_ack);
+         $tmpl->assign('filter_tcpflag_fin', $filter->filter_tcpflag_fin);
+         $tmpl->assign('filter_tcpflag_rst', $filter->filter_tcpflag_rst);
+         $tmpl->assign('filter_tcpflag_urg', $filter->filter_tcpflag_urg);
+         $tmpl->assign('filter_tcpflag_psh', $filter->filter_tcpflag_psh);
+         $tmpl->assign('filter_packet_length', $filter->filter_packet_length);
+         $tmpl->assign('filter_p2p_edk', $filter->filter_p2p_edk);
+         $tmpl->assign('filter_p2p_kazaa', $filter->filter_p2p_kazaa);
+         $tmpl->assign('filter_p2p_dc', $filter->filter_p2p_dc);
+         $tmpl->assign('filter_p2p_gnu', $filter->filter_p2p_gnu);
+         $tmpl->assign('filter_p2p_bit', $filter->filter_p2p_bit);
+         $tmpl->assign('filter_p2p_apple', $filter->filter_p2p_apple);
+         $tmpl->assign('filter_p2p_soul', $filter->filter_p2p_soul);
+         $tmpl->assign('filter_p2p_winmx', $filter->filter_p2p_winmx);
+         $tmpl->assign('filter_p2p_ares', $filter->filter_p2p_ares);
+         $tmpl->assign('filter_time_use_range', $filter->filter_time_use_range);
+         $tmpl->assign('filter_time_start', $filter->filter_time_start);
+         $tmpl->assign('filter_time_stop', $filter->filter_time_stop);
+         $tmpl->assign('filter_time_day_mon', $filter->filter_time_day_mon);
+         $tmpl->assign('filter_time_day_tue', $filter->filter_time_day_tue);
+         $tmpl->assign('filter_time_day_wed', $filter->filter_time_day_wed);
+         $tmpl->assign('filter_time_day_thu', $filter->filter_time_day_thu);
+         $tmpl->assign('filter_time_day_fri', $filter->filter_time_day_fri);
+         $tmpl->assign('filter_time_day_sat', $filter->filter_time_day_sat);
+         $tmpl->assign('filter_time_day_sun', $filter->filter_time_day_sun);
+         $tmpl->assign('filter_match_ftp_data', $filter->filter_match_ftp_data);
+         $tmpl->assign('filter_match_sip', $filter->filter_match_sip);
 
       }
       else {
-         $this->tmpl->assign('filter_active', 'Y');
+         $tmpl->assign('filter_active', 'Y');
       }
 
-      $this->tmpl->register_function("protocol_select_list", array(&$this, "smarty_protocol_select_list"), false);
-      $this->tmpl->register_function("port_select_list", array(&$this, "smarty_port_select_list"), false);
-      $this->tmpl->register_function("l7_select_list", array(&$this, "smarty_l7_select_list"), false);
-      $this->tmpl->show("filters_edit.tpl");
+      $tmpl->register_function("protocol_select_list", array(&$this, "smarty_protocol_select_list"), false);
+      $tmpl->register_function("port_select_list", array(&$this, "smarty_port_select_list"), false);
+      $tmpl->register_function("l7_select_list", array(&$this, "smarty_l7_select_list"), false);
+      return $tmpl->fetch("filters_edit.tpl");
 
    } // showEdit()
 
@@ -169,6 +134,8 @@ class MASTERSHAPER_FILTERS {
     */
    public function store()
    {
+      global $ms, $db;
+
       isset($_POST['filter_new']) && $_POST['filter_new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['filter_name']) || $_POST['filter_name'] == "") {
@@ -215,9 +182,9 @@ class MASTERSHAPER_FILTERS {
       /* Ports can only be used with TCP, UDP or IP protocol */
       if(isset($_POST['used']) && count($_POST['used']) > 1 &&
          (
-            $this->parent->getProtocolNumberById($_POST['filter_protocol_id']) != 4 &&
-            $this->parent->getProtocolNumberById($_POST['filter_protocol_id']) != 17 &&
-            $this->parent->getProtocolNumberById($_POST['filter_protocol_id']) != 6
+            $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 4 &&
+            $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 17 &&
+            $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6
          )) {
          return _("Ports can only be used in combination with IP, TCP or UDP protocol!");
       }
@@ -230,7 +197,7 @@ class MASTERSHAPER_FILTERS {
             $_POST['filter_tcpflag_urg'] ||
             $_POST['filter_tcpflag_psh']
          ) &&
-         $this->parent->getProtocolNumberById($_POST['filter_protocol_id']) != 6) {
+         $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6) {
          return _("TCP-Flags can only be used in combination with TCP protocol!");
       }
       /* ipp2p can only be used with no ports, no l7 filters and tcp &| udp protocol */
@@ -249,9 +216,9 @@ class MASTERSHAPER_FILTERS {
             count($_POST['used']) > 1 || 
             (
                (
-                  $this->parent->getProtocolNumberById(
+                  $ms->getProtocolNumberById(
                      $_POST['filter_protocol_id']) != 17 &&
-                  $this->parent->getProtocolNumberById($_POST['filter_protocol_id']) != 6
+                  $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6
                ) &&
                $_POST['filter_protocol_id'] != -1
             ) ||
@@ -281,7 +248,7 @@ class MASTERSHAPER_FILTERS {
       }
 
       if(isset($new)) {
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."filters (
                filter_name, filter_protocol_id, filter_tos,
                filter_tcpflag_syn, filter_tcpflag_ack,
@@ -334,13 +301,13 @@ class MASTERSHAPER_FILTERS {
             ')
          ");
                           
-         $_POST['filter_idx'] = $this->db->db_getid();
+         $_POST['filter_idx'] = $db->db_getid();
 
       }
       else {
-         switch($this->parent->getOption("filter")) {
+         switch($ms->getOption("filter")) {
             case 'ipt':
-               $this->db->db_query("
+               $db->db_query("
                   UPDATE ". MYSQL_PREFIX ."filters 
                   SET
                      filter_name='". $_POST['filter_name'] ."', 
@@ -380,7 +347,7 @@ class MASTERSHAPER_FILTERS {
                ");
                break;
             case 'tc':
-               $this->db->db_query("
+               $db->db_query("
                   UPDATE ". MYSQL_PREFIX ."filters
                   SET
                      filter_name='". $_POST['filter_name'] ."',
@@ -395,7 +362,7 @@ class MASTERSHAPER_FILTERS {
       }
 
       if(isset($_POST['used']) && $_POST['used']) {
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_ports_to_filters
             WHERE
                afp_filter_idx='". $_POST['filter_idx'] ."'
@@ -403,7 +370,7 @@ class MASTERSHAPER_FILTERS {
 
          foreach($_POST['used'] as $use) {
             if($use != "") {
-               $this->db->db_query("
+               $db->db_query("
                   INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (
                      afp_filter_idx, afp_port_idx
                   ) VALUES (
@@ -415,14 +382,14 @@ class MASTERSHAPER_FILTERS {
          }
 
          if(isset($_POST['filter_l7_used']) && $_POST['filter_l7_used']) {
-            $this->db->db_query("
+            $db->db_query("
                DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
                WHERE
                   afl7_filter_idx='". $_POST['filter_idx'] ."'
             ");
             foreach($_POST['filter_l7_used'] as $use) {
                if($use != "") {
-                  $this->db->db_query("
+                  $db->db_query("
                      INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (
                         afl7_filter_idx, afl7_l7proto_idx
                      ) VALUES (
@@ -444,25 +411,27 @@ class MASTERSHAPER_FILTERS {
     */
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
       
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."filters
             WHERE
                filter_idx='". $idx ."'
          ");
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_ports_to_filters
             WHERE
                afp_filter_idx='". $idx ."'
          ");
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
             WHERE
                afl7_filter_idx='". $idx ."'
          ");
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_filters_to_pipes
             WHERE
                apf_filter_idx='". $idx ."'
@@ -481,6 +450,8 @@ class MASTERSHAPER_FILTERS {
     */
    public function toggleStatus()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
 
@@ -489,7 +460,7 @@ class MASTERSHAPER_FILTERS {
          else
             $new_status = 'N';
 
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."filters
             SET
                filter_active='". $new_status ."'
@@ -511,7 +482,9 @@ class MASTERSHAPER_FILTERS {
     */
    private function checkFilterExists($filter_name)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT filter_idx 
          FROM ". MYSQL_PREFIX ."filters
          WHERE
@@ -529,7 +502,9 @@ class MASTERSHAPER_FILTERS {
     */
    public function smarty_filter_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.filter_list.index');
+      global $tmpl;
+
+      $index = $smarty->get_template_vars('smarty.IB.filter_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -539,12 +514,12 @@ class MASTERSHAPER_FILTERS {
         $filter_idx = $this->avail_filters[$index];
         $filter =  $this->filters[$filter_idx];
 
-         $this->tmpl->assign('filter_idx', $filter_idx);
-         $this->tmpl->assign('filter_name', $filter->filter_name);
-         $this->tmpl->assign('filter_active', $filter->filter_active);
+         $tmpl->assign('filter_idx', $filter_idx);
+         $tmpl->assign('filter_name', $filter->filter_name);
+         $tmpl->assign('filter_active', $filter->filter_active);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.filter_list.index', $index);
+         $tmpl->assign('smarty.IB.filter_list.index', $index);
          $repeat = true;
       }
       else {
@@ -558,12 +533,14 @@ class MASTERSHAPER_FILTERS {
    public function smarty_protocol_select_list($params, &$smarty)
    {
       if(!array_key_exists('proto_idx', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'proto_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("getSLList: missing 'proto_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       } 
 
-      $result = $this->db->db_query("
+      global $db;
+
+      $result = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."protocols
          ORDER BY proto_name ASC
@@ -583,19 +560,21 @@ class MASTERSHAPER_FILTERS {
    public function smarty_port_select_list($params, &$smarty)
    {
       if(!array_key_exists('filter_idx', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'filter_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("getSLList: missing 'filter_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       } 
       if(!array_key_exists('mode', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'mode' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("getSLList: missing 'mode' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       } 
 
+      global $db;
+
       switch($params['mode']) {
          case 'unused':
-            $ports = $this->db->db_query("
+            $ports = $db->db_query("
                SELECT port_idx, port_name, port_number
                FROM ". MYSQL_PREFIX ."ports
                LEFT JOIN ". MYSQL_PREFIX ."assign_ports_to_filters
@@ -608,7 +587,7 @@ class MASTERSHAPER_FILTERS {
             ");
             break;
          case 'used':
-            $ports = $this->db->db_query("
+            $ports = $db->db_query("
                SELECT p.port_idx, p.port_name, p.port_number
                FROM ". MYSQL_PREFIX ."assign_ports_to_filters
                LEFT JOIN ". MYSQL_PREFIX ."ports p
@@ -631,20 +610,21 @@ class MASTERSHAPER_FILTERS {
    public function smarty_l7_select_list($params, &$smarty)
    {
       if(!array_key_exists('filter_idx', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'filter_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("getSLList: missing 'filter_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       } 
       if(!array_key_exists('mode', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'mode' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("getSLList: missing 'mode' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       } 
 
+      global $db;
 
       switch($params['mode']) {
          case 'unused':
-            $l7protos = $this->db->db_query("
+            $l7protos = $db->db_query("
                SELECT l7proto_idx, l7proto_name
                FROM ". MYSQL_PREFIX ."l7_protocols
                LEFT JOIN ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
@@ -657,7 +637,7 @@ class MASTERSHAPER_FILTERS {
             ");              
             break;
          case 'used':
-            $l7protos = $this->db->db_query("
+            $l7protos = $db->db_query("
                SELECT l7proto_idx, l7proto_name
                FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
                LEFT JOIN ". MYSQL_PREFIX ."l7_protocols
@@ -677,5 +657,8 @@ class MASTERSHAPER_FILTERS {
    } // smarty_l7_select_list()
    
 } // class MASTERSHAPER_FILTERS
+
+$obj = new MASTERSHAPER_FILTERS;
+$obj->handler();
 
 ?>

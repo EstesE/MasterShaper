@@ -1,7 +1,7 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="netpaths" onsubmit="saveForm(this, 'networkpaths'); return false;" method="post">
+<form action="{$page->uri}" id="netpaths" method="post">
 <input type="hidden" name="module" value="networkpath" />
-<input type="hidden" name="action" value="modify" />
+<input type="hidden" name="action" value="store" />
 { if !$netpath_idx }
  {start_table icon=$icon_interfaces alt="network path icon" title="Create a new Network Path" }
  <input type="hidden" name="netpath_new" value="1" />

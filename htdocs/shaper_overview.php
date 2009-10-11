@@ -21,7 +21,7 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_OVERVIEW {
+class MASTERSHAPER_OVERVIEW extends MASTERSHAPER_PAGE {
 
    private $db;
    private $parent;
@@ -32,22 +32,23 @@ class MASTERSHAPER_OVERVIEW {
     *
     * Initialize the MASTERSHAPER_OVERVIEW class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->db = $parent->db;
-      $this->parent = $parent;
-      $this->tmpl = $this->parent->tmpl;
 
    } // __construct()
 
    /* interface output */
-   public function show()
+   public function showList()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_show_rules")) {
+      global $ms;
+      global $db;
+      global $tmpl;
 
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset Overview"), _("You do not have enough permissions to access this module!"));
+      /* If authentication is enabled, check permissions */
+      if($ms->getOption("authentication") == "Y" &&
+         !$ms->checkPermissions("user_show_rules")) {
+
+         $ms->throwError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset Overview"), _("You do not have enough permissions to access this module!"));
          return 0;
       }
 
@@ -65,7 +66,7 @@ class MASTERSHAPER_OVERVIEW {
       $this->filters = Array();
       
       /* get a list of network paths */
-      $res_network_paths = $this->db->db_query("
+      $res_network_paths = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."network_paths
          WHERE
@@ -86,7 +87,7 @@ class MASTERSHAPER_OVERVIEW {
 
 
          /* get a list of chains for the current netpath */
-         $res_chains = $this->db->db_query("
+         $res_chains = $db->db_query("
             SELECT *
             FROM ". MYSQL_PREFIX ."chains
             WHERE 
@@ -109,7 +110,7 @@ class MASTERSHAPER_OVERVIEW {
             /* pipes are only available if the chain DOES NOT ignore QoS or DOES NOT use fallback service level */
             if($chain->chain_sl_idx != 0 && $chain->chain_fallback_idx != 0) {
     
-               $res_pipes = $this->db->db_query("
+               $res_pipes = $db->db_query("
                      SELECT
                         p.*
                      FROM
@@ -135,7 +136,7 @@ class MASTERSHAPER_OVERVIEW {
                   $this->avail_filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
                   $this->filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
 
-                  $res_filters = $this->db->db_query("
+                  $res_filters = $db->db_query("
                      SELECT a.filter_idx as filter_idx, a.filter_name as filter_name
                      FROM ". MYSQL_PREFIX ."filters a, ". MYSQL_PREFIX ."assign_filters_to_pipes b
                      WHERE
@@ -162,25 +163,28 @@ class MASTERSHAPER_OVERVIEW {
          $this->cnt_network_paths++;
       }
 
-      $this->tmpl->register_function("sl_list", array(&$this, "smarty_sl_list"), false);
-      $this->tmpl->register_function("target_list", array(&$this, "smarty_target_list"), false);
-      $this->tmpl->register_block("ov_netpath", array(&$this, "smarty_ov_netpath"));
-      $this->tmpl->register_block("ov_chain", array(&$this, "smarty_ov_chain"));
-      $this->tmpl->register_block("ov_pipe", array(&$this, "smarty_ov_pipe"));
-      $this->tmpl->register_block("ov_filter", array(&$this, "smarty_ov_filter"));
-      $this->tmpl->show("overview.tpl");
+      $tmpl->register_function("sl_list", array(&$this, "smarty_sl_list"), false);
+      $tmpl->register_function("target_list", array(&$this, "smarty_target_list"), false);
+      $tmpl->register_block("ov_netpath", array(&$this, "smarty_ov_netpath"));
+      $tmpl->register_block("ov_chain", array(&$this, "smarty_ov_chain"));
+      $tmpl->register_block("ov_pipe", array(&$this, "smarty_ov_pipe"));
+      $tmpl->register_block("ov_filter", array(&$this, "smarty_ov_filter"));
 
-   } // show()
+      return $tmpl->fetch("overview.tpl");
+
+   } // showList()
 
    public function smarty_sl_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('idx', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("getSLList: missing 'idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $res_sl = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."service_levels");
+      $res_sl = $db->db_query("SELECT * FROM ". MYSQL_PREFIX ."service_levels");
       while($sl = $res_sl->fetchRow()) {
          $string.= "<option value=\"". $sl->sl_idx ."\"";
          if($sl->sl_idx == $params['idx'])
@@ -194,13 +198,15 @@ class MASTERSHAPER_OVERVIEW {
 
    public function smarty_target_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('idx', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("getSLList: missing 'idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $res_targets = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."targets");
+      $res_targets = $db->db_query("SELECT * FROM ". MYSQL_PREFIX ."targets");
 
       while($target = $res_targets->fetchRow()) {
          $string.= "<option value=\"". $target->target_idx ."\"";
@@ -213,9 +219,11 @@ class MASTERSHAPER_OVERVIEW {
 
    } // smarty_target_list()
 
-   public function smarty_ov_netpath($params, $content, &$smarty, &$repeat) {
-   
-      $index = $this->tmpl->get_template_vars('smarty.IB.ov_netpath.index');
+   public function smarty_ov_netpath($params, $content, &$smarty, &$repeat)
+   {
+      global $db, $tmpl;
+
+      $index = $tmpl->get_template_vars('smarty.IB.ov_netpath.index');
       if(!$index) {
          $index = 0;
       }
@@ -224,11 +232,11 @@ class MASTERSHAPER_OVERVIEW {
 
          $np_idx = $this->avail_network_paths[$index];
          $np =  $this->network_paths[$np_idx];
-         $this->tmpl->assign('netpath_idx', $np_idx);
-         $this->tmpl->assign('netpath_name', $np->netpath_name);
+         $tmpl->assign('netpath_idx', $np_idx);
+         $tmpl->assign('netpath_name', $np->netpath_name);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.ov_netpath.index', $index);
+         $tmpl->assign('smarty.IB.ov_netpath.index', $index);
          $repeat = true;
       }
       else {
@@ -238,17 +246,19 @@ class MASTERSHAPER_OVERVIEW {
 
    } // smart_ov_netpath()
 
-   public function smarty_ov_chain($params, $content, &$smarty, &$repeat) {
+   public function smarty_ov_chain($params, $content, &$smarty, &$repeat)
+   {
+      global $db, $tmpl;
 
       if(!array_key_exists('np_idx', $params)) {
-         $this->tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
       
       $np_idx = $params['np_idx'];
 
-      $index = $this->tmpl->get_template_vars('smarty.IB.ov_chain.index-'. $np_idx);
+      $index = $tmpl->get_template_vars('smarty.IB.ov_chain.index-'. $np_idx);
       if(!$index) {
          $index = 0;
       }
@@ -257,22 +267,22 @@ class MASTERSHAPER_OVERVIEW {
 
          $chain_idx = $this->avail_chains[$np_idx][$index];
          $chain =  $this->chains[$np_idx][$chain_idx];
-         $this->tmpl->assign('chain_idx', $chain_idx);
-         $this->tmpl->assign('chain_name', $chain->chain_name);
-         $this->tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
-         $this->tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
-         $this->tmpl->assign('chain_src_target', $chain->chain_src_target);
-         $this->tmpl->assign('chain_dst_target', $chain->chain_dst_target);
-         $this->tmpl->assign('chain_direction', $chain->chain_direction);
-         $this->tmpl->assign('chain_action', $chain->chain_action);
+         $tmpl->assign('chain_idx', $chain_idx);
+         $tmpl->assign('chain_name', $chain->chain_name);
+         $tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
+         $tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
+         $tmpl->assign('chain_src_target', $chain->chain_src_target);
+         $tmpl->assign('chain_dst_target', $chain->chain_dst_target);
+         $tmpl->assign('chain_direction', $chain->chain_direction);
+         $tmpl->assign('chain_action', $chain->chain_action);
 
          if($chain->chain_sl_idx != 0)
-            $this->tmpl->assign('chain_has_sl', true);
+            $tmpl->assign('chain_has_sl', true);
          else
-            $this->tmpl->assign('chain_has_sl', false);
+            $tmpl->assign('chain_has_sl', false);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.ov_chain.index-'. $np_idx, $index);
+         $tmpl->assign('smarty.IB.ov_chain.index-'. $np_idx, $index);
 
          $repeat = true;
       }
@@ -284,15 +294,17 @@ class MASTERSHAPER_OVERVIEW {
 
    } // smart_ov_chain()
 
-   public function smarty_ov_pipe($params, $content, &$smarty, &$repeat) {
+   public function smarty_ov_pipe($params, $content, &$smarty, &$repeat)
+   {
+      global $db, $tmpl;
 
       if(!array_key_exists('np_idx', $params)) {
-         $this->tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
       if(!array_key_exists('chain_idx', $params)) {
-         $this->tmpl->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
@@ -300,7 +312,7 @@ class MASTERSHAPER_OVERVIEW {
       $np_idx = $params['np_idx'];
       $chain_idx = $params['chain_idx'];
 
-      $index = $this->tmpl->get_template_vars('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx);
+      $index = $tmpl->get_template_vars('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx);
       if(!$index) {
          $index = 0;
       }
@@ -310,22 +322,22 @@ class MASTERSHAPER_OVERVIEW {
          $pipe_idx = $this->avail_pipes[$np_idx][$chain_idx][$index];
          $pipe = $this->pipes[$np_idx][$chain_idx][$pipe_idx];
 
-         $this->tmpl->assign('pipe_idx', $pipe_idx);
-         $this->tmpl->assign('pipe_name', $pipe->pipe_name);
-         $this->tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
-         $this->tmpl->assign('pipe_fallback_idx', $pipe->pipe_fallback_idx);
-         $this->tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
-         $this->tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
-         $this->tmpl->assign('pipe_direction', $pipe->pipe_direction);
-         $this->tmpl->assign('pipe_action', $pipe->pipe_action);
-         $this->tmpl->assign('counter', $index+1);
+         $tmpl->assign('pipe_idx', $pipe_idx);
+         $tmpl->assign('pipe_name', $pipe->pipe_name);
+         $tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
+         $tmpl->assign('pipe_fallback_idx', $pipe->pipe_fallback_idx);
+         $tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
+         $tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
+         $tmpl->assign('pipe_direction', $pipe->pipe_direction);
+         $tmpl->assign('pipe_action', $pipe->pipe_action);
+         $tmpl->assign('counter', $index+1);
 
          if($pipe->pipe_sl_idx != 0) {
-            $this->tmpl->assign('pipe_has_sl', 'true');
+            $tmpl->assign('pipe_has_sl', 'true');
          }
 
          $index++;
-         $this->tmpl->assign('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx, $index);
+         $tmpl->assign('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx, $index);
 
          $repeat = true;
       }
@@ -337,20 +349,22 @@ class MASTERSHAPER_OVERVIEW {
 
    } // smart_ov_pipe()
 
-   public function smarty_ov_filter($params, $content, &$smarty, &$repeat) {
+   public function smarty_ov_filter($params, $content, &$smarty, &$repeat)
+   {
+      global $db, $tmpl;
 
       if(!array_key_exists('np_idx', $params)) {
-         $this->tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
       if(!array_key_exists('chain_idx', $params)) {
-         $this->tmpl->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
       if(!array_key_exists('pipe_idx', $params)) {
-         $this->tmpl->trigger_error("ov_netpath: missing 'pipe_idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("ov_netpath: missing 'pipe_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
@@ -359,7 +373,7 @@ class MASTERSHAPER_OVERVIEW {
       $chain_idx = $params['chain_idx'];
       $pipe_idx = $params['pipe_idx'];
 
-      $index = $this->tmpl->get_template_vars('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx);
+      $index = $tmpl->get_template_vars('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx);
       if(!$index) {
          $index = 0;
       }
@@ -369,11 +383,11 @@ class MASTERSHAPER_OVERVIEW {
          $filter_idx = $this->avail_filters[$np_idx][$chain_idx][$pipe_idx][$index];
          $filter = $this->filters[$np_idx][$chain_idx][$pipe_idx][$filter_idx];
 
-         $this->tmpl->assign('filter_idx', $filter_idx);
-         $this->tmpl->assign('filter_name', $filter->filter_name);
+         $tmpl->assign('filter_idx', $filter_idx);
+         $tmpl->assign('filter_name', $filter->filter_name);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx, $index);
+         $tmpl->assign('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx, $index);
 
          $repeat = true;
       }
@@ -387,6 +401,8 @@ class MASTERSHAPER_OVERVIEW {
 
    public function alter_position()
    {
+      global $db;
+
       if(!isset($_POST['type']))
          return "Missing object-type to alter position off";
 
@@ -476,7 +492,7 @@ class MASTERSHAPER_OVERVIEW {
       if(!isset($query))
          return;
 
-      $my_pos = $this->db->db_fetchSingleRow($query);
+      $my_pos = $db->db_fetchSingleRow($query);
 
       if($_POST['to'] == 'up') {
          /* if we are not at the top most position */
@@ -510,7 +526,7 @@ class MASTERSHAPER_OVERVIEW {
          switch($_POST['type']) {
             case 'chain':
             case 'pipe':
-               $this->db->db_query("
+               $db->db_query("
                   UPDATE
                      ". MYSQL_PREFIX . $obj_table ."
                   SET
@@ -522,7 +538,7 @@ class MASTERSHAPER_OVERVIEW {
                ");
                break;
             case 'netpath':
-               $this->db->db_query("
+               $db->db_query("
                   UPDATE
                      ". MYSQL_PREFIX . $obj_table ."
                   SET
@@ -544,7 +560,7 @@ class MASTERSHAPER_OVERVIEW {
          switch($_POST['type']) {
             case 'chain':
             case 'pipe':
-               $this->db->db_query("
+               $db->db_query("
                   UPDATE
                      ". MYSQL_PREFIX . $obj_table ."
                   SET
@@ -554,7 +570,7 @@ class MASTERSHAPER_OVERVIEW {
                ");
                break;
             case 'netpath':
-               $this->db->db_query("
+               $db->db_query("
                   UPDATE
                      ". MYSQL_PREFIX . $obj_table ."
                   SET
@@ -573,7 +589,7 @@ class MASTERSHAPER_OVERVIEW {
          $new_pos = 1;
 
       /* set objects new position */
-      $this->db->db_query("
+      $db->db_query("
          UPDATE ". MYSQL_PREFIX . $obj_table ."
          SET
             ". $obj_col ."_position='". $new_pos ."'
@@ -590,10 +606,12 @@ class MASTERSHAPER_OVERVIEW {
     */
    public function store()
    {
+      global $db;
+
       if(isset($_POST['chain_sl_idx']) && is_array($_POST['chain_sl_idx'])) {
          /* save all chain service levels */
          foreach($_POST['chain_sl_idx'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."chains
                SET
                   chain_sl_idx='". $v ."'
@@ -606,7 +624,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['chain_fallback_idx']) && is_array($_POST['chain_fallback_idx'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_fallback_idx'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."chains
                SET
                   chain_fallback_idx='". $v ."'
@@ -619,7 +637,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['chain_src_target']) && is_array($_POST['chain_src_target'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_src_target'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."chains
                SET
                   chain_src_target='". $v ."'
@@ -632,7 +650,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['chain_dst_target']) && is_array($_POST['chain_dst_target'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_dst_target'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."chains
                SET
                   chain_dst_target='". $v ."'
@@ -645,7 +663,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['chain_direction']) && is_array($_POST['chain_direction'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_direction'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."chains
                SET
                   chain_direction='". $v ."'
@@ -658,7 +676,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['chain_action']) && is_array($_POST['chain_action'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_action'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."chains
                SET
                   chain_action='". $v ."'
@@ -671,7 +689,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['pipe_sl_idx']) && is_array($_POST['pipe_sl_idx'])) {
          /* save all pipe service levels */
          foreach($_POST['pipe_sl_idx'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."pipes
                SET
                   pipe_sl_idx='". $v ."'
@@ -684,7 +702,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['pipe_src_target']) && is_array($_POST['pipe_src_target'])) {
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_src_target'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."pipes
                SET
                   pipe_src_target='". $v ."'
@@ -697,7 +715,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['pipe_dst_target']) && is_array($_POST['pipe_dst_target'])) {
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_dst_target'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."pipes
                SET
                   pipe_dst_target='". $v ."'
@@ -710,7 +728,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['pipe_direction']) && is_array($_POST['pipe_direction'])) {
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_direction'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."pipes
                SET
                   pipe_direction='". $v ."'
@@ -723,7 +741,7 @@ class MASTERSHAPER_OVERVIEW {
       if(isset($_POST['pipe_action']) && is_array($_POST['pipe_action'])) {
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_action'] as $k => $v) {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."pipes
                SET
                   pipe_action='". $v ."'
@@ -738,5 +756,8 @@ class MASTERSHAPER_OVERVIEW {
    } // store()
 
 } // class MASTERSHAPER_OVERVIEW
+
+$obj = new MASTERSHAPER_OVERVIEW;
+$obj->handler();
 
 ?>

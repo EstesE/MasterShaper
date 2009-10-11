@@ -21,64 +21,29 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_USERS {
-
-   private $db;
-   private $parent;
-   private $tmpl;
+class MASTERSHAPER_USERS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_USERS constructor
     *
     * Initialize the MASTERSHAPER_USERS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent = $parent;
-      $this->db = $parent->db;
-      $this->tmpl = $parent->tmpl;
+      $this->rights = 'user_manage_users';
 
    } // __construct()
   
-   /* interface output */
-   public function show()
+   public function showList()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-	 !$this->parent->checkPermissions("user_manage_users")) {
+      global $db, $tmpl;
 
-	 $this->parent->printError("<img src=\"". ICON_USERS ."\" alt=\"user icon\" />&nbsp;". _("Manage Users"), _("You do not have enough permissions to access this module!"));
-	 return 0;
-
-      }
-
-      if(!isset($_GET['mode'])) 
-         $_GET['mode'] = "show";
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-
-   } // show()
-
-   private function showList()
-   {
       $this->avail_users = Array();
       $this->users = Array();
 
       $cnt_users = 0;
 
-      $res_users = $this->db->db_query("
+      $res_users = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."users
          ORDER BY user_name ASC
@@ -90,50 +55,48 @@ class MASTERSHAPER_USERS {
          $cnt_users++;
       }
 
-      $this->tmpl->register_block("user_list", array(&$this, "smarty_user_list"));
-      $this->tmpl->show("users_list.tpl"); 
+      $tmpl->register_block("user_list", array(&$this, "smarty_user_list"));
+      return $tmpl->fetch("users_list.tpl"); 
 
    } // showList()
 
    /**
     * display interface to create or edit users
     */
-   private function showEdit($idx)
+   public function showEdit()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_users")) {
-         $this->parent->printError("<img src=\"". ICON_USERS ."\" alt=\"user icon\" />&nbsp;". _("Manage Users"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
+      if($this->is_storing())
+         $this->store();
 
-      if($idx != 0) {
-         $user = $this->db->db_fetchSingleRow("
+      global $db, $tmpl, $page;
+
+      if($page->id != 0) {
+         $user = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."users
             WHERE
-               user_idx='". $idx ."'
+               user_idx='". $page->id ."'
          ");
 
-         $this->tmpl->assign('user_idx', $idx);
-         $this->tmpl->assign('user_name', $user->user_name);
-         $this->tmpl->assign('user_active', $user->user_active);
-         $this->tmpl->assign('user_manage_chains', $user->user_manage_chains);
-         $this->tmpl->assign('user_manage_pipes', $user->user_manage_pipes);
-         $this->tmpl->assign('user_manage_filters', $user->user_manage_filters);
-         $this->tmpl->assign('user_manage_ports', $user->user_manage_ports);
-         $this->tmpl->assign('user_manage_protocols', $user->user_manage_protocols);
-         $this->tmpl->assign('user_manage_targets', $user->user_manage_targets);
-         $this->tmpl->assign('user_manage_users', $user->user_manage_users);
-         $this->tmpl->assign('user_manage_options', $user->user_manage_options);
-         $this->tmpl->assign('user_manage_servicelevels', $user->user_manage_servicelevels);
-         $this->tmpl->assign('user_load_rules', $user->user_load_rules);
-         $this->tmpl->assign('user_show_rules', $user->user_show_rules);
-         $this->tmpl->assign('user_show_monitor', $user->user_show_monitor);
+         $tmpl->assign('user_idx', $page->id);
+         $tmpl->assign('user_name', $user->user_name);
+         $tmpl->assign('user_active', $user->user_active);
+         $tmpl->assign('user_manage_chains', $user->user_manage_chains);
+         $tmpl->assign('user_manage_pipes', $user->user_manage_pipes);
+         $tmpl->assign('user_manage_filters', $user->user_manage_filters);
+         $tmpl->assign('user_manage_ports', $user->user_manage_ports);
+         $tmpl->assign('user_manage_protocols', $user->user_manage_protocols);
+         $tmpl->assign('user_manage_targets', $user->user_manage_targets);
+         $tmpl->assign('user_manage_users', $user->user_manage_users);
+         $tmpl->assign('user_manage_options', $user->user_manage_options);
+         $tmpl->assign('user_manage_servicelevels', $user->user_manage_servicelevels);
+         $tmpl->assign('user_load_rules', $user->user_load_rules);
+         $tmpl->assign('user_show_rules', $user->user_show_rules);
+         $tmpl->assign('user_show_monitor', $user->user_show_monitor);
 
       }
    
-      $this->tmpl->show("users_edit.tpl");
+      return $tmpl->fetch("users_edit.tpl");
 
    } // showEdit()
      
@@ -142,6 +105,7 @@ class MASTERSHAPER_USERS {
     */
    public function store()
    {
+      global $db;
 
       isset($_POST['user_new']) && $_POST['user_new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -160,7 +124,7 @@ class MASTERSHAPER_USERS {
 
       if(isset($new)) {
 
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."users (
                user_name, user_pass, user_manage_chains,
                user_manage_pipes, user_manage_filters,
@@ -189,7 +153,7 @@ class MASTERSHAPER_USERS {
          ");
       }
       else {
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."users
             SET
                user_name='". $_POST['user_name'] ."',
@@ -211,7 +175,7 @@ class MASTERSHAPER_USERS {
          ");
 
          if($_POST['user_pass1'] != "nochangeMS") {
-            $this->db->db_query("
+            $db->db_query("
                UPDATE ". MYSQL_PREFIX ."users
                SET
                   user_pass='". md5($_POST['user_pass1']) ."' 
@@ -230,10 +194,12 @@ class MASTERSHAPER_USERS {
     */
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
 
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."users
             WHERE
                user_idx='". $idx ."'
@@ -257,7 +223,7 @@ class MASTERSHAPER_USERS {
          else
             $new_status='N';
 
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."users
             SET
                user_active='". $new_status ."'
@@ -276,7 +242,9 @@ class MASTERSHAPER_USERS {
     */
    public function smarty_user_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.user_list.index');
+      global $tmpl;
+
+      $index = $smarty->get_template_vars('smarty.IB.user_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -286,12 +254,12 @@ class MASTERSHAPER_USERS {
          $user_idx = $this->avail_users[$index];
          $user =  $this->users[$user_idx];
 
-         $this->tmpl->assign('user_idx', $user_idx);
-         $this->tmpl->assign('user_name', $user->user_name);
-         $this->tmpl->assign('user_active', $user->user_active);
+         $tmpl->assign('user_idx', $user_idx);
+         $tmpl->assign('user_name', $user->user_name);
+         $tmpl->assign('user_active', $user->user_active);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.user_list.index', $index);
+         $tmpl->assign('smarty.IB.user_list.index', $index);
          $repeat = true;
       }
       else {
@@ -305,10 +273,11 @@ class MASTERSHAPER_USERS {
 
    private function getPermissions($user_idx)
    {
+      global $db;
 
       $string = "";
 
-      if($user = $this->db->db_fetchSingleRow("SELECT * FROM ". MYSQL_PREFIX ."users WHERE user_idx='". $user_idx ."'")) {
+      if($user = $db->db_fetchSingleRow("SELECT * FROM ". MYSQL_PREFIX ."users WHERE user_idx='". $user_idx ."'")) {
 
          if($user->user_manage_chains == "Y")
 	    $string.= "Chains, ";
@@ -347,7 +316,9 @@ class MASTERSHAPER_USERS {
     */
    private function checkUserExists($user_name)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT user_idx
          FROM ". MYSQL_PREFIX ."users
          WHERE
@@ -357,8 +328,12 @@ class MASTERSHAPER_USERS {
       }
 
       return false;
+
    } // checkTargetExists()
 
 } // class MASTERSHAPER_USERS
+
+$obj = new MASTERSHAPER_USERS;
+$obj->handler();
 
 ?>

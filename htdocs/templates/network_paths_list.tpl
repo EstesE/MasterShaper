@@ -3,7 +3,7 @@
  <tr>
   <td style="text-align: center;" colspan="4">
    <img src="{ $icon_new }" alt="new icon" />
-   <a href="javascript:refreshContent('networkpaths', '&mode=new');">Define a new Network Path</a>
+   <a href="{$rewriter->get_page_url('Network Path New')}">Define a new Network Path</a>
   </td>
  </tr>
  <tr>
@@ -19,7 +19,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{ $icon_interfaces }" alt="interface icon" />
-   <a href="javaScript:refreshContent('networkpaths', '&mode=edit&idx={ $netpath_idx }');">{ $netpath_name }</a>
+   <a href="{$rewriter->get_page_url('Network Path Edit', $netpath_idx)}">{ $netpath_name }</a>
   </td>
   <td>
    { $netpath_if1 } { if $netpath_if1_inside_gre == 'Y' }(inside GRE){ /if }

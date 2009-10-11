@@ -1,7 +1,7 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="pipes" onsubmit="selectAll('used[]'); saveForm(this, 'pipes'); return false;" method="post">
+<form action="{$page->uri}" id="pipes" onsubmit="selectAll('used[]');" method="post">
 <input type="hidden" name="module" value="pipe" />
-<input type="hidden" name="action" value="modify" />
+<input type="hidden" name="action" value="store" />
 { if !$pipe_idx }
  {start_table icon=$icon_pipes alt="pipe icon" title="Create a new Pipe" }
  <input type="hidden" name="pipe_new" value="1" />

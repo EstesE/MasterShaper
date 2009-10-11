@@ -1,7 +1,7 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="filters" onsubmit="selectAll('used[]'); selectAll('filter_l7_used[]'); saveForm(this, 'filters'); return false;" method="post">
+<form action="{$page->uri}" id="filters" onsubmit="selectAll('used[]'); selectAll('filter_l7_used[]');" method="post">
 <input type="hidden" name="module" value="filter" />
-<input type="hidden" name="action" value="modify" />
+<input type="hidden" name="action" value="store" />
 { if !$filter_idx }
  {start_table icon=$icon_filters alt="filter icon" title="Create a new Filter" }
  <input type="hidden" name="filter_new" value="1" />

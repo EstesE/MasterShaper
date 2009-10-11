@@ -6,7 +6,7 @@
  <tr>
   <td style="text-align: center;" colspan="5">
    <img src="{ $icon_new }" alt="new icon" />
-   <a href="javascript:refreshContent('protocols', '&mode=new');">Create a new Protocol</a>
+   <a href="{$rewriter->get_page_url('Protocol New')}">Create a new Protocol</a>
   </td>
  </tr>
  <tr>
@@ -27,7 +27,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{ $icon_protocols }" alt="protocol icon" />
-   <a href="javascript:refreshContent('protocols', '&mode=edit&idx={ $proto_idx }');">{ $proto_name }</a>
+   <a href="{$rewriter->get_page_url('Protocol Edit', $proto_idx)}">{ $proto_name }</a>
   { if $proto_user_defined == 'Y' }
     <img src="{ $icon_users }" alt="User defined protocol" />
   { /if }

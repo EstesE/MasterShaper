@@ -21,65 +21,30 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_SERVICELEVELS {
-
-   private $db;
-   private $parent;
-   private $tmpl;
+class MASTERSHAPER_SERVICELEVELS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_SERVICELEVELS constructor
     *
     * Initialize the MASTERSHAPER_SERVICELEVELS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent = $parent;
-      $this->db = $parent->db;
-      $this->tmpl = $this->parent->tmpl;
+      $this->rights = 'user_manage_servicelevels';
 
    } // __construct()
-
-   /* interface output */
-   public function show()
-   {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_servicelevels")) {
-
-         $this->parent->printError("<img src=\"". ICON_SERVICELEVELS ."\" alt=\"service level icon\" />&nbsp;". _("Manage Service Levels"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
-
-      if(!isset($_GET['mode'])) {
-         $_GET['mode'] = "show";
-      }
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-   
-   } // show()
 
    /**
     * display all service levels
     */
-   private function showList()
+   public function showList()
    {
+      global $db, $tmpl;
+
       $this->avail_service_levels = Array();
       $this->service_levels = Array();
 
-      $res_sl = $this->db->db_query("
+      $res_sl = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."service_levels
          ORDER BY sl_name ASC
@@ -93,68 +58,65 @@ class MASTERSHAPER_SERVICELEVELS {
          $cnt_sl++;
       }
 
-      $this->tmpl->register_block("service_level_list", array(&$this, "smarty_sl_list"));
-      $this->tmpl->show("service_levels_list.tpl");
+      $tmpl->register_block("service_level_list", array(&$this, "smarty_sl_list"));
+      return $tmpl->fetch("service_levels_list.tpl");
 
    } // showList() 
 
    /**
     * display interface to create or edit service levels
     */
-   public function showEdit($idx)
+   public function showEdit()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_ports")) {
+      if($this->is_storing())
+         $this->store();
 
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset Service Levels"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
+      global $ms, $db, $tmpl, $page;
 
-      if($idx != 0) {
-         $sl = $this->db->db_fetchSingleRow("
+      if($page->id != 0) {
+         $sl = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."service_levels
             WHERE
-               sl_idx='". $idx ."'
+               sl_idx='". $page->id ."'
          ");
 
-         $this->tmpl->assign('sl_idx', $idx);
-         $this->tmpl->assign('sl_name', $sl->sl_name);
-         $this->tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
-         $this->tmpl->assign('sl_htb_bw_in_ceil', $sl->sl_htb_bw_in_ceil);
-         $this->tmpl->assign('sl_htb_bw_in_burst', $sl->sl_htb_bw_in_burst);
-         $this->tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
-         $this->tmpl->assign('sl_htb_bw_out_ceil', $sl->sl_htb_bw_out_ceil);
-         $this->tmpl->assign('sl_htb_bw_out_burst', $sl->sl_htb_bw_out_burst);
-         $this->tmpl->assign('sl_htb_priority', $sl->sl_htb_priority);
-         $this->tmpl->assign('sl_hfsc_in_umax', $sl->sl_hfsc_in_umax);
-         $this->tmpl->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
-         $this->tmpl->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
-         $this->tmpl->assign('sl_hfsc_in_ulrate', $sl->sl_hfsc_in_ulrate);
-         $this->tmpl->assign('sl_hfsc_out_umax', $sl->sl_hfsc_out_umax);
-         $this->tmpl->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
-         $this->tmpl->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
-         $this->tmpl->assign('sl_hfsc_out_ulrate', $sl->sl_hfsc_out_ulrate);
-         $this->tmpl->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
-         $this->tmpl->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
-         $this->tmpl->assign('sl_cbq_in_priority', $sl->sl_cbq_in_priority);
-         $this->tmpl->assign('sl_cbq_out_priority', $sl->sl_cbq_out_priority);
-         $this->tmpl->assign('sl_cbq_bounded', $sl->sl_cbq_bounded);
-         $this->tmpl->assign('sl_netem_delay', $sl->sl_netem_delay);
-         $this->tmpl->assign('sl_netem_jitter', $sl->sl_netem_jitter);
-         $this->tmpl->assign('sl_netem_random', $sl->sl_netem_random);
-         $this->tmpl->assign('sl_netem_distribution', $sl->sl_netem_distribution);
-         $this->tmpl->assign('sl_netem_loss', $sl->sl_netem_loss);
-         $this->tmpl->assign('sl_netem_duplication', $sl->sl_netem_duplication);
-         $this->tmpl->assign('sl_netem_gap', $sl->sl_netem_gap);
-         $this->tmpl->assign('sl_netem_reorder_percentage', $sl->sl_netem_reorder_percentage);
-         $this->tmpl->assign('sl_netem_reorder_correlation', $sl->sl_netem_reorder_correlation);
-         $this->tmpl->assign('sl_esfq_perturb', $sl->sl_esfq_perturb);
-         $this->tmpl->assign('sl_esfq_limit', $sl->sl_esfq_limit);
-         $this->tmpl->assign('sl_esfq_depth', $sl->sl_esfq_depth);
-         $this->tmpl->assign('sl_esfq_divisor', $sl->sl_esfq_divisor);
-         $this->tmpl->assign('sl_esfq_hash', $sl->sl_esfq_hash);
+         $tmpl->assign('sl_idx', $page->id);
+         $tmpl->assign('sl_name', $sl->sl_name);
+         $tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
+         $tmpl->assign('sl_htb_bw_in_ceil', $sl->sl_htb_bw_in_ceil);
+         $tmpl->assign('sl_htb_bw_in_burst', $sl->sl_htb_bw_in_burst);
+         $tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
+         $tmpl->assign('sl_htb_bw_out_ceil', $sl->sl_htb_bw_out_ceil);
+         $tmpl->assign('sl_htb_bw_out_burst', $sl->sl_htb_bw_out_burst);
+         $tmpl->assign('sl_htb_priority', $sl->sl_htb_priority);
+         $tmpl->assign('sl_hfsc_in_umax', $sl->sl_hfsc_in_umax);
+         $tmpl->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
+         $tmpl->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
+         $tmpl->assign('sl_hfsc_in_ulrate', $sl->sl_hfsc_in_ulrate);
+         $tmpl->assign('sl_hfsc_out_umax', $sl->sl_hfsc_out_umax);
+         $tmpl->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
+         $tmpl->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
+         $tmpl->assign('sl_hfsc_out_ulrate', $sl->sl_hfsc_out_ulrate);
+         $tmpl->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
+         $tmpl->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
+         $tmpl->assign('sl_cbq_in_priority', $sl->sl_cbq_in_priority);
+         $tmpl->assign('sl_cbq_out_priority', $sl->sl_cbq_out_priority);
+         $tmpl->assign('sl_cbq_bounded', $sl->sl_cbq_bounded);
+         $tmpl->assign('sl_netem_delay', $sl->sl_netem_delay);
+         $tmpl->assign('sl_netem_jitter', $sl->sl_netem_jitter);
+         $tmpl->assign('sl_netem_random', $sl->sl_netem_random);
+         $tmpl->assign('sl_netem_distribution', $sl->sl_netem_distribution);
+         $tmpl->assign('sl_netem_loss', $sl->sl_netem_loss);
+         $tmpl->assign('sl_netem_duplication', $sl->sl_netem_duplication);
+         $tmpl->assign('sl_netem_gap', $sl->sl_netem_gap);
+         $tmpl->assign('sl_netem_reorder_percentage', $sl->sl_netem_reorder_percentage);
+         $tmpl->assign('sl_netem_reorder_correlation', $sl->sl_netem_reorder_correlation);
+         $tmpl->assign('sl_esfq_perturb', $sl->sl_esfq_perturb);
+         $tmpl->assign('sl_esfq_limit', $sl->sl_esfq_limit);
+         $tmpl->assign('sl_esfq_depth', $sl->sl_esfq_depth);
+         $tmpl->assign('sl_esfq_divisor', $sl->sl_esfq_divisor);
+         $tmpl->assign('sl_esfq_hash', $sl->sl_esfq_hash);
 
       }
       else {
@@ -163,18 +125,18 @@ class MASTERSHAPER_SERVICELEVELS {
       }
 
       if(!isset($_GET['classifier']))
-         $this->tmpl->assign('classifier', $this->parent->getOption("classifier"));
+         $tmpl->assign('classifier', $ms->getOption("classifier"));
       else
-         $this->tmpl->assign('classifier', $_GET['classifier']);
+         $tmpl->assign('classifier', $_GET['classifier']);
 
       if(!isset($_GET['qdiscmode'])) {
          if(isset($sl))
-            $this->tmpl->assign('qdiscmode', $sl->sl_qdisc);
+            $tmpl->assign('qdiscmode', $sl->sl_qdisc);
       }
       else
-         $this->tmpl->assign('qdiscmode', $_GET['qdiscmode']);
+         $tmpl->assign('qdiscmode', $_GET['qdiscmode']);
 
-      $this->tmpl->show("service_levels_edit.tpl");
+      return $tmpl->fetch("service_levels_edit.tpl");
 
    } // showEdit()
 
@@ -183,7 +145,9 @@ class MASTERSHAPER_SERVICELEVELS {
     */
    public function smarty_sl_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.sl_list.index');
+      global $ms, $tmpl;
+
+      $index = $smarty->get_template_vars('smarty.IB.sl_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -193,23 +157,23 @@ class MASTERSHAPER_SERVICELEVELS {
          $sl_idx = $this->avail_service_levels[$index];
          $sl =  $this->service_levels[$sl_idx];
 
-         $this->tmpl->assign('classifier', $this->parent->getOption("classifier"));
-         $this->tmpl->assign('sl_idx', $sl_idx);
-         $this->tmpl->assign('sl_name', $sl->sl_name);
-         $this->tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
-         $this->tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
-         $this->tmpl->assign('sl_htb_priority', $this->parent->getPriorityName($sl->sl_htb_priority));
-         $this->tmpl->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
-         $this->tmpl->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
-         $this->tmpl->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
-         $this->tmpl->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
-         $this->tmpl->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
-         $this->tmpl->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
-         $this->tmpl->assign('sl_cbq_in_priority', $this->parent->getPriorityName($sl->sl_cbq_in_priority));
-         $this->tmpl->assign('sl_cbq_out_priority', $this->parent->getPriorityName($sl->sl_cbq_out_priority));
+         $tmpl->assign('classifier', $ms->getOption("classifier"));
+         $tmpl->assign('sl_idx', $sl_idx);
+         $tmpl->assign('sl_name', $sl->sl_name);
+         $tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
+         $tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
+         $tmpl->assign('sl_htb_priority', $ms->getPriorityName($sl->sl_htb_priority));
+         $tmpl->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
+         $tmpl->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
+         $tmpl->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
+         $tmpl->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
+         $tmpl->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
+         $tmpl->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
+         $tmpl->assign('sl_cbq_in_priority', $ms->getPriorityName($sl->sl_cbq_in_priority));
+         $tmpl->assign('sl_cbq_out_priority', $ms->getPriorityName($sl->sl_cbq_out_priority));
 
          $index++;
-         $this->tmpl->assign('smarty.IB.sl_list.index', $index);
+         $tmpl->assign('smarty.IB.sl_list.index', $index);
          $repeat = true;
       }
       else {
@@ -225,6 +189,8 @@ class MASTERSHAPER_SERVICELEVELS {
     */
    public function store()
    {
+      global $db;
+
       isset($_POST['sl_new']) && $_POST['sl_new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['sl_name']) || $_POST['sl_name'] == "") {
@@ -300,7 +266,7 @@ class MASTERSHAPER_SERVICELEVELS {
 
       if(isset($new)) {
 
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."service_levels (
                sl_name, sl_htb_bw_in_rate, sl_htb_bw_in_ceil, 
                sl_htb_bw_in_burst, sl_htb_bw_out_rate, sl_htb_bw_out_ceil,
@@ -355,7 +321,7 @@ class MASTERSHAPER_SERVICELEVELS {
          ");
       }
       else {
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."service_levels 
             SET
                sl_name='". $_POST['sl_name'] ."',
@@ -404,10 +370,12 @@ class MASTERSHAPER_SERVICELEVELS {
 
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx'])) {
          $idx = $_POST['idx'];
 
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."service_levels
             WHERE
                sl_idx='". $idx ."'
@@ -425,7 +393,9 @@ class MASTERSHAPER_SERVICELEVELS {
     */
    private function checkServiceLevelExists($sl_name)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT sl_idx
          FROM ". MYSQL_PREFIX ."service_levels
          WHERE
@@ -437,5 +407,8 @@ class MASTERSHAPER_SERVICELEVELS {
    } // checkServiceLevelExists()
 
 } // class MASTERSHAPER_SERVICELEVELS
+
+$obj = new MASTERSHAPER_SERVICELEVELS;
+$obj->handler();
 
 ?>

@@ -110,11 +110,7 @@ function AskServerWhatToDo()
 
 function init_shaper()
 {
-   refreshPageTitle();
-   refreshMainMenu();
-   refreshSubMenu();
- 
-   whattodo = AskServerWhatToDo();
+   /*whattodo = AskServerWhatToDo();
 
    if(whattodo == "") {
      refreshContent();
@@ -122,27 +118,9 @@ function init_shaper()
 
    if(whattodo == "show_overview")
       refreshContent("overview");
+   */
 
-}
-
-function refreshPageTitle()
-{
-   var page_title = document.getElementById("page_title");
-   page_title.innerHTML = "Loading...";
-   page_title.innerHTML = HTML_AJAX.grab(encodeURI('rpc.php?action=get_page_title'));
-   
-}
-
-function refreshMainMenu()
-{
-   var main_menu = document.getElementById("main_menu");
-   main_menu.innerHTML = "Loading...";
-   main_menu.innerHTML = HTML_AJAX.grab(encodeURI('rpc.php?action=get_main_menu'));
-}
-
-function refreshSubMenu()
-{
-}
+} // init_shaper()
 
 function refreshContent(req_content, options)
 {
@@ -342,10 +320,8 @@ function check_login()
 
 function refreshPage(content)
 {
-   refreshPageTitle();
-   refreshMainMenu();
-   refreshSubMenu();
    refreshContent(content);
+
 } // refreshPage()
 
 function js_logout()
@@ -383,14 +359,6 @@ function WSR_getElementsByClassName(oElm, strTagName, oClassNames){
    }
 
    return (arrReturnElements);
-}
-
-function updateSubMenu(mode)
-{
-   var submenu = document.getElementById("submenu");
-   var content = "";
-   content = HTML_AJAX.grab('rpc.php?action=get_sub_menu&navpoint=' + mode);
-   submenu.innerHTML = content;
 }
 
 function deleteObj(module, target, idx)

@@ -1,14 +1,14 @@
-<?
+<?php
 
 /***************************************************************************
  *
- * Copyright (c) by Andreas Unterkircher, unki@netshadow.at
+ * Copyright (c) by Andreas Unterkircher
  * All rights reserved
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
- *  any later version.
+ *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,11 +21,30 @@
  *
  ***************************************************************************/
 
-require_once "shaper.class.php";
+class MASTERSHAPER_RULES extends MASTERSHAPER_PAGE {
 
-$ms = new MASTERSHAPER;
-$ms->show();
-$GLOBALS['ms'] = $ms;
+   /**
+    * MASTERSHAPER_RULES constructor
+    *
+    * Initialize the MASTERSHAPER_RULES class
+    */
+   public function __construct()
+   {
+
+   } // __construct()
+
+   /* interface output */
+   public function showList()
+   {
+      global $tmpl;
+
+      return $tmpl->fetch('rules.tpl');
+
+   } // showList()
+
+} // class MASTERSHAPER_RULES
+
+$obj = new MASTERSHAPER_RULES;
+$obj->handler();
 
 ?>
-

@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '4');
+define('SCHEMA_VERSION', '5');
 
 /***************************************************************************
  *
@@ -141,6 +141,64 @@ class MASTERSHAPER_DB {
          $this->parent->throwError("Can't execute query - we are not connected!");
 
    } // db_query()
+
+   /**
+    * MASTERSHAPER_DB database prepare query
+    *
+    * This function will prepare a SQL query to be executed
+    *
+    * @param string $query
+    * @return mixed
+    */
+   public function db_prepare($query = "")
+   {
+      if(!$this->getConnStatus()) {
+         $this->throwError("Can't prepare query - we are not connected!");
+         return false;
+      }
+
+      $this->db->prepare($query);
+
+      /* for manipulating queries use exec instead of query. can save
+       * some resource because nothing has to be allocated for results.
+       */
+      if(preg_match('/^(update|insert|delete)i/', $query)) {
+         $sth = $this->db->prepare($query, MDB2_PREPARE_MANIP);
+      }
+      else {
+         $sth = $this->db->prepare($query, MDB2_PREPARE_RESULT);
+      }
+
+      if(PEAR::isError($sth))
+         $this->throwError($sth->getMessage() .' - '. $sth->getUserInfo());
+
+      return $sth;
+
+   } // db_prepare()
+
+   /**
+    * MASTERSHAPER_DB database execute a prepared query
+    *
+    * This function will execute a previously prepared SQL query
+    *
+    * @param mixed $sth
+    * @param mixed $data
+    */
+   public function db_execute($sth, $data)
+   {
+      if(!$this->getConnStatus()) {
+         $this->throwError("Can't prepare query - we are not connected!");
+         return false;
+      }
+
+      $result = $sth->execute($data);
+
+      if(PEAR::isError($result))
+         $this->throwError($result->getMessage() .' - '. $result->getUserInfo());
+
+      return $result;
+
+   } // db_execute()
 
    /**
     * MASTERSHAPER_DB fetch ONE row
@@ -785,6 +843,20 @@ class MASTERSHAPER_DB {
             )");
       }
 
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'pages')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."pages` (
+              `page_id` int(11) unsigned NOT NULL auto_increment,
+              `page_name` varchar(255) NOT NULL,
+              `page_uri` varchar(255) NOT NULL,
+              `page_uri_pattern` varchar(255) NOT NULL,
+              `page_includefile` varchar(255) NOT NULL,
+              PRIMARY KEY  (`page_id`),
+              UNIQUE KEY `idx_uri` (`page_uri_pattern`)
+            ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+         ");
+      }
+
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'meta')) {
          $this->db_query("
             CREATE TABLE `". MYSQL_PREFIX ."meta` (
@@ -853,7 +925,31 @@ class MASTERSHAPER_DB {
          $this->setVersion(4);
       }
 
+      if($this->schmea_version < 5) {
+         // introduce table MYSQL_PREFIX .'pages'
+         $this->setVersion(5);
+      }
+
    } // upgrade_schema()
+
+   /**
+    * quoting function
+    *
+    * uses MDB2 own quote function to _secure_ an object
+    *
+    * @param string $obj
+    * @return $string
+    */
+   public function quote($obj)
+   {
+      if(is_numeric($obj))
+         return $this->db->quote($obj, 'int');
+      if(is_string($obj))
+         return $this->db->quote($obj, 'text');
+
+      return $this->db->quote($obj);
+
+   } // quote()
 
 }
 

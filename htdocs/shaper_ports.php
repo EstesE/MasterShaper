@@ -21,62 +21,28 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_PORTS {
-
-   private $db;
-   private $parent;
-   private $tmpl;
+class MASTERSHAPER_PORTS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_PORTS constructor
     *
     * Initialize the MASTERSHAPER_PORTS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent = $parent;
-      $this->db = $parent->db;
-      $this->tmpl = $this->parent->tmpl;
+      $this->rights = 'user_manage_ports';
 
    } // __construct()
-
-   /* interface output */
-   public function show()
-   {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_ports")) {
-         $this->parent->printError("<img src=\"". ICON_PORTS ."\" alt=\"port icon\" />&nbsp;". _("Manage Ports"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
-      
-      if(!isset($_GET['mode'])) {
-         $_GET['mode'] = "show";
-      }
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-
-   } // show()
 
    /**
     * display all ports
     */
-   private function showList()
+   public function showList()
    {
       if(!isset($this->parent->screen))
-         $this->parent->screen = 0;
+        $this->parent->screen = 0;
+
+      global $db, $tmpl;
 
       $this->avail_ports = Array();
       $this->ports = Array();
@@ -89,7 +55,7 @@ class MASTERSHAPER_PORTS {
          $_GET['breaker'] = 'A';
 
       if(isset($_GET['breaker']) && $_GET['breaker'] != "#") {
-         $res_ports = $this->db->db_query("
+         $res_ports = $db->db_query("
             SELECT *
             FROM ". MYSQL_PREFIX ."ports
             WHERE
@@ -98,7 +64,7 @@ class MASTERSHAPER_PORTS {
          );
       }
       else {
-         $res_ports = $this->db->db_query("
+         $res_ports = $db->db_query("
             SELECT *
             FROM ". MYSQL_PREFIX ."ports
             ORDER BY ". $_GET['orderby'] ." ". $_GET['sortorder']
@@ -118,54 +84,52 @@ class MASTERSHAPER_PORTS {
       $breakers = array_merge($breakers, range(0, 9));
       array_push($breakers, '#');
 
-      $this->tmpl->assign('breakers', $breakers);
-      $this->tmpl->register_block("port_list", array(&$this, "smarty_port_list"));
-      $this->tmpl->show("ports_list.tpl");
+      $tmpl->assign('breakers', $breakers);
+      $tmpl->register_block("port_list", array(&$this, "smarty_port_list"));
+      return $tmpl->fetch("ports_list.tpl");
 
    } // showList()
 
    /**
     * display interface to create or edit ports
     */
-   public function showEdit($idx)
+   public function showEdit()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_ports")) {
+      if($this->is_storing())
+         $this->store();
 
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset ports"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
+      global $db, $tmpl, $page;
 
-      if($idx != 0) {
-         $port = $this->db->db_fetchSingleRow("
+      if($page->id != 0) {
+         $port = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."ports
             WHERE
-               port_idx='". $idx ."'
+               port_idx='". $page->id ."'
          ");
 
-         $this->tmpl->assign('port_idx', $idx);
-         $this->tmpl->assign('port_name', $port->port_name);
-         $this->tmpl->assign('port_desc', $port->port_desc);
-         $this->tmpl->assign('port_number', $port->port_number);
+         $tmpl->assign('port_idx', $page->id);
+         $tmpl->assign('port_name', $port->port_name);
+         $tmpl->assign('port_desc', $port->port_desc);
+         $tmpl->assign('port_number', $port->port_number);
  
       }
       else {
          /* preset values here */
       }
 
-     $this->tmpl->show("ports_edit.tpl");
+     return $tmpl->fetch("ports_edit.tpl");
 
    } // showEdit()
-
 
    /**
     * template function which will be called from the port listing template
     */
    public function smarty_port_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.port_list.index');
+      global $tmpl;
+
+      $index = $smarty->get_template_vars('smarty.IB.port_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -175,13 +139,13 @@ class MASTERSHAPER_PORTS {
          $port_idx = $this->avail_ports[$index];
          $port =  $this->ports[$port_idx];
 
-         $this->tmpl->assign('port_idx', $port_idx);
-         $this->tmpl->assign('port_name', $port->port_name);
-         $this->tmpl->assign('port_desc', $port->port_desc);
-         $this->tmpl->assign('port_number', $port->port_number);
+         $tmpl->assign('port_idx', $port_idx);
+         $tmpl->assign('port_name', $port->port_name);
+         $tmpl->assign('port_desc', $port->port_desc);
+         $tmpl->assign('port_number', $port->port_number);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.port_list.index', $index);
+         $tmpl->assign('smarty.IB.port_list.index', $index);
          $repeat = true;
       }
       else {
@@ -197,6 +161,8 @@ class MASTERSHAPER_PORTS {
     */
    public function store()
    {
+      global $db;
+
       isset($_POST['port_new']) && $_POST['port_new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['port_name']) || $_POST['port_name'] == "") {
@@ -237,7 +203,7 @@ class MASTERSHAPER_PORTS {
 
       if(isset($new)) {
 
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."ports 
                (port_name, port_desc, port_number, port_user_defined)
             VALUES (
@@ -248,7 +214,7 @@ class MASTERSHAPER_PORTS {
          ");
       }
       else {
-		     $this->db->db_query("
+		     $db->db_query("
                UPDATE ". MYSQL_PREFIX ."ports
                SET 
                   port_name='". $_POST['port_name'] ."',
@@ -270,7 +236,9 @@ class MASTERSHAPER_PORTS {
     */
    private function checkPortExists($port_name)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT port_idx
          FROM ". MYSQL_PREFIX ."ports
          WHERE
@@ -278,7 +246,9 @@ class MASTERSHAPER_PORTS {
          ")) {
          return true;
       } 
+
       return false;
+
    } // checkPortExists()
 
    /**
@@ -286,15 +256,17 @@ class MASTERSHAPER_PORTS {
     */
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx'])) {
          $idx = $_POST['idx'];
 
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."ports
             WHERE
                port_idx='". $idx ."'
          ");
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."assign_ports_to_filters
             WHERE
                afp_port_idx='". $idx ."'
@@ -308,5 +280,8 @@ class MASTERSHAPER_PORTS {
    } // delete()
 
 } // class MASTERSHAPER_PORTS
+
+$obj = new MASTERSHAPER_PORTS;
+$obj->handler();
 
 ?>

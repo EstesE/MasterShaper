@@ -1,7 +1,7 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="ports" onsubmit="saveForm(this, 'ports'); return false;" method="post">
+<form action="{$page->uri}" id="ports" method="post">
 <input type="hidden" name="module" value="port" />
-<input type="hidden" name="action" value="modify" />
+<input type="hidden" name="action" value="store" />
 { if ! $port_idx }
  {start_table icon=$icon_ports alt="port icon" title="Create a new Port" }
  <input type="hidden" name="port_new" value="1" />

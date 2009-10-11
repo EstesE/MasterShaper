@@ -21,6 +21,8 @@
  *
  ***************************************************************************/
 
+require_once "shaper_interface.php";
+
 define("UNIDIRECTIONAL", 1);
 define("BIDIRECTIONAL", 2);
 define("IF_NOT_USED", -1);
@@ -30,9 +32,6 @@ define("MS_POST", 13);
 
 class MASTERSHAPER_RULESET {
 
-   private $db;
-   private $parent;
-   private $tmpl;
    private $ms_pre;
    private $ms_post;
    private $classes;
@@ -44,12 +43,8 @@ class MASTERSHAPER_RULESET {
     *
     * Initialize the MASTERSHAPER_RULESET class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->db = $parent->db;
-      $this->tmpl = $parent->tmpl;
-      $this->parent = $parent;
-
       $this->ms_pre = Array();
       $this->ms_post = Array();
       $this->error  = Array();
@@ -60,20 +55,55 @@ class MASTERSHAPER_RULESET {
 
    } // __construct()
 
+   public function handler()
+   {
+      global $tmpl, $page, $ms;
+
+      if($this->rights) {
+         /* If authentication is enabled, check permissions */
+         if($ms->getOption("authentication") == "Y" && !$ms->checkPermissions($this->rights)) {
+            $ms->throwError("<img src=\"". ICON_CHAINS ."\" alt=\"chain icon\" />&nbsp;". _("Manage Chains"), _("You do not have enough permissions to access this module!"));
+            return 0;
+         }
+      }
+
+      switch($page->action) {
+         default:
+         case 'show':
+            $content = $this->show();
+            break;
+         case 'load':
+            $content = $this->load();
+            break;
+         case 'load-debug':
+            $content = $this->load(DEBUG);
+            break;
+         case 'unload':
+            $content = $this->unload();
+            break;
+      }
+
+      if(isset($content))
+         $tmpl->assign('content', $content);
+
+   } // handler()
+
    /* This function prepares the rule setup according configuration and calls tc with a batchjob */
    public function show($state = 0)
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_show_rules")) {
+      global $ms, $tmpl;
 
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - ". _("Show rules"), _("You do not have enough permissions to access this module!"));
+      /* If authentication is enabled, check permissions */
+      if($ms->getOption("authentication") == "Y" &&
+         !$ms->checkPermissions("user_show_rules")) {
+
+         $ms->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - ". _("Show rules"), _("You do not have enough permissions to access this module!"));
          return 0;
 
       }
 
-      $this->tmpl->register_function("ruleset_output", array(&$this, "smarty_ruleset_output"), false);
-      $this->tmpl->show("ruleset_show.tpl");
+      $tmpl->register_function("ruleset_output", array(&$this, "smarty_ruleset_output"), false);
+      return $tmpl->fetch("ruleset_show.tpl");
 
    } // show
 
@@ -82,11 +112,13 @@ class MASTERSHAPER_RULESET {
     */
    public function load($debug = null)
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_load_rules")) {
+      global $ms;
 
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - ". _("Load rules"), _("You do not have enough permissions to access this module!"));
+      /* If authentication is enabled, check permissions */
+      if($ms->getOption("authentication") == "Y" &&
+         !$ms->checkPermissions("user_load_rules")) {
+
+         $ms->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - ". _("Load rules"), _("You do not have enough permissions to access this module!"));
          return 0;
       }
 
@@ -96,7 +128,7 @@ class MASTERSHAPER_RULESET {
       $this->initRules();
       $retval = $debug ? $this->doItLineByLine() : $this->doIt();
       if(!$retval)
-         $this->parent->setOption("reload_timestamp", mktime());
+         $ms->setOption("reload_timestamp", mktime());
 
       return $retval;
 
@@ -107,11 +139,13 @@ class MASTERSHAPER_RULESET {
     */
    public function unload()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_load_rules")) {
+      global $ms;
 
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - Unload rules", "You do not have enough permissions to access this module!");
+      /* If authentication is enabled, check permissions */
+      if($ms->getOption("authentication") == "Y" &&
+         !$ms->checkPermissions("user_load_rules")) {
+
+         $ms->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;MasterShaper Ruleset - Unload rules", "You do not have enough permissions to access this module!");
          return 0;
 
       }
@@ -120,7 +154,7 @@ class MASTERSHAPER_RULESET {
       $this->delIptablesRules();
 
       print "Unloading MasterShaper Ruleset";
-      $this->parent->setShaperStatus(false);
+      $ms->setShaperStatus(false);
       
    } // show()
 
@@ -145,47 +179,42 @@ class MASTERSHAPER_RULESET {
 
    private function addRule($rule, $cmd)
    {
-
       switch($rule) {
-
          case MS_PRE:
-	    array_push($this->ms_pre, $cmd);
-	    break;
+            array_push($this->ms_pre, $cmd);
+            break;
 
-	 case MS_POST:
-	    array_push($this->ms_post, $cmd);
-	    break;
-
+         case MS_POST:
+            array_push($this->ms_post, $cmd);
+            break;
       }
 
    } // addRule()
 
    private function getRules($rules)
    {
-
       switch($rules) {
 
          case MS_PRE:
+            return $this->ms_pre;
+            break;
 
-	    return $this->ms_pre;
-	    break;
-
-	 case MS_POST:
-
-	    return $this->ms_post;
-	    break;
-
+         case MS_POST:
+	         return $this->ms_post;
+            break;
       }
       
    } // getRules()
 
    private function initRules()
    {
+      global $ms, $db;
+
       /* The most tc_ids will change, so we delete the current known tc_ids */
-      $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."tc_ids");
+      $db->db_query("DELETE FROM ". MYSQL_PREFIX ."tc_ids");
 
       /* Initial iptables rules */
-      if($this->parent->getOption("filter") == "ipt") 
+      if($ms->getOption("filter") == "ipt")
          $this->iptInitRules();
 
       $netpaths = $this->getActiveNetpaths(); 
@@ -196,10 +225,10 @@ class MASTERSHAPER_RULESET {
          $do_nothing = false;
 
          if(!isset($this->interfaces[$netpath->netpath_if1])) 
-            $this->interfaces[$netpath->netpath_if1] = new MASTERSHAPER_INTERFACE($netpath->netpath_if1, $netpath->netpath_if1_inside_gre, $this->db, $this->parent);
+            $this->interfaces[$netpath->netpath_if1] = new MASTERSHAPER_INTERFACE($netpath->netpath_if1, $netpath->netpath_if1_inside_gre, $db, $ms);
          /* the second interface of the interface is no must, only create it when necessary */
          if($netpath->netpath_if2 != -1 && !isset($this->interfaces[$netpath->netpath_if2])) 
-            $this->interfaces[$netpath->netpath_if2] = new MASTERSHAPER_INTERFACE($netpath->netpath_if2, $netpath->netpath_if2_inside_gre, $this->db, $this->parent);
+            $this->interfaces[$netpath->netpath_if2] = new MASTERSHAPER_INTERFACE($netpath->netpath_if2, $netpath->netpath_if2_inside_gre, $db, $ms);
 
          /* get interface 2 parameters (if available) */
          if($netpath->netpath_if2 == IF_NOT_USED)
@@ -265,6 +294,7 @@ class MASTERSHAPER_RULESET {
 
    private function doIt()
    {
+      global $ms;
 
       $error = Array();
       $found_error = 0;
@@ -279,7 +309,7 @@ class MASTERSHAPER_RULESET {
       $output_tc  = fopen($temp_tc, "w");
 
       /* If necessary prepare iptables batch files */
-      if($this->parent->getOption("filter") == "ipt") {
+      if($ms->getOption("filter") == "ipt") {
          $temp_ipt = tempnam (TEMP_PATH, "FOOIPT");
          $output_ipt = fopen($temp_ipt, "w");
       }
@@ -293,7 +323,7 @@ class MASTERSHAPER_RULESET {
                fputs($output_tc, $line ."\n");
 	         }
             /* iptables task */
-            if(strstr($line, IPT_BIN) !== false && $this->parent->getOption("filter") == "ipt") {
+            if(strstr($line, IPT_BIN) !== false && $ms->getOption("filter") == "ipt") {
                fputs($output_ipt, $line ."\n");
             }
          }
@@ -302,7 +332,7 @@ class MASTERSHAPER_RULESET {
       /* flush batch files */
       fclose($output_tc);
 
-      if($this->parent->getOption("filter") == "ipt")
+      if($ms->getOption("filter") == "ipt")
          fclose($output_ipt);
 
       /* load tc filter rules */
@@ -312,7 +342,7 @@ class MASTERSHAPER_RULESET {
       }
 
       /* load iptables rules */
-      if($this->parent->getOption("filter") == "ipt" && !$found_error) {
+      if($ms->getOption("filter") == "ipt" && !$found_error) {
          if(($error = $this->runProc("iptables", $temp_ipt)) != true) {
             print _("Error on mass loading iptables rule. Try load ruleset in debug mode to figure incorrect or not supported rule.");
             $found_error = 1;
@@ -324,13 +354,13 @@ class MASTERSHAPER_RULESET {
       }
 
       unlink($temp_tc);
-      if($this->parent->getOption("filter") == "ipt")
+      if($ms->getOption("filter") == "ipt")
          unlink($temp_ipt);
 
       if(!$found_error)
-         $this->parent->setShaperStatus(true);
+         $ms->setShaperStatus(true);
       else
-         $this->parent->setShaperStatus(false);
+         $ms->setShaperStatus(false);
 
       return $found_error;
 
@@ -465,7 +495,9 @@ class MASTERSHAPER_RULESET {
 
    private function delActiveInterfaceQdiscs()
    {
-      $result = $this->parent->getActiveInterfaces();
+      global $ms;
+
+      $result = $ms->getActiveInterfaces();
       while($row = $result->fetchRow()) {
          $this->delQdisc($row->if_name);
       }
@@ -474,7 +506,9 @@ class MASTERSHAPER_RULESET {
 
    private function getActiveNetpaths()
    {
-      return $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."network_paths WHERE netpath_active='Y' ORDER BY netpath_position");
+      global $db;
+
+      return $db->db_query("SELECT * FROM ". MYSQL_PREFIX ."network_paths WHERE netpath_active='Y' ORDER BY netpath_position");
 
    } // getActiveNetpaths()
 
@@ -487,5 +521,8 @@ class MASTERSHAPER_RULESET {
    } // smarty_ruleset_output()
 
 }
+
+$obj = new MASTERSHAPER_RULESET;
+$obj->handler();
 
 ?>

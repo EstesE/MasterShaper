@@ -1,7 +1,7 @@
 <pre id="target"></pre>
-<form action="rpc.php?action=store" id="chains" onsubmit="selectAll('used[]'); saveForm(this, 'chains'); return false;" method="post">
+<form action="{$page->uri}" id="chains" onsubmit="selectAll('used[]');" method="POST">
 <input type="hidden" name="module" value="chain" />
-<input type="hidden" name="action" value="modify" />
+<input type="hidden" name="action" value="store" />
 { if !$chain_idx }
  {start_table icon=$icon_chains alt="chain icon" title="Create a new Chain" }
  <input type="hidden" name="chain_new" value="1" />

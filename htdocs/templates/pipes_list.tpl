@@ -3,7 +3,7 @@
  <tr>
   <td style="text-align: center;" colspan="4">
    <img src="{ $icon_new }" alt="new icon" />
-   <a href="javascript:refreshContent('pipes', '&mode=new');">Create a new Pipe</a>
+   <a href="{$rewriter->get_page_url('Pipe New')}">Create a new Pipe</a>
   </td>
  </tr>
  <tr>
@@ -18,11 +18,15 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{ $icon_pipes }" alt="pipe icon" />
-   <a href="javascript:refreshContent('pipes', '&mode=edit&idx={ $pipe_idx }');">{ $pipe_name }</a>
+   <a href="{$rewriter->get_page_url('Pipe Edit', $pipe_idx)}">{ $pipe_name }</a>
   </td>
   <td>
    <img src="{ $icon_filters }" alt="filter icon" />
-   { $pipe_filters }
+   { foreach from=$pipe_use_filters key=filter_idx item=filter_name name=filters }
+    <a href="{$rewriter->get_page_url('Filter Edit', $filter_idx)}">{ $filter_name }</a>{ if ! $smarty.foreach.filters.last},{/if}
+   { foreachelse }
+    &nbsp;
+   { /foreach }
   </td>
   <td style="text-align: center;">
    <a href="javascript:deleteObj('pipe', 'pipes', '{ $pipe_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>

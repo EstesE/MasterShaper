@@ -3,7 +3,7 @@
  <tr>
   <td style="text-align: center;" colspan="4">
    <img src="{ $icon_new }" alt="new icon" />
-   <a href="javascript:refreshContent('interfaces', '&mode=new');">Add a new Interface</a>
+   <a href="{$rewriter->get_page_url('Interface New')}">Add a new Interface</a>
   </td>
  </tr>
  <tr>
@@ -18,7 +18,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{ $icon_interfaces }" alt="interface icon" />
-   <a href="javaScript:refreshContent('interfaces', '&mode=edit&idx={ $if_idx }');">{ $if_name }</a>
+   <a href="{$rewriter->get_page_url('Interface Edit', $if_idx)}">{ $if_name }</a>
   </td>
   <td>
    { $if_speed }

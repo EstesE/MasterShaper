@@ -1,4 +1,5 @@
-<form id="login" onsubmit="check_login(); return false;">
+<form id="login" action="{$rewriter->get_page_url('Login')}" method="POST">
+ <input type="hidden" name="action" value="do_login" />
  <table style="width: 100%;">
   <tr>
    <td>

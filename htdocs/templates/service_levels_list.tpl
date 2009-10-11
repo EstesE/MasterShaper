@@ -3,7 +3,7 @@
  <tr>
   <td colspan="3" style="text-align: center;">
    <img src="{ $icon_new }" alt="new icon" />
-   <a href="javascript:refreshContent('servicelevels', '&mode=new');">Create a new Service Level</a>
+   <a href="{$rewriter->get_page_url('Service Level New')}">Create a new Service Level</a>
   </td>
  </tr>
  <tr>
@@ -18,7 +18,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{ $icon_servicelevels }" alt="servicelevel icon" />
-   <a href="javascript:refreshContent('servicelevels', '&mode=edit&idx={ $sl_idx }');">{ $sl_name }</a>
+   <a href="{$rewriter->get_page_url('Service Level Edit', $sl_idx)}">{ $sl_name }</a>
   </td>
   <td>
    <img src="{ $icon_servicelevels }" alt="servicelevel icon" />

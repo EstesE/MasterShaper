@@ -49,28 +49,8 @@ class MASTERSHAPER_RPC {
 
       switch($_GET['action']) {
    
-         case 'get_page_title':
-            print $ms->get_page_title();
-            break;
-
-         case 'get_main_menu':
-            print $ms->get_main_menu();
-            break;
-
-         case 'get_content':
-            print $ms->get_content($_GET['request']);
-            break;
-         
          case 'store':
             print $ms->store();
-            break;
-
-         case 'check_login':
-            print $ms->check_login();
-            break;
-
-         case 'logout':
-            $ms->destroySession();
             break;
 
          case 'what_to_do':
@@ -78,20 +58,8 @@ class MASTERSHAPER_RPC {
                print "show_overview";
             break;
 
-         case 'get_sub_menu':
-            if(isset($_GET['navpoint']) && is_string($_GET['navpoint'])) {
-               print $ms->get_sub_menu($_GET['navpoint']);
-            }
-            break;
-
          case 'alter_position':
             print $ms->alter_position();
-            break;
-
-         case 'ruleset':
-            if(isset($_GET['mode']) && is_string($_GET['mode'])) {
-               print $ms->ruleset($_GET['mode']);
-            }
             break;
 
          case 'monitor':

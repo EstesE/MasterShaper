@@ -6,7 +6,7 @@
  <tr>
   <td style="text-align: center;" colspan="5">
    <img src="{ $icon_new }" alt="new icon" />
-   <a href="javascript:refreshContent('ports', '&mode=new');">Create a new Port</a>
+   <a href="{$rewriter->get_page_url('Port New')}">Create a new Port</a>
   </td>
  </tr>
  <tr>
@@ -45,7 +45,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{ $icon_ports }" alt="port icon" />
-   <a href="javascript:refreshContent('ports', '&mode=edit&idx={ $port_idx }');">{ $port_name }</a>
+   <a href="{$rewriter->get_page_url('Port Edit', $port_idx)}">{ $port_name }</a>
   { if $port_user_defined == 'Y' }
     <img src="{ $icon_users }" alt="User defined port" />
   { /if }

@@ -21,66 +21,30 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_CHAINS {
-
-   private $db;
-   private $parent;
-   private $tmpl;
+class MASTERSHAPER_CHAINS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_CHAINS constructor
     *
     * Initialize the MASTERSHAPER_CHAINS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent = $parent;
-      $this->db = $parent->db;
-      $this->tmpl = $parent->tmpl;
+      $this->rights = 'user_manage_chains';
 
    } // __construct()
-
-   /* interface output */
-   public function show()
-   {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" && 
-         !$this->parent->checkPermissions("user_manage_chains")) {
-
-         $this->parent->printError("<img src=\"". ICON_CHAINS ."\" alt=\"chain icon\" />&nbsp;". _("Manage Chains"), _("You do not have enough permissions to access this module!"));
-	 return 0;
-
-      }
-
-      if(!isset($_GET['mode'])) {
-         $_GET['mode'] = "show";
-      }
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-
-   } // show()
 
    /**
     * display all chains
     */
-   private function showList()
+   public function showList()
    {
+      global $db, $tmpl;
+
       $this->avail_chains = Array();
       $this->chains = Array();
 
-      $res_chains = $this->db->db_query("
+      $res_chains = $db->db_query("
          SELECT c.*, sl.sl_name as chain_sl_name,
             slfall.sl_name as chain_fallback_name
          FROM ". MYSQL_PREFIX ."chains c
@@ -102,44 +66,50 @@ class MASTERSHAPER_CHAINS {
          $cnt_chains++;
       }
 
-      $this->tmpl->register_block("chain_list", array(&$this, "smarty_chain_list"));
-      $this->tmpl->show("chains_list.tpl");
+      $tmpl->register_block("chain_list", array(&$this, "smarty_chain_list"));
+
+      return $tmpl->fetch("chains_list.tpl");
 
    } // showList()
 
    /**
     * chains for handling
     */
-   private function showEdit($idx)
+   public function showEdit()
    {
-      if($idx != 0) {
-         $chain = $this->db->db_fetchSingleRow("
+      if($this->is_storing())
+         $this->store();
+
+      global $db, $tmpl, $page;
+
+      if($page->id != 0) {
+         $chain = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."chains
             WHERE
-               chain_idx='". $idx ."'
+               chain_idx='". $page->id ."'
          ");
 
-         $this->tmpl->assign('chain_idx', $idx);
-         $this->tmpl->assign('chain_name', $chain->chain_name);
-         $this->tmpl->assign('chain_active', $chain->chain_active);
-         $this->tmpl->assign('chain_direction', $chain->chain_direction);
-         $this->tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
-         $this->tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
-         $this->tmpl->assign('chain_src_target', $chain->chain_src_target);
-         $this->tmpl->assign('chain_dst_target', $chain->chain_dst_target);
-         $this->tmpl->assign('chain_netpath_idx', $chain->chain_netpath_idx);
+         $tmpl->assign('chain_idx', $page->id);
+         $tmpl->assign('chain_name', $chain->chain_name);
+         $tmpl->assign('chain_active', $chain->chain_active);
+         $tmpl->assign('chain_direction', $chain->chain_direction);
+         $tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
+         $tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
+         $tmpl->assign('chain_src_target', $chain->chain_src_target);
+         $tmpl->assign('chain_dst_target', $chain->chain_dst_target);
+         $tmpl->assign('chain_netpath_idx', $chain->chain_netpath_idx);
      }
       else {
-         $this->tmpl->assign('chain_active', 'Y');
-         $this->tmpl->assign('chain_fallback_idx', -1);
-         $this->tmpl->assign('chain_direction', 2);
+         $tmpl->assign('chain_active', 'Y');
+         $tmpl->assign('chain_fallback_idx', -1);
+         $tmpl->assign('chain_direction', 2);
       }
 
-      $this->tmpl->register_function("unused_pipes_select_list", array(&$this, "smarty_unused_pipes_select_list"), false);
-      $this->tmpl->register_function("used_pipes_select_list", array(&$this, "smarty_used_pipes_select_list"), false);
+      $tmpl->register_function("unused_pipes_select_list", array(&$this, "smarty_unused_pipes_select_list"), false);
+      $tmpl->register_function("used_pipes_select_list", array(&$this, "smarty_used_pipes_select_list"), false);
 
-      $this->tmpl->show("chains_edit.tpl");
+      return $tmpl->fetch("chains_edit.tpl");
 
    } // showEdit() 
 
@@ -148,7 +118,9 @@ class MASTERSHAPER_CHAINS {
     */
    public function smarty_chain_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.chain_list.index');
+      global $tmpl;
+
+      $index = $tmpl->get_template_vars('smarty.IB.chain_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -158,27 +130,27 @@ class MASTERSHAPER_CHAINS {
          $chain_idx = $this->avail_chains[$index];
          $chain =  $this->chains[$chain_idx];
 
-         $this->tmpl->assign('chain_idx', $chain_idx);
-         $this->tmpl->assign('chain_name', $chain->chain_name);
-         $this->tmpl->assign('chain_active', $chain->chain_active);
-         $this->tmpl->assign('chain_name', $chain->chain_name);
-         $this->tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
-         $this->tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
+         $tmpl->assign('chain_idx', $chain_idx);
+         $tmpl->assign('chain_name', $chain->chain_name);
+         $tmpl->assign('chain_active', $chain->chain_active);
+         $tmpl->assign('chain_name', $chain->chain_name);
+         $tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
+         $tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
 
          if($chain->chain_sl_idx != 0) {
-            $this->tmpl->assign('chain_sl_name', $chain->chain_sl_name);
+            $tmpl->assign('chain_sl_name', $chain->chain_sl_name);
             if($chain->chain_fallback_idx != 0)
-               $this->tmpl->assign('chain_fallback_name', $chain->chain_fallback_name);
+               $tmpl->assign('chain_fallback_name', $chain->chain_fallback_name);
             else
-               $this->tmpl->assign('chain_fallback_name', _("No Fallback"));
+               $tmpl->assign('chain_fallback_name', _("No Fallback"));
          }
          else {
-               $this->tmpl->assign('chain_sl_name', _("Ignore QoS"));
-               $this->tmpl->assign('chain_fallback_name', _("Ignore QoS"));
+               $tmpl->assign('chain_sl_name', _("Ignore QoS"));
+               $tmpl->assign('chain_fallback_name', _("Ignore QoS"));
          }
 
          $index++;
-         $this->tmpl->assign('smarty.IB.chain_list.index', $index);
+         $tmpl->assign('smarty.IB.chain_list.index', $index);
          $repeat = true;
       }
       else {
@@ -194,22 +166,24 @@ class MASTERSHAPER_CHAINS {
     */
    public function store()
    {
+      global $ms, $db;
+
       isset($_POST['chain_new']) && $_POST['chain_new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['chain_name']) || $_POST['chain_name'] == "") {
-         return _("Please enter a chain name!");
+         $ms->throwError(_("Please enter a chain name!"));
       }
       if(isset($new) && $this->checkChainExists($_POST['chain_name'])) {
-         return _("A chain with such a name already exists!");
+         $ms->throwError(_("A chain with such a name already exists!"));
       }
       if(!isset($new) && $_POST['chain_name'] != $_POST['namebefore'] && 
          $this->checkChainExists($_POST['chain_name'])) {
-         return _("A chain with such a name already exists!");
+         $ms->throwError(_("A chain with such a name already exists!"));
       }
 
       if(isset($new)) {
 						
-         $max_pos = $this->db->db_fetchSingleRow("
+         $max_pos = $db->db_fetchSingleRow("
             SELECT
                MAX(chain_position) as pos
             FROM
@@ -218,7 +192,7 @@ class MASTERSHAPER_CHAINS {
                chain_netpath_idx='". $_POST['chain_netpath_idx'] ."'
          ");
 
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."chains (
                chain_name, chain_sl_idx, chain_src_target, chain_dst_target, 
                chain_position, chain_direction, chain_netpath_idx,
@@ -236,12 +210,12 @@ class MASTERSHAPER_CHAINS {
             )
          ");
 
-         $_POST['chain_idx'] = $this->db->db_getid();
+         $_POST['chain_idx'] = $db->db_getid();
 
       }
       else {
 
-         $this->db->db_query("
+         $db->db_query("
             UPDATE
                ". MYSQL_PREFIX ."chains
             SET
@@ -258,7 +232,7 @@ class MASTERSHAPER_CHAINS {
       }
 
       if(isset($_POST['used']) && $_POST['used']) {
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM
                ". MYSQL_PREFIX ."assign_pipes_to_chains
             WHERE
@@ -267,7 +241,7 @@ class MASTERSHAPER_CHAINS {
 
          foreach($_POST['used'] as $use) {
             if($use != "") {
-               $this->db->db_query("
+               $db->db_query("
                   INSERT INTO ". MYSQL_PREFIX ."assign_pipes_to_chains (
                      apc_pipe_idx, apc_chain_idx
                   ) VALUES (
@@ -288,15 +262,17 @@ class MASTERSHAPER_CHAINS {
     */
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
 
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."chains
             WHERE
                chain_idx='". $idx ."'
          ");
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM
                ". MYSQL_PREFIX ."assign_pipes_to_chains
             WHERE
@@ -315,6 +291,8 @@ class MASTERSHAPER_CHAINS {
     */
    public function toggleStatus()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
 
@@ -323,7 +301,7 @@ class MASTERSHAPER_CHAINS {
          else
             $new_status = 'N';
 
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."chains
             SET
                chain_active='". $new_status ."'
@@ -344,8 +322,9 @@ class MASTERSHAPER_CHAINS {
     */
    private function checkChainExists($chain_name)
    {
+      global $db;
 
-      if($this->db->db_fetchSingleRow("
+      if($db->db_fetchSingleRow("
          SELECT chain_idx
          FROM ". MYSQL_PREFIX ."chains
          WHERE
@@ -360,14 +339,16 @@ class MASTERSHAPER_CHAINS {
 
    public function smarty_unused_pipes_select_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('chain_idx', $params)) {
-         $this->tmpl->trigger_error("smarty_unused_pipes_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
+         $smarty->trigger_error("smarty_unused_pipes_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
       if(!isset($params['chain_idx'])) {
-         $unused_pipes = $this->db->db_query("
+         $unused_pipes = $db->db_query("
             SELECT
                pipe_idx,
                pipe_name
@@ -378,7 +359,7 @@ class MASTERSHAPER_CHAINS {
          ");
       }
       else {
-         $unused_pipes = $this->db->db_query("
+         $unused_pipes = $db->db_query("
             SELECT DISTINCT
                p.pipe_idx,
                p.pipe_name
@@ -390,7 +371,7 @@ class MASTERSHAPER_CHAINS {
                FROM
                   ". MYSQL_PREFIX ."assign_pipes_to_chains
                WHERE
-                  apc_chain_idx=". $this->db->db_quote($params['chain_idx']) ."
+                  apc_chain_idx=". $db->db_quote($params['chain_idx']) ."
             ) apc
             ON
                apc.apc_pipe_idx=p.pipe_idx
@@ -409,13 +390,15 @@ class MASTERSHAPER_CHAINS {
 
    public function smarty_used_pipes_select_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('chain_idx', $params)) {
-         $this->tmpl->trigger_error("smarty_used_pipes_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
+         $smarty->trigger_error("smarty_used_pipes_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $used_pipes = $this->db->db_query("
+      $used_pipes = $db->db_query("
          SELECT DISTINCT
             p.pipe_idx, p.pipe_name
          FROM
@@ -441,5 +424,8 @@ class MASTERSHAPER_CHAINS {
    } // smarty_used_pipes_select_list()
 
 }
+
+$obj = new MASTERSHAPER_CHAINS;
+$obj->handler();
 
 ?>

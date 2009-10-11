@@ -21,29 +21,19 @@
  *
  ***************************************************************************/
 
+require_once "shaper_page.php";
 require_once "shaper_cfg.php";
 require_once "shaper_db.php";
-require_once "shaper_overview.php";
-require_once "shaper_targets.php";
-require_once "shaper_ports.php";
-require_once "shaper_protocols.php";
-require_once "shaper_service_levels.php";
-require_once "shaper_options.php";
-require_once "shaper_users.php";
-require_once "shaper_interfaces.php";
-require_once "shaper_net_paths.php";
-require_once "shaper_filters.php";
-require_once "shaper_pipes.php";
-require_once "shaper_chains.php";
-require_once "shaper_about.php";
-require_once "shaper_ruleset.php";
-require_once "shaper_interface.php";
 require_once "shaper_monitor.php";
+
+require_once "class/Rewriter.php";
+require_once "class/Page.php";
+
+define('DEBUG', 1);
 
 class MASTERSHAPER {
 
    var $cfg;
-   var $db;
 
    /**
     * class constructor
@@ -61,10 +51,14 @@ class MASTERSHAPER {
          exit(1);
       }
 
-      $this->db  = new MASTERSHAPER_DB(&$this);
+      $GLOBALS['db']       = new MASTERSHAPER_DB(&$this);
+      $GLOBALS['rewriter'] = Rewriter::instance();
+
+      global $db;
+      global $rewriter;
 
       if($mode == 'install') {
-         if($this->db->install_schema()) {
+         if($db->install_schema()) {
             $this->_print("Successfully installed database tables");
             exit(0);
          }
@@ -72,14 +66,15 @@ class MASTERSHAPER {
       }
 
       /* alert if meta table is missing */
-      if(!$this->db->db_check_table_exists(MYSQL_PREFIX ."meta"))
+      if(!$db->db_check_table_exists(MYSQL_PREFIX ."meta"))
          $this->throwError("You are missing table ". MYSQL_PREFIX ."meta! You may run install.php again.");
 
-      if($this->db->getVersion() < SCHEMA_VERSION)
-         $this->throwError("The local schema version is lower (". $this->db->getVersion() .") then the programs schema version (". SCHEMA_VERSION ."). You may run install.php again.");
+      if($db->getVersion() < SCHEMA_VERSION)
+         $this->throwError("The local schema version is lower (". $db->getVersion() .") then the programs schema version (". SCHEMA_VERSION ."). You may run install.php again.");
 
       require_once "shaper_tmpl.php";
-      $this->tmpl = new MASTERSHAPER_TMPL($this);
+      $GLOBALS['tmpl'] = new MASTERSHAPER_TMPL($this);
+      $GLOBALS['tmpl']->assign('rewriter', &$rewriter);
 
       if(session_id() == "")
          session_start();
@@ -102,8 +97,44 @@ class MASTERSHAPER {
     */
    public function show()
    {
-      $this->tmpl->assign("page_title", "MasterShaper v". VERSION);
-      $this->tmpl->show("index.tpl");
+      global $rewriter;
+
+      $GLOBALS['page'] = Page::instance($rewriter->request);
+
+      global $tmpl;
+      global $page;
+
+      $tmpl->assign("page_title", "MasterShaper v". VERSION);
+      $tmpl->assign('page', $page);
+
+      if($page->includefile == "[internal]")
+         $this->handle_page_request();
+
+      /* show login box, if not already logged in */
+      if(!$this->is_logged_in()) {
+         $this->load_main_title();
+         $tmpl->assign('content', $tmpl->fetch("login_box.tpl"));
+         $tmpl->show("index.tpl");
+         return;
+      }
+
+      if(!$page->includefile || $page->includefile == '[internal]') {
+         $page->set_page($rewriter->default_page);
+      }
+
+      if($page->includefile) {
+         if(!file_exists($page->includefile))
+            $this->throwError("Page not found. Unable to include ". $page->includefile);
+         if(!is_readable($page->includefile))
+            $this->throwError("Unable to read ". $page->includefile);
+         include $page->includefile;
+      }
+
+      $this->load_main_title();
+      $this->load_main_menu();
+      $this->load_sub_menu();
+
+      $tmpl->show("index.tpl");
 
    } // show()
 
@@ -190,114 +221,137 @@ class MASTERSHAPER {
    /**
     * returns current page title
     */
-   public function get_page_title()
+   public function load_main_title()
    {
+      global $tmpl;
+
       if(!$this->is_logged_in()) {
-         return "<img src=\"icons/home.gif\" />&nbsp;MasterShaper Login";
-      }
-      else {
-         return "<img src=\"icons/home.gif\" />&nbsp;MasterShaper Login"
-            ." - logged in as ". $_SESSION['user_name'] 
-            ." (<a href=\"javascript:js_logout();\" style=\"color: #ffffff;\">logout</a>)";
+         $tmpl->assign('main_title', "<img src=\"". WEB_PATH ."/icons/home.gif\" />&nbsp;MasterShaper Login");
+         return;
       }
 
-   } // get_page_title()
+      $tmpl->assign('main_title', "<img src=\"". WEB_PATH ."/icons/home.gif\" />&nbsp;MasterShaper"
+         ." - logged in as ". $_SESSION['user_name'] 
+         ." (<a href=\"javascript:js_logout();\" style=\"color: #ffffff;\">logout</a>)");
+
+   } // load_main_title()
 
    /**
-    * returns main menu
+    * loads the main menu template
     */
-   public function get_main_menu()
+   public function load_main_menu()
    {
-?>
-   <table class="menu">
-    <tr>
-     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:refreshContent('overview'); updateSubMenu();"><img src="icons/home.gif" />&nbsp;<?php print _("Overview"); ?></a>
-     </td>
-     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu('manage');" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Manage"); ?></a>
-     </td>
-     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu('settings');" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Settings"); ?></a>      
-     </td>      
-     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu('monitoring');" /><img src="icons/chart_pie.gif" />&nbsp;<?php print _("Monitoring"); ?></a>     
-     </td>      
-     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu('rules');" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Rules"); ?></a>      
-     </td>      
-     <td onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-      <a href="javascript:updateSubMenu('others');" /><img src="icons/arrow_right.gif" />&nbsp;<?php print _("Others"); ?></a>      
-     </td>
-    </tr> 
-   </table> 
-<?php
+      global $tmpl;
+
+      $tmpl->assign('main_menu', $tmpl->fetch('main_menu.tpl'));
+
    } // get_main_menu()
 
    /**
-    * returns sub menus
+    * loads the sub menu template
     */
-   public function get_sub_menu($navpoint)
+   public function load_sub_menu()
    {
-      $string = "";
+      global $tmpl;
+      global $page;
+      global $rewriter;
 
-      switch($navpoint) {
-         case 'manage':
+      switch($page->name) {
+
+         case 'Manage':
+         case 'Chains List':
+         case 'Chain New':
+         case 'Chain Edit':
+         case 'Pipes List':
+         case 'Pipe New':
+         case 'Pipe Edit':
+         case 'Filters List':
+         case 'Filter New':
+         case 'Filter Edit':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem("javascript:refreshContent('chains');", "icons/flag_blue.gif", _("Chains"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('filters');", "icons/flag_green.gif", _("Filters"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('pipes');", "icons/flag_pink.gif", _("Pipes"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Chains List'), WEB_PATH ."/icons/flag_blue.gif", _("Chains"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Filters List'), WEB_PATH ."/icons/flag_green.gif", _("Filters"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Pipes List'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes"));
             $string.= "</tr></table>\n";
             break;
 
-         case 'settings':
+         case 'Settings':
+         case 'Targets List':
+         case 'Target New':
+         case 'Target Edit':
+         case 'Ports List':
+         case 'Port New':
+         case 'Port Edit':
+         case 'Protocols List':
+         case 'Protocol New':
+         case 'Protocol Edit':
+         case 'Service Levels List':
+         case 'Service Level New':
+         case 'Service Level Edit':
+         case 'Options':
+         case 'Users List':
+         case 'User New':
+         case 'User Edit':
+         case 'Interfaces List':
+         case 'Interface New':
+         case 'Interface Edit':
+         case 'Network Paths List':
+         case 'Network Path New':
+         case 'Network Path Edit':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem("javascript:refreshContent('targets');", "icons/flag_purple.gif", _("Targets"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('ports');", "icons/flag_orange.gif", _("Ports"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('protocols');", "icons/flag_red.gif", _("Protocols"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('servicelevels');", "icons/flag_yellow.gif", _("Service Levels"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('options');", "icons/options.gif", _("Options"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('users');", "icons/ms_users_14.gif", _("Users"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('interfaces');", "icons/network_card.gif", _("Interfaces"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('networkpaths');", "icons/network_card.gif", _("Network Paths"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Targets List'), WEB_PATH ."/icons/flag_purple.gif", _("Targets"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Ports List'), WEB_PATH ."/icons/flag_orange.gif", _("Ports"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Protocols List'), WEB_PATH ."/icons/flag_red.gif", _("Protocols"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Service Levels List'), WEB_PATH ."/icons/flag_yellow.gif", _("Service Levels"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Options'), WEB_PATH ."/icons/options.gif", _("Options"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Users List'), WEB_PATH ."/icons/ms_users_14.gif", _("Users"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Interfaces List'), WEB_PATH ."/icons/network_card.gif", _("Interfaces"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Network Paths List'), WEB_PATH ."/icons/network_card.gif", _("Network Paths"));
             $string.= "</tr></table>\n";
             break;
 
-         case 'monitoring':
+         case 'Monitoring':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem("javascript:monitor('chains');", "icons/flag_blue.gif", _("Chains"));
-            $string.= $this->addSubMenuItem("javascript:monitor('pipes');", "icons/flag_pink.gif", _("Pipes"));
-            $string.= $this->addSubMenuItem("javascript:monitor('bandwidth');", "icons/bandwidth.gif", _("Bandwidth"));
-            $string.= $this->addSubMenuItem("javascript:monitor('chainsjqp');", "icons/flag_blue.gif", _("Chains jqPlot"));
-            $string.= $this->addSubMenuItem("javascript:monitor('pipesjqp');", "icons/flag_pink.gif", _("Pipes jqPlot"));
-            $string.= $this->addSubMenuItem("javascript:monitor('bandwidthjqp');", "icons/bandwidth.gif", _("Bandwidth jqPlot"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('chains'), WEB_PATH ."/icons/flag_blue.gif", _("Chains"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('pipes'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('bandwidth'), WEB_PATH ."/icons/bandwidth.gif", _("Bandwidth"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('chainsjqp'), WEB_PATH ."/icons/flag_blue.gif", _("Chains jqPlot"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('pipesjqp'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes jqPlot"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('bandwidthjqp'), WEB_PATH ."/icons/bandwidth.gif", _("Bandwidth jqPlot"));
             $string.= "</tr></table>\n";
             break;
 
-         case 'rules':
+         case 'Rules':
+         case 'Rules Show':
+         case 'Rules Load':
+         case 'Rules Load Debug':
+         case 'Rules Unload':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem("javascript:ruleset('show');", "icons/show.gif", _("Show"));
-            $string.= $this->addSubMenuItem("javascript:ruleset('load');", "icons/enable.gif", _("Load"));
-            $string.= $this->addSubMenuItem("javascript:ruleset('loaddebug');", "icons/enable.gif", _("Load (debug)"));
-            $string.= $this->addSubMenuItem("javascript:ruleset('unload');", "icons/disable.gif", _("Unload"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Rules Show'), WEB_PATH ."/icons/show.gif", _("Show"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Rules Load'), WEB_PATH ."/icons/enable.gif", _("Load"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Rules Load Debug'), WEB_PATH ."/icons/enable.gif", _("Load (debug)"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Rules Unload'), WEB_PATH ."/icons/disable.gif", _("Unload"));
             $string.= "</tr></table>\n";
             break;
 
-         case 'others':
+         case 'Others':
+         case 'Others About':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem("shaper_export.php", "icons/disk.gif", _("Save Configuration"));
-            $string.= $this->addSubMenuItem("javascript:config('restore');", "icons/restore.gif", _("Restore Configuration"));
-            $string.= $this->addSubMenuItem("javascript:config('reset');", "icons/reset.gif", _("Reset Configuration"));
-            $string.= $this->addSubMenuItem("javascript:config('updatel7');", "icons/update.gif", _("Update L7 Protocols"));
-            $string.= $this->addSubMenuItem("http://www.mastershaper.org/MasterShaper_documentation.pdf", "icons/page_white_acrobat.gif", _("Documentation (PDF)"));
-            $string.= $this->addSubMenuItem("javascript:refreshContent('about');", "icons/ms_users_14.gif", _("About"));
+            $string.= $this->addSubMenuItem("shaper_export.php", WEB_PATH ."/icons/disk.gif", _("Save Configuration"));
+            $string.= $this->addSubMenuItem("javascript:config('restore')", WEB_PATH ."/icons/restore.gif", _("Restore Configuration"));
+            $string.= $this->addSubMenuItem("javascript:config('reset')", WEB_PATH ."/icons/reset.gif", _("Reset Configuration"));
+            $string.= $this->addSubMenuItem("javascript:config('updatel7')", WEB_PATH ."/icons/update.gif", _("Update L7 Protocols"));
+            $string.= $this->addSubMenuItem("http://www.mastershaper.org/MasterShaper_documentation.pdf", WEB_PATH ."/icons/page_white_acrobat.gif", _("Documentation (PDF)"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Others About'), WEB_PATH ."/icons/ms_users_14.gif", _("About"));
             $string.= "</tr></table>\n";
             break;
 
       }
    
-      return $string;
-   }
+      if(isset($string))
+         $tmpl->assign('sub_menu', $string);
+
+   } // load_sub_menu()
 
    /**
     * returns submenu item html code
@@ -317,10 +371,6 @@ class MASTERSHAPER {
     */
    public function get_content($request = "")
    {
-      if(!$this->is_logged_in()) {
-         return $this->tmpl->fetch("login_box.tpl");
-      }
-
       switch($request) {
          case 'overview':
             $obj = new MASTERSHAPER_OVERVIEW($this);
@@ -440,42 +490,41 @@ class MASTERSHAPER {
    /**
     * check login
     */
-   public function check_login()
+   public function login()
    {
-      if(isset($_POST['user_name']) && $_POST['user_name'] != "" &&
-         isset($_POST['user_pass']) && $_POST['user_pass'] != "") {
+      if(!isset($_POST['user_name']) || empty($_POST['user_name']))
+         $this->throwError(_("Please enter Username and Password."));
+      if(!isset($_POST['user_pass']) || empty($_POST['user_pass']))
+         $this->throwError(_("Please enter Username and Password."));
 
-         if($user = $this->getUserDetails($_POST['user_name'])) {
-            if($user->user_pass == md5($_POST['user_pass'])) {
-               $_SESSION['user_name'] = $_POST['user_name'];
-               $_SESSION['user_idx'] = $user->user_idx;
+      if(!$user = $this->getUserDetails($_POST['user_name']))
+         $this->throwError(_("Invalid or inactive User."));
 
-               return "ok";
-            }
-            else {
-               return _("Invalid Password.");
-            }
-         }
-         else {
-            return _("Invalid or inactive User.");
-         }
-      }
-      else {
-         return _("Please enter Username and Password.");
-      }
+      if($user->user_pass != md5($_POST['user_pass']))
+         $this->throwError(_("Invalid Password."));
 
-   } // check_login()
+      $_SESSION['user_name'] = $_POST['user_name'];
+      $_SESSION['user_idx'] = $user->user_idx;
+
+      return true;
+
+   } // login()
 
    /**
     * return all user details for the provided user_name
     */
    private function getUserDetails($user_name)
    {
-      if($user = $this->db->db_fetchSingleRow("
-         SELECT user_idx, user_pass
-         FROM ". MYSQL_PREFIX ."users
+      global $db;
+
+      if($user = $db->db_fetchSingleRow("
+         SELECT
+            user_idx,
+            user_pass
+         FROM
+            ". MYSQL_PREFIX ."users
          WHERE
-            user_name LIKE '". $user_name ."'
+            user_name LIKE ". $db->quote($user_name) ."
          AND
             user_active='Y'")) {
 
@@ -504,7 +553,9 @@ class MASTERSHAPER {
     */
    public function getOption($object)
    {
-      $result = $this->db->db_fetchSingleRow("
+      global $db;
+
+      $result = $db->db_fetchSingleRow("
          SELECT setting_value
          FROM ". MYSQL_PREFIX ."settings
          WHERE setting_key like '". $object ."'
@@ -523,7 +574,9 @@ class MASTERSHAPER {
     */
    public function setOption($key, $value)
    {
-      $this->db->db_query("
+      global $db;
+
+      $db->db_query("
          REPLACE INTO ". MYSQL_PREFIX ."settings (
             setting_key, setting_value
          ) VALUES (
@@ -540,7 +593,8 @@ class MASTERSHAPER {
     */
    public function checkPermissions($permission)
    {
-       $user = $this->db->db_fetchSingleRow("
+      global $db;
+      $user = $db->db_fetchSingleRow("
          SELECT ". $permission ."
          FROM ". MYSQL_PREFIX ."users
          WHERE user_idx='". $_SESSION['user_idx'] ."'
@@ -589,17 +643,19 @@ class MASTERSHAPER {
     */
    public function getInterfaceName($if_idx)
    {
-      if($if_idx != 0) {
-         $if = $this->db->db_fetchSingleRow("
-            SELECT if_name
-            FROM ". MYSQL_PREFIX ."interfaces
-            WHERE
-               if_idx='". $if_idx ."'
-         ");
-         return $if->if_name;
-      }
-      
-      return NULL;
+      global $db;
+
+      if($if_idx == 0)
+         return NULL;
+
+      $if = $db->db_fetchSingleRow("
+         SELECT if_name
+         FROM ". MYSQL_PREFIX ."interfaces
+         WHERE
+            if_idx='". $if_idx ."'
+      ");
+
+      return $if->if_name;
 
    } // getInterfaceName() 
 
@@ -684,7 +740,9 @@ class MASTERSHAPER {
     */
    public function getProtocolNumberById($proto_idx)
    {
-      if($proto = $this->db->db_fetchSingleRow("
+      global $db;
+
+      if($proto = $db->db_fetchSingleRow("
          SELECT proto_number
          FROM ". MYSQL_PREFIX ."protocols
          WHERE
@@ -703,7 +761,9 @@ class MASTERSHAPER {
     */
    public function getProtocolNameById($proto_idx)
    {
-      if($proto = $this->db->db_fetchSingleRow("
+      global $db;
+
+      if($proto = $db->db_fetchSingleRow("
          SELECT proto_name
          FROM ". MYSQL_PREFIX ."protocols
          WHERE
@@ -739,7 +799,9 @@ class MASTERSHAPER {
     */
    public function getServiceLevel($sl_idx)
    {
-      return $this->db->db_fetchSingleRow("
+      global $db;
+
+      return $db->db_fetchSingleRow("
          SELECT *
          FROM ". MYSQL_PREFIX ."service_levels
          WHERE
@@ -756,7 +818,9 @@ class MASTERSHAPER {
     */
    public function getServiceLevelName($sl_idx)
    {
-      if($sl = $this->db->db_fetchSingleRow("
+      global $db;
+
+      if($sl = $db->db_fetchSingleRow("
          SELECT sl_name
          FROM ". MYSQL_PREFIX ."service_levels
          WHERE
@@ -774,7 +838,9 @@ class MASTERSHAPER {
     */
    public function getTargetName($target_idx)
    {
-      if($target = $this->db->db_fetchSingleRow("
+      global $db;
+
+      if($target = $db->db_fetchSingleRow("
          SELECT target_name
          FROM ". MYSQL_PREFIX ."targets
          WHERE
@@ -792,7 +858,9 @@ class MASTERSHAPER {
     */
    public function getChainName($chain_idx)
    {
-      if($chain = $this->db->db_fetchSingleRow("
+      global $db;
+
+      if($chain = $db->db_fetchSingleRow("
          SELECT chain_name
          FROM ". MYSQL_PREFIX ."chains
          WHERE
@@ -809,7 +877,9 @@ class MASTERSHAPER {
    */
    public function getFilter($filter_idx)
    {
-      return $this->db->db_fetchSingleRow("
+      global $db;
+
+      return $db->db_fetchSingleRow("
          SELECT *
          FROM ". MYSQL_PREFIX ."filters
          WHERE
@@ -825,7 +895,9 @@ class MASTERSHAPER {
     */
    public function getFilters($pipe_idx)
    {
-      return $this->db->db_query("
+      global $db;
+
+      return $db->db_query("
          SELECT
             af.apf_filter_idx as apf_filter_idx
          FROM
@@ -850,11 +922,13 @@ class MASTERSHAPER {
     */
    public function getPorts($filter_idx)
    {
+      global $db;
+
       $list = NULL;
       $numbers = "";
 
       /* first get all the port id's for that filter */
-      $ports = $this->db->db_query("
+      $ports = $db->db_query("
          SELECT afp_port_idx
          FROM ". MYSQL_PREFIX ."assign_ports_to_filters
          WHERE
@@ -868,7 +942,7 @@ class MASTERSHAPER {
       /* now look up the IANA port numbers for that ports */
       if($numbers != "") {
          $numbers = substr($numbers, 0, strlen($numbers)-1);
-         $list = $this->db->db_query("
+         $list = $db->db_query("
             SELECT port_name, port_number
             FROM ". MYSQL_PREFIX ."ports
             WHERE
@@ -923,10 +997,12 @@ class MASTERSHAPER {
     */
    public function getL7Protocols($filter_idx)
    {
+      global $db;
+
       $list = NULL;
       $numbers = "";
 
-      $protocols = $this->db->db_query("  
+      $protocols = $db->db_query("
          SELECT afl7_l7proto_idx
          FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
          WHERE
@@ -938,7 +1014,7 @@ class MASTERSHAPER {
 
       if($numbers != "") {
          $numbers = substr($numbers, 0, strlen($numbers)-1);
-         $list = $this->db->db_query("
+         $list = $db->db_query("
             SELECT l7proto_name
             FROM ". MYSQL_PREFIX ."l7_protocols
             WHERE
@@ -951,42 +1027,10 @@ class MASTERSHAPER {
    } // getL7Protocols
 
    /**
-    * return content around ruleset
-    */
-   public function ruleset($mode)
-   {
-      if(!$this->is_logged_in()) {
-         return $this->tmpl->fetch("login_box.tpl");
-      }
-
-      $obj = new MASTERSHAPER_RULESET($this);
-   
-      switch($mode) {
-         case 'show':
-            return $obj->show();
-            break;
-         case 'load':
-            return $obj->load();
-            break;
-         case 'loaddebug':
-            return $obj->load(1);
-            break;
-         case 'unload':
-            return $obj->unload();
-            break;
-      }
-
-   } // ruleset()
-
-   /**
     * return content around monitor
     */
    public function monitor($mode)
    {
-      if(!$this->is_logged_in()) {
-         return $this->tmpl->fetch("login_box.tpl");
-      }
-
       $obj = new MASTERSHAPER_MONITOR($this);
       $obj->show($mode);
    
@@ -1034,7 +1078,9 @@ class MASTERSHAPER {
 
    public function getActiveInterfaces()
    {
-      $result = $this->db->db_query("
+      global $db;
+
+      $result = $db->db_query("
          SELECT DISTINCT if_name
          FROM
             shaper2_interfaces iface
@@ -1122,6 +1168,28 @@ class MASTERSHAPER {
       }
 
    } // _error()
+
+   private function handle_page_request()
+   {
+      if(!isset($_POST))
+         return;
+
+      if(!isset($_POST['action']))
+         return;
+
+      $action = $_POST['action'];
+
+      switch($action) {
+         case 'do_login':
+            if($this->login())
+               Header("Location: ". WEB_PATH ."/");
+            break;
+         case 'do_logout':
+            if($this->logout())
+               Header("Location: ". WEB_PATH ."/");
+            break;
+      }
+   }
 
    /**
     * check if called from command line

@@ -21,67 +21,33 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_PROTOCOLS {
-
-   private $db;
-   private $parent;
-   private $tmpl;
+class MASTERSHAPER_PROTOCOLS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_PROTOCOLS constructor
     *
     * Initialize the MASTERSHAPER_PROTOCOLS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent = $parent;
-      $this->db = $parent->db;
-      $this->tmpl = $this->parent->tmpl;
+      $this->rights = 'user_manage_protocols';
 
    } // __construct()
-
-   /* interface output */
-   public function show()
-   {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_protocols")) {
-         $this->parent->printError("<img src=\"". ICON_PROTOCOLS ."\" alt=\"protocol icon\" />&nbsp;". _("Manage Protocols"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
-      
-      if(!isset($_GET['mode'])) {
-         $_GET['mode'] = "show";
-      }
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-
-   } // show()
 
    /**
     * display all protocols
     */
-   private function showList()
+   public function showList()
    {
       if(!isset($this->parent->screen))
          $this->parent->screen = 0;
 
+      global $db, $tmpl;
+
       $this->avail_protocols = Array();
       $this->protocols = Array();
 
-      $res_protocols = $this->db->db_query("
+      $res_protocols = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."protocols
          ORDER BY proto_name ASC
@@ -95,42 +61,39 @@ class MASTERSHAPER_PROTOCOLS {
          $cnt_protocols++;
       }
 
-      $this->tmpl->register_block("protocol_list", array(&$this, "smarty_protocol_list"));
-      $this->tmpl->show("protocols_list.tpl");
+      $tmpl->register_block("protocol_list", array(&$this, "smarty_protocol_list"));
+      return $tmpl->fetch("protocols_list.tpl");
 
    } // showList()
 
    /**
     * display interface to create or edit protocols
     */
-   public function showEdit($idx)
+   public function showEdit()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_protocols")) {
+      if($this->is_storing())
+         $this->store();
 
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset protocols"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
+      global $db, $tmpl, $page;
 
-      if($idx != 0) {
-         $protocol = $this->db->db_fetchSingleRow("
+      if($page->id != 0) {
+         $protocol = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."protocols
             WHERE
-               proto_idx='". $idx ."'
+               proto_idx='". $page->id ."'
          ");
 
-         $this->tmpl->assign('proto_idx', $idx);
-         $this->tmpl->assign('proto_name', $protocol->proto_name);
-         $this->tmpl->assign('proto_number', $protocol->proto_number);
+         $tmpl->assign('proto_idx', $page->id);
+         $tmpl->assign('proto_name', $protocol->proto_name);
+         $tmpl->assign('proto_number', $protocol->proto_number);
  
       }
       else {
          /* preset values here */
       }
 
-     $this->tmpl->show("protocols_edit.tpl");
+     return $tmpl->fetch("protocols_edit.tpl");
 
    } // showEdit()
 
@@ -140,7 +103,9 @@ class MASTERSHAPER_PROTOCOLS {
     */
    public function smarty_protocol_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.protocol_list.index');
+      global $tmpl;
+
+      $index = $smarty->get_template_vars('smarty.IB.protocol_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -150,12 +115,12 @@ class MASTERSHAPER_PROTOCOLS {
          $proto_idx = $this->avail_protocols[$index];
          $protocol =  $this->protocols[$proto_idx];
 
-         $this->tmpl->assign('proto_idx', $proto_idx);
-         $this->tmpl->assign('proto_name', $protocol->proto_name);
-         $this->tmpl->assign('proto_number', $protocol->proto_number);
+         $tmpl->assign('proto_idx', $proto_idx);
+         $tmpl->assign('proto_name', $protocol->proto_name);
+         $tmpl->assign('proto_number', $protocol->proto_number);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.protocol_list.index', $index);
+         $tmpl->assign('smarty.IB.protocol_list.index', $index);
          $repeat = true;
       }
       else {
@@ -171,6 +136,8 @@ class MASTERSHAPER_PROTOCOLS {
     */
    public function store()
    {
+      global $db;
+
       isset($_POST['proto_new']) && $_POST['proto_new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['proto_name']) || $_POST['proto_name'] == "") {
@@ -189,7 +156,7 @@ class MASTERSHAPER_PROTOCOLS {
 
       if(isset($new)) {
 
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."protocols 
                (proto_name, proto_number, proto_user_defined)
             VALUES (
@@ -199,7 +166,7 @@ class MASTERSHAPER_PROTOCOLS {
          ");
       }
       else {
-		     $this->db->db_query("
+		     $db->db_query("
                UPDATE ". MYSQL_PREFIX ."protocols
                SET 
                   proto_name='". $_POST['proto_name'] ."',
@@ -220,7 +187,9 @@ class MASTERSHAPER_PROTOCOLS {
     */
    private function checkProtocolExists($proto_name)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT proto_idx
          FROM ". MYSQL_PREFIX ."protocols
          WHERE
@@ -236,10 +205,12 @@ class MASTERSHAPER_PROTOCOLS {
     */
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx'])) {
          $idx = $_POST['idx'];
 
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."protocols
             WHERE
                proto_idx='". $idx ."'
@@ -253,5 +224,8 @@ class MASTERSHAPER_PROTOCOLS {
    } // delete()
 
 } // class MASTERSHAPER_PROTOCOLS
+
+$obj = new MASTERSHAPER_PROTOCOLS;
+$obj->handler();
 
 ?>

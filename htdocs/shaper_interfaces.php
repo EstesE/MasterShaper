@@ -21,63 +21,30 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_INTERFACES {
-
-   private $db;
-   private $parent;
-   private $tmpl;
+class MASTERSHAPER_INTERFACES extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_INTERFACES constructor
     *
     * Initialize the MASTERSHAPER_INTERFACES class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent =&$parent;
-      $this->db = $parent->db;
-      $this->tmpl = $parent->tmpl;
+      $this->rights = 'user_manage_options';
 
    } // __construct()
   
-   /* interface output */
-   public function show()
-   {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_options")) {
-         $this->parent->printError("<img src=\"". ICON_INTERFACES ."\" alt=\"interface icon\" />&nbsp;". _("Manage Interfaces"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
-
-      if(!isset($_GET['mode'])) {
-         $_GET['mode'] = "show";
-      }
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-   } // show()
-
    /**
     * display all interfaces
     */
-   private function showList()
+   public function showList()
    {
+      global $db, $tmpl;
+
       $this->avail_interfaces = Array();
       $this->interfaces = Array();
 
-      $res_interfaces = $this->db->db_query("
+      $res_interfaces = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."interfaces
          ORDER BY if_name ASC
@@ -91,32 +58,37 @@ class MASTERSHAPER_INTERFACES {
          $cnt_interfaces++;
       }
 
-      $this->tmpl->register_block("interface_list", array(&$this, "smarty_interface_list"));
-      $this->tmpl->show("interfaces_list.tpl");
+      $tmpl->register_block("interface_list", array(&$this, "smarty_interface_list"));
+      return $tmpl->fetch("interfaces_list.tpl");
 
    } // showList()
 
    /**
     * interface for handling
     */
-   private function showEdit($idx)
+   public function showEdit()
    {
-      if($idx != 0) {
-         $if = $this->db->db_fetchSingleRow("
+      if($this->is_storing())
+         $this->store();
+
+      global $db, $tmpl, $page;
+
+      if($page->id != 0) {
+         $if = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."interfaces
             WHERE 
-               if_idx='". $idx ."'");
+               if_idx='". $page->id ."'");
 
-         $this->tmpl->assign('if_idx', $idx);
-         $this->tmpl->assign('if_name', $if->if_name);
-         $this->tmpl->assign('if_speed', $if->if_speed);
-         $this->tmpl->assign('if_active', $if->if_active);
-         $this->tmpl->assign('if_ifb', $if->if_ifb);
+         $tmpl->assign('if_idx', $page->id);
+         $tmpl->assign('if_name', $if->if_name);
+         $tmpl->assign('if_speed', $if->if_speed);
+         $tmpl->assign('if_active', $if->if_active);
+         $tmpl->assign('if_ifb', $if->if_ifb);
     
       }
 
-      $this->tmpl->show("interfaces_edit.tpl");
+      return $tmpl->fetch("interfaces_edit.tpl");
 
    } // showEdit()
 
@@ -125,7 +97,9 @@ class MASTERSHAPER_INTERFACES {
     */
    public function smarty_interface_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.if_list.index');
+      global $tmpl;
+
+      $index = $smarty->get_template_vars('smarty.IB.if_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -135,13 +109,13 @@ class MASTERSHAPER_INTERFACES {
         $if_idx = $this->avail_interfaces[$index];
         $if =  $this->interfaces[$if_idx];
 
-         $this->tmpl->assign('if_idx', $if_idx);
-         $this->tmpl->assign('if_name', $if->if_name);
-         $this->tmpl->assign('if_speed', $if->if_speed);
-         $this->tmpl->assign('if_active', $if->if_active);
+         $tmpl->assign('if_idx', $if_idx);
+         $tmpl->assign('if_name', $if->if_name);
+         $tmpl->assign('if_speed', $if->if_speed);
+         $tmpl->assign('if_active', $if->if_active);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.if_list.index', $index);
+         $tmpl->assign('smarty.IB.if_list.index', $index);
          $repeat = true;
       }
       else {
@@ -157,10 +131,12 @@ class MASTERSHAPER_INTERFACES {
     */
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
    
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."interfaces
             WHERE
                if_idx='". $idx ."'
@@ -179,7 +155,9 @@ class MASTERSHAPER_INTERFACES {
     */
    private function checkInterfaceExists($if_name)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT if_idx
          FROM ". MYSQL_PREFIX ."interfaces
          WHERE
@@ -189,6 +167,7 @@ class MASTERSHAPER_INTERFACES {
       }
 
       return false;
+
    } // checkInterfaceExists()
 
    /**
@@ -196,6 +175,8 @@ class MASTERSHAPER_INTERFACES {
     */
    public function store()
    {
+      global $ms, $db;
+
       isset($_POST['if_new']) && $_POST['if_new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['if_name']) || $_POST['if_name'] == "") {
@@ -213,12 +194,12 @@ class MASTERSHAPER_INTERFACES {
       else
          $_POST['if_speed'] = strtoupper($_POST['if_speed']);
 
-      if(!$this->parent->validateBandwidth($_POST['if_speed'])) {
+      if(!$ms->validateBandwidth($_POST['if_speed'])) {
          return _("Invalid bandwidth specified!");
       }
 
       if(isset($new)) {
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."interfaces (
                if_name, if_speed, if_ifb, if_active
             ) VALUES (
@@ -230,7 +211,7 @@ class MASTERSHAPER_INTERFACES {
          ");
       }
       else {
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."interfaces
             SET
                if_name='". $_POST['if_name'] ."',
@@ -251,6 +232,8 @@ class MASTERSHAPER_INTERFACES {
     */
    public function toggleStatus()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
 
@@ -259,7 +242,7 @@ class MASTERSHAPER_INTERFACES {
          else
             $new_status = 'N';
 
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."interfaces
             SET
                if_active='". $new_status ."'
@@ -276,5 +259,8 @@ class MASTERSHAPER_INTERFACES {
    } // toggleStatus()
 
 } // class MASTERSHAPER_INTERFACES
+
+$obj = new MASTERSHAPER_INTERFACES;
+$obj->handler();
 
 ?>

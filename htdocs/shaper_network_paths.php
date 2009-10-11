@@ -21,64 +21,30 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_NETPATHS {
-
-   private $db;
-   private $parent;
-   private $tmpl;
+class MASTERSHAPER_NETPATHS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_NETPATHS constructor
     *
     * Initialize the MASTERSHAPER_NETPATHS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$parent->tmpl;
+      $this->rights = 'user_manage_options';
 
    } // __construct()
-
-   /* interface output */
-   public function show()
-   {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_manage_options")) {
-         $this->parent->printError("<img src=\"". ICON_INTERFACES ."\" alt=\"interface icon\" />&nbsp;". _("Manage Network Paths"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
-
-      if(!isset($_GET['mode'])) {
-         $_GET['mode'] = "show";
-      }
-      if(!isset($_GET['idx']) ||
-         (isset($_GET['idx']) && !is_numeric($_GET['idx'])))
-         $_GET['idx'] = 0;
-
-      switch($_GET['mode']) {
-         default:
-         case 'show':
-            $this->showList();
-            break;
-         case 'new':
-         case 'edit':
-            $this->showEdit($_GET['idx']);
-            break;
-      }
-
-   } // show() 
 
    /**
     * list all netpaths
     */
-   private function showList()
+   public function showList()
    {
+      global $db, $tmpl;
+
       $this->avail_netpaths = Array();
       $this->netpaths = Array();
 
-      $res_netpaths = $this->db->db_query("
+      $res_netpaths = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."network_paths
          ORDER BY netpath_name ASC
@@ -92,37 +58,42 @@ class MASTERSHAPER_NETPATHS {
          $cnt_netpaths++;
       }
 
-      $this->tmpl->register_block("netpath_list", array(&$this, "smarty_netpath_list"));
-      $this->tmpl->show("net_paths_list.tpl");
+      $tmpl->register_block("netpath_list", array(&$this, "smarty_netpath_list"));
+      return $tmpl->fetch("network_paths_list.tpl");
    
    } // showList() 
 
    /**
     * interface for handling
     */
-   private function showEdit($idx)
+   public function showEdit()
    {
-      if($idx != 0) {
-         $np = $this->db->db_fetchSingleRow("
+      if($this->is_storing())
+         $this->store();
+
+      global $db, $tmpl, $page;
+
+      if($page->id != 0) {
+         $np = $db->db_fetchSingleRow("
             SELECT *
             FROM ". MYSQL_PREFIX ."network_paths
             WHERE
-               netpath_idx='". $idx ."'
+               netpath_idx='". $page->id ."'
          ");
 
-         $this->tmpl->assign('netpath_idx', $idx);
-         $this->tmpl->assign('netpath_name', $np->netpath_name);
-         $this->tmpl->assign('netpath_if1', $np->netpath_if1);
-         $this->tmpl->assign('netpath_if1_inside_gre', $np->netpath_if1_inside_gre);
-         $this->tmpl->assign('netpath_if2', $np->netpath_if2);
-         $this->tmpl->assign('netpath_if2_inside_gre', $np->netpath_if2_inside_gre);
-         $this->tmpl->assign('netpath_imq', $np->netpath_imq);
-         $this->tmpl->assign('netpath_active', $np->netpath_active);
+         $tmpl->assign('netpath_idx', $page->id);
+         $tmpl->assign('netpath_name', $np->netpath_name);
+         $tmpl->assign('netpath_if1', $np->netpath_if1);
+         $tmpl->assign('netpath_if1_inside_gre', $np->netpath_if1_inside_gre);
+         $tmpl->assign('netpath_if2', $np->netpath_if2);
+         $tmpl->assign('netpath_if2_inside_gre', $np->netpath_if2_inside_gre);
+         $tmpl->assign('netpath_imq', $np->netpath_imq);
+         $tmpl->assign('netpath_active', $np->netpath_active);
     
       }
 
-      $this->tmpl->register_function("if_select_list", array(&$this, "smarty_if_select_list"), false);
-      $this->tmpl->show("net_paths_edit.tpl");
+      $tmpl->register_function("if_select_list", array(&$this, "smarty_if_select_list"), false);
+      return $tmpl->fetch("network_paths_edit.tpl");
 
    } // showEdit()
 
@@ -131,7 +102,9 @@ class MASTERSHAPER_NETPATHS {
     */
    public function smarty_netpath_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.netpath_list.index');
+      global $tmpl, $ms;
+
+      $index = $smarty->get_template_vars('smarty.IB.netpath_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -141,16 +114,16 @@ class MASTERSHAPER_NETPATHS {
         $netpath_idx = $this->avail_netpaths[$index];
         $netpath =  $this->netpaths[$netpath_idx];
 
-         $this->tmpl->assign('netpath_idx', $netpath_idx);
-         $this->tmpl->assign('netpath_name', $netpath->netpath_name);
-         $this->tmpl->assign('netpath_active', $netpath->netpath_active);
-         $this->tmpl->assign('netpath_if1', $this->parent->getInterfaceName($netpath->netpath_if1));
-         $this->tmpl->assign('netpath_if1_inside_gre', $netpath->netpath_if1_inside_gre);
-         $this->tmpl->assign('netpath_if2', $this->parent->getInterfaceName($netpath->netpath_if2));
-         $this->tmpl->assign('netpath_if2_inside_gre', $netpath->netpath_if2_inside_gre);
+         $tmpl->assign('netpath_idx', $netpath_idx);
+         $tmpl->assign('netpath_name', $netpath->netpath_name);
+         $tmpl->assign('netpath_active', $netpath->netpath_active);
+         $tmpl->assign('netpath_if1', $ms->getInterfaceName($netpath->netpath_if1));
+         $tmpl->assign('netpath_if1_inside_gre', $netpath->netpath_if1_inside_gre);
+         $tmpl->assign('netpath_if2', $ms->getInterfaceName($netpath->netpath_if2));
+         $tmpl->assign('netpath_if2_inside_gre', $netpath->netpath_if2_inside_gre);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.netpath_list.index', $index);
+         $tmpl->assign('smarty.IB.netpath_list.index', $index);
          $repeat = true;
       }
       else {
@@ -166,6 +139,8 @@ class MASTERSHAPER_NETPATHS {
     */
    public function store()
    {
+      global $db;
+
       isset($_POST['netpath_new']) && $_POST['netpath_new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['netpath_name']) || $_POST['netpath_name'] == "") {
@@ -183,11 +158,11 @@ class MASTERSHAPER_NETPATHS {
       }
 
       if(isset($new)) {
-         $max_pos = $this->db->db_fetchSingleRow("
+         $max_pos = $db->db_fetchSingleRow("
             SELECT MAX(netpath_position) as pos
             FROM ". MYSQL_PREFIX ."network_paths
          ");
-         $this->db->db_query("
+         $db->db_query("
             INSERT INTO ". MYSQL_PREFIX ."network_paths (
                netpath_name, netpath_if1, netpath_if1_inside_gre,
                netpath_if2, netpath_if2_inside_gre, netpath_position,
@@ -205,7 +180,7 @@ class MASTERSHAPER_NETPATHS {
          ");
       }
       else {
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."network_paths
             SET
                netpath_name='". $_POST['netpath_name'] ."',
@@ -228,10 +203,12 @@ class MASTERSHAPER_NETPATHS {
     */
    public function delete()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
 
-         $this->db->db_query("
+         $db->db_query("
             DELETE FROM ". MYSQL_PREFIX ."network_paths
             WHERE
                netpath_idx='". $idx ."'
@@ -250,6 +227,8 @@ class MASTERSHAPER_NETPATHS {
     */
    public function toggleStatus()
    {
+      global $db;
+
       if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
          $idx = $_POST['idx'];
 
@@ -258,7 +237,7 @@ class MASTERSHAPER_NETPATHS {
          else
             $new_status = 'N';
 
-         $this->db->db_query("
+         $db->db_query("
             UPDATE ". MYSQL_PREFIX ."network_paths
             SET
                netpath_active='". $new_status ."'
@@ -279,12 +258,15 @@ class MASTERSHAPER_NETPATHS {
     */
    public function smarty_if_select_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('if_idx', $params)) {
-         $this->tmpl->trigger_error("getSLList: missing 'if_idx' parameter", E_USER_WARNING);
+         $smarty->trigger_error("getSLList: missing 'if_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
-      $result = $this->db->db_query("
+
+      $result = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."interfaces
          ORDER BY if_name ASC
@@ -307,7 +289,9 @@ class MASTERSHAPER_NETPATHS {
     */
    private function checkNetworkPathExists($netpath_name)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT netpath_idx
          FROM ". MYSQL_PREFIX ."network_paths
          WHERE
@@ -316,8 +300,12 @@ class MASTERSHAPER_NETPATHS {
          return true;
       } 
       return false;
+
    } // checkNetworkPathExists()
 
 } // class MASTERSHAPER_NETPATHS
+
+$obj = new MASTERSHAPER_NETPATHS;
+$obj->handler();
 
 ?>

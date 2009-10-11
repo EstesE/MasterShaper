@@ -21,40 +21,31 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_OPTIONS {
-
-   private $parent;
-   private $db;
-   private $tmpl;
+class MASTERSHAPER_OPTIONS extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_OPTIONS constructor
     *
     * Initialize the MASTERSHAPER_OPTIONS class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->parent = &$parent;
-      $this->db = &$parent->db;
-      $this->tmpl = &$parent->tmpl;
+      $this->page = 'user_manage_rights';
 
    } // __construct()
 
    /* interface output */
-   public function show()
+   public function showList()
    {
-      if($this->parent->getOption("authentication") == "Y" &&
-	 !$this->parent->checkPermissions("user_manage_options")) {
-      
-	 $this->parent->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
-	 return 0;
+      if($this->is_storing())
+         $this->store();
 
-      }
+      global $ms, $db, $tmpl;
 
       $this->avail_service_levels = Array();
       $this->service_levels = Array();
 
-      $res_sl = $this->db->db_query("
+      $res_sl = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."service_levels
          ORDER BY sl_name ASC
@@ -68,44 +59,45 @@ class MASTERSHAPER_OPTIONS {
          $cnt_sl++;
       }
 
-      $this->tmpl->assign('language', $this->parent->getOption("language"));
-      $this->tmpl->assign('ack_sl', $this->parent->getOption("ack_sl"));
-      $this->tmpl->assign('classifier', $this->parent->getOption("classifier"));
-      $this->tmpl->assign('qdisc', $this->parent->getOption("qdisc"));
+      $tmpl->assign('language', $ms->getOption("language"));
+      $tmpl->assign('ack_sl', $ms->getOption("ack_sl"));
+      $tmpl->assign('classifier', $ms->getOption("classifier"));
+      $tmpl->assign('qdisc', $ms->getOption("qdisc"));
 
-      $this->tmpl->assign('esfq_default_perturb', $this->parent->getOption("esfq_default_perturb"));
-      $this->tmpl->assign('esfq_default_limit', $this->parent->getOption("esfq_default_limit"));
-      $this->tmpl->assign('esfq_default_depth', $this->parent->getOption("esfq_default_depth"));
-      $this->tmpl->assign('esfq_default_divisor', $this->parent->getOption("esfq_default_divisor"));
-      $this->tmpl->assign('esfq_default_hash', $this->parent->getOption("esfq_default_hash"));
-      $this->tmpl->assign('filter', $this->parent->getOption("filter"));
-      $this->tmpl->assign('msmode', $this->parent->getOption("msmode"));
-      $this->tmpl->assign('authentication', $this->parent->getOption("authentication"));
+      $tmpl->assign('esfq_default_perturb', $ms->getOption("esfq_default_perturb"));
+      $tmpl->assign('esfq_default_limit', $ms->getOption("esfq_default_limit"));
+      $tmpl->assign('esfq_default_depth', $ms->getOption("esfq_default_depth"));
+      $tmpl->assign('esfq_default_divisor', $ms->getOption("esfq_default_divisor"));
+      $tmpl->assign('esfq_default_hash', $ms->getOption("esfq_default_hash"));
+      $tmpl->assign('filter', $ms->getOption("filter"));
+      $tmpl->assign('msmode', $ms->getOption("msmode"));
+      $tmpl->assign('authentication', $ms->getOption("authentication"));
 
-      $this->tmpl->register_block("service_level_list", array(&$this, "smarty_opt_sl_list"));
-      $this->tmpl->show("options.tpl");
+      $tmpl->register_block("service_level_list", array(&$this, "smarty_opt_sl_list"));
+      return $tmpl->fetch("options.tpl");
 
    } // show()
 
    public function store()
    {
-      $this->parent->setOption("ack_sl", $_POST['ack_sl']);
-      $this->parent->setOption("classifier", $_POST['classifier']);
-      $this->parent->setOption("qdisc", $_POST['qdisc']);
-      $this->parent->setOption("filter", $_POST['filter']);
-      $this->parent->setOption("authentication", $_POST['authentication']);
-      $this->parent->setOption("msmode", $_POST['msmode']);
-      $this->parent->setOption("language", $_POST['language']);
+      global $ms, $db;
+      $ms->setOption("ack_sl", $_POST['ack_sl']);
+      $ms->setOption("classifier", $_POST['classifier']);
+      $ms->setOption("qdisc", $_POST['qdisc']);
+      $ms->setOption("filter", $_POST['filter']);
+      $ms->setOption("authentication", $_POST['authentication']);
+      $ms->setOption("msmode", $_POST['msmode']);
+      $ms->setOption("language", $_POST['language']);
 
       if($_POST['qdisc'] == "ESFQ") {
-         $this->parent->setOption("esfq_default_perturb", $_POST['esfq_default_perturb']);
-         $this->parent->setOption("esfq_default_limit", $_POST['esfq_default_limit']);
-         $this->parent->setOption("esfq_default_depth", $_POST['esfq_default_depth']);
-         $this->parent->setOption("esfq_default_divisor", $_POST['esfq_default_divisor']);
-         $this->parent->setOption("esfq_default_hash", $_POST['esfq_default_hash']);
+         $ms->setOption("esfq_default_perturb", $_POST['esfq_default_perturb']);
+         $ms->setOption("esfq_default_limit", $_POST['esfq_default_limit']);
+         $ms->setOption("esfq_default_depth", $_POST['esfq_default_depth']);
+         $ms->setOption("esfq_default_divisor", $_POST['esfq_default_divisor']);
+         $ms->setOption("esfq_default_hash", $_POST['esfq_default_hash']);
       }
 
-      print "ok";
+      return "ok";
 
    } // store()
 
@@ -114,20 +106,20 @@ class MASTERSHAPER_OPTIONS {
    {
 
       /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-	 !$this->parent->checkPermissions("user_manage_options")) {
+      if($ms->getOption("authentication") == "Y" &&
+	 !$ms->checkPermissions("user_manage_options")) {
 
-	 $this->parent->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
+	 $ms->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
 	 return 0;
 
       }
 
       if(!isset($_GET['restoreit'])) {
 
-         $this->parent->startTable("<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;". _("Restore MasterShaper Configuration"));
+         $ms->startTable("<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;". _("Restore MasterShaper Configuration"));
 
 ?>
-  <form enctype="multipart/form-data" action="<?php print $this->parent->self ."?mode=". $this->parent->mode; ?>&amp;restoreit=1" method="post">
+  <form enctype="multipart/form-data" action="<?php print $ms->self ."?mode=". $ms->mode; ?>&amp;restoreit=1" method="post">
    <table style="width: 100%;" class="withborder2">
     <tr>
      <td class="sysmessage" style="text-align: center;">
@@ -146,7 +138,7 @@ class MASTERSHAPER_OPTIONS {
    </table>
   </form>
 <?php
-         $this->parent->closeTable();
+         $ms->closeTable();
       }
       else {
 
@@ -175,7 +167,7 @@ class MASTERSHAPER_OPTIONS {
             }
          }	
 
-         $this->parent->goStart();
+         $ms->goStart();
 
       }
 
@@ -186,11 +178,11 @@ class MASTERSHAPER_OPTIONS {
    {
       switch($set) {
          case 'Settings':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."settings (setting_key, setting_value) "
+            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."settings (setting_key, setting_value) "
                                ."VALUES ('". $object->setting_key ."', '". $object->setting_value ."')");
             break;
 	 case 'Users':
-	    $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."users (user_idx, user_name, user_pass, user_manage_chains, "
+	    $db->db_query("INSERT INTO ". MYSQL_PREFIX ."users (user_idx, user_name, user_pass, user_manage_chains, "
 	       ."user_manage_pipes, user_manage_filters, user_manage_ports, user_manage_protocols, "
                ."user_manage_targets, user_manage_users, user_manage_options, user_manage_servicelevels, "
                ."user_show_rules, user_load_rules, user_show_monitor, user_active) VALUES ("
@@ -212,18 +204,18 @@ class MASTERSHAPER_OPTIONS {
 	       ."'". $object->user_active ."')");
 	    break;
          case 'Protocols':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."protocols (proto_name, proto_number, "
+            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."protocols (proto_name, proto_number, "
                                ."proto_user_defined) VALUES ('". $object->proto_name ."', "
                                ."'". $object->proto_name ."', 'Y')");
             break;
          case 'Ports':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."ports (port_name, port_desc, port_number, "
+            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."ports (port_name, port_desc, port_number, "
                                ."port_user_defined) VALUES ('". $object->port_name
                                ."', '". $object->port_desc ."', '". $object->port_number 
                                ."', 'Y')");
             break;
          case 'Servicelevels':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."service_levels (sl_name, sl_htb_bw_in_rate, "
+            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."service_levels (sl_name, sl_htb_bw_in_rate, "
                                ."sl_htb_bw_in_ceil, sl_htb_bw_in_burst, sl_htb_bw_out_rate, "
                                ."sl_htb_bw_out_ceil, sl_htb_bw_out_burst, sl_htb_priority, "
                                ."sl_hfsc_in_umax, sl_hfsc_in_dmax, sl_hfsc_in_rate, sl_hfsc_in_ulrate, "
@@ -261,23 +253,23 @@ class MASTERSHAPER_OPTIONS {
 			       ."'". $object->sl_esfq_hash ."')");
             break;
          case 'Targets':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."targets (target_name, target_match, target_ip, target_mac) "
+            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."targets (target_name, target_match, target_ip, target_mac) "
                                ."VALUES ('". $object->target_name ."', '". $object->target_match ."', "
 			       ."'". $object->target_ip ."', '". $object->target_mac ."')");
 
-            $id = $this->db->db_getid();
+            $id = $db->db_getid();
 	    $members = split('#', $object->target_members);
 	    foreach($members as $member) {
-	       $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_target_groups (atg_group_idx, atg_target_idx) "
-				    ."VALUES ('". $id ."', '". $this->parent->getTargetByName($member) ."')");
+	       $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_target_groups (atg_group_idx, atg_target_idx) "
+				    ."VALUES ('". $id ."', '". $ms->getTargetByName($member) ."')");
 	    }
             break;
 	 case 'L7Proto':
-	    $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."l7_protocols (l7proto_idx, l7proto_name) "
+	    $db->db_query("INSERT INTO ". MYSQL_PREFIX ."l7_protocols (l7proto_idx, l7proto_name) "
 	                       ."VALUES ('". $object->l7proto_idx ."', '". $object->l7proto_name ."')");
 	    break;
          case 'Filters':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."filters (filter_idx, filter_name, filter_protocol_id, filter_tos, "
+            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."filters (filter_idx, filter_name, filter_protocol_id, filter_tos, "
                                ."filter_tcpflag_syn, filter_tcpflag_ack, filter_tcpflag_fin, "
 			       ."filter_tcpflag_rst, filter_tcpflag_urg, filter_tcpflag_psh, "
 			       ."filter_packet_length, filter_p2p_edk, filter_p2p_kazaa, "
@@ -289,7 +281,7 @@ class MASTERSHAPER_OPTIONS {
 			       ."filter_time_day_sun, filter_match_ftp_data, filter_active) "
                                ."VALUES ('". $object->filter_idx ."', "
 			       ."'". $object->filter_name ."', "
-			       ."'". $this->parent->getProtocolByName($object->filter_protocol_id) ."', "
+			       ."'". $ms->getProtocolByName($object->filter_protocol_id) ."', "
 			       ."'". $object->filter_tos ."', "
 			       ."'". $object->filter_tcpflag_syn ."', "
 			       ."'". $object->filter_tcpflag_ack ."', "
@@ -320,40 +312,40 @@ class MASTERSHAPER_OPTIONS {
 			       ."'". $object->filter_match_ftp_data ."', "
 			       ."'". $object->filter_active ."')");
 
-            $id = $this->db->db_getid();
+            $id = $db->db_getid();
             $ports = split('#', $object->filter_ports);
             foreach($ports as $port) {
-               $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (afp_filter_idx, afp_port_idx) "
-                                  ."VALUES ('". $id ."', '". $this->parent->getPortByName($port) ."')");
+               $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (afp_filter_idx, afp_port_idx) "
+                                  ."VALUES ('". $id ."', '". $ms->getPortByName($port) ."')");
             }
 	    $l7protos = split('#', $object->l7_protocols);
 	    foreach($l7protos as $l7proto) {
-	       $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (afl7_filter_idx, afl7_l7proto_idx) "
-	                          ."VALUES ('". $id ."', '". $this->parent->getL7ProtocolByName($l7proto) ."')");
+	       $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (afl7_filter_idx, afl7_l7proto_idx) "
+	                          ."VALUES ('". $id ."', '". $ms->getL7ProtocolByName($l7proto) ."')");
             }
             break;
          case 'Chains':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."chains (chain_name, chain_active, chain_sl_idx, "
+            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."chains (chain_name, chain_active, chain_sl_idx, "
                                ."chain_src_target, chain_dst_target, chain_position, chain_direction, "
                                ."chain_fallback_idx) VALUES ('". $object->chain_name 
                                ."', '". $object->chain_active 
-                               ."', '". $this->parent->getServiceLevelByName($object->sl_name) 
-                               ."', '". $this->parent->getTargetByName($object->src_name) 
-                               ."', '". $this->parent->getTargetByName($object->dst_name) 
+                               ."', '". $ms->getServiceLevelByName($object->sl_name) 
+                               ."', '". $ms->getTargetByName($object->src_name) 
+                               ."', '". $ms->getTargetByName($object->dst_name) 
                                ."', '". $object->chain_position ."', '". $object->chain_direction 
-                               ."', '". $this->parent->getServiceLevelByName($object->fb_name) ."')");
+                               ."', '". $ms->getServiceLevelByName($object->fb_name) ."')");
             break;
          case 'Pipes':
-            $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."pipes (pipe_name, pipe_sl_idx, "
+            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."pipes (pipe_name, pipe_sl_idx, "
                                ."pipe_position, pipe_src_target, pipe_dst_target, pipe_direction, pipe_active)
              VALUES ('". $object->pipe_name 
-                               ."', '". $this->parent->getServiceLevelByName($object->sl_name) 
+                               ."', '". $ms->getServiceLevelByName($object->sl_name) 
                                ."', '". $object->pipe_position ."', '". $object->pipe_src_target ."', '". $object->pipe_dst_target ."', '". $object->pipe_direction ."', '". $object->pipe_active ."')");
-            $id = $this->db->db_getid();
+            $id = $db->db_getid();
             $filters = split('#', $object->filters);
             foreach($filters as $filter) {
-               $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (apf_pipe_idx, apf_filter_idx) "
-                                  ."VALUES ('". $id ."', '". $this->parent->getFilterByName($filter) ."')");
+               $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (apf_pipe_idx, apf_filter_idx) "
+                                  ."VALUES ('". $id ."', '". $ms->getFilterByName($filter) ."')");
             }
             break;
       }
@@ -365,42 +357,42 @@ class MASTERSHAPER_OPTIONS {
    {
 
       /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-	 !$this->parent->checkPermissions("user_manage_options")) {
+      if($ms->getOption("authentication") == "Y" &&
+	 !$ms->checkPermissions("user_manage_options")) {
 
-	 $this->parent->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
+	 $ms->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
 	 return 0;
 
       }
 					     
       if(!isset($_GET['doit']) && !$doit) {
-         $this->parent->printYesNo("<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;". _("Reset MasterShaper Configuration"),
+         $ms->printYesNo("<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;". _("Reset MasterShaper Configuration"),
 	                          _("This operation will completely reset your current MasterShaper configuration!<br />All your current settings, rules, chains, pipes, ... will be deleted !!!<br /><br />Of course this will also reset the version information of MasterShaper, you will be<br />forwarded to MasterShaper Installer after you have confirmed this procedure."));
       }
       else {
 
-         $this->db->db_truncate_table(MYSQL_PREFIX ."assign_ports_to_filters");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."assign_filters_to_pipes");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."assign_target_groups");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."chains");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."pipes");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."service_levels");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."filters");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."settings"); 
-         $this->db->db_truncate_table(MYSQL_PREFIX ."stats");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."targets");
-         $this->db->db_truncate_table(MYSQL_PREFIX ."tc_ids");
-	 $this->db->db_truncate_table(MYSQL_PREFIX ."l7_protocols");
-	 $this->db->db_truncate_table(MYSQL_PREFIX ."assign_l7_protocols_to_filters");
-	 $this->db->db_truncate_table(MYSQL_PREFIX ."users");
-	 $this->db->db_truncate_table(MYSQL_PREFIX ."interfaces");
-	 $this->db->db_truncate_table(MYSQL_PREFIX ."network_paths");
-         $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."ports WHERE port_user_defined='Y'");
-         $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."protocols WHERE proto_user_defined='Y'");
+         $db->db_truncate_table(MYSQL_PREFIX ."assign_ports_to_filters");
+         $db->db_truncate_table(MYSQL_PREFIX ."assign_filters_to_pipes");
+         $db->db_truncate_table(MYSQL_PREFIX ."assign_target_groups");
+         $db->db_truncate_table(MYSQL_PREFIX ."chains");
+         $db->db_truncate_table(MYSQL_PREFIX ."pipes");
+         $db->db_truncate_table(MYSQL_PREFIX ."service_levels");
+         $db->db_truncate_table(MYSQL_PREFIX ."filters");
+         $db->db_truncate_table(MYSQL_PREFIX ."settings"); 
+         $db->db_truncate_table(MYSQL_PREFIX ."stats");
+         $db->db_truncate_table(MYSQL_PREFIX ."targets");
+         $db->db_truncate_table(MYSQL_PREFIX ."tc_ids");
+	 $db->db_truncate_table(MYSQL_PREFIX ."l7_protocols");
+	 $db->db_truncate_table(MYSQL_PREFIX ."assign_l7_protocols_to_filters");
+	 $db->db_truncate_table(MYSQL_PREFIX ."users");
+	 $db->db_truncate_table(MYSQL_PREFIX ."interfaces");
+	 $db->db_truncate_table(MYSQL_PREFIX ."network_paths");
+         $db->db_query("DELETE FROM ". MYSQL_PREFIX ."ports WHERE port_user_defined='Y'");
+         $db->db_query("DELETE FROM ". MYSQL_PREFIX ."protocols WHERE proto_user_defined='Y'");
 
          /* If invoked by "Reset Configuration" and not "Restore Configuration" */
          if(isset($_GET['doit']))
-	    $this->parent->goBack();
+	    $ms->goBack();
 
       }
 
@@ -416,19 +408,19 @@ class MASTERSHAPER_OPTIONS {
    {
 
       /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-	 !$this->parent->checkPermissions("user_manage_options")) {
+      if($ms->getOption("authentication") == "Y" &&
+	 !$ms->checkPermissions("user_manage_options")) {
 
-	 $this->parent->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
+	 $ms->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
 	 return 0;
 
       }
 
       if(!isset($_GET['doit'])) {
 
-         $this->parent->startTable("<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;". _("Update Layer7 Protocols"));
+         $ms->startTable("<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;". _("Update Layer7 Protocols"));
 ?>
-   <form action="<?php print $this->parent->self ."?mode=". $this->parent->mode ."&amp;doit=1"; ?>" method="POST">
+   <form action="<?php print $ms->self ."?mode=". $ms->mode ."&amp;doit=1"; ?>" method="POST">
    <table style="width: 100%; text-align: center;" class="withborder2">
     <tr>
      <td>
@@ -444,12 +436,12 @@ class MASTERSHAPER_OPTIONS {
    </table>
    </form>
 <?php
-	 $this->parent->closeTable();
+	 $ms->closeTable();
 
       }
       else {
 
-	 $this->parent->startTable("<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;". _("Update Layer7 Protocols"));
+	 $ms->startTable("<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;". _("Update Layer7 Protocols"));
 ?>
    <table style="width: 100%; text-align: center;" class="withborder2">
     <tr>
@@ -471,10 +463,10 @@ class MASTERSHAPER_OPTIONS {
 	    foreach($protocols as $protocol) {
 
 	       // Check if already in database
-	       if(!$this->db->db_fetchSingleRow("SELECT l7proto_idx FROM ". MYSQL_PREFIX ."l7_protocols WHERE "
+	       if(!$db->db_fetchSingleRow("SELECT l7proto_idx FROM ". MYSQL_PREFIX ."l7_protocols WHERE "
 					      ."l7proto_name LIKE '". $protocol ."'")) {
 
-		  $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."l7_protocols (l7proto_name) VALUES "
+		  $db->db_query("INSERT INTO ". MYSQL_PREFIX ."l7_protocols (l7proto_name) VALUES "
 				     ."('". $protocol ."')");
 
 		  $new++;
@@ -484,12 +476,12 @@ class MASTERSHAPER_OPTIONS {
 
 	    if(count($protocols) > 0) {
 
-	       $result = $this->db->db_query("SELECT l7proto_idx, l7proto_name FROM ". MYSQL_PREFIX ."l7_protocols");
+	       $result = $db->db_query("SELECT l7proto_idx, l7proto_name FROM ". MYSQL_PREFIX ."l7_protocols");
 	       while($row = $result->fetchRow()) {
 
 		  if(!in_array($row->l7proto_name, $protocols)) {
 
-		     $this->db->db_query("DELETE FROM ". MYSQL_PREFIX ."l7_protocols WHERE l7proto_idx='". $row->l7proto_idx ."'");
+		     $db->db_query("DELETE FROM ". MYSQL_PREFIX ."l7_protocols WHERE l7proto_idx='". $row->l7proto_idx ."'");
 		     $deleted++;
 
 		  }
@@ -507,12 +499,12 @@ class MASTERSHAPER_OPTIONS {
 	 }
 ?>
       <br />
-      <a href="<?php print $this->parent->self; ?>"><? print _("Back"); ?></a>
+      <a href="<?php print $ms->self; ?>"><? print _("Back"); ?></a>
      </td>
     </tr>
    </table>
 <?php
-	 $this->parent->closeTable();
+	 $ms->closeTable();
 
       }
 
@@ -559,7 +551,9 @@ class MASTERSHAPER_OPTIONS {
     */
    public function smarty_opt_sl_list($params, $content, &$smarty, &$repeat)
    {
-      $index = $this->tmpl->get_template_vars('smarty.IB.sl_list.index');
+      global $tmpl;
+
+      $index = $smarty->get_template_vars('smarty.IB.sl_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -569,11 +563,11 @@ class MASTERSHAPER_OPTIONS {
          $sl_idx = $this->avail_service_levels[$index];
          $sl =  $this->service_levels[$sl_idx];
 
-         $this->tmpl->assign('sl_idx', $sl_idx);
-         $this->tmpl->assign('sl_name', $sl->sl_name);
+         $tmpl->assign('sl_idx', $sl_idx);
+         $tmpl->assign('sl_name', $sl->sl_name);
 
          $index++;
-         $this->tmpl->assign('smarty.IB.sl_list.index', $index);
+         $tmpl->assign('smarty.IB.sl_list.index', $index);
          $repeat = true;
       }
       else {
@@ -585,5 +579,8 @@ class MASTERSHAPER_OPTIONS {
    } // smarty_sl_list
 
 } // class MASTERSHAPER_OPTIONS
+
+$obj = new MASTERSHAPER_OPTIONS;
+$obj->handler();
 
 ?>

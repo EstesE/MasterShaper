@@ -3,28 +3,28 @@
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>{$page_title}</title>
-  <link href="shaper_style.css" type="text/css" rel="stylesheet" />
-  <script type="text/javascript" src="rpc.php?mode=init&amp;client=all"></script>
-  <script type="text/javascript" src="shaper.js"></script>
-  <link rel="shortcut icon" href="icons/favicon.ico" type="image/png" />
-  <link rel="icon" href="icons/favicon.ico" type="image/png" />
-  <!--[if IE]><script language="javascript" type="text/javascript" src="excanvas.js"></script><![endif]-->
-  <script language="javascript" type="text/javascript" src="jqplot/jquery-1.3.2.min.js"></script>
-  <script language="javascript" type="text/javascript" src="jqplot/jquery.jqplot.min.js"></script>
-  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.cursor.min.js"></script>
-  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-  <!--<script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>-->
-  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.pieRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="jqplot/plugins/jqplot.barRenderer.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="jqplot/jquery.jqplot.css" />
+  <link href="{$web_path}/shaper_style.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="{$web_path}/rpc.php?mode=init&amp;client=all"></script>
+  <script type="text/javascript" src="{$web_path}/shaper.js"></script>
+  <link rel="shortcut icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
+  <link rel="icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
+  <!--[if IE]><script language="javascript" type="text/javascript" src="{$web_path}/excanvas.js"></script><![endif]-->
+  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/jquery-1.3.2.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/jquery.jqplot.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.cursor.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+  <!--<script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>-->
+  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="{$web_path}/jqplot/jquery.jqplot.css" />
  </head>
- <body onload="init_shaper();">
+ <body>
   <!-- header cell -->
   <div style="height: 10px;"></div>
   <div style="width: 100%; height: 70px;">
-  <img src="images/ms_logo.png"></div>
+  <img src="{$web_path}/images/ms_logo.png"></div>
   <!-- /header cell -->   
 
   <!-- page title -->
@@ -34,7 +34,7 @@
     <tr>
      <td style="width: 15px;"></td>
      <td style="vertical-align: middle;">
-      <div id="page_title"></div>
+      <div id="main_title">{$main_title}</div>
      </td>
     </tr>
    </table>
@@ -43,7 +43,7 @@
   <!-- /page title -->
 
   <div id="menubox">
-   <div id="main_menu"></div>
+   <div id="main_menu">{$main_menu}</div>
   </div>
 
   <!-- grey border line below header cell -->
@@ -53,7 +53,7 @@
    <table style="height: 30px;">
     <tr>
      <td>
-      <div id="submenu"></div>
+      <div id="sub_menu">{$sub_menu}</div>
      </td>
     </tr>
    </table>

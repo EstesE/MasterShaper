@@ -23,11 +23,9 @@
 
 class MASTERSHAPER_TMPL extends Smarty {
 
-   var $parent;
-
-   public function __construct($parent)
+   public function __construct()
    {
-      $this->parent = &$parent;
+      global $ms;
 
       $this->Smarty();
       $this->template_dir = BASE_PATH .'/templates';
@@ -36,38 +34,40 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->cache_dir    = BASE_PATH .'/smarty_cache';
 
       if(!is_writeable($this->compile_dir)) {
-         print "Smarty compile directory ". $this->compile_dir ." is not writeable for the current user (". $this->parent->getuid() .").<br />\n";
+         print "Smarty compile directory ". $this->compile_dir ." is not writeable for the current user (". $ms->getuid() .").<br />\n";
          print "Please check that the permissions are set correctly to this directory.<br />\n";
          exit(1);
       }
 
-      $this->assign('icon_chains', 'icons/flag_blue.gif');
-      $this->assign('icon_options', 'icons/options.gif');
-      $this->assign('icon_pipes', 'icons/flag_pink.gif');
-      $this->assign('icon_ports', 'icons/flag_orange.gif');
-      $this->assign('icon_protocols', 'icons/flag_red.gif');
-      $this->assign('icon_servicelevels', 'icons/flag_yellow.gif');
-      $this->assign('icon_filters', 'icons/flag_green.gif');
-      $this->assign('icon_targets', 'icons/flag_purple.gif');
-      $this->assign('icon_delete', 'icons/delete.gif');
-      $this->assign('icon_active', 'icons/active.gif');
-      $this->assign('icon_inactive', 'icons/inactive.gif');
-      $this->assign('icon_arrow_left', 'icons/arrow_left.gif');
-      $this->assign('icon_chains_arrow_up', 'icons/ms_chains_arrow_up_14.gif');
-      $this->assign('icon_chains_arrow_down', 'icons/ms_chains_arrow_down_14.gif');
-      $this->assign('icon_pipes_arrow_up', 'icons/ms_pipes_arrow_up_14.gif');
-      $this->assign('icon_pipes_arrow_down', 'icons/ms_pipes_arrow_down_14.gif');
-      $this->assign('icon_users', 'icons/ms_users_14.gif');
-      $this->assign('icon_about', 'icons/home.gif');
-      $this->assign('icon_home', 'icons/home.gif');
-      $this->assign('icon_new', 'icons/page_white.gif');
-      $this->assign('icon_monitor', 'icons/chart_pie.gif');
-      $this->assign('icon_shaper_start', 'icons/enable.gif');
-      $this->assign('icon_shaper_stop', 'icons/disable.gif');
-      $this->assign('icon_bandwidth', 'icons/bandwidth.gif');
-      $this->assign('icon_update', 'icons/update.gif');
-      $this->assign('icon_interfaces', 'icons/network_card.gif');
-      $this->assign('icon_treeend', 'icons/tree_end.gif');
+      $this->assign('icon_chains', WEB_PATH .'/icons/flag_blue.gif');
+      $this->assign('icon_options', WEB_PATH .'/icons/options.gif');
+      $this->assign('icon_pipes', WEB_PATH .'/icons/flag_pink.gif');
+      $this->assign('icon_ports', WEB_PATH .'/icons/flag_orange.gif');
+      $this->assign('icon_protocols', WEB_PATH .'/icons/flag_red.gif');
+      $this->assign('icon_servicelevels', WEB_PATH .'/icons/flag_yellow.gif');
+      $this->assign('icon_filters', WEB_PATH .'/icons/flag_green.gif');
+      $this->assign('icon_targets', WEB_PATH .'/icons/flag_purple.gif');
+      $this->assign('icon_delete', WEB_PATH .'/icons/delete.gif');
+      $this->assign('icon_active', WEB_PATH .'/icons/active.gif');
+      $this->assign('icon_inactive', WEB_PATH .'/icons/inactive.gif');
+      $this->assign('icon_arrow_left', WEB_PATH .'/icons/arrow_left.gif');
+      $this->assign('icon_arrow_right', WEB_PATH .'/icons/arrow_right.gif');
+      $this->assign('icon_chains_arrow_up', WEB_PATH .'/icons/ms_chains_arrow_up_14.gif');
+      $this->assign('icon_chains_arrow_down', WEB_PATH .'/icons/ms_chains_arrow_down_14.gif');
+      $this->assign('icon_pipes_arrow_up', WEB_PATH .'/icons/ms_pipes_arrow_up_14.gif');
+      $this->assign('icon_pipes_arrow_down', WEB_PATH .'/icons/ms_pipes_arrow_down_14.gif');
+      $this->assign('icon_users', WEB_PATH .'/icons/ms_users_14.gif');
+      $this->assign('icon_about', WEB_PATH .'/icons/home.gif');
+      $this->assign('icon_home', WEB_PATH .'/icons/home.gif');
+      $this->assign('icon_new', WEB_PATH .'/icons/page_white.gif');
+      $this->assign('icon_monitor', WEB_PATH .'/icons/chart_pie.gif');
+      $this->assign('icon_shaper_start', WEB_PATH .'/icons/enable.gif');
+      $this->assign('icon_shaper_stop', WEB_PATH .'/icons/disable.gif');
+      $this->assign('icon_bandwidth', WEB_PATH .'/icons/bandwidth.gif');
+      $this->assign('icon_update', WEB_PATH .'/icons/update.gif');
+      $this->assign('icon_interfaces', WEB_PATH .'/icons/network_card.gif');
+      $this->assign('icon_treeend', WEB_PATH .'/icons/tree_end.gif');
+      $this->assign('web_path', WEB_PATH);
 
       $this->register_function("start_table", array(&$this, "smarty_startTable"), false); 
       $this->register_function("page_end", array(&$this, "smarty_page_end"), false); 
@@ -112,38 +112,45 @@ class MASTERSHAPER_TMPL extends Smarty {
 
    public function smarty_year_select($params, &$smarty)
    {
-      print $this->parent->getYearList($params['current']); 
+      global $ms;
+      print $ms->getYearList($params['current']); 
    } // smarty_year_select()
 
    public function smarty_month_select($params, &$smarty)
    {
-      print $this->parent->getMonthList($params['current']); 
+      global $ms;
+      print $ms->getMonthList($params['current']); 
    } // smarty_month_select()
 
    public function smarty_day_select($params, &$smarty)
    {
-      print $this->parent->getDayList($params['current']); 
+      global $ms;
+      print $ms->getDayList($params['current']); 
    } // smarty_day_select()
 
    public function smarty_hour_select($params, &$smarty)
    {
-      print $this->parent->getHourList($params['current']); 
+      global $ms;
+      print $ms->getHourList($params['current']); 
    } // smarty_hour_select()
 
    public function smarty_minute_select($params, &$smarty)
    {
-      print $this->parent->getMinuteList($params['current']); 
+      global $ms;
+      print $ms->getMinuteList($params['current']); 
    } // smarty_minute_select()
 
    public function smarty_chain_select_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('chain_idx', $params)) {
          $this->trigger_error("smarty_chain_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $result = $this->parent->db->db_query("
+      $result = $db->db_query("
          SELECT
             *
          FROM
@@ -164,13 +171,15 @@ class MASTERSHAPER_TMPL extends Smarty {
 
    public function smarty_pipe_select_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('pipe_idx', $params)) {
          $this->trigger_error("smarty_pipe_select_list: missing 'pipe_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $result = $this->parent->db->db_query("
+      $result = $db->db_query("
          SELECT
             *
          FROM
@@ -191,13 +200,15 @@ class MASTERSHAPER_TMPL extends Smarty {
 
    public function smarty_target_select_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('target_idx', $params)) {
          $this->trigger_error("smarty_target_select_list: missing 'target_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $result = $this->parent->db->db_query("
+      $result = $db->db_query("
          SELECT target_idx, target_name
          FROM ". MYSQL_PREFIX ."targets
          ORDER BY target_name
@@ -217,13 +228,15 @@ class MASTERSHAPER_TMPL extends Smarty {
 
    public function smarty_service_level_select_list($params, &$smarty)
    {
+      global $ms, $db;
+
       if(!array_key_exists('sl_idx', $params)) {
          $this->trigger_error("smarty_service_level_select_list: missing 'sl_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $result = $this->parent->db->db_query("
+      $result = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."service_levels
          ORDER BY sl_name ASC
@@ -234,7 +247,7 @@ class MASTERSHAPER_TMPL extends Smarty {
          if($row->sl_idx == $params['sl_idx']) {
             $string.= " selected=\"selected\"";
          }
-         switch($this->parent->getOption("classifier")) {
+         switch($ms->getOption("classifier")) {
             case 'HTB':
                $string.= ">". $row->sl_name ." (in: ". $row->sl_htb_bw_in_rate ."kbit/s, out: ". $row->sl_htb_bw_out_rate ."kbit/s)</option>\n";
                break;
@@ -254,13 +267,15 @@ class MASTERSHAPER_TMPL extends Smarty {
 
    public function smarty_network_path_select_list($params, &$smarty)
    {
+      global $db;
+
       if(!array_key_exists('np_idx', $params)) {
          $this->trigger_error("smarty_network_path_select_list: missing 'np_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $result = $this->parent->db->db_query("
+      $result = $db->db_query("
          SELECT *
          FROM ". MYSQL_PREFIX ."network_paths
          ORDER BY netpath_name ASC
