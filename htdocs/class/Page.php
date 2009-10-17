@@ -116,6 +116,13 @@ class Page {
          'load-debug',
          'unload',
          'about',
+         'mode',
+         'chains',
+         'chains-jqPlot',
+         'pipes',
+         'pipes-jqPlot',
+         'bandwidth',
+         'bandwidth-jqPlot',
       );
 
       if(in_array($action, $valid_actions))

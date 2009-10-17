@@ -24,7 +24,6 @@
 require_once "shaper_page.php";
 require_once "shaper_cfg.php";
 require_once "shaper_db.php";
-require_once "shaper_monitor.php";
 
 require_once "class/Rewriter.php";
 require_once "class/Page.php";
@@ -311,13 +310,19 @@ class MASTERSHAPER {
             break;
 
          case 'Monitoring':
+         case 'Monitoring Chains':
+         case 'Monitoring Pipes':
+         case 'Monitoring Bandwidth':
+         case 'Monitoring Chains jqPlot':
+         case 'Monitoring Pipes jqPlot':
+         case 'Monitoring Bandwidth jqPlot':
             $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('chains'), WEB_PATH ."/icons/flag_blue.gif", _("Chains"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('pipes'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('bandwidth'), WEB_PATH ."/icons/bandwidth.gif", _("Bandwidth"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('chainsjqp'), WEB_PATH ."/icons/flag_blue.gif", _("Chains jqPlot"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('pipesjqp'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes jqPlot"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('bandwidthjqp'), WEB_PATH ."/icons/bandwidth.gif", _("Bandwidth jqPlot"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Chains'), WEB_PATH ."/icons/flag_blue.gif", _("Chains"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Pipes'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Bandwidth'), WEB_PATH ."/icons/bandwidth.gif", _("Bandwidth"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Chains jqPlot'), WEB_PATH ."/icons/flag_blue.gif", _("Chains jqPlot"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Pipes jqPlot'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes jqPlot"));
+            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Bandwidth jqPlot'), WEB_PATH ."/icons/bandwidth.gif", _("Bandwidth jqPlot"));
             $string.= "</tr></table>\n";
             break;
 

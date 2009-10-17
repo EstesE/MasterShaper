@@ -21,11 +21,8 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_MONITOR {
+class MASTERSHAPER_MONITOR extends MASTERSHAPER_PAGE {
 
-   private $db;
-   private $parent;
-   private $tmpl;
    private $total;
    private $names;
 
@@ -34,11 +31,9 @@ class MASTERSHAPER_MONITOR {
     *
     * Initialize the MASTERSHAPER_MONITOR class
     */
-   public function __construct(&$parent)
+   public function __construct()
    {
-      $this->db = $parent->db;
-      $this->parent = $parent;
-      $this->tmpl = $parent->tmpl;
+      $this->rights = 'user_show_monitor';
 
       $this->total = Array();
       $this->names = Array();
@@ -46,16 +41,11 @@ class MASTERSHAPER_MONITOR {
    } // __construct()
 
    /* interface output */
-   public function show($mode)
+   public function showList()
    {
-      /* If authentication is enabled, check permissions */
-      if($this->parent->getOption("authentication") == "Y" &&
-         !$this->parent->checkPermissions("user_show_monitor")) {
-         $this->parent->printError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;Monitoring", "You do not have enough permissions to access this module!");
-         return 0;
-      }
+      global $tmpl, $page;
 
-      $_SESSION['mode'] = $mode;
+      $_SESSION['mode'] = $page->action;
 
       // graph URL
       $image_loc = WEB_PATH ."/shaper_graph.php";
@@ -100,25 +90,27 @@ class MASTERSHAPER_MONITOR {
 
       $image_loc.= "?uniqid=". mktime();
    
-      $this->tmpl->assign('monitor', $_SESSION['mode']);
-      $this->tmpl->assign('view', $view);
-      $this->tmpl->assign('image_loc', $image_loc);
+      $tmpl->assign('monitor', $_SESSION['mode']);
+      $tmpl->assign('view', $view);
+      $tmpl->assign('image_loc', $image_loc);
       if(isset($_SESSION['graphmode']))
-         $this->tmpl->assign('graphmode', $_SESSION['graphmode']);
+         $tmpl->assign('graphmode', $_SESSION['graphmode']);
       if(isset($_SESSION['scalemode']))
-         $this->tmpl->assign('scalemode', $_SESSION['scalemode']);
+         $tmpl->assign('scalemode', $_SESSION['scalemode']);
 
-      $this->tmpl->register_function("interface_select_list", array(&$this, "smarty_interface_select_list"), false);
-      $this->tmpl->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
+      $tmpl->register_function("interface_select_list", array(&$this, "smarty_interface_select_list"), false);
+      $tmpl->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
 
-      $this->tmpl->show("monitor.tpl");
+      return $tmpl->fetch("monitor.tpl");
 
-   } // show()
+   } // showList()
 
    private function getFirstChain()
    {
+      global $db;
+
       // Get only chains which do not Ignore QoS and are active
-      $chain = $this->db->db_fetchSingleRow("
+      $chain = $db->db_fetchSingleRow("
          SELECT chain_idx
          FROM ". MYSQL_PREFIX ."chains
          WHERE
@@ -133,7 +125,9 @@ class MASTERSHAPER_MONITOR {
 
    private function getFirstInterface()
    {
-      $interfaces = $this->parent->getActiveInterfaces();
+      global $ms;
+
+      $interfaces = $ms->getActiveInterfaces();
       $if = $interfaces->fetchRow();
       return $if->if_name;
 
@@ -142,8 +136,10 @@ class MASTERSHAPER_MONITOR {
  
    public function smarty_chain_select_list($params, &$smarty)
    {
+      global $db;
+
       // list only chains which do not Ignore QoS and are active
-      $chains = $this->db->db_query("
+      $chains = $db->db_query("
          SELECT
             chain_idx,
             chain_name
@@ -169,7 +165,9 @@ class MASTERSHAPER_MONITOR {
 
    public function smarty_interface_select_list($params, &$smarty)
    {
-      $interfaces = $this->parent->getActiveInterfaces();
+      global $ms;
+
+      $interfaces = $ms->getActiveInterfaces();
       $if_select = "";
 
       while($interface = $interfaces->fetchRow()) {
@@ -208,7 +206,7 @@ class MASTERSHAPER_MONITOR {
       $time_now  = mktime();
       $time_past = mktime() - 120;
 
-      $data = $this->db->db_query("
+      $data = $db->db_query("
          SELECT
             stat_time,
             stat_data
@@ -445,7 +443,7 @@ class MASTERSHAPER_MONITOR {
          return "Fallback";
       }
 
-      if($tc_id = $this->db->db_fetchSingleRow("
+      if($tc_id = $db->db_fetchSingleRow("
          SELECT id_pipe_idx, id_chain_idx
          FROM ". MYSQL_PREFIX ."tc_ids
          WHERE
@@ -455,7 +453,7 @@ class MASTERSHAPER_MONITOR {
 	 
          if($tc_id->id_pipe_idx != 0) {
 
-            $pipe = $this->db->db_fetchSingleRow("
+            $pipe = $db->db_fetchSingleRow("
                SELECT pipe_name
                FROM ". MYSQL_PREFIX ."pipes
                WHERE pipe_idx='". $tc_id->id_pipe_idx ."'
@@ -464,7 +462,7 @@ class MASTERSHAPER_MONITOR {
          }
 
          if($tc_id->id_chain_idx != 0) {
-            $chain = $this->db->db_fetchSingleRow("
+            $chain = $db->db_fetchSingleRow("
                SELECT chain_name
                FROM ". MYSQL_PREFIX ."chains
                WHERE chain_idx='". $tc_id->id_chain_idx ."'
@@ -480,7 +478,7 @@ class MASTERSHAPER_MONITOR {
    /* check if tc_id is a pipe */
    private function isPipe($tc_id, $if, $chain)
    {
-      if($this->db->db_fetchSingleRow("
+      if($db->db_fetchSingleRow("
          SELECT
             id_tc_id
          FROM
@@ -504,7 +502,7 @@ class MASTERSHAPER_MONITOR {
    /* check if tc_id is a chain */
    private function isChain($tc_id, $if)
    {
-      if($this->db->db_fetchSingleRow("
+      if($db->db_fetchSingleRow("
          SELECT
             id_tc_id
          FROM
@@ -545,5 +543,8 @@ class MASTERSHAPER_MONITOR {
    } // getScaleName()
 
 } // class MASTERSHAPER_MONITOR
+
+$obj = new MASTERSHAPER_MONITOR;
+$obj->handler();
 
 ?>

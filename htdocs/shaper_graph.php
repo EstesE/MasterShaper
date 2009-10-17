@@ -48,7 +48,6 @@ class MASTERSHAPER_GRAPH{
    public function __construct()
    {
       $this->ms     = new MASTERSHAPER;
-      $this->db     = $this->ms->db;
       $this->total  = Array();
       $this->names  = Array();
       $this->colors = Array();
@@ -66,6 +65,8 @@ class MASTERSHAPER_GRAPH{
    /* create graph */
    public function draw()
    {
+      global $db;
+
       /* ****************************** */
       /* graphmode                      */
       /*     0  Accumulated Lines       */
@@ -148,7 +149,7 @@ class MASTERSHAPER_GRAPH{
       $time_now  = mktime();
       $time_past = mktime() - 120;
 
-      $data = $this->db->db_query("
+      $data = $db->db_query("
          SELECT stat_time, stat_data
          FROM ". MYSQL_PREFIX ."stats
          WHERE 
@@ -440,6 +441,8 @@ class MASTERSHAPER_GRAPH{
    /* returns a new color for the graph */
    private function getColor($id, $interface)
    {
+      global $db;
+
       $colors = Array(
          "#CC2222",
          "#44FF44",
@@ -460,7 +463,7 @@ class MASTERSHAPER_GRAPH{
       /* The color should not change during graphs. So we save the currently used color to
          database and reuse it on the next reload.
       */
-      $color = $this->db->db_fetchSingleRow("
+      $color = $db->db_fetchSingleRow("
          SELECT id_color
          FROM ". MYSQL_PREFIX ."tc_ids
          WHERE
@@ -491,7 +494,9 @@ class MASTERSHAPER_GRAPH{
    /* remember the used color */
    private function setColor($color, $id, $interface)
    {
-      $this->db->db_query("
+      global $db;
+
+      $db->db_query("
          UPDATE ". MYSQL_PREFIX ."tc_ids
          SET id_color='". $color ."'
          WHERE
@@ -505,7 +510,9 @@ class MASTERSHAPER_GRAPH{
    /* check if color is already used */
    private function checkColor($color, $interface)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT id_color
          FROM ". MYSQL_PREFIX ."tc_ids
          WHERE
@@ -522,11 +529,13 @@ class MASTERSHAPER_GRAPH{
    /* returns pipe/chain name according tc_id */
    private function findName($id, $interface)
    {
+      global $db;
+
       if(preg_match("/1:.*99/", $id)) {
          return "Fallback";
       }
 
-      if($tc_id = $this->db->db_fetchSingleRow("
+      if($tc_id = $db->db_fetchSingleRow("
          SELECT id_pipe_idx, id_chain_idx
          FROM ". MYSQL_PREFIX ."tc_ids
          WHERE
@@ -536,7 +545,7 @@ class MASTERSHAPER_GRAPH{
 	 
          if($tc_id->id_pipe_idx != 0) {
 
-            $pipe = $this->db->db_fetchSingleRow("
+            $pipe = $db->db_fetchSingleRow("
                SELECT pipe_name
                FROM ". MYSQL_PREFIX ."pipes
                WHERE pipe_idx='". $tc_id->id_pipe_idx ."'
@@ -545,7 +554,7 @@ class MASTERSHAPER_GRAPH{
          }
 
          if($tc_id->id_chain_idx != 0) {
-            $chain = $this->db->db_fetchSingleRow("
+            $chain = $db->db_fetchSingleRow("
                SELECT chain_name
                FROM ". MYSQL_PREFIX ."chains
                WHERE chain_idx='". $tc_id->id_chain_idx ."'
@@ -584,7 +593,9 @@ class MASTERSHAPER_GRAPH{
    /* check if tc_id is a pipe */
    private function isPipe($tc_id, $if, $chain)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT id_tc_id
          FROM ". MYSQL_PREFIX ."tc_ids
          WHERE
@@ -606,7 +617,9 @@ class MASTERSHAPER_GRAPH{
    /* check if tc_id is a chain */
    private function isChain($tc_id, $if)
    {
-      if($this->db->db_fetchSingleRow("
+      global $db;
+
+      if($db->db_fetchSingleRow("
          SELECT id_tc_id
          FROM ". MYSQL_PREFIX ."tc_ids
          WHERE
