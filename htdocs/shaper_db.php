@@ -125,7 +125,7 @@ class MASTERSHAPER_DB {
          /* for manipulating queries use exec instead of query. can save
           * some resource because nothing has to be allocated for results.
           */
-         if(preg_match('/^(update|insert)i/', $query)) {
+         if(preg_match('/^(update|insert|replace)i/', $query)) {
             $result = $this->db->exec($query);
          }
          else {
