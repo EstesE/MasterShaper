@@ -76,27 +76,15 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
-         $protocol = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."protocols
-            WHERE
-               proto_idx='". $page->id ."'
-         ");
+      if($page->id != 0)
+         $protocol = new Protocol($page->id);
+      else
+         $protocol = new Protocol;
 
-         $tmpl->assign('proto_idx', $page->id);
-         $tmpl->assign('proto_name', $protocol->proto_name);
-         $tmpl->assign('proto_number', $protocol->proto_number);
- 
-      }
-      else {
-         /* preset values here */
-      }
-
-     return $tmpl->fetch("protocols_edit.tpl");
+      $tmpl->assign('protocol', $protocol);
+      return $tmpl->fetch("protocols_edit.tpl");
 
    } // showEdit()
-
 
    /**
     * template function which will be called from the protocol listing template
@@ -136,48 +124,39 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $db;
+      global $ms, $db;
 
-      isset($_POST['proto_new']) && $_POST['proto_new'] == 1 ? $new = 1 : $new = NULL;
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+
+      /* load protocol */
+      if(isset($new))
+         $protocol = new Protocol;
+      else
+         $protocol = new Protocol($_POST['proto_idx']);
 
       if(!isset($_POST['proto_name']) || $_POST['proto_name'] == "") {
-         return _("Please enter a protocol name!");
+         $ms->throwError(_("Please enter a protocol name!"));
       }
-      if(isset($new) && $this->checkProtocolExists($_POST['proto_name'])) {
-         return _("A protocol with that name already exists!");
+      if(isset($new) && $ms->check_object_exists('protocol', $_POST['proto_name'])) {
+         $ms->throwError(_("A protocol with that name already exists!"));
       }
-      if(!isset($new) && $_POST['namebefore'] != $_POST['proto_name']
-         && $this->checkProtocolExists($_POST['proto_name'])) {
-         return _("A protocol with that name already exists!");
+      if(!isset($new) && $protocol->proto_name != $_POST['proto_name']
+         && $ms->check_object_exists('protocol', $_POST['proto_name'])) {
+         $ms->throwError(_("A protocol with that name already exists!"));
       }
       if(!is_numeric($_POST['proto_number'])) {
-         return _("Protocol number needs to be an integer value!");
+         $ms->throwError(_("Protocol number needs to be an integer value!"));
       }
 
-      if(isset($new)) {
+      $protocol_data = $ms->filter_form_data($_POST, 'proto_');
 
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."protocols 
-               (proto_name, proto_number, proto_user_defined)
-            VALUES (
-               '". $_POST['proto_name'] ."',
-               '". $_POST['proto_number'] ."',
-               'Y')
-         ");
-      }
-      else {
-		     $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."protocols
-               SET 
-                  proto_name='". $_POST['proto_name'] ."',
-                  proto_number='". $_POST['proto_number'] ."',
-                  proto_user_defined='Y'
-               WHERE
-                  proto_idx='". $_POST['proto_idx'] ."'
-            ");
-      }
+      if(!$protocol->update($protocol_data))
+         return false;
 
-      return "ok";
+      if(!$protocol->save())
+         return false;
+
+      return true;
 
    } // store()
 

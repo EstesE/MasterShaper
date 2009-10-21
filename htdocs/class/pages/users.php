@@ -70,32 +70,12 @@ class Page_Users extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
-         $user = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."users
-            WHERE
-               user_idx='". $page->id ."'
-         ");
+      if($page->id != 0)
+         $user = new User($page->id);
+      else
+         $user = new User;
 
-         $tmpl->assign('user_idx', $page->id);
-         $tmpl->assign('user_name', $user->user_name);
-         $tmpl->assign('user_active', $user->user_active);
-         $tmpl->assign('user_manage_chains', $user->user_manage_chains);
-         $tmpl->assign('user_manage_pipes', $user->user_manage_pipes);
-         $tmpl->assign('user_manage_filters', $user->user_manage_filters);
-         $tmpl->assign('user_manage_ports', $user->user_manage_ports);
-         $tmpl->assign('user_manage_protocols', $user->user_manage_protocols);
-         $tmpl->assign('user_manage_targets', $user->user_manage_targets);
-         $tmpl->assign('user_manage_users', $user->user_manage_users);
-         $tmpl->assign('user_manage_options', $user->user_manage_options);
-         $tmpl->assign('user_manage_servicelevels', $user->user_manage_servicelevels);
-         $tmpl->assign('user_load_rules', $user->user_load_rules);
-         $tmpl->assign('user_show_rules', $user->user_show_rules);
-         $tmpl->assign('user_show_monitor', $user->user_show_monitor);
-
-      }
-   
+      $tmpl->assign('user', $user);
       return $tmpl->fetch("users_edit.tpl");
 
    } // showEdit()
@@ -105,87 +85,44 @@ class Page_Users extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $db;
+      global $ms, $db;
 
-      isset($_POST['user_new']) && $_POST['user_new'] == 1 ? $new = 1 : $new = NULL;
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+
+      /* load user */
+      if(isset($new))
+         $user = new User;
+      else
+         $user = new User($_POST['user_idx']);
 
       if(!isset($_POST['user_name']) || $_POST['user_name'] == "") {
-         return _("Please enter a user name!");
+         $ms->throwError(_("Please enter a user name!"));
       }
-      if(isset($new) && $this->checkUserExists($_POST['user_name'])) {
-         return _("A user with such a user name already exist!");
+      if(isset($new) && $ms->check_object_exists('user', $_POST['user_name'])) {
+         $ms->throwError(_("A user with such a user name already exist!"));
       }
       if($_POST['user_pass1'] == "") {
-         return _("Empty passwords are not allowed!");
+         $ms->throwError(_("Empty passwords are not allowed!"));
       }
       if($_POST['user_pass1'] != $_POST['user_pass2']) {
-         return _("The two entered passwords do not match!");
+         $ms->throwError(_("The two entered passwords do not match!"));
       }	       
 
-      if(isset($new)) {
-
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."users (
-               user_name, user_pass, user_manage_chains,
-               user_manage_pipes, user_manage_filters,
-               user_manage_ports, user_manage_protocols, 
-               user_manage_targets, user_manage_users,
-               user_manage_options, user_manage_servicelevels,
-               user_load_rules, user_show_rules, user_show_monitor,
-               user_active
-            ) VALUES (
-               '". $_POST['user_name'] ."',
-               '". md5($_POST['user_pass1']) ."',
-               '". $_POST['user_manage_chains'] ."',
-               '". $_POST['user_manage_pipes'] ."',
-               '". $_POST['user_manage_filters'] ."',
-               '". $_POST['user_manage_ports'] ."',
-               '". $_POST['user_manage_protocols'] ."',
-               '". $_POST['user_manage_targets'] ."',
-               '". $_POST['user_manage_users'] ."',
-               '". $_POST['user_manage_options'] ."',
-               '". $_POST['user_manage_servicelevels'] ."',
-               '". $_POST['user_load_rules'] ."',
-               '". $_POST['user_show_rules'] ."',
-               '". $_POST['user_show_monitor'] ."',
-               '". $_POST['user_active'] ."'
-            )
-         ");
+      if($_POST['user_pass1'] != "nochangeMS") {
+         $_POST['user_pass'] = $_POST['user_pass1'];
+         unset($_POST['user_pass1']);
+         unset($_POST['user_pass2']);
       }
-      else {
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."users
-            SET
-               user_name='". $_POST['user_name'] ."',
-               user_manage_chains='". $_POST['user_manage_chains'] ."',
-               user_manage_pipes='". $_POST['user_manage_pipes'] ."',
-               user_manage_filters='". $_POST['user_manage_filters'] ."',
-               user_manage_ports='". $_POST['user_manage_ports'] ."',
-               user_manage_protocols='". $_POST['user_manage_protocols'] ."',
-               user_manage_targets='". $_POST['user_manage_targets'] ."',
-               user_manage_users='". $_POST['user_manage_users'] ."',
-               user_manage_options='". $_POST['user_manage_options'] ."',
-               user_manage_servicelevels='". $_POST['user_manage_servicelevels'] ."',
-               user_load_rules='". $_POST['user_load_rules'] ."',
-               user_show_rules='". $_POST['user_show_rules'] ."',
-               user_show_monitor='". $_POST['user_show_monitor'] ."',
-               user_active='". $_POST['user_active'] ."'
-            WHERE
-               user_idx='". $_POST['user_idx'] ."'
-         ");
 
-         if($_POST['user_pass1'] != "nochangeMS") {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."users
-               SET
-                  user_pass='". md5($_POST['user_pass1']) ."' 
-               WHERE
-                  user_idx='". $_POST['user_idx'] ."'
-            ");
-         }
-      }
+      $user_data = $ms->filter_form_data($_POST, 'user_');
+
+      if(!$user->update($user_data))
+         return false;
+
+      if(!$user->save())
+         return false;
 		  
-      return "ok";
+      return true;
 
    } // store()
 

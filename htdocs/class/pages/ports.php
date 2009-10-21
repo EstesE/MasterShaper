@@ -100,23 +100,12 @@ class Page_Ports extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
-         $port = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."ports
-            WHERE
-               port_idx='". $page->id ."'
-         ");
+      if($page->id != 0)
+         $port = new Port($page->id);
+      else
+         $port = new Port;
 
-         $tmpl->assign('port_idx', $page->id);
-         $tmpl->assign('port_name', $port->port_name);
-         $tmpl->assign('port_desc', $port->port_desc);
-         $tmpl->assign('port_number', $port->port_number);
- 
-      }
-      else {
-         /* preset values here */
-      }
+      $tmpl->assign('port', $port);
 
      return $tmpl->fetch("ports_edit.tpl");
 
@@ -161,21 +150,27 @@ class Page_Ports extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $db;
+      global $ms, $db;
 
-      isset($_POST['port_new']) && $_POST['port_new'] == 1 ? $new = 1 : $new = NULL;
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+
+      /* load port */
+      if(isset($new))
+         $port = new Port;
+      else
+         $port = new Port($_POST['port_idx']);
 
       if(!isset($_POST['port_name']) || $_POST['port_name'] == "") {
-         return _("Please enter a port name!");
+         $ms->throwError(_("Please enter a port name!"));
       }
 
-      if(isset($new) && $this->checkPortExists($_POST['port_name'])) {
-         return _("A port with that name already exists!");
+      if(isset($new) && $ms->check_object_exists('port', $_POST['port_name'])) {
+         $ms->throwError(_("A port with that name already exists!"));
       }
 
-      if(!isset($new) && $_POST['namebefore'] != $_POST['port_name']
-         && $this->checkPortExists($_POST['port_name'])) {
-         return _("A port with that name already exists!");
+      if(!isset($new) && $port->port_name != $_POST['port_name']
+         && $ms->check_object_exists('port', $_POST['port_name'])) {
+         $ms->throwError(_("A port with that name already exists!"));
       }
 
       /* only one or several ports */
@@ -198,35 +193,18 @@ class Page_Ports extends MASTERSHAPER_PAGE {
       }
       elseif(!is_numeric($_POST['port_number']) ||
          $_POST['port_number'] <= 0 || $_POST['port_number'] >= 65536) {
-         return _("Please enter a decimal port number within 1 - 65535!");
+         $ms->throwError(_("Please enter a decimal port number within 1 - 65535!"));
       }
 
-      if(isset($new)) {
+      $port_data = $ms->filter_form_data($_POST, 'port_');
 
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."ports 
-               (port_name, port_desc, port_number, port_user_defined)
-            VALUES (
-               '". $_POST['port_name'] ."',
-               '". $_POST['port_desc'] ."',
-               '". $_POST['port_number'] ."',
-               'Y')
-         ");
-      }
-      else {
-		     $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."ports
-               SET 
-                  port_name='". $_POST['port_name'] ."',
-                  port_desc='". $_POST['port_desc'] ."',
-                  port_number='". $_POST['port_number'] ."',
-                  port_user_defined='Y'
-               WHERE
-                  port_idx='". $_POST['port_idx'] ."'
-            ");
-      }
+      if(!$port->update($port_data))
+         return false;
 
-      return "ok";
+      if(!$port->save())
+         return false;
+
+      return true;
 
    } // store()
 

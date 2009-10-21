@@ -34,17 +34,19 @@ class MASTERSHAPER_RPC {
 
    public function process_ajax_request()
    {
-      require_once 'HTML/AJAX/Server.php';
+      /*require_once 'HTML/AJAX/Server.php';
 
       $server = new HTML_AJAX_Server();
-      $server->handleRequest();
+      $server->handleRequest();*/
+
+      die;
 
       $ms = new MASTERSHAPER;
 
-      if(!isset($_GET['action']))
+      if(!isset($_POST['action']))
          return;
 
-      if(!is_string($_GET['action']))
+      if(!is_string($_POST['action']))
          return;
 
       switch($_GET['action']) {

@@ -73,54 +73,13 @@ class Page_Filters extends MASTERSHAPER_PAGE {
 
       global $ms, $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      if($page->id != 0)
+         $filter = new Filter($page->id);
+      else
+         $filter = new filter;
 
-         $filter = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."filters
-            WHERE
-               filter_idx='". $page->id ."'
-         ");
-
-         $tmpl->assign('filter_idx', $page->id);
-         $tmpl->assign('filter_mode', $ms->getOption("filter"));
-         $tmpl->assign('filter_name', $filter->filter_name);
-         $tmpl->assign('filter_active', $filter->filter_active);
-         $tmpl->assign('filter_protocol_id', $filter->filter_protocol_id);
-         $tmpl->assign('filter_tos', $filter->filter_tos);
-         $tmpl->assign('filter_tcpflag_syn', $filter->filter_tcpflag_syn);
-         $tmpl->assign('filter_tcpflag_ack', $filter->filter_tcpflag_ack);
-         $tmpl->assign('filter_tcpflag_fin', $filter->filter_tcpflag_fin);
-         $tmpl->assign('filter_tcpflag_rst', $filter->filter_tcpflag_rst);
-         $tmpl->assign('filter_tcpflag_urg', $filter->filter_tcpflag_urg);
-         $tmpl->assign('filter_tcpflag_psh', $filter->filter_tcpflag_psh);
-         $tmpl->assign('filter_packet_length', $filter->filter_packet_length);
-         $tmpl->assign('filter_p2p_edk', $filter->filter_p2p_edk);
-         $tmpl->assign('filter_p2p_kazaa', $filter->filter_p2p_kazaa);
-         $tmpl->assign('filter_p2p_dc', $filter->filter_p2p_dc);
-         $tmpl->assign('filter_p2p_gnu', $filter->filter_p2p_gnu);
-         $tmpl->assign('filter_p2p_bit', $filter->filter_p2p_bit);
-         $tmpl->assign('filter_p2p_apple', $filter->filter_p2p_apple);
-         $tmpl->assign('filter_p2p_soul', $filter->filter_p2p_soul);
-         $tmpl->assign('filter_p2p_winmx', $filter->filter_p2p_winmx);
-         $tmpl->assign('filter_p2p_ares', $filter->filter_p2p_ares);
-         $tmpl->assign('filter_time_use_range', $filter->filter_time_use_range);
-         $tmpl->assign('filter_time_start', $filter->filter_time_start);
-         $tmpl->assign('filter_time_stop', $filter->filter_time_stop);
-         $tmpl->assign('filter_time_day_mon', $filter->filter_time_day_mon);
-         $tmpl->assign('filter_time_day_tue', $filter->filter_time_day_tue);
-         $tmpl->assign('filter_time_day_wed', $filter->filter_time_day_wed);
-         $tmpl->assign('filter_time_day_thu', $filter->filter_time_day_thu);
-         $tmpl->assign('filter_time_day_fri', $filter->filter_time_day_fri);
-         $tmpl->assign('filter_time_day_sat', $filter->filter_time_day_sat);
-         $tmpl->assign('filter_time_day_sun', $filter->filter_time_day_sun);
-         $tmpl->assign('filter_match_ftp_data', $filter->filter_match_ftp_data);
-         $tmpl->assign('filter_match_sip', $filter->filter_match_sip);
-
-      }
-      else {
-         $tmpl->assign('filter_active', 'Y');
-      }
+      $tmpl->assign('filter', $filter);
+      $tmpl->assign('filter_mode', $ms->getOption("filter"));
 
       $tmpl->register_function("protocol_select_list", array(&$this, "smarty_protocol_select_list"), false);
       $tmpl->register_function("port_select_list", array(&$this, "smarty_port_select_list"), false);
@@ -136,17 +95,26 @@ class Page_Filters extends MASTERSHAPER_PAGE {
    {
       global $ms, $db;
 
-      isset($_POST['filter_new']) && $_POST['filter_new'] == 1 ? $new = 1 : $new = NULL;
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+
+      /* load filter */
+      if(isset($new))
+         $filter = new Filter;
+      else
+         $filter = new Filter($_POST['filter_idx']);
+
+      if(!isset($new) && (!isset($_POST['filter_idx']) || !is_numeric($_POST['filter_idx'])))
+         $ms->throwError(_("Missing id of filter to be handled!"));
 
       if(!isset($_POST['filter_name']) || $_POST['filter_name'] == "") {
-         return _("Please enter a filter name!");
+         $ms->throwError(_("Please enter a filter name!"));
       }
-      if(isset($new) && $this->checkFilterExists($_POST['filter_name'])) {
-         return _("A filter with that name already exists!");
+      if(isset($new) && $ms->check_object_exists('filter', $_POST['filter_name'])) {
+         $ms->throwError(_("A filter with that name already exists!"));
       }
-      if(!isset($new) && $_POST['namebefore'] != $_POST['filter_name'] &&
-         $this->checkFilterExists($_POST['filter_name'])) {
-         return _("A filter with that name already exists!");
+      if(!isset($new) && $filter->filter_name != $_POST['filter_name'] &&
+         $ms->check_object_exists('filter', $_POST['filter_name'])) {
+         $ms->throwError(_("A filter with that name already exists!"));
       }
       if($_POST['filter_protocol_id'] == -1 &&
          count($_POST['used']) <= 1 &&
@@ -177,7 +145,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          !$_POST['filter_time_day_sun'] &&
          !$_POST['filter_match_sip'] &&
          count($_POST['filter_l7_used']) <= 1) {
-         return _("This filter has nothing to do. Please select at least one match!");
+         $ms­>throwError(_("This filter has nothing to do. Please select at least one match!"));
       }
       /* Ports can only be used with TCP, UDP or IP protocol */
       if(isset($_POST['used']) && count($_POST['used']) > 1 &&
@@ -186,7 +154,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 17 &&
             $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6
          )) {
-         return _("Ports can only be used in combination with IP, TCP or UDP protocol!");
+         $ms->throwError(_("Ports can only be used in combination with IP, TCP or UDP protocol!"));
       }
       /* TCP-flags can only be used with TCP protocol */
       if(isset($_POST['filter_ipt']) && (
@@ -198,7 +166,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $_POST['filter_tcpflag_psh']
          ) &&
          $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6) {
-         return _("TCP-Flags can only be used in combination with TCP protocol!");
+         $ms->throwError(_("TCP-Flags can only be used in combination with TCP protocol!"));
       }
       /* ipp2p can only be used with no ports, no l7 filters and tcp &| udp protocol */
       if(isset($_POST['filter_ipt']) && (
@@ -223,23 +191,23 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                $_POST['filter_protocol_id'] != -1
             ) ||
             count($_POST['filter_l7_used']) > 1)) {
-         return _("IPP2P match can only be used with no ports select and only with protocols TCP or UDP or completly ignoring protocols!<br />Also IPP2P can not be used in combination with layer7 filters.");
+         $ms->throwError(_("IPP2P match can only be used with no ports select and only with protocols TCP or UDP or completly ignoring protocols!<br />Also IPP2P can not be used in combination with layer7 filters."));
       }
       /* layer7 protocol match can only be used with no ports and no tcp &| udp protocols */
       if(isset($_POST['filter_ipt']) &&
          count($_POST['filter_l7_used']) > 1 &&
          $_POST['filter_protocol_id'] != -1) {
-            return _("Layer7 match can only be used with no ports select and no protocol definitions!");
+            $ms->throwError(_("Layer7 match can only be used with no ports select and no protocol definitions!"));
       }
 
       if(isset($_POST['filter_ipt'])) {
-         $start_time = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00", 
+         $_POST['filter_time_start'] = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00", 
             $_POST['filter_time_start_year'],
             $_POST['filter_time_start_month'],
             $_POST['filter_time_start_day'],
             $_POST['filter_time_start_hour'], 
             $_POST['filter_time_start_minute']));
-         $stop_time = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00",
+         $_POST['filter_time_stop'] = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00",
             $_POST['filter_time_stop_year'],
             $_POST['filter_time_stop_month'],
             $_POST['filter_time_stop_day'],
@@ -247,162 +215,15 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $_POST['filter_time_stop_minute']));
       }
 
-      if(isset($new)) {
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."filters (
-               filter_name, filter_protocol_id, filter_tos,
-               filter_tcpflag_syn, filter_tcpflag_ack,
-               filter_tcpflag_fin, filter_tcpflag_rst,
-               filter_tcpflag_urg, filter_tcpflag_psh, 
-               filter_packet_length, filter_p2p_edk,
-               filter_p2p_kazaa, filter_p2p_dc, 
-               filter_p2p_gnu, filter_p2p_bit, filter_p2p_apple,
-               filter_p2p_soul, filter_p2p_winmx, filter_p2p_ares,
-               filter_time_use_range, filter_time_start,
-               filter_time_stop, filter_time_day_mon, 
-               filter_time_day_tue, filter_time_day_wed,
-               filter_time_day_thu, filter_time_day_fri,
-               filter_time_day_sat, filter_time_day_sun, 
-               filter_match_ftp_data, filter_match_sip,
-               filter_active
-            ) VALUES (
-               '". $_POST['filter_name'] ."',
-               '". $_POST['filter_protocol_id'] ."',
-               '". $_POST['filter_tos'] ."', 
-               '". $_POST['filter_tcpflag_syn'] ."',
-               '". $_POST['filter_tcpflag_ack'] ."',
-               '". $_POST['filter_tcpflag_fin'] ."',
-               '". $_POST['filter_tcpflag_rst'] ."',
-               '". $_POST['filter_tcpflag_urg'] ."',
-               '". $_POST['filter_tcpflag_psh'] ."',
-               '". $_POST['filter_packet_length'] ."',
-               '". $_POST['filter_p2p_edk'] ."',
-               '". $_POST['filter_p2p_kazaa'] ."',
-               '". $_POST['filter_p2p_dc'] ."',
-               '". $_POST['filter_p2p_gnu'] ."', 
-               '". $_POST['filter_p2p_bit'] ."',
-               '". $_POST['filter_p2p_apple'] ."',
-               '". $_POST['filter_p2p_soul'] ."', 
-               '". $_POST['filter_p2p_winmx'] ."',
-               '". $_POST['filter_p2p_ares'] ."',
-               '". $_POST['filter_time_use_range'] ."',
-               '". $start_time ."',
-               '". $stop_time ."',
-               '". $_POST['filter_time_day_mon'] ."',
-               '". $_POST['filter_time_day_tue'] ."',
-               '". $_POST['filter_time_day_wed'] ."',
-               '". $_POST['filter_time_day_thu'] ."',
-               '". $_POST['filter_time_day_fri'] ."',
-               '". $_POST['filter_time_day_sat'] ."',
-               '". $_POST['filter_time_day_sun'] ."',
-               '". $_POST['filter_match_ftp_data'] ."', 
-               '". $_POST['filter_match_sip'] ."',
-               '". $_POST['filter_active'] ."
-            ')
-         ");
-                          
-         $_POST['filter_idx'] = $db->db_getid();
+      $filter_data = $ms->filter_form_data($_POST, 'filter_');
 
-      }
-      else {
-         switch($ms->getOption("filter")) {
-            case 'ipt':
-               $db->db_query("
-                  UPDATE ". MYSQL_PREFIX ."filters 
-                  SET
-                     filter_name='". $_POST['filter_name'] ."', 
-                     filter_protocol_id='". $_POST['filter_protocol_id'] ."', 
-                     filter_tos='". $_POST['filter_tos'] ."', 
-                     filter_tcpflag_syn='". $_POST['filter_tcpflag_syn'] ."', 
-                     filter_tcpflag_ack='". $_POST['filter_tcpflag_ack'] ."', 
-                     filter_tcpflag_fin='". $_POST['filter_tcpflag_fin'] ."', 
-                     filter_tcpflag_rst='". $_POST['filter_tcpflag_rst'] ."', 
-                     filter_tcpflag_urg='". $_POST['filter_tcpflag_urg'] ."', 
-                     filter_tcpflag_psh='". $_POST['filter_tcpflag_psh'] ."', 
-                     filter_packet_length='". $_POST['filter_packet_length'] ."', 
-                     filter_p2p_edk='". $_POST['filter_p2p_edk'] ."', 
-                     filter_p2p_kazaa='". $_POST['filter_p2p_kazaa'] ."', 
-                     filter_p2p_dc='". $_POST['filter_p2p_dc'] ."', 
-                     filter_p2p_gnu='". $_POST['filter_p2p_gnu'] ."', 
-                     filter_p2p_bit='". $_POST['filter_p2p_bit'] ."', 
-                     filter_p2p_apple='". $_POST['filter_p2p_apple'] ."', 
-                     filter_p2p_soul='". $_POST['filter_p2p_soul'] ."', 
-                     filter_p2p_winmx='". $_POST['filter_p2p_winmx'] ."', 
-                     filter_p2p_ares='". $_POST['filter_p2p_ares'] ."', 
-                     filter_time_use_range='". $_POST['filter_time_use_range'] ."', 
-                     filter_time_start='". $start_time ."', 
-                     filter_time_stop='". $stop_time ."', 
-                     filter_time_day_mon='". $_POST['filter_time_day_mon'] ."', 
-                     filter_time_day_tue='". $_POST['filter_time_day_tue'] ."', 
-                     filter_time_day_wed='". $_POST['filter_time_day_wed'] ."', 
-                     filter_time_day_thu='". $_POST['filter_time_day_thu'] ."',
-                     filter_time_day_fri='". $_POST['filter_time_day_fri'] ."',
-                     filter_time_day_sat='". $_POST['filter_time_day_sat'] ."',
-                     filter_time_day_sun='". $_POST['filter_time_day_sun'] ."',
-                     filter_match_ftp_data='". $_POST['filter_match_ftp_data'] ."', 
-                     filter_match_sip='". $_POST['filter_match_sip'] ."', 
-                     filter_active='". $_POST['filter_active'] ."' 
-                  WHERE
-                     filter_idx='". $_POST['filter_idx'] ."'
-               ");
-               break;
-            case 'tc':
-               $db->db_query("
-                  UPDATE ". MYSQL_PREFIX ."filters
-                  SET
-                     filter_name='". $_POST['filter_name'] ."',
-                     filter_protocol_id='". $_POST['filter_protocol_id'] ."',
-                     filter_tos='". $_POST['filter_tos'] ."', 
-                     filter_active='". $_POST['filter_active'] ."' 
-                  WHERE
-                     filter_idx='". $_POST['filter_idx'] ."'
-               ");
-               break;
-         }
-      }
+      if(!$filter->update($filter_data))
+         return false;
 
-      if(isset($_POST['used']) && $_POST['used']) {
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_ports_to_filters
-            WHERE
-               afp_filter_idx='". $_POST['filter_idx'] ."'
-         ");
+      if(!$filter->save())
+         return false;
 
-         foreach($_POST['used'] as $use) {
-            if($use != "") {
-               $db->db_query("
-                  INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (
-                     afp_filter_idx, afp_port_idx
-                  ) VALUES (
-                     '". $_POST['filter_idx'] ."',
-                     '". $use ."'
-                  )
-               ");
-            }
-         }
-
-         if(isset($_POST['filter_l7_used']) && $_POST['filter_l7_used']) {
-            $db->db_query("
-               DELETE FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
-               WHERE
-                  afl7_filter_idx='". $_POST['filter_idx'] ."'
-            ");
-            foreach($_POST['filter_l7_used'] as $use) {
-               if($use != "") {
-                  $db->db_query("
-                     INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (
-                        afl7_filter_idx, afl7_l7proto_idx
-                     ) VALUES (
-                        '". $_POST['filter_idx'] ."',
-                        '". $use ."'
-                     )
-                  ");
-               }
-            }
-         }
-      }
-
-      return "ok";
+      return true;
 
    } // store()
 
@@ -479,7 +300,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          return;
       } 
 
-      global $db;
+      global $ms, $db;
 
       switch($params['mode']) {
          case 'unused':
@@ -505,6 +326,9 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                   afp_filter_idx = '". $params['filter_idx'] ."'
                ORDER BY p.port_name ASC
             ");
+            break;
+         default:
+            $ms->throwError('unknown mode');
             break;
       }
 

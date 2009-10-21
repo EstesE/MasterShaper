@@ -2,14 +2,13 @@
 <form action="{$page->uri}" id="protocols" method="post">
 <input type="hidden" name="module" value="protocol" />
 <input type="hidden" name="action" value="store" />
-{ if ! $proto_idx }
+{ if ! $protocol->proto_idx }
  {start_table icon=$icon_protocols alt="protocol icon" title="Create a new Protocol" }
- <input type="hidden" name="proto_new" value="1" />
+ <input type="hidden" name="new" value="1" />
 { else }
- {start_table icon=$icon_protocols alt="protocol icon" title="Modify Protocol $proto_name" }
- <input type="hidden" name="proto_new" value="0" />
- <input type="hidden" name="namebefore" value="{ $proto_name }" />
- <input type="hidden" name="proto_idx" value="{ $proto_idx }" />
+ {start_table icon=$icon_protocols alt="protocol icon" title="Modify Protocol `$protocol->proto_name`" }
+ <input type="hidden" name="new" value="0" />
+ <input type="hidden" name="proto_idx" value="{ $protocol->proto_idx }" />
 { /if }
 <table style="width: 100%" class="withborder">
  <tr>
@@ -19,7 +18,7 @@
  </tr>
  <tr>
   <td>Name:</td>
-  <td><input type="text" name="proto_name" size="30" value="{ $proto_name }" /></td>
+  <td><input type="text" name="proto_name" size="30" value="{ $protocol->proto_name }" /></td>
   <td>Name of the Protocol</td>
  </tr>
  <tr>
@@ -30,7 +29,7 @@
  <tr>
   <td>Number:</td>
   <td>
-   <input type="text" name="proto_number" size="30" value="{ $proto_number }" />
+   <input type="text" name="proto_number" size="30" value="{ $protocol->proto_number }" />
   </td>
   <td>The IANA protocol number.</td>
  </tr>

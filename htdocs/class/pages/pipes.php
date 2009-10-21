@@ -45,7 +45,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       $this->pipes = Array();
 
       $res_pipes = $db->db_query("
-         SELECT
+         SELECT DISTINCT
             p.*
          FROM
             ". MYSQL_PREFIX ."pipes p
@@ -85,26 +85,12 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       if($this->is_storing())
          $this->store();
 
-      if($page->id != 0) {
-         $pipe = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."pipes
-            WHERE
-               pipe_idx='". $page->id ."'
-         ");
-         $tmpl->assign('pipe_idx', $page->id);
-         $tmpl->assign('pipe_name', $pipe->pipe_name);
-         $tmpl->assign('pipe_active', $pipe->pipe_active);
-         $tmpl->assign('pipe_direction', $pipe->pipe_direction);
-         $tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
-         $tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
-         $tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
+      if($page->id != 0)
+         $pipe = new Pipe($page->id);
+      else
+         $pipe = new Pipe();
 
-      }
-      else {
-         $tmpl->assign('pipe_active', 'Y');
-         $tmpl->assign('pipe_direction', 2);
-      }
+      $tmpl->assign('pipe', $pipe);
 
       $tmpl->register_function("unused_filters_select_list", array(&$this, "smarty_unused_filters_select_list"), false);
       $tmpl->register_function("used_filters_select_list", array(&$this, "smarty_used_filters_select_list"), false);
@@ -255,87 +241,36 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $db;
+      global $ms, $db;
 
-      isset($_POST['pipe_new']) && $_POST['pipe_new'] == 1 ? $new = 1 : $new = NULL;
+      /* load chain */
+      if(isset($new))
+         $pipe = new Pipe;
+      else
+         $pipe = new Pipe($_POST['pipe_idx']);
+
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['pipe_name']) || $_POST['pipe_name'] == "") {
-         return _("Please enter a pipe name!");
+         $ms->throwError(_("Please enter a pipe name!"));
       }
-      if(isset($new) && $this->checkPipeExists($_POST['pipe_name'])) {
-         return _("A pipe with that name already exists for that chain!");
+      if(isset($new) && $ms->check_object_exists('pipe', $_POST['pipe_name'])) {
+         $ms->throwError(_("A pipe with that name already exists for that chain!"));
       }
-      if(!isset($new) && $_POST['namebefore'] != $_POST['pipe_name'] &&
-         $this->checkPipeExists($_POST['pipe_name'])) {
-         return _("A pipe with that name already exists for that chain!");
-      }
-         
-      if(isset($new)) {
-         $max_pos = $db->db_fetchSingleRow("
-            SELECT
-               MAX(apc_pipe_pos) as pos
-            FROM
-               ". MYSQL_PREFIX ."assign_pipes_to_chains
-            WHERE
-               apc_chain_idx='". $_POST['chain_idx'] ."'
-         ");
-
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."pipes (
-               pipe_name, pipe_sl_idx, pipe_position,
-               pipe_src_target, pipe_dst_target, pipe_direction,
-               pipe_active
-            ) VALUES (
-               '". $_POST['pipe_name'] ."', 
-               '". $_POST['pipe_sl_idx'] ."', 
-               '". ($max_pos->pos+1) ."', 
-               '". $_POST['pipe_src_target'] ."', 
-               '". $_POST['pipe_dst_target'] ."', 
-               '". $_POST['pipe_direction'] ."', 
-               '". $_POST['pipe_active'] ."')
-         ");
-
-         $_POST['pipe_idx'] = $db->db_getid();
-      }
-      else {
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."pipes
-            SET 
-               pipe_name='". $_POST['pipe_name'] ."', 
-               pipe_sl_idx='". $_POST['pipe_sl_idx'] ."', 
-               pipe_src_target='". $_POST['pipe_src_target'] ."', 
-               pipe_dst_target='". $_POST['pipe_dst_target'] ."', 
-               pipe_direction='". $_POST['pipe_direction'] ."', 
-               pipe_active='". $_POST['pipe_active'] ."' 
-            WHERE
-               pipe_idx='". $_POST['pipe_idx'] ."'
-         ");
-
+      if(!isset($new) && $pipe->pipe_name != $_POST['pipe_name'] &&
+         $ms->check_object_exists('pipe', $_POST['pipe_name'])) {
+         $ms->throwError(_("A pipe with that name already exists for that chain!"));
       }
 
-      if(isset($_POST['used']) && $_POST['used']) {
-         $db->db_query("
-            DELETE FROM
-               ". MYSQL_PREFIX ."assign_filters_to_pipes
-            WHERE
-               apf_pipe_idx='". $_POST['pipe_idx'] ."'
-         ");
-			
-         foreach($_POST['used'] as $use) {
-            if($use != "") {
-               $db->db_query("
-                  INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (
-                     apf_pipe_idx, apf_filter_idx
-                  ) VALUES (
-                     '". $_POST['pipe_idx'] ."',
-                     '". $use ."'
-                  )
-               ");
-            }
-         }
-      }
+      $pipe_data = $ms->filter_form_data($_POST, 'pipe_');
 
-      return "ok";
+      if(!$pipe->update($pipe_data))
+         return false;
+
+      if(!$pipe->save())
+         return false;
+
+      return true;
 
    } // store()
 

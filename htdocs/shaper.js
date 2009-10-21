@@ -361,8 +361,36 @@ function WSR_getElementsByClassName(oElm, strTagName, oClassNames){
    return (arrReturnElements);
 }
 
-function deleteObj(module, target, idx)
+function deleteObj(element, target, idx)
 {
+   var del_id = element.attr("id");
+
+   if(del_id == undefined || del_id == "") {
+      alert('no attribute "id" found!');
+      return;
+   }
+
+   if(!confirm("Are you sure you want to delete this object? There is NO undo!")) {
+      return false;
+   }
+
+   $.ajax({
+      type: "POST",
+      url: "rpc.html",
+      data: ({type : 'rpc', action : 'delete', id : del_id }),
+      beforeSend: function() {
+         element.parent().parent().animate({backgroundColor: "#fbc7c7" }, "fast");
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+         alert('Failed to contact server! ' + textStatus);
+      },
+      success: function(data){
+         element.parent().parent().animate({ opacity: "hide" }, "fast");
+         //alert(data);
+      }
+   });
+
+   return;
    // Create object with values of the form
    var objTemp = new Object();
    objTemp['module'] = module;
@@ -672,3 +700,9 @@ function parse_json(values)
    
    return data;
 }
+
+$(document).ready(function() {
+   $("table td a.delete").click(function(){
+      deleteObj($(this));
+   });
+});

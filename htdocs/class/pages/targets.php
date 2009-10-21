@@ -35,119 +35,6 @@ class Page_Targets extends MASTERSHAPER_PAGE {
    } // __construct()
 
    /**
-    * handle updates
-    */
-   public function store()
-   {
-      global $db;
-
-      isset($_POST['target_new']) && $_POST['target_new'] == 1 ? $new = 1 : $new = NULL;
-
-      if(!isset($_POST['target_name']) || $_POST['target_name'] == "") {
-         return _("Please enter a name for this target!");
-      }
-      if(isset($new) && $this->checkTargetExists($_POST['target_name'])) { 
-         return _("A target with that name already exists!");
-      }
-      if(!isset($new) && $_POST['namebefore'] != $_POST['target_name']
-         && $this->checkTargetExists($_POST['target_name'] )) {
-         return _("A target with that name already exists!");
-      }
-      if($_POST['target_match'] == "IP" && $_POST['target_ip'] == "") {
-         return _("You have selected IP match but didn't entered a IP address!");
-      }
-      elseif($_POST['target_match'] == "IP" && $_POST['target_ip'] != "") {
-         /* Is target_ip a ip range seperated by "-" */
-         if(strstr($_POST['target_ip'], "-") !== false) {
-            $hosts = split("-", $_POST['target_ip']);
-            foreach($hosts as $host) {
-               $ipv4 = new Net_IPv4;
-               if(!$ipv4->validateIP($host)) {
-                  return _("Incorrect IP address in IP range definition! Please enter a valid IP address!");
-               }
-            }
-         }
-         /* Is target_ip a network */
-         elseif(strstr($_POST['target_ip'], "/") !== false) {
-            $ipv4 = new Net_IPv4;
-            $net = $ipv4->parseAddress($_POST['target_ip']);
-            if($net->netmask == "" || $net->netmask == "0.0.0.0") {
-               return _("Incorrect CIDR address! Please enter a valid network address!");
-            }
-         }
-         /* target_ip is a simple IP */
-         else {
-            $ipv4 = new Net_IPv4;
-            if(!$ipv4->validateIP($_POST['target_ip'])) {
-               return _("Incorrect IP address! Please enter a valid IP address!");
-            }
-         }
-      }
-      /* MAC address specified? */
-      if($_POST['target_match'] == "MAC" && $_POST['target_mac'] == "") {
-         return _("You have selected MAC match but didn't entered a MAC address!");
-      }
-      elseif($_POST['target_match'] == "MAC" && $_POST['target_mac'] != "") {
-         if(!preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $_POST['target_mac'])
-            && !preg_match("/(.*)-(.*)-(.*)-(.*)-(.*)-(.*)/", $_POST['target_mac'])) {
-            return _("You have selected MAC match but specified a INVALID MAC address! Please specify a correct MAC address!");
-         }
-      }
-      if($_POST['target_match'] == "GROUP" && isset($_POST['used']) && count($_POST['used']) < 1) {
-         return _("You have selected Group match but didn't selected at least one target from the list!");
-      }
-
-      if(isset($new)) {
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."targets
-               (target_name, target_match, target_ip, target_mac)
-            VALUES  (
-               '". $_POST['target_name'] ."',
-               '". $_POST['target_match'] ."',
-               '". $_POST['target_ip'] ."',
-               '". $_POST['target_mac'] ."'
-            )
-            ");
-
-         $_POST['target_idx'] = $db->db_getId();
-
-      }
-      else {
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."targets
-            SET 
-               target_name='". $_POST['target_name'] ."',
-               target_match='". $_POST['target_match'] ."',
-               target_ip='". $_POST['target_ip'] ."',
-               target_mac='". $_POST['target_mac'] ."'
-               WHERE target_idx='". $_POST['target_idx'] ."'
-         ");
-      }
-
-      if(isset($_POST['used']) && $_POST['used']) {
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_target_groups
-            WHERE
-               atg_group_idx='". $_POST['target_idx'] ."'
-         ");
-         foreach($_POST['used'] as $use) {
-            if($use != "") {
-               $db->db_query("
-                  INSERT INTO ". MYSQL_PREFIX ."assign_target_groups
-                     (atg_group_idx, atg_target_idx) 
-                  VALUES (
-                     '". $_POST['target_idx'] ."',
-                     '". $use ."'
-                  )
-               ");
-            }
-         }
-      }
-      return "ok";
-
-   } // store()
-
-   /**
     * display all targets
     */
    public function showList()
@@ -158,12 +45,17 @@ class Page_Targets extends MASTERSHAPER_PAGE {
          $this->parent->screen = 0;
 
       $this->avail_targets = Array();
-      $this->targets = Array(); 
+      $this->targets = Array();
 
       $res_targets = $db->db_query("
-         SELECT target_idx, target_name, target_match
-         FROM ". MYSQL_PREFIX ."targets
-         ORDER BY target_name ASC
+         SELECT
+            target_idx,
+            target_name,
+            target_match
+         FROM
+            ". MYSQL_PREFIX ."targets
+         ORDER BY
+            target_name ASC
       ");
 
       $cnt_targets = 0;
@@ -188,29 +80,99 @@ class Page_Targets extends MASTERSHAPER_PAGE {
          $this->store();
 
       global $db, $tmpl, $page;
-      
-      if($page->id != 0) {
-         $target = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."targets
-            WHERE
-               target_idx='". $page->id ."'
-         ");
 
-         $tmpl->assign('target_idx', $page->id);
-         $tmpl->assign('target_name', $target->target_name);
-         $tmpl->assign('target_match', $target->target_match);
-         $tmpl->assign('target_ip', $target->target_ip);
-         $tmpl->assign('target_mac', $target->target_mac);
-      }
-      else {
-         $tmpl->assign('target_match', 'IP');
-      }
+      if($page->id != 0)
+         $target = new Target($page->id);
+      else
+         $target = new Target;
+
+      $tmpl->assign('target', $target);
 
       $tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
       return $tmpl->fetch("targets_edit.tpl");
 
    } // showEdit()
+
+   /**
+    * handle updates
+    */
+   public function store()
+   {
+      global $ms, $db;
+
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+
+      /* load target */
+      if(isset($new))
+         $target = new Target;
+      else
+         $target = new Target($_POST['target_idx']);
+
+      if(!isset($_POST['target_name']) || $_POST['target_name'] == "") {
+         $ms->throwError(_("Please enter a name for this target!"));
+      }
+      if(isset($new) && $ms->check_object_exists('target', $_POST['target_name'])) { 
+         $ms->throwError(_("A target with that name already exists!"));
+      }
+      if(!isset($new) && $target->target_name != $_POST['target_name']
+         && $ms->check_object_exists('target', $_POST['target_name'] )) {
+         $ms->throwError(_("A target with that name already exists!"));
+      }
+      if($_POST['target_match'] == "IP" && $_POST['target_ip'] == "") {
+         $ms->throwError(_("You have selected IP match but didn't entered a IP address!"));
+      }
+      elseif($_POST['target_match'] == "IP" && $_POST['target_ip'] != "") {
+         /* Is target_ip a ip range seperated by "-" */
+         if(strstr($_POST['target_ip'], "-") !== false) {
+            $hosts = split("-", $_POST['target_ip']);
+            foreach($hosts as $host) {
+               $ipv4 = new Net_IPv4;
+               if(!$ipv4->validateIP($host)) {
+                  $ms->throwError(_("Incorrect IP address in IP range definition! Please enter a valid IP address!"));
+               }
+            }
+         }
+         /* Is target_ip a network */
+         elseif(strstr($_POST['target_ip'], "/") !== false) {
+            $ipv4 = new Net_IPv4;
+            $net = $ipv4->parseAddress($_POST['target_ip']);
+            if($net->netmask == "" || $net->netmask == "0.0.0.0") {
+               $ms->throwError(_("Incorrect CIDR address! Please enter a valid network address!"));
+            }
+         }
+         /* target_ip is a simple IP */
+         else {
+            $ipv4 = new Net_IPv4;
+            if(!$ipv4->validateIP($_POST['target_ip'])) {
+               $ms->throwError(_("Incorrect IP address! Please enter a valid IP address!"));
+            }
+         }
+      }
+      /* MAC address specified? */
+      if($_POST['target_match'] == "MAC" && $_POST['target_mac'] == "") {
+         $ms->throwError(_("You have selected MAC match but didn't entered a MAC address!"));
+      }
+      elseif($_POST['target_match'] == "MAC" && $_POST['target_mac'] != "") {
+         if(!preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $_POST['target_mac'])
+            && !preg_match("/(.*)-(.*)-(.*)-(.*)-(.*)-(.*)/", $_POST['target_mac'])) {
+            $ms->throwError(_("You have selected MAC match but specified an INVALID MAC address! Please specify a correct MAC address!"));
+         }
+      }
+      if($_POST['target_match'] == "GROUP" && isset($_POST['used']) && count($_POST['used']) < 1) {
+         $ms->throwError(_("You have selected Group match but didn't selected at least one target from the list!"));
+      }
+
+      $target_data = $ms->filter_form_data($_POST, 'target_');
+
+      if(!$target->update($target_data))
+         return false;
+
+      if(!$target->save())
+         return false;
+
+      return true;
+
+   } // store()
 
    /**
     * template function which will be called from the target listing template

@@ -4,7 +4,7 @@
  * Handler for mod_rewrite
  *
  * @package MasterShaper
- * @subpackage rewriter
+ * @subpackage Rewriter
  */
 
 class Rewriter {

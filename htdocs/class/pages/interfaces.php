@@ -73,21 +73,12 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
-         $if = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."interfaces
-            WHERE 
-               if_idx='". $page->id ."'");
+      if($page->id != 0)
+         $if = new Network_Interface($page->id);
+      else
+         $if = new Network_Interface;
 
-         $tmpl->assign('if_idx', $page->id);
-         $tmpl->assign('if_name', $if->if_name);
-         $tmpl->assign('if_speed', $if->if_speed);
-         $tmpl->assign('if_active', $if->if_active);
-         $tmpl->assign('if_ifb', $if->if_ifb);
-    
-      }
-
+      $tmpl->assign('if', $if);
       return $tmpl->fetch("interfaces_edit.tpl");
 
    } // showEdit()
@@ -133,17 +124,23 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
    {
       global $ms, $db;
 
-      isset($_POST['if_new']) && $_POST['if_new'] == 1 ? $new = 1 : $new = NULL;
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+
+      /* load interface */
+      if(isset($new))
+         $if = new Network_Interface;
+      else
+         $if = new Network_Interface($_POST['if_idx']);
 
       if(!isset($_POST['if_name']) || $_POST['if_name'] == "") {
-         return _("Please specify a interface!");
+         $ms->throwError(_("Please specify a interface!"));
       }
-      if(isset($new) && $this->checkInterfaceExists($_POST['if_name'])) {
-         return _("A interface with that name already exists!");
+      if(isset($new) && $ms->check_object_exists('interface', $_POST['if_name'])) {
+         $ms->throwError(_("A interface with that name already exists!"));
       }
-      if(!isset($new) && $_POST['namebefore'] != $_POST['if_name'] && 
-         $this->checkInterfaceExists($_POST['if_name'])) {
-         return _("A interface with that name already exists!");
+      if(!isset($new) && $if->if_name != $_POST['if_name'] && 
+         $ms->check_object_exists('interface', $_POST['if_name'])) {
+         $ms->throwError(_("A interface with that name already exists!"));
       }
       if(!isset($_POST['if_speed']) || $_POST['if_speed'] == "")
          $_POST['if_speed'] = 0;
@@ -151,35 +148,18 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
          $_POST['if_speed'] = strtoupper($_POST['if_speed']);
 
       if(!$ms->validateBandwidth($_POST['if_speed'])) {
-         return _("Invalid bandwidth specified!");
+         $ms->throwError(_("Invalid bandwidth specified!"));
       }
 
-      if(isset($new)) {
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."interfaces (
-               if_name, if_speed, if_ifb, if_active
-            ) VALUES (
-               '". $_POST['if_name'] ."',
-               '". $_POST['if_speed'] ."',
-               '". $_POST['if_ifb'] ."',
-               '". $_POST['if_active'] ."'
-            )
-         ");
-      }
-      else {
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."interfaces
-            SET
-               if_name='". $_POST['if_name'] ."',
-               if_speed='". $_POST['if_speed'] ."',
-               if_ifb='". $_POST['if_ifb'] ."',
-               if_active='". $_POST['if_active'] ."'
-            WHERE
-               if_idx='". $_POST['if_idx'] ."'
-         ");
-      }
-      
-      return "ok";
+      $if_data = $ms->filter_form_data($_POST, 'if_');
+
+      if(!$if->update($if_data))
+         return false;
+
+      if(!$if->save())
+         return false;
+
+      return true;
    
    } // store()
 

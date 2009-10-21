@@ -2,7 +2,7 @@
 
 /**
  * @package MasterShaper
- * @subpackage Pagej
+ * @subpackage Page
  */
 
 class Page {
@@ -57,6 +57,19 @@ class Page {
       $this->uri_pattern = $row->page_uri_pattern;
       $this->includefile = $row->page_includefile;
 
+      if($this->name == 'RPC Call') {
+         if(!isset($_POST['type']) || !isset($_POST['action']))
+            return false;
+         if(!is_string($_POST['type']) || !isset($_POST['action']))
+            return false;
+         if($_POST['type'] != "rpc")
+            return false;
+         $this->call_type = "rpc";
+         $this->action = $_POST['action'];
+         return true;
+      }
+
+      /* chains-123.html, pipes-12.html, ... */
       if(preg_match('/(.*)-([0-9]+)/', $rewriter->request)) {
          preg_match('/.*\/(.*)-([0-9]+)/', $rewriter->request, $parts);
 
@@ -68,6 +81,7 @@ class Page {
          $this->action = $parts[1];
          $this->id = $parts[2];
       }
+      /* overview.html, rules.html, ... */
       elseif(preg_match('/.*\/.*\.html$/', $rewriter->request)) {
          preg_match('/.*\/(.*)\.html$/', $rewriter->request, $parts);
          if(!$this->is_valid_action($parts[1]))
@@ -76,6 +90,7 @@ class Page {
          $this->action = $parts[1];
       }
 
+      $this->call_type = "common";
       return true;
 
    } // parse()
@@ -123,6 +138,7 @@ class Page {
          'pipes-jqPlot',
          'bandwidth',
          'bandwidth-jqPlot',
+         'rpc',
       );
 
       if(in_array($action, $valid_actions))
@@ -148,5 +164,19 @@ class Page {
       return false;
 
    } // is_valid_id()
+
+   /**
+    * return true if current request is a RPC call
+    *
+    * @return bool
+    */
+   public function is_rpc_call()
+   {
+      if($this->call_type == "rpc")
+         return true;
+
+      return false;
+
+   } // is_rpc_call
 
 }

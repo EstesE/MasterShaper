@@ -73,56 +73,12 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
 
       global $ms, $db, $tmpl, $page;
 
-      if($page->id != 0) {
-         $sl = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."service_levels
-            WHERE
-               sl_idx='". $page->id ."'
-         ");
+      if($page->id != 0)
+         $sl = new Service_Level($page->id);
+      else
+         $sl = new Service_Level;
 
-         $tmpl->assign('sl_idx', $page->id);
-         $tmpl->assign('sl_name', $sl->sl_name);
-         $tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
-         $tmpl->assign('sl_htb_bw_in_ceil', $sl->sl_htb_bw_in_ceil);
-         $tmpl->assign('sl_htb_bw_in_burst', $sl->sl_htb_bw_in_burst);
-         $tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
-         $tmpl->assign('sl_htb_bw_out_ceil', $sl->sl_htb_bw_out_ceil);
-         $tmpl->assign('sl_htb_bw_out_burst', $sl->sl_htb_bw_out_burst);
-         $tmpl->assign('sl_htb_priority', $sl->sl_htb_priority);
-         $tmpl->assign('sl_hfsc_in_umax', $sl->sl_hfsc_in_umax);
-         $tmpl->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
-         $tmpl->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
-         $tmpl->assign('sl_hfsc_in_ulrate', $sl->sl_hfsc_in_ulrate);
-         $tmpl->assign('sl_hfsc_out_umax', $sl->sl_hfsc_out_umax);
-         $tmpl->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
-         $tmpl->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
-         $tmpl->assign('sl_hfsc_out_ulrate', $sl->sl_hfsc_out_ulrate);
-         $tmpl->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
-         $tmpl->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
-         $tmpl->assign('sl_cbq_in_priority', $sl->sl_cbq_in_priority);
-         $tmpl->assign('sl_cbq_out_priority', $sl->sl_cbq_out_priority);
-         $tmpl->assign('sl_cbq_bounded', $sl->sl_cbq_bounded);
-         $tmpl->assign('sl_netem_delay', $sl->sl_netem_delay);
-         $tmpl->assign('sl_netem_jitter', $sl->sl_netem_jitter);
-         $tmpl->assign('sl_netem_random', $sl->sl_netem_random);
-         $tmpl->assign('sl_netem_distribution', $sl->sl_netem_distribution);
-         $tmpl->assign('sl_netem_loss', $sl->sl_netem_loss);
-         $tmpl->assign('sl_netem_duplication', $sl->sl_netem_duplication);
-         $tmpl->assign('sl_netem_gap', $sl->sl_netem_gap);
-         $tmpl->assign('sl_netem_reorder_percentage', $sl->sl_netem_reorder_percentage);
-         $tmpl->assign('sl_netem_reorder_correlation', $sl->sl_netem_reorder_correlation);
-         $tmpl->assign('sl_esfq_perturb', $sl->sl_esfq_perturb);
-         $tmpl->assign('sl_esfq_limit', $sl->sl_esfq_limit);
-         $tmpl->assign('sl_esfq_depth', $sl->sl_esfq_depth);
-         $tmpl->assign('sl_esfq_divisor', $sl->sl_esfq_divisor);
-         $tmpl->assign('sl_esfq_hash', $sl->sl_esfq_hash);
-
-      }
-      else {
-         /* preset values here */
-         
-      }
+      $tmpl->assign('sl', $sl);
 
       if(!isset($_GET['classifier']))
          $tmpl->assign('classifier', $ms->getOption("classifier"));
@@ -189,20 +145,26 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $db;
+      global $ms, $db;
 
-      isset($_POST['sl_new']) && $_POST['sl_new'] == 1 ? $new = 1 : $new = NULL;
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+
+      /* load service level */
+      if(isset($new))
+         $sl = new Service_Level;
+      else
+         $sl = new Service_Level($_POST['sl_idx']);
 
       if(!isset($_POST['sl_name']) || $_POST['sl_name'] == "") {
-         return _("Please enter a service level name!");
+         $ms->throwError(_("Please enter a service level name!"));
       }
 
-      if(isset($new) && $this->checkServiceLevelExists($_POST['sl_name'])) {
-         return _("A service level with that name already exists!");
+      if(isset($new) && $ms->check_object_exists('service_level', $_POST['sl_name'])) {
+         $ms->throwError(_("A service level with that name already exists!"));
       }
 
-      if(!isset($new) && $_POST['namebefore'] != $_POST['sl_name'] && $this->checkServiceLevelExists($_POST['sl_name'])) {
-         return _("A service level with that name already exists!");
+      if(!isset($new) && $sl->sl_name != $_POST['sl_name'] && $ms->check_object_exists('service_level', $_POST['sl_name'])) {
+         $ms->throwError(_("A service level with that name already exists!"));
       }
 
       $is_numeric = 1;
@@ -210,7 +172,7 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
       switch($_POST['classifiermode']) {
          case 'HTB':
             if($_POST['sl_htb_priority'] == 0 && $_POST['sl_htb_bw_in_rate'] == "" && $_POST['sl_htb_bw_out_rate'] == "") {
-               return _("A service level which ignores priority AND not specified inbound or outbound rate is not possible!");
+               $ms->throwError(_("A service level which ignores priority AND not specified inbound or outbound rate is not possible!"));
             }
             if($_POST['sl_htb_bw_in_rate'] != "" && !is_numeric($_POST['sl_htb_bw_in_rate']))
                $is_numeric = 0;
@@ -230,7 +192,7 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
             /* If umax is specifed, also umax is necessary */
             if(($_POST['sl_hfsc_in_umax'] != "" && $_POST['sl_hfsc_in_dmax'] == "") ||
                ($_POST['sl_hfsc_out_umax'] != "" && $_POST['sl_hfsc_out_dmax'] == "")) {
-               return _("Please enter a \"Max-Delay\" value if you have defined a \"Work-Unit\" value!");
+               $ms->throwError(_("Please enter a \"Max-Delay\" value if you have defined a \"Work-Unit\" value!"));
             }
             if($_POST['sl_hfsc_in_umax'] != "" && !is_numeric($_POST['sl_hfsc_in_umax']))
                $is_numeric = 0;
@@ -251,7 +213,7 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
             break;
          case 'CBQ':
             if($_POST['sl_cbq_in_rate'] == "" || $_POST['sl_cbq_out_rate'] == "") {
-               return _("Please enter a input and output rate!");
+               $ms->throwError(_("Please enter a input and output rate!"));
             }
             if($_POST['sl_cbq_in_rate'] != "" && !is_numeric($_POST['sl_cbq_in_rate']))
                $is_numeric = 0;
@@ -261,112 +223,20 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
       }
 
       if(!$is_numeric) {
-         return _("Please enter only numerical values for bandwidth parameters!");
+         $ms->throwError(_("Please enter only numerical values for bandwidth parameters!"));
       }
 
-      if(isset($new)) {
+      $sl_data = $ms->filter_form_data($_POST, 'sl_');
 
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."service_levels (
-               sl_name, sl_htb_bw_in_rate, sl_htb_bw_in_ceil, 
-               sl_htb_bw_in_burst, sl_htb_bw_out_rate, sl_htb_bw_out_ceil,
-               sl_htb_bw_out_burst, sl_htb_priority, sl_hfsc_in_umax,
-               sl_hfsc_in_dmax, sl_hfsc_in_rate, sl_hfsc_in_ulrate, 
-               sl_hfsc_out_umax, sl_hfsc_out_dmax, sl_hfsc_out_rate,
-               sl_hfsc_out_ulrate, sl_cbq_in_rate, sl_cbq_in_priority,
-               sl_cbq_out_rate, sl_cbq_out_priority, sl_cbq_bounded,
-               sl_qdisc, sl_netem_delay, sl_netem_jitter, sl_netem_random,
-               sl_netem_distribution, sl_netem_loss, sl_netem_duplication,
-               sl_netem_gap, sl_netem_reorder_percentage,
-               sl_netem_reorder_correlation, sl_esfq_perturb, sl_esfq_limit,
-               sl_esfq_depth, sl_esfq_divisor, sl_esfq_hash
-            ) VALUES (
-               '". $_POST['sl_name'] ."',
-               '". $_POST['sl_htb_bw_in_rate'] ."',
-               '". $_POST['sl_htb_bw_in_ceil'] ."',
-               '". $_POST['sl_htb_bw_in_burst'] ."',
-               '". $_POST['sl_htb_bw_out_rate'] ."',
-               '". $_POST['sl_htb_bw_out_ceil'] ."',
-               '". $_POST['sl_htb_bw_out_burst'] ."',
-               '". $_POST['sl_htb_priority'] ."',
-               '". $_POST['sl_hfsc_in_umax'] ."',
-               '". $_POST['sl_hfsc_in_dmax'] ."',
-               '". $_POST['sl_hfsc_in_rate'] ."',
-               '". $_POST['sl_hfsc_in_ulrate'] ."',
-               '". $_POST['sl_hfsc_out_umax'] ."',
-               '". $_POST['sl_hfsc_out_dmax'] ."',
-               '". $_POST['sl_hfsc_out_rate'] ."',
-               '". $_POST['sl_hfsc_out_ulrate'] ."',
-               '". $_POST['sl_cbq_in_rate'] ."',
-               '". $_POST['sl_cbq_in_priority'] ."',
-               '". $_POST['sl_cbq_out_rate'] ."',
-               '". $_POST['sl_cbq_out_priority'] ."',
-               '". $_POST['sl_cbq_bounded'] ."',
-               '". $_POST['sl_qdisc'] ."',
-               '". $_POST['sl_netem_delay'] ."', 
-               '". $_POST['sl_netem_jitter'] ."',
-               '". $_POST['sl_netem_random'] ."',
-               '". $_POST['sl_netem_distribution'] ."',
-               '". $_POST['sl_netem_loss'] ."',
-               '". $_POST['sl_netem_duplication'] ."',
-               '". $_POST['sl_netem_gap'] ."',
-               '". $_POST['sl_netem_reorder_percentage']."',
-               '". $_POST['sl_netem_reorder_correlation'] ."',
-               '". $_POST['sl_esfq_perturb'] ."',
-               '". $_POST['sl_esfq_limit'] ."',
-               '". $_POST['sl_esfq_depth'] ."',
-               '". $_POST['sl_esfq_divisor'] ."',
-               '". $_POST['sl_esfq_hash'] ."'
-            )
-         ");
-      }
-      else {
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."service_levels 
-            SET
-               sl_name='". $_POST['sl_name'] ."',
-               sl_htb_bw_in_rate='". $_POST['sl_htb_bw_in_rate'] ."',
-               sl_htb_bw_in_ceil='". $_POST['sl_htb_bw_in_ceil'] ."',
-               sl_htb_bw_in_burst='". $_POST['sl_htb_bw_in_burst'] ."',
-               sl_htb_bw_out_rate='". $_POST['sl_htb_bw_out_rate'] ."',
-               sl_htb_bw_out_ceil='". $_POST['sl_htb_bw_out_ceil'] ."',
-               sl_htb_bw_out_burst='". $_POST['sl_htb_bw_out_burst'] ."',
-               sl_htb_priority='". $_POST['sl_htb_priority'] ."',
-               sl_hfsc_in_umax='". $_POST['sl_hfsc_in_umax'] ."',
-               sl_hfsc_in_dmax='". $_POST['sl_hfsc_in_dmax'] ."',
-               sl_hfsc_in_rate='". $_POST['sl_hfsc_in_rate'] ."',
-               sl_hfsc_in_ulrate='". $_POST['sl_hfsc_in_ulrate'] ."',
-               sl_hfsc_out_umax='". $_POST['sl_hfsc_out_umax'] ."',
-               sl_hfsc_out_dmax='". $_POST['sl_hfsc_out_dmax'] ."',
-               sl_hfsc_out_rate='". $_POST['sl_hfsc_out_rate'] ."',
-               sl_hfsc_out_ulrate='". $_POST['sl_hfsc_out_ulrate'] ."',
-               sl_cbq_in_rate='". $_POST['sl_cbq_in_rate'] ."',
-               sl_cbq_in_priority='". $_POST['sl_cbq_in_priority'] ."',
-               sl_cbq_out_rate='". $_POST['sl_cbq_out_rate'] ."',
-               sl_cbq_out_priority='". $_POST['sl_cbq_out_priority'] ."',
-               sl_cbq_bounded='". $_POST['sl_cbq_bounded'] ."',
-               sl_qdisc='". $_POST['sl_qdisc'] ."',
-               sl_netem_delay='". $_POST['sl_netem_delay'] ."',
-               sl_netem_jitter='". $_POST['sl_netem_jitter'] ."',
-               sl_netem_random='". $_POST['sl_netem_random'] ."',
-               sl_netem_distribution='". $_POST['sl_netem_distribution'] ."',
-               sl_netem_loss='". $_POST['sl_netem_loss'] ."',
-               sl_netem_duplication='". $_POST['sl_netem_duplication'] ."',
-               sl_netem_gap='". $_POST['sl_netem_gap'] ."',
-               sl_netem_reorder_percentage='". $_POST['sl_netem_reorder_percentage']."',
-               sl_netem_reorder_correlation='". $_POST['sl_netem_reorder_correlation'] ."',
-               sl_esfq_perturb='". $_POST['sl_esfq_perturb'] ."',
-               sl_esfq_limit='". $_POST['sl_esfq_limit'] ."',
-               sl_esfq_depth='". $_POST['sl_esfq_depth'] ."',
-               sl_esfq_divisor='". $_POST['sl_esfq_divisor'] ."',
-               sl_esfq_hash='". $_POST['sl_esfq_hash'] ."'
-            WHERE sl_idx='". $_POST['sl_idx'] ."'
-         ");
-      }
+      if(!$sl->update($sl_data))
+         return false;
 
-      return "ok";
+      if(!$sl->save())
+         return false;
 
-   } // edit()
+      return true;
+
+   } // store()
 
 } // class Page_Service_Levels
 

@@ -20,7 +20,7 @@
    <a href="{$rewriter->get_page_url('User Edit', $user_idx)}">{ $user_name }</a>
   </td>
   <td style="text-align: center;">
-   <a href="javascript: deleteObj('user', 'users', '{ $user_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a class="delete" id="user-{$user_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $user_active == 'Y' }
    <a href="javascript:toggleStatus('user', 'users', '{ $user_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }

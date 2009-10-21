@@ -21,113 +21,29 @@
  *
  ***************************************************************************/
 
-class Protocol extends MASTERSHAPER_PAGE {
+class Protocol extends MsObject {
 
    /**
     * Protocol constructor
     *
     * Initialize the Protocol class
     */
-   public function __construct()
+   public function __construct($id = null)
    {
+      parent::__construct($id, Array(
+         'table_name' => 'protocols',
+         'col_name' => 'proto',
+         'fields' => Array(
+            'proto_idx' => 'integer',
+            'proto_number' => 'text',
+            'proto_name' => 'text',
+            'proto_desc' => 'text',
+            'proto_user_defined' => 'text',
+         ),
+      ));
 
    } // __construct()
 
-   /**
-    * handle updates
-    */
-   public function store()
-   {
-      global $db;
-
-      isset($_POST['proto_new']) && $_POST['proto_new'] == 1 ? $new = 1 : $new = NULL;
-
-      if(!isset($_POST['proto_name']) || $_POST['proto_name'] == "") {
-         return _("Please enter a protocol name!");
-      }
-      if(isset($new) && $this->checkProtocolExists($_POST['proto_name'])) {
-         return _("A protocol with that name already exists!");
-      }
-      if(!isset($new) && $_POST['namebefore'] != $_POST['proto_name']
-         && $this->checkProtocolExists($_POST['proto_name'])) {
-         return _("A protocol with that name already exists!");
-      }
-      if(!is_numeric($_POST['proto_number'])) {
-         return _("Protocol number needs to be an integer value!");
-      }
-
-      if(isset($new)) {
-
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."protocols 
-               (proto_name, proto_number, proto_user_defined)
-            VALUES (
-               '". $_POST['proto_name'] ."',
-               '". $_POST['proto_number'] ."',
-               'Y')
-         ");
-      }
-      else {
-		     $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."protocols
-               SET 
-                  proto_name='". $_POST['proto_name'] ."',
-                  proto_number='". $_POST['proto_number'] ."',
-                  proto_user_defined='Y'
-               WHERE
-                  proto_idx='". $_POST['proto_idx'] ."'
-            ");
-      }
-
-      return "ok";
-
-   } // store()
-
-   /**
-    * checks if provided protocol name already exists
-    * and will return true if so.
-    */
-   private function checkProtocolExists($proto_name)
-   {
-      global $db;
-
-      if($db->db_fetchSingleRow("
-         SELECT proto_idx
-         FROM ". MYSQL_PREFIX ."protocols
-         WHERE
-            proto_name LIKE BINARY '". $proto_name ."'
-         ")) {
-         return true;
-      } 
-      return false;
-   } // checkProtocolExists()
-
-   /**
-    * delete protocol
-    */
-   public function delete()
-   {
-      global $db;
-
-      if(isset($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."protocols
-            WHERE
-               proto_idx='". $idx ."'
-         ");
-   
-         return "ok";
-      }
-
-      return "unkown error";
-
-   } // delete()
-
 } // class Protocol
-
-$obj = new Protocol;
-$obj->handler();
 
 ?>

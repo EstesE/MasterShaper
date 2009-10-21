@@ -21,119 +21,33 @@
  *
  ***************************************************************************/
 
-class Interface extends MASTERSHAPER_PAGE {
+class Network_Interface extends MsObject {
 
    /**
-    * Interface constructor
+    * Network_Interface constructor
     *
-    * Initialize the Interface class
+    * Initialize the Network_Interface class
     */
-   public function __construct()
+   public function __construct($id = null)
    {
+      parent::__construct($id, Array(
+         'table_name' => 'interfaces',
+         'col_name' => 'if',
+         'fields' => Array(
+            'if_idx' => 'integer',
+            'if_name' => 'text',
+            'if_speed' => 'text',
+            'if_ifb' => 'text',
+            'if_active' => 'text',
+         ),
+      ));
+
+      if(!isset($id) || empty($id)) {
+         $this->if_active = 'Y';
+      }
 
    } // __construct()
   
-   /**
-    * delete interface
-    */
-   public function delete()
-   {
-      global $db;
-
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-   
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."interfaces
-            WHERE
-               if_idx='". $idx ."'
-         ");
-         
-         return "ok";
-      }
-   
-      return "unkown error";
-
-   } // delete() 
-
-   /**
-    * checks if provided interface name already exists
-    * and will return true if so.
-    */
-   private function checkInterfaceExists($if_name)
-   {
-      global $db;
-
-      if($db->db_fetchSingleRow("
-         SELECT if_idx
-         FROM ". MYSQL_PREFIX ."interfaces
-         WHERE
-            if_name LIKE BINARY '". $if_name ."'
-         ")) {
-         return true;
-      }
-
-      return false;
-
-   } // checkInterfaceExists()
-
-   /**
-    * handle updates
-    */
-   public function store()
-   {
-      global $ms, $db;
-
-      isset($_POST['if_new']) && $_POST['if_new'] == 1 ? $new = 1 : $new = NULL;
-
-      if(!isset($_POST['if_name']) || $_POST['if_name'] == "") {
-         return _("Please specify a interface!");
-      }
-      if(isset($new) && $this->checkInterfaceExists($_POST['if_name'])) {
-         return _("A interface with that name already exists!");
-      }
-      if(!isset($new) && $_POST['namebefore'] != $_POST['if_name'] && 
-         $this->checkInterfaceExists($_POST['if_name'])) {
-         return _("A interface with that name already exists!");
-      }
-      if(!isset($_POST['if_speed']) || $_POST['if_speed'] == "")
-         $_POST['if_speed'] = 0;
-      else
-         $_POST['if_speed'] = strtoupper($_POST['if_speed']);
-
-      if(!$ms->validateBandwidth($_POST['if_speed'])) {
-         return _("Invalid bandwidth specified!");
-      }
-
-      if(isset($new)) {
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."interfaces (
-               if_name, if_speed, if_ifb, if_active
-            ) VALUES (
-               '". $_POST['if_name'] ."',
-               '". $_POST['if_speed'] ."',
-               '". $_POST['if_ifb'] ."',
-               '". $_POST['if_active'] ."'
-            )
-         ");
-      }
-      else {
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."interfaces
-            SET
-               if_name='". $_POST['if_name'] ."',
-               if_speed='". $_POST['if_speed'] ."',
-               if_ifb='". $_POST['if_ifb'] ."',
-               if_active='". $_POST['if_active'] ."'
-            WHERE
-               if_idx='". $_POST['if_idx'] ."'
-         ");
-      }
-      
-      return "ok";
-   
-   } // store()
-
    /**
     * toggle interface status
     */
@@ -165,9 +79,6 @@ class Interface extends MASTERSHAPER_PAGE {
 
    } // toggleStatus()
 
-} // class Interface
-
-$obj = new Interface;
-$obj->handler();
+} // class Network_Interface
 
 ?>

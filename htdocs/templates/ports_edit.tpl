@@ -2,14 +2,13 @@
 <form action="{$page->uri}" id="ports" method="post">
 <input type="hidden" name="module" value="port" />
 <input type="hidden" name="action" value="store" />
-{ if ! $port_idx }
+{ if ! $port->port_idx }
  {start_table icon=$icon_ports alt="port icon" title="Create a new Port" }
- <input type="hidden" name="port_new" value="1" />
+ <input type="hidden" name="new" value="1" />
 { else }
- {start_table icon=$icon_ports alt="port icon" title="Modify Port $port_name" }
- <input type="hidden" name="port_new" value="0" />
- <input type="hidden" name="namebefore" value="{ $port_name }" />
- <input type="hidden" name="port_idx" value="{ $port_idx }" />
+ {start_table icon=$icon_ports alt="port icon" title="Modify Port `$port->port_name`" }
+ <input type="hidden" name="new" value="0" />
+ <input type="hidden" name="port_idx" value="{ $port->port_idx }" />
 { /if }
 <table style="width: 100%" class="withborder">
  <tr>
@@ -19,12 +18,12 @@
  </tr>
  <tr>
   <td>Name:</td>
-  <td><input type="text" name="port_name" size="30" value="{ $port_name }" /></td>
+  <td><input type="text" name="port_name" size="30" value="{ $port->port_name }" /></td>
   <td>Name of the Port</td>
  </tr>
  <tr>
   <td>Description:</td>
-  <td><input type="text" name="port_desc" size="30" value="{ $port_desc }" /></td>
+  <td><input type="text" name="port_desc" size="30" value="{ $port->port_desc }" /></td>
   <td>Short description of the port.</td>
  </tr>
  <tr>
@@ -35,7 +34,7 @@
  <tr>
   <td>Number:</td>
   <td>
-   <input type="text" name="port_number" size="30" value="{ $port_number }" />
+   <input type="text" name="port_number" size="30" value="{ $port->port_number }" />
   </td>
   <td>Add multiple port splitted with ',' or lists like 22-25</td>
  </tr>

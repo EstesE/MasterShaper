@@ -83,28 +83,12 @@ class Page_Chains extends MASTERSHAPER_PAGE {
       global $db, $tmpl, $page;
 
       if($page->id != 0) {
-         $chain = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."chains
-            WHERE
-               chain_idx='". $page->id ."'
-         ");
-
-         $tmpl->assign('chain_idx', $page->id);
-         $tmpl->assign('chain_name', $chain->chain_name);
-         $tmpl->assign('chain_active', $chain->chain_active);
-         $tmpl->assign('chain_direction', $chain->chain_direction);
-         $tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
-         $tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
-         $tmpl->assign('chain_src_target', $chain->chain_src_target);
-         $tmpl->assign('chain_dst_target', $chain->chain_dst_target);
-         $tmpl->assign('chain_netpath_idx', $chain->chain_netpath_idx);
-     }
-      else {
-         $tmpl->assign('chain_active', 'Y');
-         $tmpl->assign('chain_fallback_idx', -1);
-         $tmpl->assign('chain_direction', 2);
+         $chain = new Chain($page->id);
       }
+      else {
+         $chain = new Chain;
+      }
+      $tmpl->assign('chain', $chain);
 
       $tmpl->register_function("unused_pipes_select_list", array(&$this, "smarty_unused_pipes_select_list"), false);
       $tmpl->register_function("used_pipes_select_list", array(&$this, "smarty_used_pipes_select_list"), false);
@@ -168,92 +152,36 @@ class Page_Chains extends MASTERSHAPER_PAGE {
    {
       global $ms, $db;
 
-      isset($_POST['chain_new']) && $_POST['chain_new'] == 1 ? $new = 1 : $new = NULL;
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
-      if(!isset($_POST['chain_name']) || $_POST['chain_name'] == "") {
+      /* load chain */
+      if(isset($new))
+         $chain = new Chain;
+      else
+         $chain = new Chain($_POST['chain_idx']);
+
+      if(!isset($new) && (!isset($_POST['chain_idx']) || !is_numeric($_POST['chain_idx'])))
+         $ms->throwError(_("Missing id of chain to be handled!"));
+
+      if(!isset($_POST['chain_name']) || empty($_POST['chain_name']))
          $ms->throwError(_("Please enter a chain name!"));
-      }
-      if(isset($new) && $this->checkChainExists($_POST['chain_name'])) {
+
+      if(isset($new) && $ms->check_object_exists('chain', $_POST['chain_name']))
          $ms->throwError(_("A chain with such a name already exists!"));
-      }
-      if(!isset($new) && $_POST['chain_name'] != $_POST['namebefore'] && 
-         $this->checkChainExists($_POST['chain_name'])) {
+
+      if(!isset($new) && $_POST['chain_name'] != $chain->chain_name &&
+         $ms->check_object_exists('chain', $_POST['chain_name']))
          $ms->throwError(_("A chain with such a name already exists!"));
-      }
 
-      if(isset($new)) {
-						
-         $max_pos = $db->db_fetchSingleRow("
-            SELECT
-               MAX(chain_position) as pos
-            FROM
-               ". MYSQL_PREFIX ."chains
-            WHERE
-               chain_netpath_idx='". $_POST['chain_netpath_idx'] ."'
-         ");
+      $chain_data = $ms->filter_form_data($_POST, 'chain_'); 
 
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."chains (
-               chain_name, chain_sl_idx, chain_src_target, chain_dst_target, 
-               chain_position, chain_direction, chain_netpath_idx,
-               chain_active, chain_fallback_idx
-            ) VALUES (
-               '". $_POST['chain_name'] ."',
-               '". $_POST['chain_sl_idx'] ."',
-               '". $_POST['chain_src_target'] ."',
-               '". $_POST['chain_dst_target'] ."',
-               '". ($max_pos->pos+1) ."',
-               '". $_POST['chain_direction'] ."',
-               '". $_POST['chain_netpath_idx'] ."',
-               '". $_POST['chain_active'] ."',
-               '". $_POST['chain_fallback_idx'] ."'
-            )
-         ");
+      if(!$chain->update($chain_data))
+         return false;
 
-         $_POST['chain_idx'] = $db->db_getid();
+      if(!$chain->save())
+         return false;
 
-      }
-      else {
-
-         $db->db_query("
-            UPDATE
-               ". MYSQL_PREFIX ."chains
-            SET
-               chain_name='". $_POST['chain_name'] ."',
-               chain_sl_idx='". $_POST['chain_sl_idx'] ."',
-               chain_src_target='". $_POST['chain_src_target'] ."',
-               chain_dst_target='". $_POST['chain_dst_target'] ."',
-               chain_direction='". $_POST['chain_direction'] ."',
-               chain_netpath_idx='". $_POST['chain_netpath_idx'] ."',
-               chain_active='". $_POST['chain_active'] ."',
-               chain_fallback_idx='". $_POST['chain_fallback_idx'] ."'
-            WHERE
-               chain_idx='". $_POST['chain_idx'] ."'");
-      }
-
-      if(isset($_POST['used']) && $_POST['used']) {
-         $db->db_query("
-            DELETE FROM
-               ". MYSQL_PREFIX ."assign_pipes_to_chains
-            WHERE
-               apc_chain_idx='". $_POST['chain_idx'] ."'
-         ");
-
-         foreach($_POST['used'] as $use) {
-            if($use != "") {
-               $db->db_query("
-                  INSERT INTO ". MYSQL_PREFIX ."assign_pipes_to_chains (
-                     apc_pipe_idx, apc_chain_idx
-                  ) VALUES (
-                     '". $use ."',
-                     '". $_POST['chain_idx'] ."'
-                  )
-               ");
-            }
-         }
-      }
-
-      return "ok";
+      return true;
 
    } // store()
 

@@ -73,25 +73,12 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
-         $np = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."network_paths
-            WHERE
-               netpath_idx='". $page->id ."'
-         ");
+      if($page->id != 0)
+         $np = new Network_Path($page->id);
+      else
+         $np = new Network_Path;
 
-         $tmpl->assign('netpath_idx', $page->id);
-         $tmpl->assign('netpath_name', $np->netpath_name);
-         $tmpl->assign('netpath_if1', $np->netpath_if1);
-         $tmpl->assign('netpath_if1_inside_gre', $np->netpath_if1_inside_gre);
-         $tmpl->assign('netpath_if2', $np->netpath_if2);
-         $tmpl->assign('netpath_if2_inside_gre', $np->netpath_if2_inside_gre);
-         $tmpl->assign('netpath_imq', $np->netpath_imq);
-         $tmpl->assign('netpath_active', $np->netpath_active);
-    
-      }
-
+      $tmpl->assign('np', $np);
       $tmpl->register_function("if_select_list", array(&$this, "smarty_if_select_list"), false);
       return $tmpl->fetch("network_paths_edit.tpl");
 
@@ -139,62 +126,39 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $db;
+      global $ms, $db;
 
-      isset($_POST['netpath_new']) && $_POST['netpath_new'] == 1 ? $new = 1 : $new = NULL;
+      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+
+      /* load network path */
+      if(isset($new))
+         $np = new Network_Path;
+      else
+         $np = new Network_Path($_POST['netpath_idx']);
 
       if(!isset($_POST['netpath_name']) || $_POST['netpath_name'] == "") {
-         return _("Please specify a network path name!");
+         $ms->throwError(_("Please specify a network path name!"));
       }
-      if(isset($new) && $this->checkNetworkPathExists($_POST['netpath_name'])) {
-         return _("A network path with that name already exists!");
+      if(isset($new) && $ms->check_object_exists('netpath', $_POST['netpath_name'])) {
+         $ms->throwError(_("A network path with that name already exists!"));
       }
-      if(!isset($new) && $_POST['netpath_name'] != $_POST['namebefore'] &&
-         $this->checkNetworkPathExists($_POST['netpath_name'])) {
-         return _("A network path with that name already exists!");
+      if(!isset($new) && $np->netpath_name != $_POST['namebefore'] &&
+         $ms->check_object_exists('netpath', $_POST['netpath_name'])) {
+         $ms->throwError(_("A network path with that name already exists!"));
       }
       if($_POST['netpath_if1'] == $_POST['netpath_if2']) {
-         return _("A interface within a network path can not be used twice! Please select different interfaces");
+         $ms->throwError(_("A interface within a network path can not be used twice! Please select different interfaces"));
       }
 
-      if(isset($new)) {
-         $max_pos = $db->db_fetchSingleRow("
-            SELECT MAX(netpath_position) as pos
-            FROM ". MYSQL_PREFIX ."network_paths
-         ");
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."network_paths (
-               netpath_name, netpath_if1, netpath_if1_inside_gre,
-               netpath_if2, netpath_if2_inside_gre, netpath_position,
-               netpath_imq, netpath_active
-            ) VALUES (
-               '". $_POST['netpath_name'] ."',
-               '". $_POST['netpath_if1'] ."',
-               '". $_POST['netpath_if1_inside_gre'] ."',
-               '". $_POST['netpath_if2'] ."',
-               '". $_POST['netpath_if2_inside_gre'] ."',
-               '". ($max_pos->pos+1) ."',
-               '". $_POST['netpath_imq'] ."',
-               '". $_POST['netpath_active'] ."'
-            )
-         ");
-      }
-      else {
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."network_paths
-            SET
-               netpath_name='". $_POST['netpath_name'] ."',
-               netpath_if1='". $_POST['netpath_if1'] ."',
-               netpath_if1_inside_gre='". $_POST['netpath_if1_inside_gre'] ."',
-               netpath_if2='". $_POST['netpath_if2'] ."',
-               netpath_if2_inside_gre='". $_POST['netpath_if2_inside_gre'] ."',
-               netpath_imq='". $_POST['netpath_imq'] ."',
-               netpath_active='". $_POST['netpath_active'] ."'
-            WHERE
-               netpath_idx='". $_POST['netpath_idx'] ."'");
-      }
-		  
-      return "ok";
+      $np_data = $ms->filter_form_data($_POST, 'netpath_');
+
+      if(!$np->update($np_data))
+         return false;
+
+      if(!$np->save())
+         return false;
+
+      return true;
 
    } // store()
 

@@ -2,14 +2,13 @@
 <form action="{$page->uri}" id="targets" onsubmit="selectAll('used[]');" method="post">
 <input type="hidden" name="module" value="target" />
 <input type="hidden" name="action" value="store" />
-{ if ! $target_idx }
+{ if ! $target->target_idx }
  {start_table icon=$icon_targets alt="target icon" title="Create a new Target" }
- <input type="hidden" name="target_new" value="1">
+ <input type="hidden" name="new" value="1">
 { else }
- {start_table icon=$icon_targets alt="target icon" title="Modify Target $target_name" }
- <input type="hidden" name="target_new" value="0" />
- <input type="hidden" name="namebefore" value="{ $target_name }" />
- <input type="hidden" name="target_idx" value="{ $target_idx }" />
+ {start_table icon=$icon_targets alt="target icon" title="Modify Target `$target->target_name`" }
+ <input type="hidden" name="new" value="0" />
+ <input type="hidden" name="target_idx" value="{ $target->target_idx }" />
 { /if }
 <table style="width: 100%;" class="withborder">
  <tr>
@@ -22,7 +21,7 @@
  </tr>
  <tr>
   <td>Name:</td>
-  <td><input type="text" name="target_name" size="30" value="{ $target_name }" /></td>
+  <td><input type="text" name="target_name" size="30" value="{ $target->target_name }" /></td>
   <td>Name of the target.</td>
  </tr>
  <tr>
@@ -36,25 +35,25 @@
    <table class="noborder">
     <tr>
      <td style="white-space: nowrap;">
-      <input type="radio" name="target_match" value="IP" { if $target_match == "IP" } checked="checked" { /if } />IP
+      <input type="radio" name="target_match" value="IP" { if $target->target_match == "IP" } checked="checked" { /if } />IP
      </td>
 	  <td>&nbsp;</td>
      <td>
-	   <input type="text" name="target_ip" size="30" value="{ $target_ip }" />
+	   <input type="text" name="target_ip" size="30" value="{ $target->target_ip }" />
 	  </td>
     </tr>
     <tr>
      <td style="white-space: nowrap;">
-	   <input type="radio" name="target_match" value="MAC" { if $target_match == "MAC" } checked="checked" { /if } />MAC
+	   <input type="radio" name="target_match" value="MAC" { if $target->target_match == "MAC" } checked="checked" { /if } />MAC
      </td>
 	  <td>&nbsp;</td>
 	  <td>
-	   <input type="text" name="target_mac" size="30" value="{ $target_mac }" />
+	   <input type="text" name="target_mac" size="30" value="{ $target->target_mac }" />
 	  </td>
     </tr>
     <tr>
      <td style="white-space: nowrap;">
-	   <input type="radio" name="target_match" value="GROUP" { if $target_match == "GROUP" } checked="checked" { /if } />Group
+	   <input type="radio" name="target_match" value="GROUP" { if $target->target_match == "GROUP" } checked="checked" { /if } />Group
      </td>
 	  <td>&nbsp;</td>
 	  <td>
@@ -63,7 +62,7 @@
 	     <td>
 	      <select name="avail[]" size="5" multiple="multiple">
 	       <option value="">********* Unused *********</option>
-          { target_select_list group=unused idx=$target_idx }
+          { target_select_list group=unused idx=$target->target_idx }
          </select>
 	     </td>
 	     <td>&nbsp;</td>
@@ -75,7 +74,7 @@
 	     <td>
 	      <select name="used[]" size="5" multiple="multiple">
 	       <option value="">********* Used *********</option>
-          { target_select_list group=used idx=$target_idx }
+          { target_select_list group=used idx=$target->target_idx }
 	      </select>
         </td>
        </tr>

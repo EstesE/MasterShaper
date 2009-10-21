@@ -21,130 +21,44 @@
  *
  ***************************************************************************/
 
-class User extends MASTERSHAPER_PAGE {
+class User extends MsObject {
 
    /**
     * User constructor
     *
     * Initialize the User class
     */
-   public function __construct()
+   public function __construct($id = null)
    {
+      parent::__construct($id, Array(
+         'table_name' => 'users',
+         'col_name' => 'user',
+         'fields' => Array(
+            'user_idx' => 'integer',
+            'user_name' => 'text',
+            'user_pass' => 'text',
+            'user_manage_chains' => 'text',
+            'user_manage_pipes' => 'text',
+            'user_manage_filters' => 'text',
+            'user_manage_ports' => 'text',
+            'user_manage_protocols' => 'text',
+            'user_manage_targets' => 'text',
+            'user_manage_users' => 'text',
+            'user_manage_options' => 'text',
+            'user_manage_servicelevels' => 'text',
+            'user_show_rules' => 'text',
+            'user_load_rules' => 'text',
+            'user_show_monitor' => 'text',
+            'user_active' => 'text',
+         ),
+      ));
+
+      if(!isset($id) || empty($id)) {
+         $this->user_active = 'Y';
+      }
 
    } // __construct()
   
-   /** 
-    * store user values
-    */
-   public function store()
-   {
-      global $db;
-
-      isset($_POST['user_new']) && $_POST['user_new'] == 1 ? $new = 1 : $new = NULL;
-
-      if(!isset($_POST['user_name']) || $_POST['user_name'] == "") {
-         return _("Please enter a user name!");
-      }
-      if(isset($new) && $this->checkUserExists($_POST['user_name'])) {
-         return _("A user with such a user name already exist!");
-      }
-      if($_POST['user_pass1'] == "") {
-         return _("Empty passwords are not allowed!");
-      }
-      if($_POST['user_pass1'] != $_POST['user_pass2']) {
-         return _("The two entered passwords do not match!");
-      }	       
-
-      if(isset($new)) {
-
-         $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."users (
-               user_name, user_pass, user_manage_chains,
-               user_manage_pipes, user_manage_filters,
-               user_manage_ports, user_manage_protocols, 
-               user_manage_targets, user_manage_users,
-               user_manage_options, user_manage_servicelevels,
-               user_load_rules, user_show_rules, user_show_monitor,
-               user_active
-            ) VALUES (
-               '". $_POST['user_name'] ."',
-               '". md5($_POST['user_pass1']) ."',
-               '". $_POST['user_manage_chains'] ."',
-               '". $_POST['user_manage_pipes'] ."',
-               '". $_POST['user_manage_filters'] ."',
-               '". $_POST['user_manage_ports'] ."',
-               '". $_POST['user_manage_protocols'] ."',
-               '". $_POST['user_manage_targets'] ."',
-               '". $_POST['user_manage_users'] ."',
-               '". $_POST['user_manage_options'] ."',
-               '". $_POST['user_manage_servicelevels'] ."',
-               '". $_POST['user_load_rules'] ."',
-               '". $_POST['user_show_rules'] ."',
-               '". $_POST['user_show_monitor'] ."',
-               '". $_POST['user_active'] ."'
-            )
-         ");
-      }
-      else {
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."users
-            SET
-               user_name='". $_POST['user_name'] ."',
-               user_manage_chains='". $_POST['user_manage_chains'] ."',
-               user_manage_pipes='". $_POST['user_manage_pipes'] ."',
-               user_manage_filters='". $_POST['user_manage_filters'] ."',
-               user_manage_ports='". $_POST['user_manage_ports'] ."',
-               user_manage_protocols='". $_POST['user_manage_protocols'] ."',
-               user_manage_targets='". $_POST['user_manage_targets'] ."',
-               user_manage_users='". $_POST['user_manage_users'] ."',
-               user_manage_options='". $_POST['user_manage_options'] ."',
-               user_manage_servicelevels='". $_POST['user_manage_servicelevels'] ."',
-               user_load_rules='". $_POST['user_load_rules'] ."',
-               user_show_rules='". $_POST['user_show_rules'] ."',
-               user_show_monitor='". $_POST['user_show_monitor'] ."',
-               user_active='". $_POST['user_active'] ."'
-            WHERE
-               user_idx='". $_POST['user_idx'] ."'
-         ");
-
-         if($_POST['user_pass1'] != "nochangeMS") {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."users
-               SET
-                  user_pass='". md5($_POST['user_pass1']) ."' 
-               WHERE
-                  user_idx='". $_POST['user_idx'] ."'
-            ");
-         }
-      }
-		  
-      return "ok";
-
-   } // store()
-
-   /**
-    * delete user
-    */
-   public function delete()
-   {
-      global $db;
-
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."users
-            WHERE
-               user_idx='". $idx ."'
-         ");
-
-         return "ok";
-	    }
-
-      return "unkown error";
-   
-   } // delete()
-
    /**
     * toggle user active/inactive
     */
@@ -170,30 +84,6 @@ class User extends MASTERSHAPER_PAGE {
 
    } // toggleStatus()
 
-   /**
-    * checks if provided user name already exists
-    * and will return true if so.
-    */
-   private function checkUserExists($user_name)
-   {
-      global $db;
-
-      if($db->db_fetchSingleRow("
-         SELECT user_idx
-         FROM ". MYSQL_PREFIX ."users
-         WHERE
-            user_name LIKE BINARY '". $user_name ."'
-         ")) {
-         return true;
-      }
-
-      return false;
-
-   } // checkTargetExists()
-
 } // class User
-
-$obj = new User;
-$obj->handler();
 
 ?>

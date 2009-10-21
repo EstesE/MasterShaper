@@ -21,46 +21,40 @@
  *
  ***************************************************************************/
 
-class Chain extends MsObject {
+class Pipe extends MsObject {
 
    /**
-    * Chain constructor
+    * Pipe constructor
     *
-    * Initialize the Chain class
+    * Initialize the Pipe class
     */
    public function __construct($id = null)
    {
       parent::__construct($id, Array(
-         'table_name' => 'chains',
-         'col_name' => 'chain',
+         'table_name' => 'pipes',
+         'col_name' => 'pipe',
          'fields' => Array(
-            'chain_idx' => 'integer',
-            'chain_name' => 'text',
-            'chain_active' => 'text',
-            'chain_sl_idx' => 'integer',
-            'chain_src_target' => 'integer',
-            'chain_dst_target' => 'integer',
-            'chain_position' => 'integer',
-            'chain_direction' => 'integer',
-            'chain_fallback_idx' => 'integer',
-            'chain_action' => 'text',
-            'chain_tc_id' => 'text',
-            'chain_netpath_idx' => 'integer',
+            'pipe_idx' => 'integer',
+            'pipe_name' => 'text',
+            'pipe_sl_idx' => 'integer',
+            'pipe_position' => 'integer',
+            'pipe_src_target' => 'integer',
+            'pipe_dst_target' => 'integer',
+            'pipe_direction' => 'integer',
+            'pipe_action' => 'text',
+            'pipe_active' => 'text',
+            'pipe_tc_id' => 'text',
          ),
       ));
 
-      /* it seems a new chain gets created, preset some values */
+      /* it seems a new pipe gets created, preset some values */
       if(!isset($id) || empty($id)) {
-         $this->chain_active       = 'Y';
-         $this->chain_fallback_idx = -1;
-         $this->chain_direction    = 2;
+         $this->pipe_active = 'Y';
+         $this->pipe_direction = 2;
       }
 
    } // __construct()
 
-   /**
-    * handle updates
-    */
    public function pre_save()
    {
       global $db;
@@ -71,18 +65,18 @@ class Chain extends MsObject {
 
       $max_pos = $db->db_fetchSingleRow("
          SELECT
-            MAX(chain_position) as pos
+            MAX(apc_pipe_pos) as pos
          FROM
-            ". MYSQL_PREFIX ."chains
+            ". MYSQL_PREFIX ."assign_pipes_to_chains
          WHERE
-            chain_netpath_idx='". $_POST['chain_netpath_idx'] ."'
+            apc_chain_idx='". $_POST['chain_idx'] ."'
       ");
 
-      $this->chain_position = ($max_pos->pos+1);
+      $this->pipe_position = ($max_pos->pos+1);
 
       return true;
 
-   } // pre_save()
+   } // pre_save();
 
    public function post_save()
    {
@@ -90,9 +84,9 @@ class Chain extends MsObject {
 
       $db->db_query("
          DELETE FROM
-            ". MYSQL_PREFIX ."assign_pipes_to_chains
+            ". MYSQL_PREFIX ."assign_filters_to_pipes
          WHERE
-            apc_chain_idx='". $this->id ."'
+            apf_pipe_idx='". $_POST['pipe_idx'] ."'
       ");
 
       foreach($_POST['used'] as $use) {
@@ -101,12 +95,12 @@ class Chain extends MsObject {
             continue;
 
          $db->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."assign_pipes_to_chains (
-               apc_pipe_idx,
-               apc_chain_idx
+            INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (
+               apf_pipe_idx,
+               apf_filter_idx
             ) VALUES (
-               '". $use ."',
-               '". $this->id ."'
+               '". $this->id ."',
+               '". $use ."'
             )
          ");
       }
@@ -115,12 +109,8 @@ class Chain extends MsObject {
 
    } // post_save()
 
-   /**
-    * post delete function
-    *
-    * this function will be called by MsObject::delete()
-    *
-    * @return bool
+   /** 
+    * delete pipe
     */
    public function post_delete()
    {
@@ -128,9 +118,15 @@ class Chain extends MsObject {
 
       $db->db_query("
          DELETE FROM
+            ". MYSQL_PREFIX ."assign_filters_to_pipes
+         WHERE
+               apf_pipe_idx='". $this->id ."'
+      ");
+      $db->db_query("
+         DELETE FROM
             ". MYSQL_PREFIX ."assign_pipes_to_chains
          WHERE
-            apc_chain_idx='". $this->id ."'
+            apc_pipe_idx='". $this->id ."'
       ");
 
       return true;
@@ -138,7 +134,7 @@ class Chain extends MsObject {
    } // post_delete()
 
    /**
-    * toggle chain status
+    * toggle pipe status
     */
    public function toggleStatus()
    {
@@ -153,20 +149,20 @@ class Chain extends MsObject {
             $new_status = 'N';
 
          $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."chains
+            UPDATE ". MYSQL_PREFIX ."pipes
             SET
-               chain_active='". $new_status ."'
+               pipe_active='". $new_status ."'
             WHERE
-               chain_idx='". $idx ."'
+               pipe_idx='". $idx ."'
          ");
-
+      
          return "ok";
       }
-
+   
       return "unkown error";
 
    } // toggleStatus()
 
-}
+} // class Pipe
 
 ?>

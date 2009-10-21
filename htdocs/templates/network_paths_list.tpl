@@ -28,7 +28,7 @@
    { $netpath_if2 } { if $netpath_if2_inside_gre == 'Y' }(inside GRE){ /if }
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteObj('networkpath', 'networkpaths', '{ $netpath_idx }');"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a class="delete" id="networkpath-{$netpath_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $netpath_active == 'Y' }
    <a href="javascript:toggleStatus('networkpath', 'networkpaths', '{ $netpath_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }

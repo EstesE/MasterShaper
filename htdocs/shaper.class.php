@@ -27,6 +27,18 @@ require_once "shaper_db.php";
 
 require_once "class/Rewriter.php";
 require_once "class/Page.php";
+require_once "class/MsObject.php";
+require_once "class/MsObject.php";
+require_once "class/Chain.php";
+require_once "class/Filter.php";
+require_once "class/Interface.php";
+require_once "class/Network_Path.php";
+require_once "class/Pipe.php";
+require_once "class/Port.php";
+require_once "class/Protocol.php";
+require_once "class/Service_Level.php";
+require_once "class/Target.php";
+require_once "class/User.php";
 
 define('DEBUG', 1);
 
@@ -114,6 +126,11 @@ class MASTERSHAPER {
          $this->load_main_title();
          $tmpl->assign('content', $tmpl->fetch("login_box.tpl"));
          $tmpl->show("index.tpl");
+         return;
+      }
+
+      if($page->is_rpc_call()) {
+         $this->rpc_handle();
          return;
       }
 
@@ -423,64 +440,98 @@ class MASTERSHAPER {
    } // get_content()
 
    /**
-    * bla
+    * Generic RPC call handler
+    *
+    * @return string
     */
-   public function store()
+   private function rpc_handle()
    {
-      if(!$this->is_logged_in()) {
+      global $page;
+
+      if(!$this->is_logged_in())
+         return "You need to login first!";
+
+      if(!$this->is_valid_rpc_action())
+         return "Invalid RPC action!";
+
+      switch($page->action) {
+         case 'delete':
+            $this->rpc_delete_object();
+            break;
+         default:
+            return "Unknown action";
+            break;
+      }
+
+   } // rpc_handle()
+
+   /**
+    * RPC handler - delete object
+    *
+    */
+   private function rpc_delete_object()
+   {
+      global $page;
+
+      if(!isset($_POST['id']))
          return;
+
+      $id = $_POST['id'];
+
+      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false)
+         return;
+
+      $request_object = $parts[1];
+      $id = $parts[2];
+
+      if(!($obj = $this->load_class($request_object, $id)))
+         return;
+
+      $obj->delete($id);
+
+   } // rpc_delete_object()
+
+   private function load_class($object_name, $id = null)
+   {
+      switch($object_name) {
+         case 'target':
+            $obj = new Target($id);
+            break;
+         case 'port':
+            $obj = new Port($id);
+            break;
+         case 'protocol':
+            $obj = new Protocol($id);
+            break;
+         case 'servicelevel':
+            $obj = new Service_Level($id);
+            break;
+         case 'user':
+            $obj = new User($id);
+            break;
+         case 'interface':
+            $obj = new Network_Interface($id);
+            break;
+         case 'networkpath':
+            $obj = new Network_Path($id);
+            break;
+         case 'filter':
+            $obj = new Filter($id);
+            break;
+         case 'pipe':
+            $obj = new Pipe($id);
+            break;
+         case 'chain':
+            $obj = new Chain($id);
+            break;
       }
 
-      if(isset($_POST['module'])) {
-         switch($_POST['module']) {
-            case 'target':
-               $obj = new MASTERSHAPER_TARGETS($this);
-               break;
-            case 'port':
-               $obj = new MASTERSHAPER_PORTS($this);
-               break;
-            case 'protocol':
-               $obj = new MASTERSHAPER_PROTOCOLS($this);
-               break;
-            case 'servicelevel':
-               $obj = new MASTERSHAPER_SERVICELEVELS($this);
-               break;
-            case 'options':
-               $obj = new MASTERSHAPER_OPTIONS($this);
-               break;
-            case 'user':
-               $obj = new MASTERSHAPER_USERS($this);
-               break;
-            case 'interface':
-               $obj = new MASTERSHAPER_INTERFACES($this);
-               break;
-            case 'networkpath':
-               $obj = new MASTERSHAPER_NETPATHS($this);
-               break;
-            case 'filter':
-               $obj = new MASTERSHAPER_FILTERS($this);
-               break;
-            case 'pipe':
-               $obj = new MASTERSHAPER_PIPES($this);
-               break;
-            case 'chain':
-               $obj = new MASTERSHAPER_CHAINS($this);
-               break;
-            case 'overview':
-               $obj = new MASTERSHAPER_OVERVIEW($this);
-               break;
-         }
+      if(isset($obj))
+         return $obj;
 
-         if(isset($obj)) {
-            switch($_POST['action']) {
-               case 'modify': return $obj->store(); break;
-               case 'delete': return $obj->delete(); break;
-               case 'toggle': return $obj->toggleStatus(); break;
-            }
-         }
-      }
+      return false;
 
-   } // store()
+   } // load_class()
 
    /**
     * change position
@@ -570,7 +621,7 @@ class MASTERSHAPER {
          return $result->setting_value;
       }
 
-      return "unkown";
+      return "unknown";
 
    } // getOption() 
 
@@ -1211,6 +1262,118 @@ class MASTERSHAPER {
       return false;
 
    } // is_cmdline()
+
+   /**
+    * return if request RPC action is ok
+    *
+    * @return bool
+    */
+   private function is_valid_rpc_action()
+   {
+      global $page;
+
+      $valid_actions = Array(
+         'delete',
+      );
+
+      if(in_array($page->action, $valid_actions))
+         return true;
+
+      return false;
+
+   }  // is_valid_rpc_action()
+
+   public function filter_form_data($data, $filter)
+   {
+      if(!is_array($data))
+         return false;
+
+      $filter_result = Array();
+
+      foreach($data as $key => $value) {
+
+         if(strstr($key, $filter) === false)
+            continue;
+
+         $filter_result[$key] = $value;
+      }
+
+      return $filter_result;
+
+   }  // filter_form_data
+
+   /**
+    * return true if the provided chain name with the specified
+    * name already exists
+    *
+    * @param string $object_type
+    * @param string $object_name
+    * @return bool
+   */
+   public function check_object_exists($object_type, $object_name)
+   {
+      global $ms, $db;
+
+      switch($object_type) {
+         case 'chain':
+            $table = 'chains';
+            $column = 'chain';
+            break;
+         case 'filter':
+            $table = 'filters';
+            $column = 'filter';
+            break;
+         case 'pipe':
+            $table = 'pipes';
+            $column = 'pipe';
+            break;
+         case 'target':
+            $table = 'targets';
+            $column = 'target';
+            break;
+         case 'port':
+            $table = 'ports';
+            $column = 'port';
+            break;
+         case 'protocol':
+            $table = 'protocols';
+            $column = 'proto';
+            break;
+         case 'service_level':
+            $table = 'service_levels';
+            $column = 'sl';
+            break;
+         case 'user':
+            $table = 'users';
+            $column = 'user';
+            break;
+         case 'interface':
+            $table = 'interfaces';
+            $column = 'if';
+            break;
+         case 'netpath':
+            $table = 'network_paths';
+            $column = 'netpath';
+            break;
+         default:
+            $ms->throwError('Unknown object type');
+            return;
+      }
+
+      if($db->db_fetchSingleRow("
+         SELECT
+            ". $column ."_idx
+         FROM
+            ". MYSQL_PREFIX . $table ."
+         WHERE
+            ". $column ."_name LIKE BINARY '". $object_name ."'
+      ")) {
+         return true;
+      }
+
+      return false;
+
+   } // check_object_exist
 
 } // class MASTERSHAPER
 

@@ -29,7 +29,7 @@
    { /foreach }
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteObj('pipe', 'pipes', '{ $pipe_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a class="delete" id="pipe-{$pipe_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    { if $pipe_active == "Y" }
    <a href="javascript:toggleStatus('pipe', 'pipes', '{ $pipe_idx }', '0');" title="Disable pipe { $pipe_name }"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }

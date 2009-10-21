@@ -20,7 +20,7 @@
    <a href="{$rewriter->get_page_url('Filter Edit', $filter_idx)}">{ $filter_name }</a>
   </td>
   <td style="text-align: center;">
-   <a href="javascript:deleteObj('filter', 'filters', '{ $filter_idx }');" title="Delete"><img src="{ $icon_delete }" alt="filter icon" /></a>
+   <a class="delete" id="filter-{$filter_idx}" title="Delete"><img src="{ $icon_delete }" alt="filter icon" /></a>
    { if $filter_active == "Y" }
    <a href="javascript:toggleStatus('filter', 'filters', '{ $filter_idx }', '0');" title="Disable filter { $filter_name }"><img src="{ $icon_active }" alt="active icon" /></a>
    { else }
