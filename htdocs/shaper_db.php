@@ -30,7 +30,6 @@ define('SCHEMA_VERSION', '5');
 class MASTERSHAPER_DB {
 
    private $db;
-   private $parent;
    private $is_connected;
    private $last_error;
    /* the _real_ schema version is defined as constant */
@@ -43,10 +42,8 @@ class MASTERSHAPER_DB {
     *
     * This constructor initially connect to the database.
     */
-   public function __construct($parent)
+   public function __construct()
    {
-      $this->parent = $parent;
-
       /* We are starting disconnected */
       $this->setConnStatus(false);
 
@@ -74,6 +71,8 @@ class MASTERSHAPER_DB {
     */
    private function db_connect()
    {
+      global $ms;
+
       $options = array(
          'debug' => 2,
          'portability' => 'DB_PORTABILITY_ALL'
@@ -84,14 +83,14 @@ class MASTERSHAPER_DB {
          !defined('MYSQL_HOST') ||
          !defined('MYSQL_DB')) {
 
-         $this->parent->throwError("Missing MySQL configuration");
+         $ms->throwError("Missing MySQL configuration");
       }
 
       $dsn = "mysql://". MYSQL_USER .":". MYSQL_PASS ."@". MYSQL_HOST ."/". MYSQL_DB;
       $this->db = MDB2::connect($dsn, $options);
 
       if(PEAR::isError($this->db)) {
-         $this->parent->throwError("Unable to connect to database: ". $this->db->getMessage() .' - '. $this->db->getUserInfo());
+         $ms->throwError("Unable to connect to database: ". $this->db->getMessage() .' - '. $this->db->getUserInfo());
          $this->setConnStatus(false);
       }
 
@@ -118,27 +117,27 @@ class MASTERSHAPER_DB {
     */
    public function db_query($query = "", $mode = MDB2_FETCHMODE_OBJECT)
    {
-      if($this->getConnStatus()) {
+      global $ms;
 
-         $this->db->setFetchMode($mode);
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't execute query - we are not connected!");
 
-         /* for manipulating queries use exec instead of query. can save
-          * some resource because nothing has to be allocated for results.
-          */
-         if(preg_match('/^(update|insert|replace)i/', $query)) {
-            $result = $this->db->exec($query);
-         }
-         else {
-            $result = $this->db->query($query);
-         }
-			
-         if(PEAR::isError($result))
-            $this->parent->throwError($result->getMessage() .' - '. $result->getUserInfo());
-	
-         return $result;
+      $this->db->setFetchMode($mode);
+
+      /* for manipulating queries use exec instead of query. can save
+       * some resource because nothing has to be allocated for results.
+       */
+      if(preg_match('/^(update|insert|replace)i/', $query)) {
+         $result = $this->db->exec($query);
       }
-      else 
-         $this->parent->throwError("Can't execute query - we are not connected!");
+      else {
+         $result = $this->db->query($query);
+      }
+
+      if(PEAR::isError($result))
+         $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
+
+      return $result;
 
    } // db_query()
 
@@ -152,10 +151,10 @@ class MASTERSHAPER_DB {
     */
    public function db_prepare($query = "")
    {
-      if(!$this->getConnStatus()) {
-         $this->throwError("Can't prepare query - we are not connected!");
-         return false;
-      }
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't prepare query - we are not connected!");
 
       $this->db->prepare($query);
 
@@ -170,7 +169,7 @@ class MASTERSHAPER_DB {
       }
 
       if(PEAR::isError($sth))
-         $this->throwError($sth->getMessage() .' - '. $sth->getUserInfo());
+         $ms->throwError($sth->getMessage() .' - '. $sth->getUserInfo());
 
       return $sth;
 
@@ -186,15 +185,15 @@ class MASTERSHAPER_DB {
     */
    public function db_execute($sth, $data)
    {
-      if(!$this->getConnStatus()) {
-         $this->throwError("Can't prepare query - we are not connected!");
-         return false;
-      }
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't prepare query - we are not connected!");
 
       $result = $sth->execute($data);
 
       if(PEAR::isError($result))
-         $this->throwError($result->getMessage() .' - '. $result->getUserInfo());
+         $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
 
       return $result;
 
@@ -208,21 +207,17 @@ class MASTERSHAPER_DB {
     */
    public function db_fetchSingleRow($query = "", $mode = MDB2_FETCHMODE_OBJECT)
    {
-      if($this->getConnStatus()) {
+      global $ms;
 
-         $row = $this->db->queryRow($query, array(), $mode);
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't fetch row - we are not connected!");
 
-         if(PEAR::isError($row))
-            $this->parent->throwError($row->getMessage() .' - '. $row->getUserInfo());
+      $row = $this->db->queryRow($query, array(), $mode);
 
-         return $row;
-	
-      }
-      else {
-   
-         $this->parent->throwError("Can't fetch row - we are not connected!");
-      
-      }
+      if(PEAR::isError($row))
+         $ms->throwError($row->getMessage() .' - '. $row->getUserInfo());
+
+      return $row;
       
    } // db_fetchSingleRow()
 
@@ -234,12 +229,17 @@ class MASTERSHAPER_DB {
     */
    public function db_getNumRows($query = "")
    {
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't fetch row - we are not connected!");
+
       /* Execute query */
       $result = $this->db_query($query);
 
       /* Errors? */
       if(PEAR::isError($result)) 
-         $this->parent->throwError($result->getMessage() .' - '. $result->getUserInfo());
+         $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
 
       return $result->numRows();
 
@@ -253,6 +253,11 @@ class MASTERSHAPER_DB {
     */
    public function db_getid()
    {
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't fetch row - we are not connected!");
+
       /* Get the last primary key ID from execute query */
       return mysql_insert_id($this->db->connection);
       
@@ -268,19 +273,20 @@ class MASTERSHAPER_DB {
     */
    public function db_check_table_exists($table_name = "")
    {
-      if($this->getConnStatus()) {
-         $result = $this->db_query("SHOW TABLES");
-         $tables_in = "Tables_in_". MYSQL_DB;
-	
-         while($row = $result->fetchRow()) {
-            if($row->$tables_in == $table_name)
-               return true;
-         }
-         return false;
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
+      $result = $this->db_query("SHOW TABLES");
+      $tables_in = "Tables_in_". MYSQL_DB;
+
+      while($row = $result->fetchRow()) {
+         if($row->$tables_in == $table_name)
+            return true;
       }
-      else
-         $this->parent->throwError("Can't check table - we are not connected!");
-	 
+      return false;
+
    } // db_check_table_exists()
 
    /**
@@ -291,12 +297,18 @@ class MASTERSHAPER_DB {
     */
    public function db_rename_table($old, $new)
    {
-      if($this->db_check_table_exists($old)) {
-         if(!$this->db_check_table_exists($new))
-            $this->db_query("RENAME TABLE ". $old ." TO ". $new);
-         else
-            $this->parent->throwError("Can't rename table ". $old ." - ". $new ." already exists!");
-      }
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
+      if(!$this->db_check_table_exists($old))
+         $ms->throwError("Table ". $old ." does not exist!");
+
+      if($this->db_check_table_exists($new))
+         $ms->throwError("Can't rename table ". $old ." - ". $new ." already exists!");
+
+      $this->db_query("RENAME TABLE ". $old ." TO ". $new);
 	 
    } // db_rename_table()
 
@@ -307,6 +319,11 @@ class MASTERSHAPER_DB {
     */
    public function db_drop_table($table_name)
    {
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
       if($this->db_check_table_exists($table_name))
          $this->db_query("DROP TABLE ". $table_name);
 
@@ -319,6 +336,11 @@ class MASTERSHAPER_DB {
     */
    public function db_truncate_table($table_name)
    {
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
       if($this->db_check_table_exists($table_name)) 
          $this->db_query("TRUNCATE TABLE ". $table_name);
 
@@ -332,6 +354,11 @@ class MASTERSHAPER_DB {
     */
    public function db_check_column_exists($table_name, $column)
    {
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
       $result = $this->db_query("DESC ". $table_name, MDB2_FETCHMODE_ORDERED);
       while($row = $result->fetchRow()) {
          if(in_array($column, $row))
@@ -349,6 +376,11 @@ class MASTERSHAPER_DB {
     */
    public function db_check_index_exists($table_name, $index_name)
    {
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
       $result = $this->db_query("DESC ". $table_name, MDB2_FETCHMODE_ORDERED);
 
       while($row = $result->fetchRow()) {
@@ -369,34 +401,39 @@ class MASTERSHAPER_DB {
     */
    public function db_alter_table($table_name, $option, $column, $param1 = "", $param2 = "")
    {
-      if($this->db_check_table_exists($table_name)) {
+      global $ms;
 
-         switch(strtolower($option)) {
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
+      if(!$this->db_check_table_exists($table_name))
+         $ms->throwError("Table ". $table_name ." does not exist!");
+
+      switch(strtolower($option)) {
 	
-            case 'add':
-               if(!$this->db_check_column_exists($table_name, $column))
-                  $this->db_query("ALTER TABLE ". $table_name ." ADD ". $column ." ". $param1);
-               break;
+         case 'add':
+            if(!$this->db_check_column_exists($table_name, $column))
+               $this->db_query("ALTER TABLE ". $table_name ." ADD ". $column ." ". $param1);
+            break;
 
-            case 'change':
-            
-               if($this->db_check_column_exists($table_name, $column))
-                  $this->db_query("ALTER TABLE ". $table_name ." CHANGE ". $column ." ". $param1);
-               break;
+         case 'change':
 
-            case 'drop':
+            if($this->db_check_column_exists($table_name, $column))
+               $this->db_query("ALTER TABLE ". $table_name ." CHANGE ". $column ." ". $param1);
+            break;
 
-               if($this->db_check_column_exists($table_name, $column))
-                  $this->db_query("ALTER TABLE ". $table_name ." DROP ". $column);
-               break;
+         case 'drop':
 
-            case 'dropidx':
-	          
-               if($this->db_check_index_exists($table_name, $column))
-                  $this->db_query("ALTER TABLE ". $table_name ." DROP INDEX ". $column);
-               break;
+            if($this->db_check_column_exists($table_name, $column))
+               $this->db_query("ALTER TABLE ". $table_name ." DROP ". $column);
+            break;
 
-         }
+         case 'dropidx':
+
+            if($this->db_check_index_exists($table_name, $column))
+               $this->db_query("ALTER TABLE ". $table_name ." DROP INDEX ". $column);
+            break;
+
       }
 
    } // db_alter_table()
@@ -408,6 +445,11 @@ class MASTERSHAPER_DB {
     */
    public function getVersion()
    {
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
       if(!$this->db_check_table_exists(MYSQL_PREFIX ."meta"))
          return false;
 
@@ -434,6 +476,11 @@ class MASTERSHAPER_DB {
     */
    private function setVersion($version)
    {
+      global $ms;
+
+      if(!$this->getConnStatus())
+         $ms->throwError("Can't check table - we are not connected!");
+
       $this->db_query("
          REPLACE INTO ". MYSQL_PREFIX ."meta (
             meta_key, meta_value
