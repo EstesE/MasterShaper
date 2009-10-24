@@ -21,16 +21,15 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_TARGETS extends MASTERSHAPER_PAGE {
+class Target extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_TARGETS constructor
+    * Target constructor
     *
-    * Initialize the MASTERSHAPER_TARGETS class
+    * Initialize the Target class
     */
    public function __construct()
    {
-      $this->rights = 'user_manage_targets';
 
    } // __construct()
 
@@ -147,108 +146,6 @@ class MASTERSHAPER_TARGETS extends MASTERSHAPER_PAGE {
 
    } // store()
 
-   /**
-    * display all targets
-    */
-   public function showList()
-   {
-      global $db, $tmpl;
-
-      if(!isset($this->parent->screen))
-         $this->parent->screen = 0;
-
-      $this->avail_targets = Array();
-      $this->targets = Array(); 
-
-      $res_targets = $db->db_query("
-         SELECT target_idx, target_name, target_match
-         FROM ". MYSQL_PREFIX ."targets
-         ORDER BY target_name ASC
-      ");
-
-      $cnt_targets = 0;
-
-      while($target = $res_targets->fetchrow()) {
-         $this->avail_targets[$cnt_targets] = $target->target_idx;
-         $this->targets[$target->target_idx] = $target;
-         $cnt_targets++;
-      }
-
-      $tmpl->register_block("target_list", array(&$this, "smarty_target_list"));
-      return $tmpl->fetch("targets_list.tpl");
-
-   } // showList()
-
-   /**
-    * display interface to create or edit targets
-    */
-   public function showEdit()
-   {
-      if($this->is_storing())
-         $this->store();
-
-      global $db, $tmpl, $page;
-      
-      if($page->id != 0) {
-         $target = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."targets
-            WHERE
-               target_idx='". $page->id ."'
-         ");
-
-         $tmpl->assign('target_idx', $page->id);
-         $tmpl->assign('target_name', $target->target_name);
-         $tmpl->assign('target_match', $target->target_match);
-         $tmpl->assign('target_ip', $target->target_ip);
-         $tmpl->assign('target_mac', $target->target_mac);
-      }
-      else {
-         $tmpl->assign('target_match', 'IP');
-      }
-
-      $tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
-      return $tmpl->fetch("targets_edit.tpl");
-
-   } // showEdit()
-
-   /**
-    * template function which will be called from the target listing template
-    */
-   public function smarty_target_list($params, $content, &$smarty, &$repeat) 
-   {
-      global $tmpl;
-
-      $index = $smarty->get_template_vars('smarty.IB.target_list.index');
-      if(!$index) {
-         $index = 0;
-      }
-
-      if($index < count($this->avail_targets)) {
-
-        $target_idx = $this->avail_targets[$index];
-        $target =  $this->targets[$target_idx];
-         
-         $tmpl->assign('target_idx', $target_idx);
-         $tmpl->assign('target_name', $target->target_name);
-         switch($target->target_match) {
-            case 'IP':    $tmpl->assign('target_type', _("IP match")); break;
-            case 'MAC':   $tmpl->assign('target_type', _("MAC match")); break;
-            case 'GROUP': $tmpl->assign('target_type', _("Target Group")); break;
-         }
-
-         $index++;
-         $tmpl->assign('smarty.IB.target_list.index', $index);
-         $repeat = true;
-      }
-      else {
-         $repeat =  false;
-      }  
-
-      return $content;
-
-   } // smarty_target_list()
-
    public function delete()
    {
       global $db;
@@ -280,61 +177,6 @@ class MASTERSHAPER_TARGETS extends MASTERSHAPER_PAGE {
    } // delete()
 
    /**
-    * return select-list of available or used targets assigned to a target-group
-    */
-   public function smarty_target_select_list($params, &$smarty)
-   {
-      if(!array_key_exists('group', $params)) {
-         $tmpl->trigger_error("getSLList: missing 'group' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-
-      global $db;
-
-      /* either "used" or "unused" */
-      $group = $params['group'];
-
-      if(isset($params['idx']) && is_numeric($params['idx']))
-         $idx = $params['idx'];
-
-      switch($group) {
-
-         case 'unused':
-            $result = $db->db_query("
-               SELECT t.target_idx, t.target_name
-               FROM ". MYSQL_PREFIX ."targets t
-               LEFT JOIN ". MYSQL_PREFIX ."assign_target_groups atg
-                  ON t.target_idx=atg.atg_target_idx
-               WHERE
-                  atg.atg_group_idx <> '". $idx ."'
-               OR
-                  ISNULL(atg.atg_group_idx)
-               ORDER BY t.target_name ASC
-            ");
-            break;
-         case 'used':
-            $result = $db->db_query("
-               SELECT t.target_idx, t.target_name
-               FROM ". MYSQL_PREFIX ."assign_target_groups atg
-               LEFT JOIN ". MYSQL_PREFIX ."targets t
-                  ON t.target_idx = atg.atg_target_idx
-               WHERE
-                  atg_group_idx = '". $idx ."'
-               ORDER BY t.target_name ASC
-            ");
-            break;
-      }
-
-      while($row = $result->fetchRow()) {
-         $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
-      }
-
-      return $string;
-
-   } // smarty_target_select_list()
-
-   /**
     * checks if provided target name already exists
     * and will return true if so.
     */
@@ -354,9 +196,9 @@ class MASTERSHAPER_TARGETS extends MASTERSHAPER_PAGE {
       return false;
    } // checkTargetExists()
 
-} // class MASTERSHAPER_TARGETS
+} // class Target
 
-$obj = new MASTERSHAPER_TARGETS();
+$obj = new Target();
 $obj->handler();
 
 ?>

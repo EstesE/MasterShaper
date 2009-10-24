@@ -121,13 +121,13 @@ class MASTERSHAPER {
          $page->set_page($rewriter->default_page);
       }
 
-      if($page->includefile) {
-         if(!file_exists($page->includefile))
-            $this->throwError("Page not found. Unable to include ". $page->includefile);
-         if(!is_readable($page->includefile))
-            $this->throwError("Unable to read ". $page->includefile);
-         include $page->includefile;
-      }
+      $fqpn = BASE_PATH ."/class/pages/". $page->includefile;
+      if(!file_exists($fqpn))
+         $this->throwError("Page not found. Unable to include ". $fqpn);
+      if(!is_readable($fqpn))
+         $this->throwError("Unable to read ". $fqpn);
+
+      include $fqpn;
 
       $this->load_main_title();
       $this->load_main_menu();

@@ -21,85 +21,18 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_USERS extends MASTERSHAPER_PAGE {
+class User extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_USERS constructor
+    * User constructor
     *
-    * Initialize the MASTERSHAPER_USERS class
+    * Initialize the User class
     */
    public function __construct()
    {
-      $this->rights = 'user_manage_users';
 
    } // __construct()
   
-   public function showList()
-   {
-      global $db, $tmpl;
-
-      $this->avail_users = Array();
-      $this->users = Array();
-
-      $cnt_users = 0;
-
-      $res_users = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."users
-         ORDER BY user_name ASC
-      ");
-	
-      while($user = $res_users->fetchrow()) {
-         $this->avail_users[$cnt_users] = $user->user_idx;
-         $this->users[$user->user_idx] = $user;
-         $cnt_users++;
-      }
-
-      $tmpl->register_block("user_list", array(&$this, "smarty_user_list"));
-      return $tmpl->fetch("users_list.tpl"); 
-
-   } // showList()
-
-   /**
-    * display interface to create or edit users
-    */
-   public function showEdit()
-   {
-      if($this->is_storing())
-         $this->store();
-
-      global $db, $tmpl, $page;
-
-      if($page->id != 0) {
-         $user = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."users
-            WHERE
-               user_idx='". $page->id ."'
-         ");
-
-         $tmpl->assign('user_idx', $page->id);
-         $tmpl->assign('user_name', $user->user_name);
-         $tmpl->assign('user_active', $user->user_active);
-         $tmpl->assign('user_manage_chains', $user->user_manage_chains);
-         $tmpl->assign('user_manage_pipes', $user->user_manage_pipes);
-         $tmpl->assign('user_manage_filters', $user->user_manage_filters);
-         $tmpl->assign('user_manage_ports', $user->user_manage_ports);
-         $tmpl->assign('user_manage_protocols', $user->user_manage_protocols);
-         $tmpl->assign('user_manage_targets', $user->user_manage_targets);
-         $tmpl->assign('user_manage_users', $user->user_manage_users);
-         $tmpl->assign('user_manage_options', $user->user_manage_options);
-         $tmpl->assign('user_manage_servicelevels', $user->user_manage_servicelevels);
-         $tmpl->assign('user_load_rules', $user->user_load_rules);
-         $tmpl->assign('user_show_rules', $user->user_show_rules);
-         $tmpl->assign('user_show_monitor', $user->user_show_monitor);
-
-      }
-   
-      return $tmpl->fetch("users_edit.tpl");
-
-   } // showEdit()
-     
    /** 
     * store user values
     */
@@ -238,79 +171,6 @@ class MASTERSHAPER_USERS extends MASTERSHAPER_PAGE {
    } // toggleStatus()
 
    /**
-    * template function which will be called from the user listing template
-    */
-   public function smarty_user_list($params, $content, &$smarty, &$repeat)
-   {
-      global $tmpl;
-
-      $index = $smarty->get_template_vars('smarty.IB.user_list.index');
-      if(!$index) {
-         $index = 0;
-      }
-
-      if($index < count($this->avail_users)) {
-
-         $user_idx = $this->avail_users[$index];
-         $user =  $this->users[$user_idx];
-
-         $tmpl->assign('user_idx', $user_idx);
-         $tmpl->assign('user_name', $user->user_name);
-         $tmpl->assign('user_active', $user->user_active);
-
-         $index++;
-         $tmpl->assign('smarty.IB.user_list.index', $index);
-         $repeat = true;
-      }
-      else {
-         $repeat =  false;
-      }
-
-      return $content;
-
-   } // smarty_user_list()
-
-
-   private function getPermissions($user_idx)
-   {
-      global $db;
-
-      $string = "";
-
-      if($user = $db->db_fetchSingleRow("SELECT * FROM ". MYSQL_PREFIX ."users WHERE user_idx='". $user_idx ."'")) {
-
-         if($user->user_manage_chains == "Y")
-	    $string.= "Chains, ";
-         if($user->user_manage_pipes == "Y")
-	    $string.= "Pipes, ";
-         if($user->user_manage_filters == "Y")
-	    $string.= "Filters, ";
-         if($user->user_manage_ports == "Y")
-	    $string.= "Ports, ";
-         if($user->user_manage_protocols == "Y")
-	    $string.= "Protocols, ";
-         if($user->user_manage_targets == "Y")
-	    $string.= "Targets, ";
-         if($user->user_manage_users == "Y")
-	    $string.= "Users, ";
-         if($user->user_manage_options == "Y")
-	    $string.= "Options, ";
-         if($user->user_manage_servicelevels == "Y")
-	    $string.= "Service Levels, ";
-         if($user->user_load_rules == "Y")
-	    $string.= "Load Rules, ";
-         if($user->user_show_rules == "Y")
-	    $string.= "Show Rules, ";
-         if($user->user_show_monitor == "Y")
-	    $string.= "Show Monitoring, ";
-
-      }
-
-      return substr($string, 0, strlen($string)-2);
-
-   } // getPermissions()
-
-   /**
     * checks if provided user name already exists
     * and will return true if so.
     */
@@ -331,9 +191,9 @@ class MASTERSHAPER_USERS extends MASTERSHAPER_PAGE {
 
    } // checkTargetExists()
 
-} // class MASTERSHAPER_USERS
+} // class User
 
-$obj = new MASTERSHAPER_USERS;
+$obj = new User;
 $obj->handler();
 
 ?>

@@ -21,16 +21,16 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_OVERVIEW extends MASTERSHAPER_PAGE {
+class Page_Overview extends MASTERSHAPER_PAGE {
 
    private $db;
    private $parent;
    private $tmpl;
 
    /**
-    * MASTERSHAPER_OVERVIEW constructor
+    * Page_Overview constructor
     *
-    * Initialize the MASTERSHAPER_OVERVIEW class
+    * Initialize the Page_Overview class
     */
    public function __construct()
    {
@@ -755,9 +755,9 @@ class MASTERSHAPER_OVERVIEW extends MASTERSHAPER_PAGE {
 
    } // store()
 
-} // class MASTERSHAPER_OVERVIEW
+} // class Page_Overview
 
-$obj = new MASTERSHAPER_OVERVIEW;
+$obj = new Page_Overview;
 $obj->handler();
 
 ?>

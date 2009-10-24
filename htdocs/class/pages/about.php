@@ -21,39 +21,30 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_MANAGE extends MASTERSHAPER_PAGE {
+class Page_About extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_MANAGE constructor
+    * Page_About constructor
     *
-    * Initialize the MASTERSHAPER_MANAGE class
+    * Initialize the Page_About class
     */
    public function __construct()
    {
 
    } // __construct()
 
-   /* interface output */
    public function showList()
    {
-      global $ms;
       global $tmpl;
 
-      /* If authentication is enabled, check permissions */
-      if($ms->getOption("authentication") == "Y" &&
-         !$ms->checkPermissions("user_show_rules")) {
-
-         $ms->throwError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset Overview"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
-
-      return $tmpl->fetch('manage.tpl');
+      $tmpl->assign('version', VERSION);
+      return $tmpl->fetch("about.tpl");
 
    } // show()
 
-} // class MASTERSHAPER_MANAGE
+} // class Page_About
 
-$obj = new MASTERSHAPER_MANAGE;
+$obj = new Page_About;
 $obj->handler();
 
 ?>

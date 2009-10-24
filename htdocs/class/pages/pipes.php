@@ -21,12 +21,12 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_PIPES extends MASTERSHAPER_PAGE {
+class Page_Pipes extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_PIPES constructor
+    * Page_Pipes constructor
     *
-    * Initialize the MASTERSHAPER_PIPES class
+    * Initialize the Page_Pipes class
     */
    public function __construct()
    {
@@ -339,94 +339,9 @@ class MASTERSHAPER_PIPES extends MASTERSHAPER_PAGE {
 
    } // store()
 
-   /** 
-    * delete pipe
-    */
-   public function delete()
-   {
-      global $db;
+} // class Page_Pipes
 
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."pipes
-            WHERE
-               pipe_idx='". $idx ."'
-         ");
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_filters_to_pipes
-            WHERE
-               apf_pipe_idx='". $idx ."'
-         ");
-         $db->db_query("
-            DELETE FROM
-               ". MYSQL_PREFIX ."assign_pipes_to_chains
-            WHERE
-               apc_pipe_idx='". $idx ."'
-         ");
-         return "ok";
-
-      }
-
-      return "unkown error";
-
-   } // delete()
-
-   /**
-    * toggle pipe status
-    */
-   public function toggleStatus()
-   {
-      global $db;
-
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         if($_POST['to'] == 1)
-            $new_status = 'Y';
-         else
-            $new_status = 'N';
-
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."pipes
-            SET
-               pipe_active='". $new_status ."'
-            WHERE
-               pipe_idx='". $idx ."'
-         ");
-      
-         return "ok";
-      }
-   
-      return "unkown error";
-
-   } // toggleStatus()
-
-   /**
-    * return true if the provided pipe with the specified name is
-    * already existing
-    */
-   private function checkPipeExists($pipe_name)
-   {
-      global $db;
-
-      if($db->db_fetchSingleRow("
-         SELECT pipe_idx
-         FROM ". MYSQL_PREFIX ."pipes
-         WHERE
-            pipe_name LIKE BINARY '". $_POST['pipe_name'] ."'
-         ")) {
-         return true;
-      }
-
-      return false;
-
-   } // checkPipeExists()
-
-} // class MASTERSHAPER_PIPES
-
-$obj = new MASTERSHAPER_PIPES;
+$obj = new Page_Pipes;
 $obj->handler();
 
 ?>

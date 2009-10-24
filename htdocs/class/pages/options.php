@@ -21,12 +21,12 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_OPTIONS extends MASTERSHAPER_PAGE {
+class Page_Options extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_OPTIONS constructor
+    * Page_Options constructor
     *
-    * Initialize the MASTERSHAPER_OPTIONS class
+    * Initialize the Page_Options class
     */
    public function __construct()
    {
@@ -578,9 +578,9 @@ class MASTERSHAPER_OPTIONS extends MASTERSHAPER_PAGE {
 
    } // smarty_sl_list
 
-} // class MASTERSHAPER_OPTIONS
+} // class Page_Options
 
-$obj = new MASTERSHAPER_OPTIONS;
+$obj = new Page_Options;
 $obj->handler();
 
 ?>

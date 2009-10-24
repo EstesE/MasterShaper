@@ -21,15 +21,15 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_MONITOR extends MASTERSHAPER_PAGE {
+class Page_Monitor extends MASTERSHAPER_PAGE {
 
    private $total;
    private $names;
 
    /**
-    * MASTERSHAPER_MONITOR constructor
+    * Page_Monitor constructor
     *
-    * Initialize the MASTERSHAPER_MONITOR class
+    * Initialize the Page_Monitor class
     */
    public function __construct()
    {
@@ -542,9 +542,9 @@ class MASTERSHAPER_MONITOR extends MASTERSHAPER_PAGE {
 
    } // getScaleName()
 
-} // class MASTERSHAPER_MONITOR
+} // class Page_Monitor
 
-$obj = new MASTERSHAPER_MONITOR;
+$obj = new Page_Monitor;
 $obj->handler();
 
 ?>

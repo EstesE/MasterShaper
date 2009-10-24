@@ -21,7 +21,7 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_SETTINGS extends MASTERSHAPER_PAGE {
+class Page_Others extends MASTERSHAPER_PAGE {
 
    /**
     * MASTERSHAPER_SETTINGS constructor
@@ -36,24 +36,15 @@ class MASTERSHAPER_SETTINGS extends MASTERSHAPER_PAGE {
    /* interface output */
    public function showList()
    {
-      global $ms;
       global $tmpl;
 
-      /* If authentication is enabled, check permissions */
-      if($ms->getOption("authentication") == "Y" &&
-         !$ms->checkPermissions("user_show_rules")) {
+      return $tmpl->fetch('others.tpl');
 
-         $ms->throwError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset Overview"), _("You do not have enough permissions to access this module!"));
-         return 0;
-      }
+   } // showList()
 
-      return $tmpl->fetch('settings.tpl');
+} // class Page_Others
 
-   } // show()
-
-} // class MASTERSHAPER_SETTINGS
-
-$obj = new MASTERSHAPER_SETTINGS;
+$obj = new Page_Others;
 $obj->handler();
 
 ?>

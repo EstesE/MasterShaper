@@ -21,12 +21,12 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_INTERFACES extends MASTERSHAPER_PAGE {
+class Page_Interfaces extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_INTERFACES constructor
+    * Page_Interfaces constructor
     *
-    * Initialize the MASTERSHAPER_INTERFACES class
+    * Initialize the Page_Interfaces class
     */
    public function __construct()
    {
@@ -127,50 +127,6 @@ class MASTERSHAPER_INTERFACES extends MASTERSHAPER_PAGE {
    } // smarty_interfaces_list()
 
    /**
-    * delete interface
-    */
-   public function delete()
-   {
-      global $db;
-
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-   
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."interfaces
-            WHERE
-               if_idx='". $idx ."'
-         ");
-         
-         return "ok";
-      }
-   
-      return "unkown error";
-
-   } // delete() 
-
-   /**
-    * checks if provided interface name already exists
-    * and will return true if so.
-    */
-   private function checkInterfaceExists($if_name)
-   {
-      global $db;
-
-      if($db->db_fetchSingleRow("
-         SELECT if_idx
-         FROM ". MYSQL_PREFIX ."interfaces
-         WHERE
-            if_name LIKE BINARY '". $if_name ."'
-         ")) {
-         return true;
-      }
-
-      return false;
-
-   } // checkInterfaceExists()
-
-   /**
     * handle updates
     */
    public function store()
@@ -227,40 +183,9 @@ class MASTERSHAPER_INTERFACES extends MASTERSHAPER_PAGE {
    
    } // store()
 
-   /**
-    * toggle interface status
-    */
-   public function toggleStatus()
-   {
-      global $db;
+} // class Page_Interfaces
 
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         if($_POST['to'] == 1)
-            $new_status = 'Y';
-         else
-            $new_status = 'N';
-
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."interfaces
-            SET
-               if_active='". $new_status ."'
-            WHERE
-               if_idx='". $idx ."'
-         ");
-
-         return "ok";
-
-      }
-
-      return "unkown error";
-
-   } // toggleStatus()
-
-} // class MASTERSHAPER_INTERFACES
-
-$obj = new MASTERSHAPER_INTERFACES;
+$obj = new Page_Interfaces;
 $obj->handler();
 
 ?>

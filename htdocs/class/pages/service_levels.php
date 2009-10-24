@@ -21,12 +21,12 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_SERVICELEVELS extends MASTERSHAPER_PAGE {
+class Page_Service_Levels extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_SERVICELEVELS constructor
+    * Page_Service_Levels constructor
     *
-    * Initialize the MASTERSHAPER_SERVICELEVELS class
+    * Initialize the Page_Service_Levels class
     */
    public function __construct()
    {
@@ -368,47 +368,9 @@ class MASTERSHAPER_SERVICELEVELS extends MASTERSHAPER_PAGE {
 
    } // edit()
 
-   public function delete()
-   {
-      global $db;
+} // class Page_Service_Levels
 
-      if(isset($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."service_levels
-            WHERE
-               sl_idx='". $idx ."'
-            ");
-            return ok;
-      }
-   
-      return "unkown error";
-
-   } // delete()
-
-   /**
-    * checks if provided service level name already exists
-    * and will return true if so.
-    */
-   private function checkServiceLevelExists($sl_name)
-   {
-      global $db;
-
-      if($db->db_fetchSingleRow("
-         SELECT sl_idx
-         FROM ". MYSQL_PREFIX ."service_levels
-         WHERE
-            sl_name LIKE BINARY '". $sl_name ."'
-         ")) {
-         return true;
-      }
-      return false;
-   } // checkServiceLevelExists()
-
-} // class MASTERSHAPER_SERVICELEVELS
-
-$obj = new MASTERSHAPER_SERVICELEVELS;
+$obj = new Page_Service_Levels;
 $obj->handler();
 
 ?>

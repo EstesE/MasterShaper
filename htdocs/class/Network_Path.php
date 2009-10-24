@@ -21,119 +21,18 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_NETPATHS extends MASTERSHAPER_PAGE {
+class Network_Path extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_NETPATHS constructor
+    * Network_Path constructor
     *
-    * Initialize the MASTERSHAPER_NETPATHS class
+    * Initialize the Network_Path class
     */
    public function __construct()
    {
-      $this->rights = 'user_manage_options';
 
    } // __construct()
 
-   /**
-    * list all netpaths
-    */
-   public function showList()
-   {
-      global $db, $tmpl;
-
-      $this->avail_netpaths = Array();
-      $this->netpaths = Array();
-
-      $res_netpaths = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."network_paths
-         ORDER BY netpath_name ASC
-      ");
-
-      $cnt_netpaths = 0;
-	
-      while($np = $res_netpaths->fetchrow()) {
-         $this->avail_netpaths[$cnt_netpaths] = $np->netpath_idx;
-         $this->netpaths[$np->netpath_idx] = $np;
-         $cnt_netpaths++;
-      }
-
-      $tmpl->register_block("netpath_list", array(&$this, "smarty_netpath_list"));
-      return $tmpl->fetch("network_paths_list.tpl");
-   
-   } // showList() 
-
-   /**
-    * interface for handling
-    */
-   public function showEdit()
-   {
-      if($this->is_storing())
-         $this->store();
-
-      global $db, $tmpl, $page;
-
-      if($page->id != 0) {
-         $np = $db->db_fetchSingleRow("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."network_paths
-            WHERE
-               netpath_idx='". $page->id ."'
-         ");
-
-         $tmpl->assign('netpath_idx', $page->id);
-         $tmpl->assign('netpath_name', $np->netpath_name);
-         $tmpl->assign('netpath_if1', $np->netpath_if1);
-         $tmpl->assign('netpath_if1_inside_gre', $np->netpath_if1_inside_gre);
-         $tmpl->assign('netpath_if2', $np->netpath_if2);
-         $tmpl->assign('netpath_if2_inside_gre', $np->netpath_if2_inside_gre);
-         $tmpl->assign('netpath_imq', $np->netpath_imq);
-         $tmpl->assign('netpath_active', $np->netpath_active);
-    
-      }
-
-      $tmpl->register_function("if_select_list", array(&$this, "smarty_if_select_list"), false);
-      return $tmpl->fetch("network_paths_edit.tpl");
-
-   } // showEdit()
-
-   /**
-    * template function which will be called from the netpath listing template
-    */
-   public function smarty_netpath_list($params, $content, &$smarty, &$repeat)
-   {
-      global $tmpl, $ms;
-
-      $index = $smarty->get_template_vars('smarty.IB.netpath_list.index');
-      if(!$index) {
-         $index = 0;
-      }
-
-      if($index < count($this->avail_netpaths)) {
-
-        $netpath_idx = $this->avail_netpaths[$index];
-        $netpath =  $this->netpaths[$netpath_idx];
-
-         $tmpl->assign('netpath_idx', $netpath_idx);
-         $tmpl->assign('netpath_name', $netpath->netpath_name);
-         $tmpl->assign('netpath_active', $netpath->netpath_active);
-         $tmpl->assign('netpath_if1', $ms->getInterfaceName($netpath->netpath_if1));
-         $tmpl->assign('netpath_if1_inside_gre', $netpath->netpath_if1_inside_gre);
-         $tmpl->assign('netpath_if2', $ms->getInterfaceName($netpath->netpath_if2));
-         $tmpl->assign('netpath_if2_inside_gre', $netpath->netpath_if2_inside_gre);
-
-         $index++;
-         $tmpl->assign('smarty.IB.netpath_list.index', $index);
-         $repeat = true;
-      }
-      else {
-         $repeat =  false;
-      }
-
-      return $content;
-
-   } // smarty_netpath_list()
-   
    /**
     * handle updates
     */
@@ -254,36 +153,6 @@ class MASTERSHAPER_NETPATHS extends MASTERSHAPER_PAGE {
    } // toggleStatus()
 
    /**
-    * this function will return a select list full of interfaces
-    */
-   public function smarty_if_select_list($params, &$smarty)
-   {
-      global $db;
-
-      if(!array_key_exists('if_idx', $params)) {
-         $smarty->trigger_error("getSLList: missing 'if_idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-
-      $result = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."interfaces
-         ORDER BY if_name ASC
-      ");
-
-      while($row = $result->fetchRow()) {
-         $string.= "<option value=\"". $row->if_idx ."\"";
-         if($params['if_idx'] == $row->if_idx)
-            $string.= " selected=\"selected\"";
-         $string.= ">". $row->if_name ."</option>";
-      }
-
-      return $string;
-
-   } // smarty_if_select_list()
-
-   /**
     * checks if provided network path name already exists
     * and will return true if so.
     */
@@ -303,9 +172,9 @@ class MASTERSHAPER_NETPATHS extends MASTERSHAPER_PAGE {
 
    } // checkNetworkPathExists()
 
-} // class MASTERSHAPER_NETPATHS
+} // class Network_Path
 
-$obj = new MASTERSHAPER_NETPATHS;
+$obj = new Network_Path;
 $obj->handler();
 
 ?>

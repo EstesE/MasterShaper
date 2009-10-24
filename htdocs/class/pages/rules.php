@@ -21,12 +21,12 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_OTHERS extends MASTERSHAPER_PAGE {
+class Page_Rules extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_SETTINGS constructor
+    * Page_Rules constructor
     *
-    * Initialize the MASTERSHAPER_SETTINGS class
+    * Initialize the Page_Rules class
     */
    public function __construct()
    {
@@ -38,13 +38,13 @@ class MASTERSHAPER_OTHERS extends MASTERSHAPER_PAGE {
    {
       global $tmpl;
 
-      return $tmpl->fetch('others.tpl');
+      return $tmpl->fetch('rules.tpl');
 
    } // showList()
 
-} // class MASTERSHAPER_OTHERS
+} // class Page_Rules
 
-$obj = new MASTERSHAPER_OTHERS;
+$obj = new Page_Rules;
 $obj->handler();
 
 ?>

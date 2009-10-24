@@ -21,12 +21,12 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_CHAINS extends MASTERSHAPER_PAGE {
+class Page_Chains extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_CHAINS constructor
+    * Page_Chains constructor
     *
-    * Initialize the MASTERSHAPER_CHAINS class
+    * Initialize the Page_Chains class
     */
    public function __construct()
    {
@@ -257,86 +257,6 @@ class MASTERSHAPER_CHAINS extends MASTERSHAPER_PAGE {
 
    } // store()
 
-   /**
-    * delete chain
-    */
-   public function delete()
-   {
-      global $db;
-
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."chains
-            WHERE
-               chain_idx='". $idx ."'
-         ");
-         $db->db_query("
-            DELETE FROM
-               ". MYSQL_PREFIX ."assign_pipes_to_chains
-            WHERE
-               apc_chain_idx='". $idx ."'
-         ");
-         return "ok";
-
-      }
-
-      return "unkown error";
-
-   } // delete()
-
-   /**
-    * toggle chain status
-    */
-   public function toggleStatus()
-   {
-      global $db;
-
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         if($_POST['to'] == 1)
-            $new_status = 'Y';
-         else
-            $new_status = 'N';
-
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."chains
-            SET
-               chain_active='". $new_status ."'
-            WHERE
-               chain_idx='". $idx ."'
-         ");
-
-         return "ok";
-      }
-
-      return "unkown error";
-
-   } // toggleStatus()
-
-   /**
-    * return true if the provided chain name with the specified
-    * name already exists
-    */
-   private function checkChainExists($chain_name)
-   {
-      global $db;
-
-      if($db->db_fetchSingleRow("
-         SELECT chain_idx
-         FROM ". MYSQL_PREFIX ."chains
-         WHERE
-            chain_name LIKE BINARY '". $_POST['chain_name'] ."'
-         ")) {
-         return true;
-      }
-
-      return false;
-
-   } // checkChainExists()
-
    public function smarty_unused_pipes_select_list($params, &$smarty)
    {
       global $db;
@@ -425,7 +345,7 @@ class MASTERSHAPER_CHAINS extends MASTERSHAPER_PAGE {
 
 }
 
-$obj = new MASTERSHAPER_CHAINS;
+$obj = new Page_Chains;
 $obj->handler();
 
 ?>

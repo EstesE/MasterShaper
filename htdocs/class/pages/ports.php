@@ -21,12 +21,12 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_PORTS extends MASTERSHAPER_PAGE {
+class Page_Ports extends MASTERSHAPER_PAGE {
 
    /**
-    * MASTERSHAPER_PORTS constructor
+    * Page_Ports constructor
     *
-    * Initialize the MASTERSHAPER_PORTS class
+    * Initialize the Page_Ports class
     */
    public function __construct()
    {
@@ -230,58 +230,9 @@ class MASTERSHAPER_PORTS extends MASTERSHAPER_PAGE {
 
    } // store()
 
-   /**
-    * checks if provided port name already exists
-    * and will return true if so.
-    */
-   private function checkPortExists($port_name)
-   {
-      global $db;
+} // class Page_Ports
 
-      if($db->db_fetchSingleRow("
-         SELECT port_idx
-         FROM ". MYSQL_PREFIX ."ports
-         WHERE
-            port_name LIKE BINARY '". $port_name ."'
-         ")) {
-         return true;
-      } 
-
-      return false;
-
-   } // checkPortExists()
-
-   /**
-    * delete port
-    */
-   public function delete()
-   {
-      global $db;
-
-      if(isset($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."ports
-            WHERE
-               port_idx='". $idx ."'
-         ");
-         $db->db_query("
-            DELETE FROM ". MYSQL_PREFIX ."assign_ports_to_filters
-            WHERE
-               afp_port_idx='". $idx ."'
-         ");
-   
-         return "ok";
-      }
-
-      return "unkown error";
-
-   } // delete()
-
-} // class MASTERSHAPER_PORTS
-
-$obj = new MASTERSHAPER_PORTS;
+$obj = new Page_Ports;
 $obj->handler();
 
 ?>
