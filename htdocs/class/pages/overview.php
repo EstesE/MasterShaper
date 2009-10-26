@@ -40,9 +40,10 @@ class Page_Overview extends MASTERSHAPER_PAGE {
    /* interface output */
    public function showList()
    {
-      global $ms;
-      global $db;
-      global $tmpl;
+      global $ms, $db, $tmpl;
+
+      if($this->is_storing())
+         $this->store();
 
       /* If authentication is enabled, check permissions */
       if($ms->getOption("authentication") == "Y" &&
@@ -401,7 +402,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
    public function alter_position()
    {
-      global $db;
+      global $ms, $db;
 
       if(!isset($_POST['type']))
          return "Missing object-type to alter position off";
@@ -432,10 +433,10 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       }
 
       if(!isset($_POST['idx']) || !is_numeric($_POST['idx']))
-         return "Id to alter position is missing or not numeric!";
+         $ms->throwError(_("Id to alter position is missing or not numeric!"));
 
       if(!isset($_POST['to']) || !in_array($_POST['to'], array('up','down')))
-         return "Don't know in which direction I shall alter position!";
+         $ms->throwError(_("Don't know in which direction I shall alter position!"));
 
       $idx = $_POST['idx'];
 
@@ -606,7 +607,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $db;
+      global $ms, $db;
 
       if(isset($_POST['chain_sl_idx']) && is_array($_POST['chain_sl_idx'])) {
          /* save all chain service levels */
@@ -751,7 +752,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          }
       }
 
-      return "ok";
+      return true;
 
    } // store()
 

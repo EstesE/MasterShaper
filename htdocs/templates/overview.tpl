@@ -1,6 +1,6 @@
-<form action="rpc.php?action=store" id="overview" onsubmit="saveForm(this, 'overview'); return false;" method="post">
+<form action="{$page->uri}" id="overview" method="post">
 <input type="hidden" name="module" value="overview" />
-<input type="hidden" name="action" value="modify" />
+<input type="hidden" name="action" value="store" />
 {start_table icon=$icon_home alt="home icon" title="MasterShaper Ruleset Overview" }
 { ov_netpath }
 <table style="width: 100%;">
