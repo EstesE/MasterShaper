@@ -137,36 +137,6 @@ class Chain extends MsObject {
 
    } // post_delete()
 
-   /**
-    * toggle chain status
-    */
-   public function toggleStatus()
-   {
-      global $db;
-
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         $idx = $_POST['idx'];
-
-         if($_POST['to'] == 1)
-            $new_status = 'Y';
-         else
-            $new_status = 'N';
-
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."chains
-            SET
-               chain_active='". $new_status ."'
-            WHERE
-               chain_idx='". $idx ."'
-         ");
-
-         return "ok";
-      }
-
-      return "unkown error";
-
-   } // toggleStatus()
-
-}
+} // class Chain
 
 ?>

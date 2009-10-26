@@ -187,4 +187,37 @@ class MsObject {
 
    } // save()
 
+   public function toggle_status($to)
+   {
+      global $db;
+
+      if(!isset($this->id))
+         return false;
+      if(!is_numeric($this->id))
+         return false;
+      if(!isset($this->table_name))
+         return false;
+      if(!isset($this->col_name))
+         return false;
+      if(!in_array($to, Array('off', 'on')))
+         return false;
+
+      if($to == "on")
+         $new_status = 'Y';
+      elseif($to == "off")
+         $new_status = 'N';
+
+      $db->db_query("
+         UPDATE
+            ". MYSQL_PREFIX . $this->table_name ."
+         SET
+            ". $this->col_name ."_active='". $new_status ."'
+         WHERE
+            ". $this->col_name ."_idx='". $this->id ."'
+      ");
+
+      return true;
+
+   } // toggle_status()
+
 } // Object

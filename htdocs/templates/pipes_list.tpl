@@ -30,11 +30,10 @@
   </td>
   <td style="text-align: center;">
    <a class="delete" id="pipe-{$pipe_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
-   { if $pipe_active == "Y" }
-   <a href="javascript:toggleStatus('pipe', 'pipes', '{ $pipe_idx }', '0');" title="Disable pipe { $pipe_name }"><img src="{ $icon_active }" alt="active icon" /></a>
-   { else }
-   <a href="javascript:toggleStatus('pipe', 'pipes', '{ $pipe_idx }', '1');" title="Enable pipe { $pipe_name }"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
-   { /if }
+   <div class="toggle" id="toggle-{$pipe_idx}" style="display: inline;">
+    <a class="toggle-off" id="pipe-{$pipe_idx}" to="off" title="Disable pipe { $pipe_name }" { if $pipe_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
+    <a class="toggle-on" id="pipe-{$pipe_idx}" to="on" title="Enable pipe { $pipe_name }" { if $pipe_active == 'Y' } style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>
+   </div>
   </td>
  </tr>
  { /pipe_list }

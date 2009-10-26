@@ -21,11 +21,10 @@
   </td>
   <td style="text-align: center;">
    <a class="delete" id="user-{$user_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
-   { if $user_active == 'Y' }
-   <a href="javascript:toggleStatus('user', 'users', '{ $user_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
-   { else }
-   <a href="javascript:toggleStatus('user', 'users', '{ $user_idx }', '1');"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
-   { /if }
+   <div class="toggle" id="toggle-{$user_idx}" style="display: inline;">
+    <a class="toggle-off" id="user-{$user_idx}" to="off" title="Disable user {$user_name}" { if $user_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
+    <a class="toggle-on" id="user-{$user_idx}" to="on" title="Enable user {$user_name}" { if $user_active == 'Y' } style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>
+   </div>
   </td>
  </tr>
  { /user_list }

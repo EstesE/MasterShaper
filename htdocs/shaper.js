@@ -330,38 +330,7 @@ function js_logout()
    refreshPage();
 } // js_logout()
 
-function WSR_getElementsByClassName(oElm, strTagName, oClassNames){
-   var arrElements = (strTagName == "*" && oElm.all)? oElm.all : oElm.getElementsByTagName(strTagName);
-   var arrReturnElements = new Array();
-   var arrRegExpClassNames = new Array();
-   if(typeof oClassNames == "object"){
-      for(var i=0; i<oClassNames.length; i++){
-         arrRegExpClassNames.push(new RegExp("(^|\s)" + oClassNames[i].replace(/-/g, "\-") + "(\s|$)"));
-      }
-   }
-   else{
-      arrRegExpClassNames.push(new RegExp("(^|\s)" + oClassNames.replace(/-/g, "\-") + "(\s|$)"));
-   }
-   var oElement;
-   var bMatchesAll;
-   for(var j=0; j<arrElements.length; j++){
-      oElement = arrElements[j];
-      bMatchesAll = true;
-      for(var k=0; k<arrRegExpClassNames.length; k++){
-         if(!arrRegExpClassNames[k].test(oElement.className)){
-            bMatchesAll = false;
-            break;
-         }
-      }
-      if(bMatchesAll){
-         arrReturnElements.push(oElement);
-      }
-   }
-
-   return (arrReturnElements);
-}
-
-function deleteObj(element, target, idx)
+function obj_delete(element, target, idx)
 {
    var del_id = element.attr("id");
 
@@ -386,25 +355,13 @@ function deleteObj(element, target, idx)
       },
       success: function(data){
          element.parent().parent().animate({ opacity: "hide" }, "fast");
-         //alert(data);
+         if(data == "ok\n")
+            return;
+         alert('Server returned: ' + data);
       }
    });
 
-   return;
-   // Create object with values of the form
-   var objTemp = new Object();
-   objTemp['module'] = module;
-   objTemp['action'] = 'delete';
-   objTemp['idx'] = idx;
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-   if(retr == "ok") {
-      refreshPage(target);
-   }
-   else {
-      window.alert(retr);
-   }
-
-} // delete()
+} // obj_delete()
 
 function currentRadio(obj)
 {
@@ -431,8 +388,38 @@ function currentCheckbox(obj)
    return;
 }
 
-function toggleStatus(module, target, idx, to)
+function obj_toggle_status(element)
 {
+   var toggle_id = element.attr("id");
+   var toggle_to = element.attr("to");
+
+   if(toggle_id == undefined || toggle_id == "") {
+      alert('no attribute "id" found!');
+      return;
+   }
+   if(toggle_to == undefined || toggle_to == "") {
+      alert('no attribute "to" found!');
+      return;
+   }
+
+   $.ajax({
+      type: "POST",
+      url: "rpc.html",
+      data: ({type : 'rpc', action : 'toggle', id : toggle_id, to : toggle_to }),
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+         alert('Failed to contact server! ' + textStatus);
+      },
+      success: function(data){
+         // toggle all parent's children
+         $('#' + element.parent().attr("id") + ' > *').toggle();
+         if(data == "ok\n")
+            return;
+         alert('Server returned: ' + data + data.length);
+      }
+   });
+
+   return;
+
    // Create object with values of the form
    var objTemp = new Object();
    objTemp['module'] = module;
@@ -446,7 +433,7 @@ function toggleStatus(module, target, idx, to)
    else {
       window.alert(retr);
    }
-} // toggleStatus()
+} // obj_toggle_status()
 
 function alterPosition(type, idx, to)
 {
@@ -616,6 +603,9 @@ function parse_json(values)
 
 $(document).ready(function() {
    $("table td a.delete").click(function(){
-      deleteObj($(this));
+      obj_delete($(this));
+   });
+   $("table td div a.toggle-off, table td div a.toggle-on").click(function(){
+      obj_toggle_status($(this));
    });
 });

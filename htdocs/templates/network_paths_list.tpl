@@ -29,11 +29,10 @@
   </td>
   <td style="text-align: center;">
    <a class="delete" id="networkpath-{$netpath_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>
-   { if $netpath_active == 'Y' }
-   <a href="javascript:toggleStatus('networkpath', 'networkpaths', '{ $netpath_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
-   { else }
-   <a href="javascript:toggleStatus('networkpath', 'networkpaths', '{ $netpath_idx }', '1');"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
-   { /if }
+   <div class="toggle" id="toggle-{$netpath_idx}" style="display: inline;">
+    <a class="toggle-off" id="networkpath-{$netpath_idx}" to="off" title="Disable network path {$netpath_name}" { if $netpath_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
+    <a class="toggle-on" id="networkpath-{$netpath_idx}" to="on" title="Enable network path {$netpath_name}" { if $netpath_active == 'Y' } style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>
+   </div>
   </td>
  </tr>
  { /netpath_list }

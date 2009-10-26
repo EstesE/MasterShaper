@@ -448,48 +448,120 @@ class MASTERSHAPER {
    {
       global $page;
 
-      if(!$this->is_logged_in())
-         return "You need to login first!";
+      if(!$this->is_logged_in()) {
+         print "You need to login first!";
+         return false;
+      }
 
-      if(!$this->is_valid_rpc_action())
-         return "Invalid RPC action!";
+      if(!$this->is_valid_rpc_action()) {
+         print "Invalid RPC action!";
+         return false;
+      }
 
       switch($page->action) {
          case 'delete':
             $this->rpc_delete_object();
             break;
+         case 'toggle':
+            $this->rpc_toggle_object_status();
+            break;
          default:
-            return "Unknown action";
+            print "Unknown action";
+            return false;
             break;
       }
+
+      return true;
 
    } // rpc_handle()
 
    /**
     * RPC handler - delete object
     *
+    * @return bool
     */
    private function rpc_delete_object()
    {
       global $page;
 
-      if(!isset($_POST['id']))
-         return;
+      if(!isset($_POST['id'])) {
+         print "id is missing!";
+         return false;
+      }
 
       $id = $_POST['id'];
 
-      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false)
-         return;
+      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
+         print "id in incorrect format!";
+         return false;
+      }
 
       $request_object = $parts[1];
       $id = $parts[2];
 
-      if(!($obj = $this->load_class($request_object, $id)))
-         return;
+      if(!($obj = $this->load_class($request_object, $id))) {
+         print "unable to locate class for ". $request_object;
+         return false;
+      }
 
-      $obj->delete($id);
+      if($obj->delete()) {
+         print "ok";
+         return true;
+      }
+
+      print "unknown error";
+      return false;
 
    } // rpc_delete_object()
+
+   /**
+    * RPC handler - toggle object status
+    *
+    * @return bool
+    */
+   private function rpc_toggle_object_status()
+   {
+      global $page;
+
+      if(!isset($_POST['id'])) {
+         print "id is missing!";
+         return false;
+      }
+      if(!isset($_POST['to'])) {
+         print "to is missing!";
+         return false;
+      }
+      if(!in_array($_POST['to'], Array('on', 'off'))) {
+         print "to in incorrect format!";
+         return false;
+      }
+
+      $id = $_POST['id'];
+      $to = $_POST['to'];
+
+      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
+         print "id in incorrect format!";
+         return false;
+      }
+
+      $request_object = $parts[1];
+      $id = $parts[2];
+
+      if(!($obj = $this->load_class($request_object, $id))) {
+         print "unable to locate class for ". $request_object;
+         return false;
+      }
+
+      if($obj->toggle_status($to)) {
+         print "ok";
+         return true;
+      }
+
+      print "unknown error";
+      return false;
+
+   } // rpc_delete_object()
+
 
    private function load_class($object_name, $id = null)
    {
@@ -1274,6 +1346,7 @@ class MASTERSHAPER {
 
       $valid_actions = Array(
          'delete',
+         'toggle',
       );
 
       if(in_array($page->action, $valid_actions))

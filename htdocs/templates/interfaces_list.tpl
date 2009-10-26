@@ -25,11 +25,10 @@
   </td>
   <td style="text-align: center;">
    <a class="delete" id="interface-{$if_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>
-   { if $if_active == 'Y' }
-   <a href="javascript:toggleStatus('interface', 'interfaces', '{ $if_idx }', '0');"><img src="{ $icon_active }" alt="active icon" /></a>
-   { else }
-   <a href="javascript:toggleStatus('interface', 'interfaces', '{ $if_idx }', '1');"><img src="{ $icon_inactive }" alt="active icon" /></a>
-   { /if }
+   <div class="toggle" id="toggle-{$if_idx}" style="display: inline;">
+    <a class="toggle-off" id="interface-{$if_idx}" to="off" title="Disable interface {$if_name}" { if $if_active == 'N'} style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
+    <a class="toggle-on" id="interface-{$if_idx}" to="on" title="Enable interface {$if_name}" { if $if_active == 'Y'} style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>
+   </div>
   </td>
  </tr>
  { /interface_list }

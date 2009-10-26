@@ -40,11 +40,10 @@
   <td style="text-align: center;">
    <!--<a href="javascript:deleteObj('chain', 'chains', '{ $chain_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>-->
    <a title="Delete" class="delete" id="chain-{$chain_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>
-   { if $chain_active == 'Y' }
-   <a href="javascript:toggleStatus('chain', 'chains', '{ $chain_idx }', '0');" title="Disable chain { $chain_name }"><img src="{ $icon_active }" alt="status icon" /></a>
-   { else }
-   <a href="javascript:toggleStatus('chain', 'chains', '{ $chain_idx }', '1');" title="Enable chain { $chain_name }"><img src="{ $icon_inactive }" alt="status icon" /></a>
-   { /if }
+   <div class="toggle" id="toggle-{$chain_idx}" style="display: inline;">
+    <a class="toggle-off" id="chain-{$chain_idx}" to="off" title="Disable chain { $chain_name }" { if $chain_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="status icon" /></a>
+    <a class="toggle-on" id="chain-{$chain_idx}" to="on" title="Enable chain { $chain_name }" { if $chain_active == 'Y'} style="display: none;" { /if }><img src="{ $icon_inactive }" alt="status icon" /></a>
+   </div>
   </td>
  </tr>
  { /chain_list }

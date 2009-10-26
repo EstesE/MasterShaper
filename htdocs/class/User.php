@@ -59,31 +59,6 @@ class User extends MsObject {
 
    } // __construct()
   
-   /**
-    * toggle user active/inactive
-    */
-   public function toggleStatus()
-   {
-      if(isset($_POST['idx']) && is_numeric($_POST['idx'])) {
-         if($_POST['to'] == 1)
-            $new_status='Y';
-         else
-            $new_status='N';
-
-         $db->db_query("
-            UPDATE ". MYSQL_PREFIX ."users
-            SET
-               user_active='". $new_status ."'
-            WHERE
-               user_idx='". $_POST['idx'] ."'");
-
-         return "ok";
-      }
-   
-      return "unkown error";
-
-   } // toggleStatus()
-
 } // class User
 
 ?>
