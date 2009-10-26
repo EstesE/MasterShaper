@@ -76,6 +76,44 @@ class Service_Level extends MsObject {
 
    } // __construct()
 
+   public function swap_in_out()
+   {
+      $tmp = Array(
+         'sl_htb_bw_in_rate' => $this->sl_htb_bw_in_rate,
+         'sl_htb_bw_in_ceil' => $this->sl_htb_bw_in_ceil,
+         'sl_htb_bw_in_burst' => $this->sl_htb_bw_in_burst,
+         'sl_hfsc_in_umax' => $this->sl_hfsc_in_umax,
+         'sl_hfsc_in_dmax' => $this->sl_hfsc_in_dmax,
+         'sl_hfsc_in_rate' => $this->sl_hfsc_in_rate,
+         'sl_hfsc_in_ulrate' => $this->sl_hfsc_in_ulrate,
+         'sl_cbq_in_rate' => $this->sl_cbq_in_rate,
+         'sl_cbq_in_priority' => $this->sl_cbq_in_priority,
+      );
+
+      $this->sl_htb_bw_in_rate = $this->sl_htb_bw_out_rate;
+      $this->sl_htb_bw_in_ceil = $this->sl_htb_bw_out_ceil;
+      $this->sl_htb_bw_in_burst = $this->sl_htb_bw_out_burst;
+      $this->sl_hfsc_in_umax = $this->sl_hfsc_out_umax;
+      $this->sl_hfsc_in_dmax = $this->sl_hfsc_out_dmax;
+      $this->sl_hfsc_in_rate = $this->sl_hfsc_out_rate;
+      $this->sl_hfsc_in_ulrate = $this->sl_hfsc_out_ulrate;
+      $this->sl_cbq_in_rate = $this->sl_cbq_out_rate;
+      $this->sl_cbq_in_priority = $this->sl_cbq_out_priority;
+
+      $this->sl_htb_bw_out_rate = $tmp['sl_htb_bw_in_rate'];
+      $this->sl_htb_bw_out_ceil = $tmp['sl_htb_bw_in_ceil'];
+      $this->sl_htb_bw_out_burst = $tmp['sl_htb_bw_in_burst'];
+      $this->sl_hfsc_out_umax = $tmp['sl_hfsc_in_umax'];
+      $this->sl_hfsc_out_dmax = $tmp['sl_hfsc_in_dmax'];
+      $this->sl_hfsc_out_rate = $tmp['sl_hfsc_in_rate'];
+      $this->sl_hfsc_out_ulrate = $tmp['sl_hfsc_in_ulrate'];
+      $this->sl_cbq_out_rate = $tmp['sl_cbq_in_rate'];
+      $this->sl_cbq_out_priority = $tmp['sl_cbq_in_priority'];
+
+      return true;
+
+   } // swap_in_out()
+
 } // class Service_Level
 
 ?>

@@ -907,13 +907,22 @@ class MASTERSHAPER {
     *
     * this function will return all details of the requested
     * service level.
+    *
+    * @param int $sl_idx
+    * @return Service_Level
     */
    public function getServiceLevel($sl_idx)
    {
-      if($sl = new Service_Level($sl_idx))
-         return $sl;
+      global $ms;
 
-      return false;
+      if(!$sl = new Service_Level($sl_idx))
+         return false;
+
+      /* without IMQ we have to swap in & out */
+      if($ms->getOption('msmode') == "router")
+         $sl->swap_in_out();
+
+      return $sl;
 
    } // getServiceLevel()
 
