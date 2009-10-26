@@ -771,6 +771,10 @@ class MASTERSHAPER {
     */
    public function getInterfaceName($if_idx)
    {
+      /* we are going on to handle positive indexes */
+      if($if_idx <= 0)
+         return;
+
       if(!$if = new Network_Interface($if_idx))
          return false;
 

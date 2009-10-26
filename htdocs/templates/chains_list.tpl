@@ -24,7 +24,7 @@
   <td>
    <img src="{ $icon_servicelevels }" alt="servicelevel icon" />
   { if $chain_sl_idx != 0 }
-   <a href="javascript:refreshContent('servicelevels', '&mode=edit&idx={ $chain_sl_idx }');">{ $chain_sl_name }</a>
+   <a href="{$rewriter->get_page_url('Service Level Edit', $chain_sl_idx)}">{ $chain_sl_name }</a>
   { else }
    { $chain_sl_name }
   { /if }
@@ -32,7 +32,7 @@
   <td>
    <img src="{ $icon_servicelevels }" alt="servicelevel icon" />
   { if $chain_sl_idx != 0 && $chain_fallback_idx != 0 }
-   <a href="javascript:refreshContent('servicelevels', '&mode=edit&idx={ $chain_fallback_idx }');">{ $chain_fallback_name }</a>
+   <a href="{$rewriter->get_page_url('Service Level Edit', $chain_fallback_idx)}">{ $chain_fallback_name }</a>
   { else }
    { $chain_fallback_name }
   { /if }

@@ -45,7 +45,7 @@ class MsObject {
     */
    private function load()
    {  
-      global $db;
+      global $ms, $db;
 
       $sth = $db->db_prepare("
          SELECT

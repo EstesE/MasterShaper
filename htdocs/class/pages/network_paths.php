@@ -45,9 +45,12 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       $this->netpaths = Array();
 
       $res_netpaths = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."network_paths
-         ORDER BY netpath_name ASC
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."network_paths
+         ORDER BY
+            netpath_name ASC
       ");
 
       $cnt_netpaths = 0;
@@ -142,7 +145,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       if(isset($new) && $ms->check_object_exists('netpath', $_POST['netpath_name'])) {
          $ms->throwError(_("A network path with that name already exists!"));
       }
-      if(!isset($new) && $np->netpath_name != $_POST['namebefore'] &&
+      if(!isset($new) && $np->netpath_name != $_POST['netpath_name'] &&
          $ms->check_object_exists('netpath', $_POST['netpath_name'])) {
          $ms->throwError(_("A network path with that name already exists!"));
       }
