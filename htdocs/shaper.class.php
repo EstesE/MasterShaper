@@ -771,17 +771,8 @@ class MASTERSHAPER {
     */
    public function getInterfaceName($if_idx)
    {
-      global $db;
-
-      if($if_idx == 0)
-         return NULL;
-
-      $if = $db->db_fetchSingleRow("
-         SELECT if_name
-         FROM ". MYSQL_PREFIX ."interfaces
-         WHERE
-            if_idx='". $if_idx ."'
-      ");
+      if(!$if = new Network_Interface($if_idx))
+         return false;
 
       return $if->if_name;
 
@@ -868,16 +859,10 @@ class MASTERSHAPER {
     */
    public function getProtocolNumberById($proto_idx)
    {
-      global $db;
+      if(!$proto = new Protocol($proto_idx))
+         return false;
 
-      if($proto = $db->db_fetchSingleRow("
-         SELECT proto_number
-         FROM ". MYSQL_PREFIX ."protocols
-         WHERE
-            proto_idx LIKE '". $proto_idx ."'"))
-         return $proto->proto_number;
-
-      return 0;
+      return $proto->proto_number;
 
    } // getProtocolNumberById()
 
@@ -889,16 +874,10 @@ class MASTERSHAPER {
     */
    public function getProtocolNameById($proto_idx)
    {
-      global $db;
+      if(!$proto = new Protocol($proto_idx))
+         return false;
 
-      if($proto = $db->db_fetchSingleRow("
-         SELECT proto_name
-         FROM ". MYSQL_PREFIX ."protocols
-         WHERE
-            proto_idx LIKE '". $proto_idx ."'"))
-         return $proto->proto_name;
-
-      return '';
+      return $proto->proto_name;
 
    } // getProtocolNameById()
 
@@ -927,14 +906,10 @@ class MASTERSHAPER {
     */
    public function getServiceLevel($sl_idx)
    {
-      global $db;
+      if($sl = new Service_Level($sl_idx))
+         return $sl;
 
-      return $db->db_fetchSingleRow("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."service_levels
-         WHERE
-            sl_idx='". $sl_idx ."'
-      ");
+      return false;
 
    } // getServiceLevel()
 
@@ -946,15 +921,10 @@ class MASTERSHAPER {
     */
    public function getServiceLevelName($sl_idx)
    {
-      global $db;
+      if(!$sl = new Service_Level($sl_idx))
+         return false;
 
-      if($sl = $db->db_fetchSingleRow("
-         SELECT sl_name
-         FROM ". MYSQL_PREFIX ."service_levels
-         WHERE
-            sl_idx='". $sl_idx ."'
-      "))
-         return $sl->sl_name;
+      return $sl->sl_name;
 
    } // getServiceLevelName()
 
@@ -966,15 +936,10 @@ class MASTERSHAPER {
     */
    public function getTargetName($target_idx)
    {
-      global $db;
+      if(!$target = new Target($target_idx))
+         return false;
 
-      if($target = $db->db_fetchSingleRow("
-         SELECT target_name
-         FROM ". MYSQL_PREFIX ."targets
-         WHERE
-            target_idx='". $target_idx ."'
-      "))
-         return $target->target_name;
+      return $target->target_name;
 
    } // getTargetName()
 
@@ -986,34 +951,12 @@ class MASTERSHAPER {
     */
    public function getChainName($chain_idx)
    {
-      global $db;
+      if(!$chain = new Chain($chain_idx))
+         return false;
 
-      if($chain = $db->db_fetchSingleRow("
-         SELECT chain_name
-         FROM ". MYSQL_PREFIX ."chains
-         WHERE
-            chain_idx='". $chain_idx ."'
-      "))
-         return $chain->chain_name;
+      return $chain->chain_name;
 
    } // getChainName()
-
-   /** get filter information
-    *
-    * this function will return all details of the requested
-    * filter
-   */
-   public function getFilter($filter_idx)
-   {
-      global $db;
-
-      return $db->db_fetchSingleRow("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."filters
-         WHERE
-            filter_idx='". $filter_idx ."'");
-
-   } // getFilter()
 
    /**
     * get all filters for that pipe

@@ -133,6 +133,21 @@ class Pipe extends MsObject {
 
    } // post_delete()
 
+   /**
+    * swap targets
+    *
+    * @return bool
+    */
+   public function swap_targets()
+   {
+      $tmp = $this->pipe_src_target;
+      $this->pipe_src_target = $this->pipe_dst_target;
+      $this->pipe_dst_target = $tmp;
+
+      return true;
+
+   } // swap_targets()
+
 } // class Pipe
 
 ?>

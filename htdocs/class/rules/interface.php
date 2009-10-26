@@ -21,7 +21,10 @@
  *
  ***************************************************************************/
 
-class MASTERSHAPER_INTERFACE {
+define("UNIDIRECTIONAL", 1);
+define("BIDIRECTIONAL", 2);
+
+class Ruleset_Interface {
 
    private $initialized;
    private $major_class;
@@ -36,11 +39,8 @@ class MASTERSHAPER_INTERFACE {
     *
     * Initialize the MASTERSHAPER_INTERFACE class
     */
-   public function __construct($if_id, $if_gre, &$db, &$parent)
+   public function __construct($if_id, $if_gre)
    {
-      $this->db          = $db;
-      $this->parent      = $parent;
-
       $this->initialized = false;
       $this->rules       = Array();
 
@@ -122,8 +122,8 @@ class MASTERSHAPER_INTERFACE {
 
    private function getSpeed()
    {
-
-      return $this->parent->getKbit($this->if_speed);
+      global $ms;
+      return $ms->getKbit($this->if_speed);
 
    } // getSpeed()
 
@@ -148,7 +148,6 @@ class MASTERSHAPER_INTERFACE {
     */
    private function getName()
    {
-
       return $this->if_name;
 
    } // getName()
@@ -169,11 +168,10 @@ class MASTERSHAPER_INTERFACE {
 
    private function getInterfaceDetails($if_idx)
    {
-
-      return $this->db->db_fetchSingleRow("SELECT * FROM ". MYSQL_PREFIX ."interfaces WHERE if_idx='". $if_idx ."'");
+      $if = new Network_Interface($if_idx);
+      return $if;
 
    } // getInterfaceDetails()
-
 
    private function addRuleComment($text)
    {
@@ -183,31 +181,28 @@ class MASTERSHAPER_INTERFACE {
 
    private function addRule($cmd)
    {
-
       array_push($this->rules, $cmd);
 
    } // addRule()
 
    private function addRootQdisc($id)
    {
+      global $ms;
 
-      switch($this->parent->getOption("classifier")) {
+      switch($ms->getOption("classifier")) {
 
-	 default:
-	 case 'HTB':
+         default:
+         case 'HTB':
+	         $this->addRule(TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $id ." root htb default 1");
+            break;
 
-	    $this->addRule(TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $id ." root htb default 1");
-	    break;
+         case 'HFSC':
+            $this->addRule(TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $id ." root hfsc default 1");
+            break;
 
-	 case 'HFSC':
-
-	    $this->addRule(TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $id ." root hfsc default 1");
-	    break;
-
-	 case 'CBQ':
-
-	    $this->addRule(TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $id ." root cbq avpkt 1000 bandwidth ". $this->getSpeed() ."Kbit cell 8");
-	    break;
+         case 'CBQ':
+            $this->addRule(TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $id ." root cbq avpkt 1000 bandwidth ". $this->getSpeed() ."Kbit cell 8");
+            break;
 
       }
 
@@ -215,26 +210,24 @@ class MASTERSHAPER_INTERFACE {
 
    private function addInitClass($parent, $classid)
    {
-      
+      global $ms;
+
       $bw = $this->getSpeed();
 
-      switch($this->parent->getOption("classifier")) {
+      switch($ms->getOption("classifier")) {
 
-	 default:
-	 case 'HTB':
+         default:
+         case 'HTB':
+            $this->addRule(TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid ." htb rate ". $bw ."Kbit");
+            break;
 
-	    $this->addRule(TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid ." htb rate ". $bw ."Kbit");
-	    break;
+         case 'HFSC':
+            $this->addRule(TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid ." hfsc sc rate ". $bw ."Kbit ul rate ". $bw ."Kbit");
+            break;
 
-	 case 'HFSC':
-
-	    $this->addRule(TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid ." hfsc sc rate ". $bw ."Kbit ul rate ". $bw ."Kbit");
-	    break;
-
-	 case 'CBQ':
-
-	    $this->addRule(TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid ." cbq bandwidth ". $bw ."Kbit rate ". $bw ."Kbit allot 1000 prio 3 bounded");
-	    break;
+         case 'CBQ':
+            $this->addRule(TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid ." cbq bandwidth ". $bw ."Kbit rate ". $bw ."Kbit allot 1000 prio 3 bounded");
+            break;
 
       }
 
@@ -243,7 +236,6 @@ class MASTERSHAPER_INTERFACE {
    /* Adds the top level filter which brings traffic into the initClass */
    private function addInitFilter($parent)
    {
-
       $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
 
    } // addInitFilter()
@@ -251,147 +243,131 @@ class MASTERSHAPER_INTERFACE {
    /* Adds a class definition for a inbound chain */
    private function addClass($parent, $classid, $sl, $direction = "in")
    {
+      global $ms;
+
       $string = TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid;
 
       switch($direction) {
 
          case 'in':
 
-	    switch($this->parent->getOption("classifier")) {
+            switch($ms->getOption("classifier")) {
 
-	       default:
-	       case 'HTB':
+               default:
+               case 'HTB':
 
-		  $string.= " htb ";
-	      
-		  if($sl->sl_htb_bw_in_rate != "" && $sl->sl_htb_bw_in_rate > 0) {
-		     
-		     $string.= " rate ". $sl->sl_htb_bw_in_rate ."Kbit ";
-		     
-		     if($sl->sl_htb_bw_in_ceil != "" && $sl->sl_htb_bw_in_ceil > 0)
-			$string.= "ceil ". $sl->sl_htb_bw_in_ceil ."Kbit ";
-		     if($sl->sl_htb_bw_in_burst != "" && $sl->sl_htb_bw_in_burst > 0)
-			$string.= "burst ". $sl->sl_htb_bw_in_burst ."Kbit ";
-		     if($sl->sl_htb_priority > 0) 
-			$string.= "prio ". $sl->sl_htb_priority;
-
-		  }	
-		  else {
-		     
-		     $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
-
-		     if($sl->sl_htb_priority > 0)
-			$string.= "prio ". $sl->sl_htb_priority;
-
-		  }
-		  $string.= " quantum 1532";
-		  break;
+                  $string.= " htb ";
+                  if($sl->sl_htb_bw_in_rate != "" && $sl->sl_htb_bw_in_rate > 0) {
+                     $string.= " rate ". $sl->sl_htb_bw_in_rate ."Kbit ";
+                     if($sl->sl_htb_bw_in_ceil != "" && $sl->sl_htb_bw_in_ceil > 0)
+                        $string.= "ceil ". $sl->sl_htb_bw_in_ceil ."Kbit ";
+                     if($sl->sl_htb_bw_in_burst != "" && $sl->sl_htb_bw_in_burst > 0)
+                        $string.= "burst ". $sl->sl_htb_bw_in_burst ."Kbit ";
+                     if($sl->sl_htb_priority > 0) 
+                        $string.= "prio ". $sl->sl_htb_priority;
+                  }	
+                  else {
+                     $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
+                     if($sl->sl_htb_priority > 0)
+                        $string.= "prio ". $sl->sl_htb_priority;
+                  }
+                  $string.= " quantum 1532";
+                  break;
 				      
-	       case 'HFSC':
+               case 'HFSC':
 
-		  $string.= " hfsc sc ";
+                  $string.= " hfsc sc ";
+                  if(isset($sl->sl_hfsc_in_umax) && $sl->sl_hfsc_in_umax != "" && $sl->sl_hfsc_in_umax > 0) 
+                     $string.= " umax ". $sl->sl_hfsc_in_umax ."b ";
+                  if(isset($sl->sl_hfsc_in_dmax) && $sl->sl_hfsc_in_dmax != "" && $sl->sl_hfsc_in_dmax > 0)
+                     $string.= " dmax ". $sl->sl_hfsc_in_dmax ."ms ";
+                  if(isset($sl->sl_hfsc_in_rate) && $sl->sl_hfsc_in_rate != "" && $sl->sl_hfsc_in_rate > 0)
+                     $string.= " rate ". $sl->sl_hfsc_in_rate ."Kbit ";
+                  if(isset($sl->sl_hfsc_in_ulrate) && $sl->sl_hfsc_in_ulrate != "" && $sl->sl_hfsc_in_ulrate > 0)
+                     $string.= " ul rate ". $sl->sl_hfsc_in_ulrate ."Kbit";
 
-		  if(isset($sl->sl_hfsc_in_umax) && $sl->sl_hfsc_in_umax != "" && $sl->sl_hfsc_in_umax > 0) 
-		     $string.= " umax ". $sl->sl_hfsc_in_umax ."b ";
-		  if(isset($sl->sl_hfsc_in_dmax) && $sl->sl_hfsc_in_dmax != "" && $sl->sl_hfsc_in_dmax > 0)
-		     $string.= " dmax ". $sl->sl_hfsc_in_dmax ."ms ";
-		  if(isset($sl->sl_hfsc_in_rate) && $sl->sl_hfsc_in_rate != "" && $sl->sl_hfsc_in_rate > 0)
-		     $string.= " rate ". $sl->sl_hfsc_in_rate ."Kbit ";
-		  if(isset($sl->sl_hfsc_in_ulrate) && $sl->sl_hfsc_in_ulrate != "" && $sl->sl_hfsc_in_ulrate > 0)
-		     $string.= " ul rate ". $sl->sl_hfsc_in_ulrate ."Kbit";
+                  $string.= " rt ";
 
-		  $string.= " rt ";
+                  if(isset($sl->sl_hfsc_in_umax) && $sl->sl_hfsc_in_umax != "" && $sl->sl_hfsc_in_umax > 0) 
+                     $string.= " umax ". $sl->sl_hfsc_in_umax ."b ";
+                  if(isset($sl->sl_hfsc_in_dmax) && $sl->sl_hfsc_in_dmax != "" && $sl->sl_hfsc_in_dmax > 0)
+                     $string.= " dmax ". $sl->sl_hfsc_in_dmax ."ms ";
+                  if(isset($sl->sl_hfsc_in_rate) && $sl->sl_hfsc_in_rate != "" && $sl->sl_hfsc_in_rate > 0)
+                     $string.= " rate ". $sl->sl_hfsc_in_rate ."Kbit ";
+                  if(isset($sl->sl_hfsc_in_ulrate) && $sl->sl_hfsc_in_ulrate != "" && $sl->sl_hfsc_in_ulrate > 0)
+                     $string.= " ul rate ". $sl->sl_hfsc_in_ulrate ."Kbit";
+                  break;
 
-		  if(isset($sl->sl_hfsc_in_umax) && $sl->sl_hfsc_in_umax != "" && $sl->sl_hfsc_in_umax > 0) 
-		     $string.= " umax ". $sl->sl_hfsc_in_umax ."b ";
-		  if(isset($sl->sl_hfsc_in_dmax) && $sl->sl_hfsc_in_dmax != "" && $sl->sl_hfsc_in_dmax > 0)
-		     $string.= " dmax ". $sl->sl_hfsc_in_dmax ."ms ";
-		  if(isset($sl->sl_hfsc_in_rate) && $sl->sl_hfsc_in_rate != "" && $sl->sl_hfsc_in_rate > 0)
-		     $string.= " rate ". $sl->sl_hfsc_in_rate ."Kbit ";
-		  if(isset($sl->sl_hfsc_in_ulrate) && $sl->sl_hfsc_in_ulrate != "" && $sl->sl_hfsc_in_ulrate > 0)
-		     $string.= " ul rate ". $sl->sl_hfsc_in_ulrate ."Kbit";
-		  break;
+               case 'CBQ':
 
-	       case 'CBQ':
-
-		  $string.= " cbq bandwidth ". $this->inbound ."Kbit rate ". $sl->sl_cbq_in_rate ."Kbit allot 1500 prio ". $sl->sl_cbq_in_priority ." avpkt 1000";
-		  if($sl->sl_cbq_bounded == "Y")
-		     $string.= " bounded";
-		  break;
+                  $string.= " cbq bandwidth ". $this->inbound ."Kbit rate ". $sl->sl_cbq_in_rate ."Kbit allot 1500 prio ". $sl->sl_cbq_in_priority ." avpkt 1000";
+                  if($sl->sl_cbq_bounded == "Y")
+                     $string.= " bounded";
+                  break;
 
             }
-	    break;
+            break;
 
-	 case 'out':
+         case 'out':
 
-	    switch($this->parent->getOption("classifier")) {
+            switch($ms->getOption("classifier")) {
 
-	       default:
-	       case 'HTB':
+               default:
+               case 'HTB':
 
-		  $string.= " htb ";
+                  $string.= " htb ";
 
-		  if($sl->sl_htb_bw_out_rate != "" && $sl->sl_htb_bw_out_rate > 0) {
+                  if($sl->sl_htb_bw_out_rate != "" && $sl->sl_htb_bw_out_rate > 0) {
+                     $string.= " rate ". $sl->sl_htb_bw_out_rate ."Kbit ";
+                     if($sl->sl_htb_bw_out_ceil != "" && $sl->sl_htb_bw_out_ceil > 0)
+                        $string.= "ceil ". $sl->sl_htb_bw_out_ceil ."Kbit ";
+                     if($sl->sl_htb_bw_out_burst != "" && $sl->sl_htb_bw_out_burst > 0)
+                        $string.= "burst ". $sl->sl_htb_bw_out_burst ."Kbit ";
+                     if($sl->sl_htb_priority > 0) 
+                        $string.= "prio ". $sl->sl_htb_priority;
+                  }	
+                  else {
+                     $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
+                     if($sl->sl_htb_priority > 0)
+                        $string.= "prio ". $sl->sl_htb_priority;
+                  }
+                  $string.= " quantum 1532";
+                  break;
 
-		     $string.= " rate ". $sl->sl_htb_bw_out_rate ."Kbit ";
-		     
-		     if($sl->sl_htb_bw_out_ceil != "" && $sl->sl_htb_bw_out_ceil > 0)
-			$string.= "ceil ". $sl->sl_htb_bw_out_ceil ."Kbit ";
-		     if($sl->sl_htb_bw_out_burst != "" && $sl->sl_htb_bw_out_burst > 0)
-			$string.= "burst ". $sl->sl_htb_bw_out_burst ."Kbit ";
-		     if($sl->sl_htb_priority > 0) 
-			$string.= "prio ". $sl->sl_htb_priority;
+               case 'HFSC':
 
-		  }	
-		  else {
-		     
-		     $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
+                  $string.= " hfsc sc ";
 
-		     if($sl->sl_htb_priority > 0)
-			$string.= "prio ". $sl->sl_htb_priority;
+                  if(isset($sl->sl_hfsc_out_umax) && $sl->sl_hfsc_out_umax != "" && $sl->sl_hfsc_out_umax > 0) 
+                     $string.= " umax ". $sl->sl_hfsc_out_umax ."b ";
+                  if(isset($sl->sl_hfsc_out_dmax) && $sl->sl_hfsc_out_dmax != "" && $sl->sl_hfsc_out_dmax > 0)
+                     $string.= " dmax ". $sl->sl_hfsc_out_dmax ."ms ";
+                  if(isset($sl->sl_hfsc_out_rate) && $sl->sl_hfsc_out_rate != "" && $sl->sl_hfsc_out_rate > 0)
+                     $string.= " rate ". $sl->sl_hfsc_out_rate ."Kbit ";
+                  if(isset($sl->sl_hfsc_out_ulrate) && $sl->sl_hfsc_out_ulrate != "" && $sl->sl_hfsc_out_ulrate > 0)
+                     $string.= " ul rate ". $sl->sl_hfsc_out_ulrate ."Kbit";
+                  $string.= " rt ";
+                  if(isset($sl->sl_hfsc_out_umax) && $sl->sl_hfsc_out_umax != "" && $sl->sl_hfsc_out_umax > 0) 
+                     $string.= " umax ". $sl->sl_hfsc_out_umax ."b ";
+                  if(isset($sl->sl_hfsc_out_dmax) && $sl->sl_hfsc_out_dmax != "" && $sl->sl_hfsc_out_dmax > 0)
+                     $string.= " dmax ". $sl->sl_hfsc_out_dmax ."ms ";
+                  if(isset($sl->sl_hfsc_out_rate) && $sl->sl_hfsc_out_rate != "" && $sl->sl_hfsc_out_rate > 0)
+                     $string.= " rate ". $sl->sl_hfsc_out_rate ."Kbit ";
+                  if(isset($sl->sl_hfsc_out_ulrate) && $sl->sl_hfsc_out_ulrate != "" && $sl->sl_hfsc_out_ulrate > 0)
+                     $string.= " ul rate ". $sl->sl_hfsc_out_ulrate ."Kbit";
+                  break;
 
-		  }
-		  $string.= " quantum 1532";
-		  break;
-				      
-	       case 'HFSC':
+               case 'CBQ':
 
-		  $string.= " hfsc sc ";
-
-		  if(isset($sl->sl_hfsc_out_umax) && $sl->sl_hfsc_out_umax != "" && $sl->sl_hfsc_out_umax > 0) 
-		     $string.= " umax ". $sl->sl_hfsc_out_umax ."b ";
-		  if(isset($sl->sl_hfsc_out_dmax) && $sl->sl_hfsc_out_dmax != "" && $sl->sl_hfsc_out_dmax > 0)
-		     $string.= " dmax ". $sl->sl_hfsc_out_dmax ."ms ";
-		  if(isset($sl->sl_hfsc_out_rate) && $sl->sl_hfsc_out_rate != "" && $sl->sl_hfsc_out_rate > 0)
-		     $string.= " rate ". $sl->sl_hfsc_out_rate ."Kbit ";
-		  if(isset($sl->sl_hfsc_out_ulrate) && $sl->sl_hfsc_out_ulrate != "" && $sl->sl_hfsc_out_ulrate > 0)
-		     $string.= " ul rate ". $sl->sl_hfsc_out_ulrate ."Kbit";
-
-		  $string.= " rt ";
-
-		  if(isset($sl->sl_hfsc_out_umax) && $sl->sl_hfsc_out_umax != "" && $sl->sl_hfsc_out_umax > 0) 
-		     $string.= " umax ". $sl->sl_hfsc_out_umax ."b ";
-		  if(isset($sl->sl_hfsc_out_dmax) && $sl->sl_hfsc_out_dmax != "" && $sl->sl_hfsc_out_dmax > 0)
-		     $string.= " dmax ". $sl->sl_hfsc_out_dmax ."ms ";
-		  if(isset($sl->sl_hfsc_out_rate) && $sl->sl_hfsc_out_rate != "" && $sl->sl_hfsc_out_rate > 0)
-		     $string.= " rate ". $sl->sl_hfsc_out_rate ."Kbit ";
-		  if(isset($sl->sl_hfsc_out_ulrate) && $sl->sl_hfsc_out_ulrate != "" && $sl->sl_hfsc_out_ulrate > 0)
-		     $string.= " ul rate ". $sl->sl_hfsc_out_ulrate ."Kbit";
-		  break;
-
-	       case 'CBQ':
-
-		  $string.= " cbq bandwidth ifspeedKbit rate ". $sl->sl_cbq_out_rate ."Kbit allot 1500 prio ". $sl->sl_cbq_out_priority ." avpkt 1000";
-		  if($sl->sl_cbq_bounded == "Y")
-		     $string.= " bounded";
-		  break;
+                  $string.= " cbq bandwidth ifspeedKbit rate ". $sl->sl_cbq_out_rate ."Kbit allot 1500 prio ". $sl->sl_cbq_out_priority ." avpkt 1000";
+                  if($sl->sl_cbq_bounded == "Y")
+                     $string.= " bounded";
+                  break;
 
             }
-	    break;
-
+            break;
       }
-		
-	
+
       $this->addRule($string);
 
    } // addClass()
@@ -399,26 +375,28 @@ class MASTERSHAPER_INTERFACE {
    /* Adds qdisc at the end of class for final queuing mechanism */
    private function addSubQdisc($child, $parent, $sl)
    {
+      global $ms;
+
       $string = TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $child ." parent ". $parent ." ";
 
       switch($sl->sl_qdisc) {
 
-	 default:
-	 case 'SFQ':
-	    $string.="sfq";
-	    break;
+         default:
+         case 'SFQ':
+            $string.="sfq";
+            break;
 
-	 case 'ESFQ':
-	    $string.= "esfq ". $this->parent->getESFQParams($sl);
-	    break;
+         case 'ESFQ':
+            $string.= "esfq ". $ms->getESFQParams($sl);
+            break;
 
-	 case 'HFSC':
-	    $string.= "hfsc";
-	    break;
+         case 'HFSC':
+            $string.= "hfsc";
+            break;
 
-	 case 'NETEM':
-	    $string.= "netem ". $this->parent->getNETEMParams($sl);
-	    break;
+         case 'NETEM':
+            $string.= "netem ". $ms->getNETEMParams($sl);
+            break;
 
       }
 
@@ -428,20 +406,22 @@ class MASTERSHAPER_INTERFACE {
 
    private function addAckFilter($parent, $option, $id = "")
    {
-      switch($this->parent->getOption("filter")) {
+      global $ms;
 
-	 default:
-	 case 'tc':
+      switch($ms->getOption("filter")) {
 
-	    $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id);
+         default:
+         case 'tc':
 
-	    break;
+            $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id);
 
-	 case 'ipt':
+            break;
 
-	    $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -p tcp -m length --length :64 -j CLASSIFY --set-class ". $id);
-	    $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -p tcp -m length --length :64 -j RETURN");
-	    break;
+         case 'ipt':
+
+            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -p tcp -m length --length :64 -j CLASSIFY --set-class ". $id);
+            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -p tcp -m length --length :64 -j RETURN");
+            break;
 
       }
 
@@ -450,7 +430,9 @@ class MASTERSHAPER_INTERFACE {
    /* create IP/host matching filters */
    private function addHostFilter($parent, $option, $params1 = "", $params2 = "", $chain_direction = "")
    {
-      switch($this->parent->getOption("filter")) {
+      global $ms;
+
+      switch($ms->getOption("filter")) {
 	 
          default:
          case 'tc':
@@ -591,9 +573,9 @@ class MASTERSHAPER_INTERFACE {
 
          case 'ipt':
 
-            if($this->parent->getOption("msmode") == "router") 
+            if($ms->getOption("msmode") == "router") 
                $string = IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName();
-            elseif($this->parent->getOption("msmode") == "bridge") 
+            elseif($ms->getOption("msmode") == "bridge") 
                $string = IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $params5;
 
             if($chain_direction == "out") {
@@ -608,16 +590,16 @@ class MASTERSHAPER_INTERFACE {
 
                foreach($hosts as $host) {
                   if($this->check_if_mac($host)) {
-                     $this->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                     $this->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                      $this->addRule($string ." -m mac --mac-source ". $host ." -j RETURN");
                   }
                   else{
                      if(strstr($host, "-") === false) {
-                        $this->addRule($string ." -s ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                        $this->addRule($string ." -s ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                         $this->addRule($string ." -s ". $host ." -j RETURN");
                      }
                      else {
-                        $this->addRule($string ." -m iprange --src-range ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                        $this->addRule($string ." -m iprange --src-range ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                         $this->addRule($string ." -m iprange --src-range ". $host ." -j RETURN");
                      }
                   }
@@ -629,16 +611,16 @@ class MASTERSHAPER_INTERFACE {
 
                foreach($hosts as $host) {
                   if($this->check_if_mac($host)) {
-                     $this->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                     $this->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                      $this->addRule($string ." -m mac --mac-source ". $host ." -j RETURN");
                   }
                   else {
                      if(strstr($host, "-") === false) {
-                        $this->addRule($string ." -d ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                        $this->addRule($string ." -d ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                         $this->addRule($string ." -d ". $host ." -j RETURN");
                      }
                      else {
-                        $this->addRule($string ." -m iprange --dst-range ". $host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                        $this->addRule($string ." -m iprange --dst-range ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                         $this->addRule($string ." -m iprange --dst-range ". $host ." -j RETURN");
                      }
                   }
@@ -653,16 +635,16 @@ class MASTERSHAPER_INTERFACE {
                   if(!$this->check_if_mac($src_host)) {
                      foreach($dst_hosts as $dst_host) {
                         if($this->check_if_mac($dst_host)) {
-                           $this->addRule($string ." -m mac --mac-source ". $src_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                           $this->addRule($string ." -m mac --mac-source ". $src_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                            $this->addRule($string ." -m mac --mac-source ". $dst_host ." -j RETURN");
                         }
                         else {
                            if(strstr($host, "-") === false) {
-                              $this->addRule($string ." -s ". $src_host ." -d ". $dst_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                              $this->addRule($string ." -s ". $src_host ." -d ". $dst_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                               $this->addRule($string ." -s ". $src_host ." -d ". $dst_host ." -j RETURN");
                            }
                            else {
-                              $this->addRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $params2));
+                              $this->addRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $params2));
                               $this->addRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j RETURN");
                            }
                         }
@@ -682,13 +664,11 @@ class MASTERSHAPER_INTERFACE {
     */
    private function getTargetHosts($target_idx)
    {
-      $targets = array();
+      global $ms, $db;
 
-      $row = $this->db->db_fetchSingleRow("
-         SELECT target_match, target_ip, target_mac 
-         FROM ". MYSQL_PREFIX ."targets 
-         WHERE target_idx='". $target_idx ."'
-      ");
+      $row = new Target($target_idx);
+
+      $targets = array();
 
       switch($row->target_match) {
 
@@ -697,7 +677,7 @@ class MASTERSHAPER_INTERFACE {
             /* for tc-filter we need to need to resolve a IP range
                iptables will use the IPRANGE match for this            
             */
-            if($this->parent->getOption("filter") == "tc") {
+            if($ms->getOption("filter") == "tc") {
 
                if(strstr($row->target_ip, "-") !== false) {
                   list($host1, $host2) = split("-", $row->target_ip);
@@ -725,7 +705,7 @@ class MASTERSHAPER_INTERFACE {
 
          case 'GROUP':
 
-            $result = $this->db->db_query("
+            $result = $db->db_query("
                SELECT atg_target_idx
                FROM ". MYSQL_PREFIX ."assign_target_groups 
                WHERE atg_group_idx='". $target_idx ."'
@@ -750,14 +730,19 @@ class MASTERSHAPER_INTERFACE {
    /* set the actually tc handle ID for a chain */
    private function setChainID($chain_idx, $chain_tc_id)
    {
-      $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."tc_ids (id_pipe_idx, id_chain_idx, id_if, id_tc_id) "
+      global $db;
+
+      $db->db_query("INSERT INTO ". MYSQL_PREFIX ."tc_ids (id_pipe_idx, id_chain_idx, id_if, id_tc_id) "
 			 ."VALUES ('0', '". $chain_idx ."', '". $this->getName() ."', '". $chain_tc_id ."')");
+
    } // setChainID()
 
    /* set the actually tc handle ID for a pipe */ 
    private function setPipeID($pipe_idx, $chain_tc_id, $pipe_tc_id)
    {
-      $this->db->db_query("INSERT INTO ". MYSQL_PREFIX ."tc_ids (id_pipe_idx, id_chain_idx, id_if, id_tc_id) "
+      global $db;
+
+      $db->db_query("INSERT INTO ". MYSQL_PREFIX ."tc_ids (id_pipe_idx, id_chain_idx, id_if, id_tc_id) "
 			 ."VALUES ('". $pipe_idx ."', '". $chain_tc_id ."', '". $this->getName() ."', '". $pipe_tc_id ."')");
    } // setPipeID()
 
@@ -765,14 +750,25 @@ class MASTERSHAPER_INTERFACE {
      * Generate code to add a pipe filter
      *
      * This function generates the tc/iptables code to filter traffic into a pipe
+     * @param string $parent
+     * @param string $option
+     * @param Filter $filter
+     * @param string $my_id
+     * @param Pipe $pipe
      */
-
-   private function addPipeFilter($parent, $option, $filter = "", $my_id = "", $direction = "", $params4 = "", $params5 = "", $params6 = "")
+   private function addPipeFilter($parent, $option, $filter, $my_id, $pipe)
    {
+      global $ms;
+
+      /* If this filter matches bidirectional, src & dst target has to be swapped */
+      if($pipe->pipe_direction == BIDIRECTIONAL && $chain_direction == "out") {
+         $pipe->swap_targets();
+      }
+
       $tmp_str   = "";
       $tmp_array = array();
 
-      switch($this->parent->getOption("filter")) {
+      switch($ms->getOption("filter")) {
 
          default:
          case 'tc':
@@ -782,7 +778,7 @@ class MASTERSHAPER_INTERFACE {
             /* filter matches a specific network protocol */
             if($filter->filter_protocol_id >= 0) {
 
-               switch($this->parent->getProtocolNumberById($filter->filter_protocol_id)) {
+               switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
 
                   /* TCP */
                   case 6:
@@ -794,19 +790,19 @@ class MASTERSHAPER_INTERFACE {
                      $string.= "match ip ";
                      $str_ports = "";
                      $cnt_ports = 0;
-                     $ports = $this->parent->getPorts($filter->filter_idx);
+                     $ports = $ms->getPorts($filter->filter_idx);
 
                      if($ports) {
 
                         while($port = $ports->fetchRow()) {
-                           $dst_ports = $this->parent->extractPorts($port->port_number);
+                           $dst_ports = $ms->extractPorts($port->port_number);
                            if($dst_ports != 0) {
                               foreach($dst_ports as $dst_port) {
                                  $tmp_str = $string ." [DIRECTION] ". $dst_port ." 0xffff ";
                                  if($filter->filter_tos > 0)
                                     $tmp_str.= "match ip tos ". $filter->filter_tos ." 0xff ";
 
-                                 switch($direction) {
+                                 switch($pipe->pipe_direction) {
                                     case UNIDIRECTIONAL:
                                        array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
                                        break;
@@ -823,7 +819,7 @@ class MASTERSHAPER_INTERFACE {
 
                   default:
 
-                     $string.= "match ip protocol ". $this->parent->getProtocolNumberById($filter->filter_protocol_id) ." 0xff ";
+                     $string.= "match ip protocol ". $ms->getProtocolNumberById($filter->filter_protocol_id) ." 0xff ";
                      array_push($tmp_array, $string);
                      break;
                }
@@ -831,15 +827,15 @@ class MASTERSHAPER_INTERFACE {
             else 
                array_push($tmp_array, $string);
 
-            if($filter->pipe_src_target != 0 && $filter->pipe_dst_target == 0) {
+            if($pipe->pipe_src_target != 0 && $pipe->pipe_dst_target == 0) {
 
-               $hosts = $this->getTargetHosts($filter->pipe_src_target);
+               $hosts = $this->getTargetHosts($pipe->pipe_src_target);
                foreach($hosts as $host) {
                   if(!$this->check_if_mac($host)) {
                      if($this->isGRE()) {
                         foreach($tmp_array as $tmp_arr) {
                            $hex_host = $this->convertIpToHex($host);
-                           switch($direction) {
+                           switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
                                  $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
                                  break;
@@ -852,7 +848,7 @@ class MASTERSHAPER_INTERFACE {
                      }
                      else {
                         foreach($tmp_array as $tmp_arr) {
-                           switch($direction) {
+                           switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
                                  $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
                                  break;
@@ -872,7 +868,7 @@ class MASTERSHAPER_INTERFACE {
                         else
                            list($m1, $m2, $m3, $m4, $m5, $m6) = split("-", $host);
 
-                        switch($direction) {
+                        switch($pipe->pipe_direction) {
                            case UNIDIRECTIONAL:
                               $this->addRule(str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ", $tmp_arr) ." flowid ". $my_id);
                               break;
@@ -885,15 +881,15 @@ class MASTERSHAPER_INTERFACE {
                   }
                }
             }
-            elseif($filter->pipe_src_target == 0 && $filter->pipe_dst_target != 0) {
+            elseif($pipe->pipe_src_target == 0 && $pipe->pipe_dst_target != 0) {
 
-               $hosts = $this->getTargetHosts($filter->pipe_dst_target);
+               $hosts = $this->getTargetHosts($pipe->pipe_dst_target);
                foreach($hosts as $host) {
                   if(!$this->check_if_mac($host)) {
                      if($this->isGRE()) {
                         foreach($tmp_array as $tmp_arr) {
                            $hex_host = $this->convertIpToHex($host);
-                           switch($direction) {
+                           switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
                                  $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
                                  break;
@@ -907,7 +903,7 @@ class MASTERSHAPER_INTERFACE {
                      else {
                         foreach($tmp_array as $tmp_arr) {
 
-                           switch($direction) {
+                           switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
                                  $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
                                  break;
@@ -928,7 +924,7 @@ class MASTERSHAPER_INTERFACE {
                         else
                            list($m1, $m2, $m3, $m4, $m5, $m6) = split("-", $host);
 
-                        switch($direction) {
+                        switch($pipe->pipe_direction) {
                            case UNIDIRECTIONAL:
                               $this->addRule(str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 ", $tmp_arr) ." flowid ". $my_id);
                               break;
@@ -941,9 +937,9 @@ class MASTERSHAPER_INTERFACE {
                   }  
                }
             }
-            elseif($filter->pipe_src_target != 0 && $filter->pipe_dst_target != 0) {
+            elseif($pipe->pipe_src_target != 0 && $pipe->pipe_dst_target != 0) {
 
-               $src_hosts = $this->getTargetHosts($filter->pipe_src_target);
+               $src_hosts = $this->getTargetHosts($pipe->pipe_src_target);
 
                foreach($src_hosts as $src_host) {
                   if(!$this->check_if_mac($src_host)) {
@@ -964,7 +960,7 @@ class MASTERSHAPER_INTERFACE {
                      $tmp_str = "u32 [DIR1] [DIR2]";
                   }
 
-                  $dst_hosts = $this->getTargetHosts($filter->pipe_dst_target);
+                  $dst_hosts = $this->getTargetHosts($pipe->pipe_dst_target);
                   foreach($dst_hosts as $dst_host) {
 
                      if(!$this->check_if_mac($dst_host)) {
@@ -972,7 +968,7 @@ class MASTERSHAPER_INTERFACE {
                         if($this->isGRE()) {
                            foreach($tmp_array as $tmp_arr) {
                               $hex_host = $this->convertIpToHex($dst_host);
-                              switch($direction) {
+                              switch($pipe->pipe_direction) {
 
                                  case UNIDIRECTIONAL:
                                     $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
@@ -998,7 +994,7 @@ class MASTERSHAPER_INTERFACE {
 
                            foreach($tmp_array as $tmp_arr) {
 
-                              switch($direction) {
+                              switch($pipe->pipe_direction) {
 
                                  case UNIDIRECTIONAL:
                                     $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
@@ -1030,7 +1026,7 @@ class MASTERSHAPER_INTERFACE {
 
                         foreach($tmp_array as $tmp_arr) {
 
-                           switch($direction) {
+                           switch($pipe->pipe_direction) {
 
                               case UNIDIRECTIONAL:
                                  $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
@@ -1091,7 +1087,7 @@ class MASTERSHAPER_INTERFACE {
             // filter matches on protocols 
             if($filter->filter_protocol_id >= 0) {
 
-               switch($this->parent->getProtocolNumberById($filter->filter_protocol_id)) {
+               switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
 		  
                   /* IP */
                   case 4:
@@ -1099,12 +1095,12 @@ class MASTERSHAPER_INTERFACE {
                      array_push($proto_ary, " -p 17");
                      break;
                   default:
-                     array_push($proto_ary, " -p ". $this->parent->getProtocolNumberById($filter->filter_protocol_id));
+                     array_push($proto_ary, " -p ". $ms->getProtocolNumberById($filter->filter_protocol_id));
                      break;
                }
 
                // Select for TCP flags (only valid for TCP protocol)
-               if($this->parent->getProtocolNumberById($filter->filter_protocol_id) == 6) {
+               if($ms->getProtocolNumberById($filter->filter_protocol_id) == 6) {
 
                   $str_tcpflags = "";
 
@@ -1127,7 +1123,7 @@ class MASTERSHAPER_INTERFACE {
                }
 
                // Get all the used ports for IP, TCP or UDP 
-               switch($this->parent->getProtocolNumberById($filter->filter_protocol_id)) {
+               switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
 
                   case 4:  // IP
                   case 6:  // TCP
@@ -1136,12 +1132,12 @@ class MASTERSHAPER_INTERFACE {
                      $cnt_ports = 0;
 
                      // Which ports are selected for this filter 
-                     $ports = $this->parent->getPorts($filter->filter_idx);
+                     $ports = $ms->getPorts($filter->filter_idx);
 
                      if($ports) {
                         while($port = $ports->fetchRow()) {
                            // If this port is definied as range or list get all the single ports 
-                           $dst_ports = $this->parent->extractPorts($port->port_number);
+                           $dst_ports = $ms->extractPorts($port->port_number);
                            if($dst_ports != 0) {
                               foreach($dst_ports as $dst_port) {
                                  array_push($all_ports, $dst_port);
@@ -1157,7 +1153,7 @@ class MASTERSHAPER_INTERFACE {
                array_push($proto_ary, "");
 
             // Layer7 protocol matching 
-            if($l7protocols = $this->parent->getL7Protocols($filter->filter_idx)) {
+            if($l7protocols = $ms->getL7Protocols($filter->filter_idx)) {
 		  
                $l7_cnt = 0;
                $l7_protos = array();
@@ -1232,7 +1228,7 @@ class MASTERSHAPER_INTERFACE {
             /* (advantage is that src&dst matches can be done with a simple */
             /* --port */
 
-            switch($this->parent->getProtocolNumberById($filter->filter_protocol_id)) {
+            switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
 
                /* TCP, UDP or IP */
                case 4:
@@ -1240,7 +1236,7 @@ class MASTERSHAPER_INTERFACE {
                case 17:
 		  
                   if($cnt_ports > 0) {
-                     switch($direction) {
+                     switch($pipe->pipe_direction) {
                         /* 1 = incoming, 3 = both */
                         case UNIDIRECTIONAL:
                            $match_str.= " -m multiport --dport ";
@@ -1287,8 +1283,8 @@ class MASTERSHAPER_INTERFACE {
 
                $ipt_tmpl = IPT_BIN ." -t mangle -A ms-chain-". $this->getName() ."-". $parent;
 
-               if($filter->pipe_src_target != 0 && $filter->pipe_dst_target == 0) {
-                  $src_hosts = $this->getTargetHosts($filter->pipe_src_target);
+               if($pipe->pipe_src_target != 0 && $pipe->pipe_dst_target == 0) {
+                  $src_hosts = $this->getTargetHosts($pipe->pipe_src_target);
                   foreach($src_hosts as $src_host) {
                      foreach($proto_ary as $proto_str) {
                         if(strstr("-", $src_host) === false) {
@@ -1302,8 +1298,8 @@ class MASTERSHAPER_INTERFACE {
                      }
                   }
                }
-               elseif($filter->pipe_src_target == 0 && $filter->pipe_dst_target != 0) {
-                  $dst_hosts = $this->getTargetHosts($filter->pipe_dst_target);
+               elseif($pipe->pipe_src_target == 0 && $pipe->pipe_dst_target != 0) {
+                  $dst_hosts = $this->getTargetHosts($pipe->pipe_dst_target);
                   foreach($dst_hosts as $dst_host) {
                      foreach($proto_ary as $proto_str) {
                         if(strstr("-", $dst_host) === false) {
@@ -1317,9 +1313,9 @@ class MASTERSHAPER_INTERFACE {
                      }
                   }
                }
-               elseif($filter->pipe_src_target != 0 && $filter->pipe_dst_target != 0) {
-                  $src_hosts = $this->getTargetHosts($filter->pipe_src_target);
-                  $dst_hosts = $this->getTargetHosts($filter->pipe_dst_target);
+               elseif($pipe->pipe_src_target != 0 && $pipe->pipe_dst_target != 0) {
+                  $src_hosts = $this->getTargetHosts($pipe->pipe_src_target);
+                  $dst_hosts = $this->getTargetHosts($pipe->pipe_dst_target);
                   foreach($src_hosts as $src_host) {
                      foreach($dst_hosts as $dst_host) {
                         foreach($proto_ary as $proto_str) {
@@ -1336,7 +1332,7 @@ class MASTERSHAPER_INTERFACE {
                      }
                   }
                }
-               elseif($filter->pipe_src_target == 0 && $filter->pipe_dst_target == 0) {
+               elseif($pipe->pipe_src_target == 0 && $pipe->pipe_dst_target == 0) {
                   foreach($proto_ary as $proto_str) {
                      $this->addRule($ipt_tmpl ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
                      $this->addRule($ipt_tmpl ." ". $proto_str ." ". $match_str ." -j RETURN");
@@ -1351,7 +1347,9 @@ class MASTERSHAPER_INTERFACE {
 
    private function addFallbackFilter($parent, $filter = "")
    {
-      switch($this->parent->getOption("filter")) {
+      global $ms;
+
+      switch($ms->getOption("filter")) {
 
 	 default:
 	 case 'tc':
@@ -1367,19 +1365,21 @@ class MASTERSHAPER_INTERFACE {
 
    private function addMatchallFilter($parent, $filter = "")
    {
-      switch($this->parent->getOption("filter")) {
+      global $ms;
+
+      switch($ms->getOption("filter")) {
          case 'tc':
             $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0 0 classid ". $filter);
             break;
 
          case 'ipt':
-            if($this->parent->getOption("msmode") == "router") {
+            if($ms->getOption("msmode") == "router") {
                //$this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j ms-chain-". $this->getName() ."-". $filter);
-               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $filter));
+               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $filter));
                $this->addRule(IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName() ." -j RETURN");
             }
-            elseif($this->parent->getOption("msmode") == "bridge") {
-               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getName() ." -j MARK --set-mark ". $this->parent->getConnmarkId($this->getId(), $filter));
+            elseif($ms->getOption("msmode") == "bridge") {
+               $this->addRule(IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getName() ." -j MARK --set-mark ". $ms->getConnmarkId($this->getId(), $filter));
                $this->addRule(IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getName() ." -j RETURN");
             }
             break;
@@ -1396,6 +1396,8 @@ class MASTERSHAPER_INTERFACE {
     */
    public function buildChains($netpath_idx, $direction)
    {
+      global $ms;
+
       $this->addRuleComment("Rules for interface ". $this->getName());
       $chains = $this->getChains($netpath_idx);
 
@@ -1403,14 +1405,14 @@ class MASTERSHAPER_INTERFACE {
          $this->addRuleComment("chain ". $chain->chain_name ."");
          /* chain doesn't ignore QoS? */
          if($chain->chain_sl_idx != 0)
-            $this->addClass("1:1", "1:". $this->current_chain . $this->current_class, $this->parent->getServiceLevel($chain->chain_sl_idx), $direction);
+            $this->addClass("1:1", "1:". $this->current_chain . $this->current_class, $ms->getServiceLevel($chain->chain_sl_idx), $direction);
 
          /* remember the assigned chain id */
          $this->setChainID($chain->chain_idx, "1:". $this->current_chain . $this->current_class, "dst", "src");
 
-         if($this->parent->getOption("filter") == "ipt") {
+         if($ms->getOption("filter") == "ipt") {
             $this->addRule(IPT_BIN ." -t mangle -N ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
-            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -m connmark --mark ". $this->parent->getConnmarkId($this->getId(), "1:". $this->current_chain . $this->current_filter) ." -j ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
+            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getId(), "1:". $this->current_chain . $this->current_filter) ." -j ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
          }
 		   
          /* setup the filter definition to match traffic which should go into this chain */
@@ -1430,8 +1432,8 @@ class MASTERSHAPER_INTERFACE {
 	       $this->buildPipes($chain->chain_idx, "1:". $this->current_chain . $this->current_class, $direction);
 
 	       // Fallback
-	       $this->addClass("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99", $this->parent->getServiceLevel($chain->chain_fallback_idx), $direction);
-	       $this->addSubQdisc($this->current_chain ."99:", "1:". $this->current_chain ."99", $this->parent->getServiceLevel($chain->chain_fallback_idx));
+	       $this->addClass("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99", $ms->getServiceLevel($chain->chain_fallback_idx), $direction);
+	       $this->addSubQdisc($this->current_chain ."99:", "1:". $this->current_chain ."99", $ms->getServiceLevel($chain->chain_fallback_idx));
 	       $this->addFallbackFilter("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99");
 	       $this->setPipeID(-1, $chain->chain_idx, "1:". $this->current_chain ."99");
 
@@ -1439,7 +1441,7 @@ class MASTERSHAPER_INTERFACE {
 	    else {
 
 	       $this->addRuleComment("chain without service level");
-	       $this->addSubQdisc($this->current_chain . $this->current_class .":", "1:". $this->current_chain . $this->current_class, $this->parent->getServiceLevel($chain->chain_sl_idx));
+	       $this->addSubQdisc($this->current_chain . $this->current_class .":", "1:". $this->current_chain . $this->current_class, $ms->getServiceLevel($chain->chain_sl_idx));
 
 	    }
 	 }
@@ -1455,7 +1457,9 @@ class MASTERSHAPER_INTERFACE {
 
    private function getChains($netpath_idx)
    {
-      return $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."chains WHERE chain_active='Y' AND "
+      global $db;
+
+      return $db->db_query("SELECT * FROM ". MYSQL_PREFIX ."chains WHERE chain_active='Y' AND "
          ."chain_netpath_idx='". $netpath_idx ."' ORDER BY chain_position ASC");
 
    } // getChains()
@@ -1463,8 +1467,10 @@ class MASTERSHAPER_INTERFACE {
    /* build ruleset for incoming pipes */
    private function buildPipes($chain_idx, $my_parent, $chain_direction)
    {
+      global $ms, $db;
+
       /* get all active pipes for this chain */
-      $pipes = $this->db->db_query("
+      $pipes = $db->db_query("
          SELECT
             p.*
          FROM
@@ -1487,7 +1493,7 @@ class MASTERSHAPER_INTERFACE {
          $my_id = "1:". $this->current_chain . $this->current_pipe;
          $this->addRuleComment("pipe ". $pipe->pipe_name ."");
 
-         $sl = $this->parent->getServiceLevel($pipe->pipe_sl_idx);
+         $sl = $ms->getServiceLevel($pipe->pipe_sl_idx);
 
          /* add a new class for this pipe */
          $this->addClass($my_parent, $my_id, $sl, $chain_direction);
@@ -1495,45 +1501,16 @@ class MASTERSHAPER_INTERFACE {
          $this->setPipeID($pipe->pipe_idx, $chain_idx, "1:". $this->current_chain . $this->current_pipe);
 
          /* get the nescassary parameters */
-         $filters = $this->parent->getFilters($pipe->pipe_idx);
+         $filters = $ms->getFilters($pipe->pipe_idx);
 
          if($filters->numRows() > 0) {
-
             while($filter = $filters->fetchRow()) {
-
-               $detail = $this->parent->getFilter($filter->apf_filter_idx);
-
-               $detail->pipe_src_target = $pipe->pipe_src_target;
-               $detail->pipe_dst_target = $pipe->pipe_dst_target;
-
-               /* If this filter matches bidirectional, we src & dst target has to be swapped */
-               if($pipe->pipe_direction == BIDIRECTIONAL && $chain_direction == "out") {
-
-                  $tmp = $detail->pipe_src_target;
-                  $detail->pipe_src_target = $detail->pipe_dst_target;
-                  $detail->pipe_dst_target = $tmp;
-
-               }
-
-               $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe->pipe_direction, $pipe->pipe_idx);
+               $detail = new Filter($filter->apf_filter_idx);
+               $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe);
             }
          }
          else {
-
-            $detail->pipe_src_target = $pipe->pipe_src_target;
-            $detail->pipe_dst_target = $pipe->pipe_dst_target;
-
-            /* If this filter matches bidirectional, src & dst target has to be swapped */
-            if($pipe->pipe_direction == BIDIRECTIONAL && $chain_direction == "out") {
-
-               $tmp = $detail->pipe_src_target;
-               $detail->pipe_src_target = $detail->pipe_dst_target;
-               $detail->pipe_dst_target = $tmp;
-
-            }
-
-            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe->pipe_direction, $pipe->pipe_idx);
-
+            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe);
          }
       }
 
@@ -1541,7 +1518,9 @@ class MASTERSHAPER_INTERFACE {
 
    private function iptInitRulesIf() 
    {
-      if($this->parent->getOption("msmode") == "router") {
+      global $ms;
+
+      if($ms->getOption("msmode") == "router") {
          $this->addRule(IPT_BIN ." -t mangle -A FORWARD -o ". $this->getName() ." -j ms-forward");
          $this->addRule(IPT_BIN ." -t mangle -A OUTPUT -o ". $this->getName() ." -j ms-forward");
          $this->addRule(IPT_BIN ." -t mangle -A POSTROUTING -o ". $this->getName() ." -j ms-postrouting");
@@ -1561,7 +1540,9 @@ class MASTERSHAPER_INTERFACE {
     */
    public function Initialize($direction)
    {
-      $ack_sl = $this->parent->getOption("ack_sl");
+      global $ms;
+
+      $ack_sl = $ms->getOption("ack_sl");
 
       $this->addRuleComment("Initialize Interface ". $this->getName());
 
@@ -1569,7 +1550,7 @@ class MASTERSHAPER_INTERFACE {
 
 
       /* Initial iptables rules */
-      if($this->parent->getOption("filter") == "ipt") 
+      if($ms->getOption("filter") == "ipt") 
          $this->iptInitRulesIf();
 
       $this->addInitClass("1:", "1:1");
@@ -1579,8 +1560,8 @@ class MASTERSHAPER_INTERFACE {
       if($ack_sl != 0) {
 
          $this->addRuleComment("boost ACK packets");
-         $this->addClass("1:1", "1:2", $this->parent->getServiceLevel($ack_sl), $direction);
-         $this->addSubQdisc("2:", "1:2", $this->parent->getServiceLevel($ack_sl));
+         $this->addClass("1:1", "1:2", $ms->getServiceLevel($ack_sl), $direction);
+         $this->addSubQdisc("2:", "1:2", $ms->getServiceLevel($ack_sl));
          $this->addAckFilter("1:1", "ack", "1:2", "1");
 
       }

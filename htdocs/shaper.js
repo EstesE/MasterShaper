@@ -418,21 +418,6 @@ function obj_toggle_status(element)
       }
    });
 
-   return;
-
-   // Create object with values of the form
-   var objTemp = new Object();
-   objTemp['module'] = module;
-   objTemp['action'] = 'toggle';
-   objTemp['idx'] = idx;
-   objTemp['to'] = to;
-   var retr = HTML_AJAX.post('rpc.php?action=store', objTemp);
-   if(retr == "ok") {
-      refreshPage(target);
-   }
-   else {
-      window.alert(retr);
-   }
 } // obj_toggle_status()
 
 function alterPosition(type, idx, to)
