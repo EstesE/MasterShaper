@@ -1,0 +1,24 @@
+mod_rewrite config:
+
+   RewriteRule ^/shaper/login.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/logout.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/manage.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/settings.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/options.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/overview.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/rules.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/others.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/rpc.html /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/chains/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/pipes/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/filters/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/targets/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/ports/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/protocols/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/service-levels/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/users/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/interfaces/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/rules/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/network-paths/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/others/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/monitoring/(.*) /srv/shaper/htdocs/index.php/$1
