@@ -14,13 +14,8 @@
  </tr>
  <tr>
   <td colspan="5" style="text-align: center;">
-  { foreach from=$breakers item=letter }
-   { if $cur_breaker == breaker }
-    <a href="javascript:refreshContent('ports', '&breaker={ $letter }&orderby={ $orderby }&sortorder={ $sortorder }" style="color: #AF0000;">{ $letter }</a>
-   { else }
-    <a href="javascript:refreshContent('ports', '&breaker={ $letter }&orderby={ $orderby }&sortorder={ $sortorder }">{ $letter }</a>
-   { /if }
-  { /foreach }
+   { assign var=pager_ary value=$pager->getLinks() }
+   { $pager_ary.all }
   </td>
  </tr>
  <tr>
@@ -28,33 +23,30 @@
  </tr>
  <tr>
   <td>
-   <img src="{ $icon_ports }" alt="port icon" />
-   <a href="javascript:refreshContent('ports', '&breaker={ $breaker }&orderby=port_name&sortorder={ $sortorder }"><i>Name</i></a>
+   <img src="{ $icon_ports }" alt="port icon" /><i>Name</i>
   </td>
   <td>
-   <img src="{ $icon_ports }" alt="port icon" />
-   <a href="javascript:refreshContent('ports', '&breaker={ $breaker }&orderby=port_desc&sortorder={ $sortorder }"><i>Description</i></a>
+   <img src="{ $icon_ports }" alt="port icon" /><i>Description</i>
   </td>
   <td>
-   <img src="{ $icon_ports }" alt="port icon" />
-     <a href="javascript:refreshContent('ports', '&breaker={ $breaker }&orderby=port_number&sortorder={ $sortorder }"><i>Port-Number</i></a>
+   <img src="{ $icon_ports }" alt="port icon" /><i>Port-Number</i>
   </td>
-  <td style="text-align: center;"><i><?php print _("Options"); ?></i></td>
+  <td style="text-align: center;"><i>Options</i></td>
  </tr>
  { port_list }
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{ $icon_ports }" alt="port icon" />
-   <a href="{$rewriter->get_page_url('Port Edit', $port_idx)}">{ $port_name }</a>
-  { if $port_user_defined == 'Y' }
+   <a href="{$rewriter->get_page_url('Port Edit', $port->port_idx)}">{ $port->port_name }</a>
+  { if $port->port_user_defined == 'Y' }
     <img src="{ $icon_users }" alt="User defined port" />
   { /if }
    </a>
   </td>
-  <td>{ if $port_desc != "" } { $port_desc } { else } &nbsp; { /if }</td>
-  <td>{ if $port_number != ""} { $port_number} { else} &nbsp; { /if} </td>
+  <td>{ if $port->port_desc != "" } { $port->port_desc } { else } &nbsp; { /if }</td>
+  <td>{ if $port->port_number != ""} { $port->port_number} { else} &nbsp; { /if} </td>
   <td style="text-align: center;">
-   <a class="delete" id="port-{$port_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a class="delete" id="port-{$port->port_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
   </td>
  </tr>
 { /port_list }

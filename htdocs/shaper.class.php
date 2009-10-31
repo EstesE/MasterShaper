@@ -195,6 +195,12 @@ class MASTERSHAPER {
          $missing = true;
          unset($php_errormsg);
       }
+      @include_once 'Pager.php';
+      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
+         print "PEAR Pager package is missing<br />\n";
+         $missing = true;
+         unset($php_errormsg);
+      }
       @include_once 'smarty/libs/Smarty.class.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "Smarty template engine is missing<br />\n";

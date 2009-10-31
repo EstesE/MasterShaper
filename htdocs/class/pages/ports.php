@@ -31,6 +31,7 @@ class Page_Ports extends MASTERSHAPER_PAGE {
    public function __construct()
    {
       $this->rights = 'user_manage_ports';
+      $this->items_per_page = 50;
 
    } // __construct()
 
@@ -39,52 +40,48 @@ class Page_Ports extends MASTERSHAPER_PAGE {
     */
    public function showList()
    {
-      if(!isset($this->parent->screen))
-        $this->parent->screen = 0;
-
-      global $db, $tmpl;
+      global $db, $tmpl, $rewriter, $page;
 
       $this->avail_ports = Array();
       $this->ports = Array();
 
-      if(!isset($_GET['orderby']))
-         $_GET['orderby'] = "port_name";
-      if(!isset($_GET['sortorder']))
-         $_GET['sortorder'] = "ASC";
-      if(!isset($_GET['breaker']))
-         $_GET['breaker'] = 'A';
+      if(empty($page->num))
+         $page->num = 1;
 
-      if(isset($_GET['breaker']) && $_GET['breaker'] != "#") {
-         $res_ports = $db->db_query("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."ports
-            WHERE
-               port_name REGEXP '^". $_GET['breaker'] ."'
-            ORDER BY ". $_GET['orderby'] ." ". $_GET['sortorder']
-         );
-      }
-      else {
-         $res_ports = $db->db_query("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."ports
-            ORDER BY ". $_GET['orderby'] ." ". $_GET['sortorder']
-         );
-      }
+      $limit = ($page->num-1) * $this->items_per_page;
 
-      $cnt_ports = 0;
+      $num_ports = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM ". MYSQL_PREFIX ."ports");
+
+      $res_ports = $db->db_query("
+         SELECT
+            port_idx
+         FROM
+            ". MYSQL_PREFIX ."ports
+         ORDER BY
+            port_name ASC
+         LIMIT
+            ". $limit .", ". $this->items_per_page
+      );
+
+      $cnt_ports = $res_ports->numRows();
 	
       while($port = $res_ports->fetchrow()) {
-         $this->avail_ports[$cnt_ports] = $port->port_idx;
-         $this->ports[$port->port_idx] = $port;
-         $cnt_ports++;
+         $this->avail_ports[] = $port->port_idx;
       }
 
-      $breakers = Array();
-      $breakers = array_merge($breakers, range('A', 'Z'));
-      $breakers = array_merge($breakers, range(0, 9));
-      array_push($breakers, '#');
+      $pager_params = Array(
+         'mode' => 'Sliding',
+         'delta' => 3,
+         'append' => true,
+         'urlVar' => 'num',
+         'totalItems' => $num_ports->count,
+         'perPage' => $this->items_per_page,
+         'currentPage' => $page->num,
+      );
 
-      $tmpl->assign('breakers', $breakers);
+      $pager = & Pager::factory($pager_params);
+      $tmpl->assign('pager', $pager);
+
       $tmpl->register_block("port_list", array(&$this, "smarty_port_list"));
       return $tmpl->fetch("ports_list.tpl");
 
@@ -126,12 +123,9 @@ class Page_Ports extends MASTERSHAPER_PAGE {
       if($index < count($this->avail_ports)) {
 
          $port_idx = $this->avail_ports[$index];
-         $port =  $this->ports[$port_idx];
+         $port = new Port($port_idx);
 
-         $tmpl->assign('port_idx', $port_idx);
-         $tmpl->assign('port_name', $port->port_name);
-         $tmpl->assign('port_desc', $port->port_desc);
-         $tmpl->assign('port_number', $port->port_number);
+         $tmpl->assign('port', $port);
 
          $index++;
          $tmpl->assign('smarty.IB.port_list.index', $index);

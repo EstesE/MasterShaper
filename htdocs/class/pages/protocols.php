@@ -31,6 +31,7 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
    public function __construct()
    {
       $this->rights = 'user_manage_protocols';
+      $this->items_per_page = 50;
 
    } // __construct()
 
@@ -39,27 +40,48 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
     */
    public function showList()
    {
-      if(!isset($this->parent->screen))
-         $this->parent->screen = 0;
+      global $db, $tmpl, $rewriter, $page;
 
-      global $db, $tmpl;
+      $this->avail_ports = Array();
+      $this->ports = Array();
+
+      if(empty($page->num))
+         $page->num = 1;
+
+      $limit = ($page->num-1) * $this->items_per_page;
+
+      $num_protocols = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM ". MYSQL_PREFIX ."protocols");
 
       $this->avail_protocols = Array();
       $this->protocols = Array();
 
       $res_protocols = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."protocols
-         ORDER BY proto_name ASC
-      ");
+         SELECT
+            proto_idx
+         FROM
+            ". MYSQL_PREFIX ."protocols
+         ORDER BY
+            proto_name ASC
+         LIMIT
+            ". $limit .", ". $this->items_per_page
+      );
 
-      $cnt_protocols = 0;
-	
       while($protocol = $res_protocols->fetchrow()) {
-         $this->avail_protocols[$cnt_protocols] = $protocol->proto_idx;
-         $this->protocols[$protocol->proto_idx] = $protocol;
-         $cnt_protocols++;
+         $this->avail_protocols[] = $protocol->proto_idx;
       }
+
+      $pager_params = Array(
+         'mode' => 'Sliding',
+         'delta' => 3,
+         'append' => true,
+         'urlVar' => 'num',
+         'totalItems' => $num_protocols->count,
+         'perPage' => $this->items_per_page,
+         'currentPage' => $page->num,
+      );
+
+      $pager = & Pager::factory($pager_params);
+      $tmpl->assign('pager', $pager);
 
       $tmpl->register_block("protocol_list", array(&$this, "smarty_protocol_list"));
       return $tmpl->fetch("protocols_list.tpl");
@@ -101,11 +123,9 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
       if($index < count($this->avail_protocols)) {
 
          $proto_idx = $this->avail_protocols[$index];
-         $protocol =  $this->protocols[$proto_idx];
 
-         $tmpl->assign('proto_idx', $proto_idx);
-         $tmpl->assign('proto_name', $protocol->proto_name);
-         $tmpl->assign('proto_number', $protocol->proto_number);
+         $protocol = new Protocol($proto_idx);
+         $tmpl->assign('protocol', $protocol);
 
          $index++;
          $tmpl->assign('smarty.IB.protocol_list.index', $index);
