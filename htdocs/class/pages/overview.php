@@ -404,10 +404,12 @@ class Page_Overview extends MASTERSHAPER_PAGE {
    {
       global $ms, $db;
 
-      if(!isset($_POST['type']))
-         return "Missing object-type to alter position off";
+      if(!isset($_POST['move_obj'])) {
+         print "Missing object-type to alter position off";
+         return false;
+      }
 
-      switch($_POST['type']) {
+      switch($_POST['move_obj']) {
 
          case 'chain':
             $obj_table = "chains";
@@ -432,16 +434,16 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
       }
 
-      if(!isset($_POST['idx']) || !is_numeric($_POST['idx']))
+      if(!isset($_POST['id']) || !is_numeric($_POST['id']))
          $ms->throwError(_("Id to alter position is missing or not numeric!"));
 
       if(!isset($_POST['to']) || !in_array($_POST['to'], array('up','down')))
-         $ms->throwError(_("Don't know in which direction I shall alter position!"));
+         $ms->throwError(_("Don't know in which direction we shall alter position!"));
 
-      $idx = $_POST['idx'];
+      $idx = $_POST['id'];
 
       // get objects current position
-      switch($_POST['type']) {
+      switch($_POST['move_obj']) {
          case 'chain':
          case 'pipe':
             $query = "
@@ -524,7 +526,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       /* just moving ... */
       if($new_pos > 0) {
          /* move all other objects away */
-         switch($_POST['type']) {
+         switch($_POST['move_obj']) {
             case 'chain':
             case 'pipe':
                $db->db_query("
@@ -558,7 +560,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          elseif($_POST['to'] == 'down')
             $dir = "+1";
 
-         switch($_POST['type']) {
+         switch($_POST['move_obj']) {
             case 'chain':
             case 'pipe':
                $db->db_query("

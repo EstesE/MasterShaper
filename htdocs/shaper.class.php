@@ -169,14 +169,7 @@ class MASTERSHAPER {
          $missing = true;
       }
 
-      /* Check for HTML_AJAX PEAR package, lent from Horde project */
       ini_set('track_errors', 1);
-      @include_once 'HTML/AJAX/Server.php';
-      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-         print "PEAR HTML_AJAX package is missing<br />\n";
-         $missing = true;
-         unset($php_errormsg);
-      }
       @include_once 'MDB2.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "PEAR MDB2 package is missing<br />\n";
@@ -471,6 +464,9 @@ class MASTERSHAPER {
          case 'toggle':
             $this->rpc_toggle_object_status();
             break;
+         case 'alter-position':
+            $this->rpc_alter_position();
+            break;
          default:
             print "Unknown action";
             return false;
@@ -614,12 +610,13 @@ class MASTERSHAPER {
    /**
     * change position
     */
-   public function alter_position()
+   public function rpc_alter_position()
    {
-      $obj = new MASTERSHAPER_OVERVIEW($this);
-      return $obj->alter_position();
+      require_once "class/pages/overview.php";
+      $obj = new Page_Overview;
+      print $obj->alter_position();
 
-   } // alter_position()
+   } // rpc_alter_position()
 
    /**
     * check login
@@ -1309,6 +1306,7 @@ class MASTERSHAPER {
       $valid_actions = Array(
          'delete',
          'toggle',
+         'alter-position',
       );
 
       if(in_array($page->action, $valid_actions))

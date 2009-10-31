@@ -2,8 +2,9 @@
 <input type="hidden" name="module" value="overview" />
 <input type="hidden" name="action" value="store" />
 {start_table icon=$icon_home alt="home icon" title="MasterShaper Ruleset Overview" }
+<div>
 { ov_netpath }
-<table style="width: 100%;">
+<table style="width: 100%;" id="netpath{$netpath_idx}">
  <tr>
   <td style="height: 15px;" />
  </tr>
@@ -11,8 +12,8 @@
   <td>
    &nbsp;
    Network Path '{ $netpath_name }'
-   <a href="javascript:alterPosition('netpath', '{ $netpath_idx }', 'down');"><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
-   <a href="javascript:alterPosition('netpath', '{ $netpath_idx }', 'up');"><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
+   <a class="move-down" type="netpath" idx="{ $netpath_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
+   <a class="move-up" type="netpath" idx="{ $netpath_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
   </td>
  </tr>
  <tr>
@@ -34,7 +35,7 @@
 
  { ov_chain np_idx=$netpath_idx }
 
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain_idx}">
      <td colspan="2">
       <input type="hidden" name="chains[{ $chain_cnt }]" value="{ $chain_idx }" />
       <img src="{ $icon_chains }" alt="chain icon" />&nbsp;
@@ -84,8 +85,8 @@
       </select>
      </td>
      <td style="text-align: center;">
-      <a href="javascript:alterPosition('chain', '{ $chain_idx }', 'down');"><img src="{ $icon_chains_arrow_down }" alt="Move chain down" /></a>
-      <a href="javascript:alterPosition('chain', '{ $chain_idx }', 'up');"><img src="{ $icon_chains_arrow_up }" alt="Move chain up" /></a>
+      <a class="move-down" type="chain" idx="{ $chain_idx }"><img src="{ $icon_chains_arrow_down }" alt="Move chain down" /></a>
+      <a class="move-up" type="chain" idx="{ $chain_idx }"><img src="{ $icon_chains_arrow_up }" alt="Move chain up" /></a>
      </td>
     </tr> 
 
@@ -95,7 +96,7 @@
   { if $chain_sl_idx != 0 && $chain_fallback_idx != 0 }
    { ov_pipe np_idx=$netpath_idx chain_idx=$chain_idx }
     <input type="hidden" name="pipes[{ $pipe_counter }]" value="{ $pipe_idx }" />
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe_idx}">
      <td style="text-align: center;">{ $counter }</td>
      <td>
       <img src="{ $icon_pipes }" alt="pipes icon" />&nbsp;
@@ -133,8 +134,8 @@
       </select>
      </td>
      <td style="text-align: center;">
-      <a href="javascript:alterPosition('pipe', '{ $pipe_idx }', 'down');"><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
-      <a href="javascript:alterPosition('pipe', '{ $pipe_idx }', 'up');"><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
+      <a class="move-down" type="pipe" idx="{ $pipe_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
+      <a class="move-up" type="pipe" idx="{ $pipe_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
      </td>
     </tr> 
     { ov_filter np_idx=$netpath_idx chain_idx=$chain_idx pipe_idx=$pipe_idx }
@@ -154,6 +155,7 @@
   {/if}
  {/ov_chain}
 {/ov_netpath}
+</div>
    </table>
   </td>
  </tr>

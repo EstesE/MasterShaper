@@ -103,65 +103,10 @@ function click(object)
 
 }
 
-function AskServerWhatToDo()
-{
-   return HTML_AJAX.grab(encodeURI('rpc.php?action=what_to_do'));
-}
-
 function init_shaper()
 {
-   /*whattodo = AskServerWhatToDo();
-
-   if(whattodo == "") {
-     refreshContent();
-   }
-
-   if(whattodo == "show_overview")
-      refreshContent("overview");
-   */
 
 } // init_shaper()
-
-function refreshContent(req_content, options)
-{
-   if(req_content == undefined)
-      req_content = "";
-
-   var content = document.getElementById("content");
-   content.innerHTML = "Loading...";
-   var url = 'rpc.php?action=get_content&request=' + req_content;
-   if(options != undefined) {
-      url = url+options;
-   }
-
-   content.innerHTML = HTML_AJAX.grab(encodeURI(url));
-}
-
-function ruleset(mode)
-{
-   if(mode == undefined)
-      mode = "";
-
-   var content = document.getElementById("content");
-   content.innerHTML = "Loading...";
-   var url = 'rpc.php?action=ruleset&mode=' + mode;
-   content.innerHTML = HTML_AJAX.grab(encodeURI(url));
-} // ruleset()
-
-function monitor(mode)
-{
-   if(mode == undefined)
-      mode = "";
-
-   var content = document.getElementById("content");
-   content.innerHTML = "Loading...";
-   var url = 'rpc.php?action=monitor&mode=' + mode;
-   content.innerHTML = HTML_AJAX.grab(encodeURI(url));
-
-   /* now start auto image reloading */
-   image_start_autoload();
-
-} // monitor()
 
 function draw_jqplot()
 {
@@ -287,48 +232,7 @@ function draw_jqplot()
    for(var arrkey in names_arr) {
       legend.innerHTML+= "<br />" + names_arr[arrkey].label;
    }
-
-
 }
-
-function check_login()
-{
-   if(document.forms['login'].user_name.value == "") {
-      window.alert("Please enter a username");
-      return;
-   }
-   if(document.forms['login'].user_pass.value == "") {
-      window.alert("Please enter a password");
-      return;
-   }
-
-   // Create object with values of the form
-   var objTemp = new Object();
-   objTemp['user_name'] = document.forms['login'].user_name.value;
-   objTemp['user_pass'] = document.forms['login'].user_pass.value;
-
-   var retr = HTML_AJAX.post('rpc.php?action=check_login', objTemp);
-
-   if(retr == "ok") {
-      refreshPage("overview");
-   }
-   else {
-      window.alert(retr);
-   }
-
-}
-
-function refreshPage(content)
-{
-   refreshContent(content);
-
-} // refreshPage()
-
-function js_logout()
-{
-   HTML_AJAX.grab(encodeURI('rpc.php?action=logout'));
-   refreshPage();
-} // js_logout()
 
 function obj_delete(element, target, idx)
 {
@@ -420,24 +324,55 @@ function obj_toggle_status(element)
 
 } // obj_toggle_status()
 
-function alterPosition(type, idx, to)
+function obj_alter_position(element)
 {
-   // Create object with values of the form
-   var objTemp = new Object();
-   objTemp['type'] = type;
-   objTemp['idx'] = idx;
-   objTemp['to'] = to;
+   if(!(obj_type = element.attr("type")) == undefined)
+      window.alert("missing type for " + element);
+   if(!(obj_idx = element.attr("idx")) == undefined)
+      window.alert("missing idx for " + element);
 
-   var retr = HTML_AJAX.post('rpc.php?action=alter_position', objTemp);
+   if(element.attr("class") == "move-up")
+      obj_to = "up";
+   if(element.attr("class") == "move-down")
+      obj_to = "down";
 
-   if(retr == "ok") {
-      refreshPage("overview");
-   }
-   else {
-      window.alert(retr);
-   }
+   $.ajax({
+      type: "POST",
+      url: "rpc.html",
+      data: ({type : 'rpc', action : 'alter-position', move_obj : obj_type, id : obj_idx, to : obj_to }),
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+         alert('Failed to contact server! ' + textStatus);
+      },
+      success: function(data){
+         tableRow = $('#' + obj_type + obj_idx);
+         if(obj_to == 'up') {
+            /* the first tableRow is the second child */
+            if(tableRow.is(":nth-child(2)")) {
+               if($children = tableRow.parent().children())
+                  $($children[$children.length-1]).after(tableRow);
+            }
+            else {
+               if(prev = tableRow.prev())
+                  prev.before(tableRow);
+            }
+         }
+         if(obj_to == 'down') {
+            if(tableRow.is(":last-child")) {
+               if($children = tableRow.parent().children())
+                  $($children[1]).before(tableRow);
+            }
+            else {
+               if(next = tableRow.next())
+                  next.after(tableRow);
+            }
+         }
+         if(data == "ok\n")
+            return;
+         alert('Server returned: ' + data + ' ' + data.length);
+      }
+   });
 
-} // alterPosition()
+} // alter_position()
 
 function image_update()
 {
@@ -500,54 +435,6 @@ function image_toggle_autoload()
    }
 }
 
-function graph_set_mode(mode)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-   objTemp['action'] = 'graphmode';
-   objTemp['value'] = mode;
-
-   var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
-   image_update();
-
-} // graph_set_mode()
-
-function graph_set_scalemode(obj)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-   objTemp['action'] = 'scalemode';
-   objTemp['value'] = obj.options[obj.selectedIndex].value;
-
-   var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
-   image_update();
-
-} // graph_set_scalemode()
-
-function graph_set_interface(obj)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-   objTemp['action'] = 'interface';
-   objTemp['value'] = obj.options[obj.selectedIndex].value;
-
-   var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
-   image_update();
-
-} // graph_set_interface()
-
-function graph_set_chain(obj)
-{
-   // Create object with values of the form
-   var objTemp = new Object();
-   objTemp['action'] = 'chain';
-   objTemp['value'] = obj.options[obj.selectedIndex].value;
-
-   var retr = HTML_AJAX.post('rpc.php?action=changegraph', objTemp);
-   image_update();
-
-} // graph_set_chain()
-
 /**
  * set focus to specified object
  *
@@ -592,5 +479,8 @@ $(document).ready(function() {
    });
    $("table td div a.toggle-off, table td div a.toggle-on").click(function(){
       obj_toggle_status($(this));
+   });
+   $("table td a.move-up, table td a.move-down").click(function(){
+      obj_alter_position($(this));
    });
 });
