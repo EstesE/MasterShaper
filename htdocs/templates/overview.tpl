@@ -38,7 +38,7 @@
      <td colspan="2">
       <input type="hidden" name="chains[{ $chain_cnt }]" value="{ $chain_idx }" />
       <img src="{ $icon_chains }" alt="chain icon" />&nbsp;
-      <a href="javascript:refreshContent('chains', '&mode=edit&idx={ $chain_idx }');" title="Modify chain { $chain_name }">{ $chain_name }</a>
+      <a href="{$rewriter->get_page_url('Chain Edit', $chain_idx)}" title="Modify chain { $chain_name }">{ $chain_name }</a>
      </td>
      <td style="text-align: center;">
       <select name="chain_sl_idx[{ $chain_idx }]">
@@ -99,7 +99,7 @@
      <td style="text-align: center;">{ $counter }</td>
      <td>
       <img src="{ $icon_pipes }" alt="pipes icon" />&nbsp;
-      <a href="javascript:refreshContent('pipes', '&mode=edit&idx={ $pipe_idx }');" title="Modify pipe { $pipe_name }">{ $pipe_name }</a>
+      <a href="{$rewriter->get_page_url('Pipe Edit', $pipe_idx)}" title="Modify pipe { $pipe_name }">{ $pipe_name }</a>
      </td>
      <td style="text-align: center;">
       <select name="pipe_sl_idx[{ $pipe_idx }]"> 
@@ -143,7 +143,7 @@
      <td colspan="7">
       <img src="{ $icon_treeend }" alt="tree" />
       <img src="{ $icon_filters }" alt="filter icon" />&nbsp;
-      <a href="javascript:refreshContent('filters', '&mode=edit&idx={ $filter_idx }');" title="Modify filter { $filter_name }">{ $filter_name }</a>
+      <a href="{$rewriter->get_page_url('Filter Edit', $filter_idx)}" title="Modify filter { $filter_name }">{ $filter_name }</a>
      </td>
      <td>&nbsp;</td>
     </tr> 

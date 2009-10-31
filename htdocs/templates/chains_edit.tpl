@@ -126,7 +126,7 @@
   <td colspan="2">&nbsp;</td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="javascript:refreshContent('chains');" title="Back"><img src="{ $icon_arrow_left }" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{$rewriter->get_page_url('Chains List')}" title="Back"><img src="{ $icon_arrow_left }" alt="arrow left icon" /></a></td>
   <td><input type="submit" value="Save" /></td>
  </tr>
 </table>

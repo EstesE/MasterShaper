@@ -38,7 +38,6 @@
   { /if }
   </td>
   <td style="text-align: center;">
-   <!--<a href="javascript:deleteObj('chain', 'chains', '{ $chain_idx }');" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>-->
    <a title="Delete" class="delete" id="chain-{$chain_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>
    <div class="toggle" id="toggle-{$chain_idx}" style="display: inline;">
     <a class="toggle-off" id="chain-{$chain_idx}" to="off" title="Disable chain { $chain_name }" { if $chain_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="status icon" /></a>
