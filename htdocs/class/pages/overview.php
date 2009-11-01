@@ -180,12 +180,20 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       global $db;
 
       if(!array_key_exists('idx', $params)) {
-         $tmpl->trigger_error("getSLList: missing 'idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("smarty_sl_list: missing 'idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $res_sl = $db->db_query("SELECT * FROM ". MYSQL_PREFIX ."service_levels");
+      $res_sl = $db->db_query("
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."service_levels
+         ORDER BY
+            sl_name ASC
+      ");
+
       while($sl = $res_sl->fetchRow()) {
          $string.= "<option value=\"". $sl->sl_idx ."\"";
          if($sl->sl_idx == $params['idx'])
@@ -202,12 +210,19 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       global $db;
 
       if(!array_key_exists('idx', $params)) {
-         $tmpl->trigger_error("getSLList: missing 'idx' parameter", E_USER_WARNING);
+         $tmpl->trigger_error("smarty_target_list: missing 'idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
 
-      $res_targets = $db->db_query("SELECT * FROM ". MYSQL_PREFIX ."targets");
+      $res_targets = $db->db_query("
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."targets
+         ORDER BY
+            target_name ASC
+      ");
 
       while($target = $res_targets->fetchRow()) {
          $string.= "<option value=\"". $target->target_idx ."\"";
