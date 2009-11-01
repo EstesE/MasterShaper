@@ -4,19 +4,19 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>{$page_title}</title>
   <link href="{$web_path}/shaper_style.css" type="text/css" rel="stylesheet" />
-  <link rel="stylesheet" type="text/css" href="{$web_path}/jqplot/jquery.jqplot.css" />
+  <link rel="stylesheet" type="text/css" href="{$web_path}/jquery/jqplot/jquery.jqplot.css" />
   <link rel="shortcut icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
   <link rel="icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
   <!--[if IE]><script language="javascript" type="text/javascript" src="{$web_path}/excanvas.js"></script><![endif]-->
-  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/jquery-1.3.2.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/jquery.jqplot.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.cursor.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/jquery-1.3.2.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/jquery.jqplot.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.cursor.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
   <!--<script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>-->
-  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.barRenderer.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/plugins/jquery.color.js"></script>
   <script type="text/javascript" src="{$web_path}/shaper.js"></script>
  </head>

@@ -45,7 +45,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    {
       global $tmpl, $page;
 
-      $_SESSION['mode'] = $page->action;
+      if(isset($_POST['view']))
+         $_SESSION['mode'] = $_POST['view'];
 
       // graph URL
       $image_loc = WEB_PATH ."/shaper_graph.php";
@@ -62,13 +63,13 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          case 'bandwidth':
             $view = "Bandwidth";
             break;
-         case 'chainsjqp':
+         case 'chains-jqPlot':
             $view = "Chains (jqPlot)";
             break;
-         case 'pipesjqp':
+         case 'pipes-jqPlot':
             $view = "Pipes (jqPlot)";
             break;
-         case 'bandwidthjqp':
+         case 'bandwidth-jqPlot':
             $view = "Bandwidth (jqPlot)";
             break;
       }
@@ -187,6 +188,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
    public function get_jqplot_values()
    {
+      global $db;
+
       /* ****************************** */
       /* graphmode                      */
       /*     0  Accumulated Lines       */
@@ -236,7 +239,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             break;
 
          case 'bandwidth':
-         case 'bandwidthjqp':
+         case 'bandwidth-jqPlot':
             /* Bandwidth View */
             while($row = $data->fetchRow()) {
                if($stat = $this->extract_tc_stat($row->stat_data, "_1:1\$")) {
@@ -296,7 +299,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       /* What shell we graph? */
       switch($_SESSION['mode']) {
          case 'pipes':
-         case 'pipesjqp':
+         case 'pipes-jqPlot':
             switch($_SESSION['graphmode']) {
                case 0:
                case 1:
@@ -333,7 +336,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             break;
 
          case 'chains':
-         case 'chainsjqp':
+         case 'chains-jqPlot':
 
             switch($_SESSION['graphmode']) {
                case 0:
@@ -388,7 +391,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             break;
 	 
          case "bandwidth":
-         case "bandwidthjqp":
+         case "bandwidth-jqPlot":
 	    
             foreach($tc_ids as $tc_id) {
                array_push($this->total, $p[$tc_id]);
@@ -439,6 +442,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    /* returns pipe/chain name according tc_id */
    private function findName($id, $interface)
    {
+      global $db;
+
       if(preg_match("/1:.*99/", $id)) {
          return "Fallback";
       }
@@ -478,6 +483,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    /* check if tc_id is a pipe */
    private function isPipe($tc_id, $if, $chain)
    {
+      global $db;
+
       if($db->db_fetchSingleRow("
          SELECT
             id_tc_id
@@ -502,6 +509,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    /* check if tc_id is a chain */
    private function isChain($tc_id, $if)
    {
+      global $db;
+
       if($db->db_fetchSingleRow("
          SELECT
             id_tc_id

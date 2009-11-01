@@ -467,6 +467,9 @@ class MASTERSHAPER {
          case 'alter-position':
             $this->rpc_alter_position();
             break;
+         case 'jqplot-data':
+            $this->rpc_jqplot_data();
+            break;
          default:
             print "Unknown action";
             return false;
@@ -1128,16 +1131,13 @@ class MASTERSHAPER {
     *
     * @return string
     */
-   public function get_jqplot_values()
+   public function rpc_jqplot_data()
    {
-      if(!$this->is_logged_in()) {
-         return _("not logged in");
-      }
-
-      $obj = new MASTERSHAPER_MONITOR($this);
-      return $obj->get_jqplot_values($mode);
+      require_once "class/pages/monitor.php";
+      $obj = new Page_Monitor;
+      print $obj->get_jqplot_values();
  
-   } // get_jqplot_values()
+   } // rpc_jqplot_data()
 
    public function change_graph()
    {
@@ -1307,6 +1307,7 @@ class MASTERSHAPER {
          'delete',
          'toggle',
          'alter-position',
+         'jqplot-data',
       );
 
       if(in_array($page->action, $valid_actions))

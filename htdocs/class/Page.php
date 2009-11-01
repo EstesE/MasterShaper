@@ -89,7 +89,6 @@ class Page {
 
          $this->action = $parts[1];
       }
-
       /* register further _GET parameters */
       if(isset($_GET) && is_array($_GET) && !empty($_GET)) {
          foreach($_GET as $key => $value)

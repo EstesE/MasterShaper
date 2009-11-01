@@ -110,127 +110,143 @@ function init_shaper()
 
 function draw_jqplot()
 {
-   var url        = 'rpc.php?action=jqplot';
-   var values     = HTML_AJAX.grab(encodeURI(url));
-   var data       = parse_json(values);
+   $.ajax({
+      type: 'POST',
+      url: 'rpc.html',
+      data: ({
+         type : 'rpc',
+         action : 'jqplot-data',
+         view : 'chains-jqPlot'
+      }),
+      dataType: 'json',
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+         alert('Failed to contact server! ' + textStatus + ' ' + errorThrown);
+      },
+      success: function(data){
+         $.drawIt(data);
+      }
+   });
 
-   if(data == undefined)
-      return "Something went wrong when fetching values from server!";
+   $.drawIt = function(data) {
 
-   var start_time  = data.start_time;
-   var end_time    = data.end_time;
-   var interface   = data.interface;
-   var scalemode   = data.scalemode;
-   var graphmode   = data.graphmode;
+      if(data == undefined)
+         return "Something went wrong when fetching values from server!";
 
-   if(data.names)
-      var names_obj= parse_json(data.names);
+      var start_time  = data.start_time;
+      var end_time    = data.end_time;
+      var interface   = data.interface;
+      var scalemode   = data.scalemode;
+      var graphmode   = data.graphmode;
 
-   /* default values */
-   var seriesStack = false;
-   var seriesFill  = true;
-   var seriesRenderer        = $.jqplot.LineRenderer;
-   var seriesRendererOptions = {};
+      if(data.names)
+         var names_obj= parse_json(data.names);
 
-   if(!data.data) {
-      window.alert(values);
-      return;
-   }
+      /* default values */
+      var seriesStack = false;
+      var seriesFill  = true;
+      var seriesRenderer        = $.jqplot.LineRenderer;
+      var seriesRendererOptions = {};
 
-   var plot_obj  = parse_json(data.data);
-   var plot_arr  = new Array();
-   var names_arr = new Array();
+      if(!data.data) {
+         window.alert(values);
+         return;
+      }
 
-   var title = 'Current Bandwidth Usage - '+ end_time +" - Interface "+ interface;
+      var plot_obj  = parse_json(data.data);
+      var plot_arr  = new Array();
+      var names_arr = new Array();
 
-   if(scalemode == "kbit")
-      ylabel = "Bandwidth kbits per second";
-   if(scalemode == "kbyte")
-      ylabel = "Bandwidth kbytes per second";
-   if(scalemode == "Mbit")
-      ylabel = "Bandwidth Mbits per second";
-   if(scalemode == "Mbyte")
-      ylabel = "Bandwidth Mbytes per second";
-   if(scalemode == undefined)
-      ylabel = "Bandwidth per second";
+      var title = 'Current Bandwidth Usage - '+ end_time +" - Interface "+ interface;
 
-   /* transform object to array */
-   var j = 0;
-   for (var i in plot_obj) {
-      plot_arr[j] = plot_obj[i];
-      j++;
-   }
-   j = 0;
-   for (var i in names_obj) {
-      names_arr[j] = { label: names_obj[i] };
-      j++;
-   }
+      if(scalemode == "kbit")
+         ylabel = "Bandwidth kbits per second";
+      if(scalemode == "kbyte")
+         ylabel = "Bandwidth kbytes per second";
+      if(scalemode == "Mbit")
+         ylabel = "Bandwidth Mbits per second";
+      if(scalemode == "Mbyte")
+         ylabel = "Bandwidth Mbytes per second";
+      if(scalemode == undefined)
+         ylabel = "Bandwidth per second";
 
-   if(plot_arr.length < 1) {
-      document.getElementById("jqp_monitor").innerHTML = 'No data to display';
-   }
+      /* transform object to array */
+      var j = 0;
+      for (var i in plot_obj) {
+         plot_arr[j] = plot_obj[i];
+         j++;
+      }
+      j = 0;
+      for (var i in names_obj) {
+         names_arr[j] = { label: names_obj[i] };
+         j++;
+      }
 
-   /* accumulated lines */
-   if(graphmode == 0) {
-      seriesStack = true;
-   }
-   /* simple lines */
-   if(graphmode == 1) {
-      seriesFill = false;
-   }
-   /* bars */
-   if(graphmode == 2) {
-      seriesRenderer          = $.jqplot.BarRenderer;
-      seriesRendererOptions   = { barPadding: 8, barMargin: 20 };
-   }
-   /* pie */
-   if(graphmode == 3) {
-      seriesRenderer          = $.jqplot.PieRenderer;
-      seriesRendererOptions   = { sliceMargin:8 };
-   }
+      if(plot_arr == undefined || plot_arr.length < 1) {
+         document.getElementById("jqp_monitor").innerHTML = 'No data to display';
+      }
 
-   $('#jqp_monitor').empty();
-   $.jqplot('jqp_monitor', plot_arr, {
-      title:       title,
-      stackSeries: seriesStack,
-      axes:{
-         yaxis: {
-            labelRenderer:     $.jqplot.CanvasAxisLabelRenderer,
-            label:             ylabel,
-            autoscale:         true,
-            min:               0,
-            angel:             90,
-            enableFontSupport: true
+      /* accumulated lines */
+      if(graphmode == 0) {
+         seriesStack = true;
+      }
+      /* simple lines */
+      if(graphmode == 1) {
+         seriesFill = false;
+      }
+      /* bars */
+      if(graphmode == 2) {
+         seriesRenderer          = $.jqplot.BarRenderer;
+         seriesRendererOptions   = { barPadding: 8, barMargin: 20 };
+      }
+      /* pie */
+      if(graphmode == 3) {
+         seriesRenderer          = $.jqplot.PieRenderer;
+         seriesRendererOptions   = { sliceMargin:8 };
+      }
+
+      $('#jqp_monitor').empty();
+      $.jqplot('jqp_monitor', plot_arr, {
+         title: title,
+         stackSeries: seriesStack,
+         axes:{
+            yaxis: {
+               labelRenderer:     $.jqplot.CanvasAxisLabelRenderer,
+               label:             ylabel,
+               autoscale:         true,
+               min:               0,
+               angel:             90,
+               enableFontSupport: true
+            },
+            xaxis: {
+               autoscale:  false,
+            }
          },
-         xaxis: {
-            autoscale:  false,
-         }
-      },
-      seriesDefaults: {
-         fill:       seriesFill,
-         showMarker: false,
-         renderer:   seriesRenderer,
-         rendererOptions: seriesRendererOptions
-      },
-      series: names_arr,
-      cursor:{
-         zoom:        true,
-         showTooltip: true
-      },
-      /*legend:{
-         show:       true,
-         location:   'ne',
-         xoffset:    -70
-      }*/
-    }
-   );
+         seriesDefaults: {
+            fill:       seriesFill,
+            showMarker: false,
+            renderer:   seriesRenderer,
+            rendererOptions: seriesRendererOptions
+         },
+         series: names_arr,
+         cursor:{
+            zoom:        true,
+            showTooltip: true
+         },
+         /*legend:{
+            show:       true,
+            location:   'ne',
+            xoffset:    -70
+         }*/
+       }
+      );
 
-   var legend = document.getElementById('jqp_legend');
+      var legend = document.getElementById('jqp_legend');
 
-   legend.innerHTML = '';
+      legend.innerHTML = '';
 
-   for(var arrkey in names_arr) {
-      legend.innerHTML+= "<br />" + names_arr[arrkey].label;
+      for(var arrkey in names_arr) {
+         legend.innerHTML+= "<br />" + names_arr[arrkey].label;
+      }
    }
 }
 
