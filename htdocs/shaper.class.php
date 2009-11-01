@@ -914,7 +914,7 @@ class MASTERSHAPER {
     * @param int $sl_idx
     * @return Service_Level
     */
-   public function getServiceLevel($sl_idx)
+   public function get_service_level($sl_idx)
    {
       global $ms;
 

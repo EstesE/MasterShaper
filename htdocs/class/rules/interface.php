@@ -35,9 +35,9 @@ class Ruleset_Interface {
    private $parent;
 
    /**
-    * MASTERSHAPER_INTERFACE constructor
+    * Ruleset_Interface constructor
     *
-    * Initialize the MASTERSHAPER_INTERFACE class
+    * Initialize the Ruleset_Interface class
     */
    public function __construct($if_id, $if_gre)
    {
@@ -123,6 +123,7 @@ class Ruleset_Interface {
    private function getSpeed()
    {
       global $ms;
+
       return $ms->getKbit($this->if_speed);
 
    } // getSpeed()
@@ -241,7 +242,7 @@ class Ruleset_Interface {
    } // addInitFilter()
 
    /* Adds a class definition for a inbound chain */
-   private function addClass($parent, $classid, $sl, $direction = "in")
+   private function addClass($parent, $classid, $sl, $direction = "in", $parent_sl = null)
    {
       global $ms;
 
@@ -267,7 +268,14 @@ class Ruleset_Interface {
                         $string.= "prio ". $sl->sl_htb_priority;
                   }	
                   else {
-                     $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
+                     if(isset($parent_sl)) {
+                        $string.= " rate ". $parent_sl->sl_htb_bw_in_rate ."Kbit ";
+                        if(!empty($parent_sl->sl_htb_bw_in_ceil))
+                           $string.= " ceil ". $parent_sl->sl_htb_bw_in_ceil ."Kbit ";
+                     }
+                     else
+                        $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
+
                      if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
                   }
@@ -327,7 +335,14 @@ class Ruleset_Interface {
                         $string.= "prio ". $sl->sl_htb_priority;
                   }	
                   else {
-                     $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
+                     if(isset($parent_sl)) {
+                        $string.= " rate ". $parent_sl->sl_htb_bw_out_rate ."Kbit ";
+                        if(!empty($parent_sl->sl_htb_bw_out_ceil))
+                           $string.= " ceil ". $parent_sl->sl_htb_bw_out_ceil ."Kbit ";
+                     }
+                     else
+                        $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
+
                      if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
                   }
@@ -1405,7 +1420,7 @@ class Ruleset_Interface {
          $this->addRuleComment("chain ". $chain->chain_name ."");
          /* chain doesn't ignore QoS? */
          if($chain->chain_sl_idx != 0)
-            $this->addClass("1:1", "1:". $this->current_chain . $this->current_class, $ms->getServiceLevel($chain->chain_sl_idx), $direction);
+            $this->addClass("1:1", "1:". $this->current_chain . $this->current_class, $ms->get_service_level($chain->chain_sl_idx), $direction);
 
          /* remember the assigned chain id */
          $this->setChainID($chain->chain_idx, "1:". $this->current_chain . $this->current_class, "dst", "src");
@@ -1423,33 +1438,30 @@ class Ruleset_Interface {
          }
 
          /* chain doesn't ignore QoS? */
-	 if($chain->chain_sl_idx != 0) {
+         if($chain->chain_sl_idx != 0) {
 
             /* chain uses fallback service level? */
-	    if($chain->chain_fallback_idx != 0) {
+            if($chain->chain_fallback_idx != 0) {
 
-	       $this->addRuleComment("generating pipes for ". $chain->chain_name ."");
-	       $this->buildPipes($chain->chain_idx, "1:". $this->current_chain . $this->current_class, $direction);
+               $this->addRuleComment("generating pipes for ". $chain->chain_name ."");
+               $this->buildPipes($chain->chain_idx, "1:". $this->current_chain . $this->current_class, $direction);
 
-	       // Fallback
-	       $this->addClass("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99", $ms->getServiceLevel($chain->chain_fallback_idx), $direction);
-	       $this->addSubQdisc($this->current_chain ."99:", "1:". $this->current_chain ."99", $ms->getServiceLevel($chain->chain_fallback_idx));
-	       $this->addFallbackFilter("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99");
-	       $this->setPipeID(-1, $chain->chain_idx, "1:". $this->current_chain ."99");
-
-	    }
-	    else {
-
-	       $this->addRuleComment("chain without service level");
-	       $this->addSubQdisc($this->current_chain . $this->current_class .":", "1:". $this->current_chain . $this->current_class, $ms->getServiceLevel($chain->chain_sl_idx));
-
-	    }
-	 }
+               // Fallback
+               $this->addClass("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99", $ms->get_service_level($chain->chain_fallback_idx), $direction, $ms->get_service_level($chain->chain_sl_idx));
+               $this->addSubQdisc($this->current_chain ."99:", "1:". $this->current_chain ."99", $ms->get_service_level($chain->chain_fallback_idx));
+               $this->addFallbackFilter("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99");
+               $this->setPipeID(-1, $chain->chain_idx, "1:". $this->current_chain ."99");
+            }
+            else {
+               $this->addRuleComment("chain without service level");
+               $this->addSubQdisc($this->current_chain . $this->current_class .":", "1:". $this->current_chain . $this->current_class, $ms->get_service_level($chain->chain_sl_idx));
+            }
+         }
 
 //	 $this->current_class  = 1;
 //	 $this->current_filter = 1;
 	 //$this->current_chain  = dechex(hexdec($this->current_chain) + 1);
-	 $this->current_chain+=1;
+         $this->current_chain+=1;
 
       }
 
@@ -1493,7 +1505,7 @@ class Ruleset_Interface {
          $my_id = "1:". $this->current_chain . $this->current_pipe;
          $this->addRuleComment("pipe ". $pipe->pipe_name ."");
 
-         $sl = $ms->getServiceLevel($pipe->pipe_sl_idx);
+         $sl = $ms->get_service_level($pipe->pipe_sl_idx);
 
          /* add a new class for this pipe */
          $this->addClass($my_parent, $my_id, $sl, $chain_direction);
@@ -1560,8 +1572,8 @@ class Ruleset_Interface {
       if($ack_sl != 0) {
 
          $this->addRuleComment("boost ACK packets");
-         $this->addClass("1:1", "1:2", $ms->getServiceLevel($ack_sl), $direction);
-         $this->addSubQdisc("2:", "1:2", $ms->getServiceLevel($ack_sl));
+         $this->addClass("1:1", "1:2", $ms->get_service_level($ack_sl), $direction);
+         $this->addSubQdisc("2:", "1:2", $ms->get_service_level($ack_sl));
          $this->addAckFilter("1:1", "ack", "1:2", "1");
 
       }
@@ -1611,6 +1623,6 @@ class Ruleset_Interface {
 
    } // convertIpToHex
 
-} // class MASTERSHAPER_INTERFACE
+} // class Ruleset_Interface
 
 ?>
