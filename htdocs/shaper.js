@@ -537,6 +537,36 @@ function parse_json(values)
    return data;
 }
 
+function load_menu()
+{
+   if(!$('.main_menu')) {
+      window.alert('unable to build menu on not-existing object .main_menu');
+   }
+
+   $('.main_menu').buildMenu({
+      template:         'rpc.html',
+      additionalData:   'type=rpc&action=get-sub-menu',
+      menuWidth:        200,
+      openOnRight:      false,
+      openOnClick:      true,
+      menuSelector:     '.menuSelector',
+      iconPath:         'jquery/menu/ico/',
+      hasImages:        false,
+      fadeInTime:       200,
+      fadeOutTime:      150,
+      adjustLeft:       2,
+      minZindex:        'auto',
+      adjustTop:        10,
+      opacity:          1.00,
+      shadow:           true,
+      shadowColor:      '#cccccc',
+      hoverIntent:      1,
+      closeOnMouseOut:  true,
+      closeAfter:       1000
+   });
+
+} // load_menu()
+
 $(document).ready(function() {
    $("table td a.delete").click(function(){
       obj_delete($(this));
@@ -550,4 +580,5 @@ $(document).ready(function() {
    $("table td a.assign-pipe-to-chains").click(function(){
       obj_assign_pipe_to_chains($(this));
    });
+   load_menu();
 });

@@ -25,6 +25,7 @@ class MASTERSHAPER_PAGE {
          case 'bandwidth':
          case 'bandwidth-jqPlot':
          case 'options':
+         case 'about':
          case 'list':
             $content = $this->showList();
             break;

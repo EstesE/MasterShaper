@@ -68,6 +68,14 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_update', WEB_PATH .'/icons/update.gif');
       $this->assign('icon_interfaces', WEB_PATH .'/icons/network_card.gif');
       $this->assign('icon_treeend', WEB_PATH .'/icons/tree_end.gif');
+      $this->assign('icon_rules_show', WEB_PATH .'/icons/show.gif');
+      $this->assign('icon_rules_load', WEB_PATH .'/icons/enable.gif');
+      $this->assign('icon_rules_unload', WEB_PATH .'/icons/disable.gif');
+      $this->assign('icon_rules_export', WEB_PATH .'/icons/disk.gif');
+      $this->assign('icon_rules_restore', WEB_PATH .'/icons/restore.gif');
+      $this->assign('icon_rules_reset', WEB_PATH .'/icons/reset.gif');
+      $this->assign('icon_rules_update', WEB_PATH .'/icons/update.gif');
+      $this->assign('icon_pdf', WEB_PATH .'/icons/page_white_acrobat.gif');
       $this->assign('web_path', WEB_PATH);
 
       $this->register_function("start_table", array(&$this, "smarty_startTable"), false); 

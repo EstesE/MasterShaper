@@ -1,3 +1,4 @@
+<!-- header.tpl -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
  <head>
@@ -22,7 +23,11 @@
   <!-- jQuery UI -->
   <link type="text/css" href="{$web_path}/jquery/ui/development-bundle/themes/smoothness/jquery-ui-1.7.2.custom.css" rel="Stylesheet" />   
   <script type="text/javascript" src="{$web_path}/jquery/ui/development-bundle/ui/jquery-ui-1.7.2.custom.js"></script>
-  <!-- ower own js stuff -->
+  <!-- mb.menu -->
+  <script type="text/javascript" src="{$web_path}/jquery/menu/jquery.metadata.js"></script>
+  <script type="text/javascript" src="{$web_path}/jquery/menu/jquery.hoverIntent.js"></script>
+  <script type="text/javascript" src="{$web_path}/jquery/menu/mbMenu.js"></script>
+  <!-- our own js stuff -->
   <script type="text/javascript" src="{$web_path}/shaper.js"></script>
  </head>
  <body>
@@ -48,23 +53,10 @@
   <!-- /page title -->
 
   <div id="menubox">
-   <div id="main_menu">{$main_menu}</div>
-  </div>
-
-  <!-- grey border line below header cell -->
-  <div style="background-color: #aaaaaa; height: 2px;"></div>
-
-  <div id="submenubox">
-   <table style="height: 30px;">
-    <tr>
-     <td>
-      <div id="sub_menu">{$sub_menu}</div>
-     </td>
-    </tr>
-   </table>
+   { include file="menu.tpl" }
   </div>
 
   <!-- grey border line -->
   <div style="background-color: #aaaaaa; height: 2px;"></div>
   <div style="height: 30px;"></div>
-
+<!-- /header.tpl -->

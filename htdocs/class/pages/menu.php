@@ -21,12 +21,12 @@
  *
  ***************************************************************************/
 
-class Page_Rules extends MASTERSHAPER_PAGE {
+class Page_Menu extends MASTERSHAPER_PAGE {
 
    /**
-    * Page_Rules constructor
+    * Page_Menu constructor
     *
-    * Initialize the Page_Rules class
+    * Initialize the Page_Menu class
     */
    public function __construct()
    {
@@ -34,17 +34,41 @@ class Page_Rules extends MASTERSHAPER_PAGE {
    } // __construct()
 
    /* interface output */
-   public function showList()
+   public function get_sub_menu()
    {
-      global $tmpl;
+      global $page, $tmpl, $ms;
 
-      return $tmpl->fetch('rules.tpl');
+      if($page->call_type != 'rpc') {
+         $ms->throwError('Invalid call to get_sub_menu()');
+         return false;
+      }
+      if($page->action != 'get-sub-menu') {
+         $ms->throwError('Invalid call to get_sub_menu()');
+         return false;
+      }
+      if(!isset($_POST['menuId']) || empty($_POST['menuId'])) {
+         $ms->throwError('POST parameter menuId is not set.');
+         return false;
+      }
 
-   } // showList()
+      $valid_menuIds = Array(
+         'menu_overview',
+         'menu_manage',
+         'menu_settings',
+         'menu_monitoring',
+         'menu_rules',
+         'menu_others',
+      );
 
-} // class Page_Rules
+      if(!in_array($_POST['menuId'], $valid_menuIds)) {
+         $ms->throwError('Unknown sub-menu id '. $_POST['menuId'] .' requested.');
+         return false;
+      }
 
-$obj = new Page_Rules;
-$obj->handler();
+      return $tmpl->fetch($_POST['menuId'] .'.tpl');
+
+   } // get_sub_menu()
+
+} // class Page_Menu
 
 ?>

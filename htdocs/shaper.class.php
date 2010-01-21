@@ -137,6 +137,7 @@ class MASTERSHAPER {
          return;
       }
 
+      /* if the request comes from rpc.html, handle it... */
       if($page->is_rpc_call()) {
          $this->rpc_handle();
          return;
@@ -157,8 +158,6 @@ class MASTERSHAPER {
       include $fqpn;
 
       $this->load_main_title();
-      $this->load_main_menu();
-      $this->load_sub_menu();
 
       $tmpl->show("index.tpl");
 
@@ -268,142 +267,6 @@ class MASTERSHAPER {
    } // load_main_title()
 
    /**
-    * loads the main menu template
-    */
-   public function load_main_menu()
-   {
-      global $tmpl;
-
-      $tmpl->assign('main_menu', $tmpl->fetch('main_menu.tpl'));
-
-   } // get_main_menu()
-
-   /**
-    * loads the sub menu template
-    */
-   public function load_sub_menu()
-   {
-      global $tmpl;
-      global $page;
-      global $rewriter;
-
-      switch($page->name) {
-
-         case 'Manage':
-         case 'Chains List':
-         case 'Chain New':
-         case 'Chain Edit':
-         case 'Pipes List':
-         case 'Pipe New':
-         case 'Pipe Edit':
-         case 'Filters List':
-         case 'Filter New':
-         case 'Filter Edit':
-            $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Chains List'), WEB_PATH ."/icons/flag_blue.gif", _("Chains"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Filters List'), WEB_PATH ."/icons/flag_green.gif", _("Filters"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Pipes List'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes"));
-            $string.= "</tr></table>\n";
-            break;
-
-         case 'Settings':
-         case 'Targets List':
-         case 'Target New':
-         case 'Target Edit':
-         case 'Ports List':
-         case 'Port New':
-         case 'Port Edit':
-         case 'Protocols List':
-         case 'Protocol New':
-         case 'Protocol Edit':
-         case 'Service Levels List':
-         case 'Service Level New':
-         case 'Service Level Edit':
-         case 'Options':
-         case 'Users List':
-         case 'User New':
-         case 'User Edit':
-         case 'Interfaces List':
-         case 'Interface New':
-         case 'Interface Edit':
-         case 'Network Paths List':
-         case 'Network Path New':
-         case 'Network Path Edit':
-            $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Targets List'), WEB_PATH ."/icons/flag_purple.gif", _("Targets"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Ports List'), WEB_PATH ."/icons/flag_orange.gif", _("Ports"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Protocols List'), WEB_PATH ."/icons/flag_red.gif", _("Protocols"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Service Levels List'), WEB_PATH ."/icons/flag_yellow.gif", _("Service Levels"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Options'), WEB_PATH ."/icons/options.gif", _("Options"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Users List'), WEB_PATH ."/icons/ms_users_14.gif", _("Users"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Interfaces List'), WEB_PATH ."/icons/network_card.gif", _("Interfaces"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Network Paths List'), WEB_PATH ."/icons/network_card.gif", _("Network Paths"));
-            $string.= "</tr></table>\n";
-            break;
-
-         case 'Monitoring':
-         case 'Monitoring Chains':
-         case 'Monitoring Pipes':
-         case 'Monitoring Bandwidth':
-         case 'Monitoring Chains jqPlot':
-         case 'Monitoring Pipes jqPlot':
-         case 'Monitoring Bandwidth jqPlot':
-            $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Chains'), WEB_PATH ."/icons/flag_blue.gif", _("Chains"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Pipes'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Bandwidth'), WEB_PATH ."/icons/bandwidth.gif", _("Bandwidth"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Chains jqPlot'), WEB_PATH ."/icons/flag_blue.gif", _("Chains jqPlot"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Pipes jqPlot'), WEB_PATH ."/icons/flag_pink.gif", _("Pipes jqPlot"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Monitoring Bandwidth jqPlot'), WEB_PATH ."/icons/bandwidth.gif", _("Bandwidth jqPlot"));
-            $string.= "</tr></table>\n";
-            break;
-
-         case 'Rules':
-         case 'Rules Show':
-         case 'Rules Load':
-         case 'Rules Load Debug':
-         case 'Rules Unload':
-            $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Rules Show'), WEB_PATH ."/icons/show.gif", _("Show"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Rules Load'), WEB_PATH ."/icons/enable.gif", _("Load"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Rules Load Debug'), WEB_PATH ."/icons/enable.gif", _("Load (debug)"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Rules Unload'), WEB_PATH ."/icons/disable.gif", _("Unload"));
-            $string.= "</tr></table>\n";
-            break;
-
-         case 'Others':
-         case 'Others About':
-            $string = "<table class=\"submenu\"><tr>\n";
-            $string.= $this->addSubMenuItem("shaper_export.php", WEB_PATH ."/icons/disk.gif", _("Save Configuration"));
-            $string.= $this->addSubMenuItem("javascript:config('restore')", WEB_PATH ."/icons/restore.gif", _("Restore Configuration"));
-            $string.= $this->addSubMenuItem("javascript:config('reset')", WEB_PATH ."/icons/reset.gif", _("Reset Configuration"));
-            $string.= $this->addSubMenuItem("javascript:config('updatel7')", WEB_PATH ."/icons/update.gif", _("Update L7 Protocols"));
-            $string.= $this->addSubMenuItem("http://www.mastershaper.org/MasterShaper_documentation.pdf", WEB_PATH ."/icons/page_white_acrobat.gif", _("Documentation (PDF)"));
-            $string.= $this->addSubMenuItem($rewriter->get_page_url('Others About'), WEB_PATH ."/icons/ms_users_14.gif", _("About"));
-            $string.= "</tr></table>\n";
-            break;
-
-      }
-   
-      if(isset($string))
-         $tmpl->assign('sub_menu', $string);
-
-   } // load_sub_menu()
-
-   /**
-    * returns submenu item html code
-    */
-   private function addSubMenuItem($link, $image, $text)
-   {
-      $string = "
-     <td onmouseover=\"setBackGrdColor(this, 'mouseover');\" onmouseout=\"setBackGrdColor(this, 'mouseout');\">
-      <a href=\"". $link ."\"><img src=\"". $image ."\" />&nbsp;". $text ."</a>
-     </td>";
-      return $string;
-
-   } // addSubMenuItem() 
-            
-   /**
     * return main content
     */
    public function get_content($request = "")
@@ -488,6 +351,9 @@ class MASTERSHAPER {
             break;
          case 'get-chains-list':
             $this->rpc_get_chains_list();
+            break;
+         case 'get-sub-menu':
+            $this->rpc_get_sub_menu();
             break;
          default:
             print "Unknown action";
@@ -630,7 +496,9 @@ class MASTERSHAPER {
    } // load_class()
 
    /**
-    * change position
+    * RPC handler
+    *
+    * change position of netpath, chains, pipes, ...
     */
    public function rpc_alter_position()
    {
@@ -641,10 +509,11 @@ class MASTERSHAPER {
    } // rpc_alter_position()
 
    /**
-    * return a list of chains
+    * RPC handler
     *
-    * @return string
-   */
+    * return a list of chains used by floating-dialog
+    * to assign pipes to chains.
+    */
    public function rpc_get_chains_list()
    {
       require_once "class/pages/chains.php";
@@ -652,6 +521,19 @@ class MASTERSHAPER {
       print $obj->get_chains_list();
 
    } // rpc_get_chains_list()
+
+   /**
+    * RPC handler
+    *
+    * return the requested submenu
+    */
+   public function rpc_get_sub_menu()
+   {
+      require_once "class/pages/menu.php";
+      $obj = new Page_Menu;
+      print $obj->get_sub_menu();
+
+   } // rpc_get_sub_menu()
 
    /**
     * check login
@@ -1354,6 +1236,7 @@ class MASTERSHAPER {
          'alter-position',
          'jqplot-data',
          'get-chains-list',
+         'get-sub-menu',
       );
 
       if(in_array($page->action, $valid_actions))

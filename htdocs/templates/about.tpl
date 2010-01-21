@@ -27,8 +27,8 @@
 	Silk icon set 1.2 by Mark James (<a href="http://www.famfamfam.com/lab/icons/silk/">http://www.famfamfam.com</a>)<br />
 	licensed by Creative Commons Attribution 2.5 License.<br />
 	<br />
-	TwinHelix DHTML JavaScript Menu<br />
-	(<a href="http://www.twinhelix.com/">DHTML / JavaScript Menu by TwinHelix</a>)<br />
+	mb.menu
+	(<a href="http://pupunzi.open-lab.com/mb-jquery-components/mb-_menu/">jQuery mb.menu</a>)<br />
 	<br />
   </td>
  </tr>

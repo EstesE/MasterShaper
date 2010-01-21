@@ -1,129 +1,128 @@
 body {
-	font-family: 		Verdana, Geneva, Arial, Helvetica, sans-serif;
-	font-size: 		14px;
-	background-color: 	#FFFFFF;
-	color: 			#000000;
-	margin-top:		0px;
-	margin-bottom:		0px;
-	margin-left:	        0px;
-	margin-right:		0px;
-	padding:		0px;
-	text-align:		left;
+	font-family:      Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size:        14px;
+	background-color: #FFFFFF;
+	color:            #000000;
+	margin-top:       0px;
+	margin-bottom:    0px;
+	margin-left:      0px;
+	margin-right:     0px;
+	padding:          0px;
+	text-align:       left;
 }
 
 table, tr, td {
-	border-collapse:	collapse;
-	padding: 		0px;
-	empty-cells:		show;
+	border-collapse:  collapse;
+	padding:          0px;
+	empty-cells:      show;
 }
 
 .tablehead {
-	font-weight: 		bolder;
-	font-size: 		16px;
-	color: 			#222222;
+	font-weight:      bolder;
+	font-size:        16px;
+	color:            #222222;
 }
 
 td.colhead {
-	font-weight:		bolder;
-	font-size:		14px;
-	color:			#FFFFFF;
-	background-color:	#3D7ED2;
+	font-weight:      bolder;
+	font-size:        14px;
+	color:            #FFFFFF;
+	background-color: #3D7ED2;
 }
-	
 
 td.sysmessage {
-	color:			#AF0000;
-	font-weight:		bold;
-	font-size: 		14px;
-	text-align:		center;
+	color:            #AF0000;
+	font-weight:      bold;
+	font-size:        14px;
+	text-align:       center;
 }
 
 td.tabletitle {
-	font-size: 		12px;
-	text-align:		center;
-	vertical-align:		middle;
+	font-size:        12px;
+	text-align:       center;
+	vertical-align:   middle;
 }
 
 table.withborder tr td {
-	border:			1px solid #aaaaaa;
-	border-collapse:	separate;
-	padding:		2px;
+	border:           1px solid #aaaaaa;
+	border-collapse:  separate;
+	padding:          2px;
 }
 
 table.withborder2 tr td {
-	border:			1px solid #aaaaaa;
-	border-collapse: 	separate;
-	padding: 		5px;
+	border:           1px solid #aaaaaa;
+	border-collapse:  separate;
+	padding:          5px;
 }
 
 table.noborder tr td {
-	border:			0px;
-	padding: 		0px;
+	border:           0px;
+	padding:          0px;
 }
 
 a {
-	font-family: 	    	Arial, Verdana, Geneva, Arial, Helvetica, sans-serif;
-	font-size: 		12px;
-	color:			#000000;
-	text-decoration:	none;
+	font-family:      Arial, Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size:        12px;
+	color:            #000000;
+	text-decoration:  none;
 }
 
 a:visited, a:active {
-	color:			#000000;
-} 
+	color:            #000000;
+}
 a:hover {
-	color:			#006666;
-} 
+	color:            #006666;
+}
 
 img {
-	border:			0px;
-	vertical-align:		middle;
+	border:           0px;
+	vertical-align:   middle;
 }
 
 input, select, textarea {
-	font-family: 		Verdana, Geneva, Arial, Helvetica, sans-serif;
-	font-size: 		12px;
-	background-color: 	#DDDDDD;
-	color:	 		#333333;
-	border: 		1px solid #888888;
-	border-collapse: 	collapse;
+	font-family:      Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size:        12px;
+	background-color: #DDDDDD;
+	color:            #333333;
+	border:           1px solid #888888;
+	border-collapse:  collapse;
 }
 
 input.radio {
-	border:			0px;
-	background-color:	transparent;
+	border:           0px;
+	background-color: transparent;
 }
 
 /* menu */
-table.menu tr td {
-	border-collapse:	collapse;
-	border-right:		2px solid #888888;
-	padding-top:		2px;
-	padding-bottom:		2px;
-	padding-left:		10px;
-	padding-right:		10px;
-	white-space: 		nowrap;
+table.rootVoice tr td {
+   border-collapse:  collapse;
+   border-right:     2px solid #888888;
+   padding-top:      2px;
+   padding-bottom:   2px;
+   padding-left:     10px;
+   padding-right:    10px;
+   white-space:      nowrap;
 }
 
-table.submenu tr td {
-	border-collapse:	collapse;
-	border-right:		2px solid #888888;
-	padding-top:		2px;
-	padding-bottom:		2px;
-	padding-left:		10px;
-	padding-right:		10px;
-	white-space: 		nowrap;
-	height:			30px;
+.menuSelector {
+   background-color: #f2f2ff;
+}
+.menuSelector .selected{
+   background-color: #c6e9ff;
+}
+.menuSelector tr {
+   border:           1px solid #b9b9b9;
+}
+.menuSelector tr td {
+   padding-left:     5px;
+   padding-right:    5px;
+   padding-top:      10px;
+   padding-bottom:   10px;
 }
 
 div#menubox {
-	width:			100%;
-	background-color: 	#dddddd;
-}
-
-div#submenubox {
-	width:			100%;
-	background-color: 	#dddddd;
+   width:            100%;
+   background-color: #dddddd;
 }
 
 div#jqp_monitor {
