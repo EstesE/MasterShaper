@@ -55,6 +55,8 @@ class MASTERSHAPER {
     */
    public function __construct($mode = null)
    {
+      $GLOBALS['ms'] = $this;
+
       $this->cfg = new MASTERSHAPER_CFG($this, "config.dat");
 
       /* Check necessary requirements */

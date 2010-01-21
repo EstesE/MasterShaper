@@ -25,7 +25,6 @@ require_once "shaper.class.php";
 
 $ms = new MASTERSHAPER;
 $ms->show();
-$GLOBALS['ms'] = $ms;
 
 ?>
 
