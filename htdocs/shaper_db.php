@@ -903,7 +903,7 @@ class MASTERSHAPER_DB {
             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
          ");
          $this->db_query("
-            INSERT INTO `shaper2_pages` (`page_id`, `page_name`, `page_uri`, `page_uri_pattern`, `page_includefile`) VALUES
+            INSERT INTO `". MYSQL_PREFIX ."pages` (`page_id`, `page_name`, `page_uri`, `page_uri_pattern`, `page_includefile`) VALUES
             (1, 'Overview', 'overview.html', '^/overview.html$', 'overview.php'),
             (2, 'Manage', 'manage.html', '^/manage.html$', 'manage.php'),
             (3, 'Login', 'login.html', '^/login.html$', '[internal]'),
