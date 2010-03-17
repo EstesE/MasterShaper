@@ -4,8 +4,8 @@
     color: #666666;
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
     font-size: 1em;
-    height: 300px;
-    width: 400px;
+/*    height: 300px;
+    width: 400px;*/
 }
 
 /*rules applied to all axes*/
@@ -94,7 +94,7 @@
     position: absolute;
 }
 
-table.jqplot-table-legend {
+table.jqplot-table-legend, table.jqplot-cursor-legend {
     background-color: rgba(255,255,255,0.6);
     border: 1px solid #cccccc;
     position: absolute;
@@ -141,7 +141,7 @@ table.jqplot-cursor-tooltip {
     font-size: 0.75em;
     white-space: nowrap;
     background: rgba(208,208,208,0.5);
-	padding: 1px;
+    padding: 1px;
 }
 
 .jqplot-highlighter-tooltip {
@@ -149,13 +149,13 @@ table.jqplot-cursor-tooltip {
     font-size: 0.75em;
     white-space: nowrap;
     background: rgba(208,208,208,0.5);
-	padding: 1px;
+    padding: 1px;
 }
 
 .jqplot-point-label {
     font-size: 0.75em;
 }
-	  
+      
 td.jqplot-cursor-legend-swatch {
 vertical-align:middle;
 text-align:center;
