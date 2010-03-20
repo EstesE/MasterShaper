@@ -243,6 +243,10 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
    {
       global $ms, $db;
 
+      if(isset($_POST['assign-pipe']) && $_POST['assign-pipe'] == 'true') {
+         return $this->assign_pipe_to_chains();
+      }
+
       /* load chain */
       if(isset($new))
          $pipe = new Pipe;
@@ -273,6 +277,44 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       return true;
 
    } // store()
+
+   private function assign_pipe_to_chains()
+   {
+      global $db, $page;
+
+      if(!isset($_POST['chains']))
+         return false;
+
+      if(!is_array($_POST['chains']))
+         return false;
+
+      /* delete all connection between chains and this pipe */
+
+      $db->db_query("
+         DELETE FROM
+            ". MYSQL_PREFIX ."assign_pipes_to_chains
+         WHERE
+            apc_pipe_idx='". $page->id ."'
+      ");
+
+      foreach($_POST['chains'] as $chain) {
+
+         $db->db_query("
+            INSERT INTO
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            (
+               apc_pipe_idx,
+               apc_chain_idx
+            ) VALUES (
+               '". $page->id ."',
+               '". $chain ."'
+            )
+         ");
+      }
+
+      return true;
+
+   } // assign_pipe_to_chains()
 
 } // class Page_Pipes
 

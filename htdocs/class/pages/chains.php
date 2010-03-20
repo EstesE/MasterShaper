@@ -117,7 +117,6 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $tmpl->assign('chain_idx', $chain_idx);
          $tmpl->assign('chain_name', $chain->chain_name);
          $tmpl->assign('chain_active', $chain->chain_active);
-         $tmpl->assign('chain_name', $chain->chain_name);
          $tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
          $tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
 
@@ -270,6 +269,107 @@ class Page_Chains extends MASTERSHAPER_PAGE {
       return $string;
 
    } // smarty_used_pipes_select_list()
+
+   /**
+    * return a list of chains used for the assign-pipe-to-chains feature
+    *
+    * @return object
+    */
+   public function get_chains_list()
+   {
+      global $db, $tmpl, $ms;
+
+      $this->avail_chains = Array();
+      $this->chains = Array();
+
+      $id = $_POST['idx'];
+
+      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
+         print "id in incorrect format!";
+         return false;
+      }
+
+      $request_object = $parts[1];
+      $id = $parts[2];
+
+      if($request_object != "pipe") {
+         $ms->throwError("Unknown ID provided in get_chains_list()");
+      }
+
+      $res_chains = $db->db_query("
+         SELECT
+            c.chain_idx,
+            c.chain_name,
+            c.chain_active,
+            apc.apc_chain_idx
+         FROM
+            ". MYSQL_PREFIX ."chains c
+         LEFT OUTER JOIN
+            ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+         ON (
+               c.chain_idx=apc.apc_chain_idx
+            AND
+               apc.apc_pipe_idx='". $id ."'
+         )
+         ORDER BY
+            c.chain_name ASC
+      ");
+
+      $cnt_chains = 0;
+
+      while($chain = $res_chains->fetchRow()) {
+         $this->avail_chains[$cnt_chains] = $chain->chain_idx;
+         $this->chains[$chain->chain_idx] = $chain;
+         $cnt_chains++;
+      }
+
+      $tmpl->register_block("chain_dialog_list", array(&$this, "smarty_chain_dialog_list"));
+      $tmpl->assign('pipe_idx', $id);
+
+      $json_obj = Array(
+         'content' =>  $tmpl->fetch("chains_dialog_list.tpl"),
+      );
+
+      return json_encode($json_obj);
+
+   } // get_chains_list()
+
+   /**
+    * template function which will be called from the chain dialog listing template
+    */
+   public function smarty_chain_dialog_list($params, $content, &$smarty, &$repeat)
+   {
+      global $tmpl;
+
+      $index = $tmpl->get_template_vars('smarty.IB.chain_dialog_list.index');
+      if(!$index) {
+         $index = 0;
+      }
+
+      if($index < count($this->avail_chains)) {
+
+         $chain_idx = $this->avail_chains[$index];
+         $chain =  $this->chains[$chain_idx];
+
+         $tmpl->assign('chain_idx', $chain_idx);
+         $tmpl->assign('chain_name', $chain->chain_name);
+         $tmpl->assign('chain_active', $chain->chain_active);
+         if(isset($chain->apc_chain_idx) && !is_null($chain->apc_chain_idx))
+            $tmpl->assign('chain_used', $chain->apc_chain_idx);
+         else
+            $tmpl->clear_assign('chain_used');
+
+         $index++;
+         $tmpl->assign('smarty.IB.chain_dialog_list.index', $index);
+         $repeat = true;
+      }
+      else {
+         $repeat =  false;
+      }
+
+      return $content;
+
+   } // smarty_chain_dialog_list()
 
 }
 

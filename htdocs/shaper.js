@@ -390,6 +390,54 @@ function obj_alter_position(element)
 
 } // alter_position()
 
+function obj_assign_pipe_to_chains(element)
+{
+   var pipe_idx = element.attr("id");
+
+   if(pipe_idx == undefined || pipe_idx == "") {
+      alert('no attribute "id" found!');
+      return;
+   }
+
+   $.loadDialogContent = function() {
+
+      $.ajax({
+         type: 'POST',
+         url: 'rpc.html',
+         data: ({
+            type : 'rpc',
+            action : 'get-chains-list',
+            idx: pipe_idx
+         }),
+         dataType: 'json',
+         error: function(XMLHttpRequest, textStatus, errorThrown) {
+            alert('Failed to contact server! ' + textStatus + ' ' + errorThrown);
+         },
+         success: function(data){
+            $('#dialog').css('visibility', 'visible');
+            if(data.content)
+               $('#dialog').html(data.content);
+            else
+               $('#dialog').html('unable to fetch chains list!');
+         }
+      });
+   }
+
+   $('#dialog').attr('title', 'Apply Pipe to the following chains...');
+   $('#dialog').html('Loading Chains-List...');
+
+   $('#dialog').dialog({
+      autoOpen: false,
+      open: $.loadDialogContent(),
+      close: $('#dialog').css('visibility', 'hidden')
+   });
+
+   if(!$('#dialog').dialog('isOpen')) {
+      $('#dialog').dialog('open');
+   }
+
+} // obj_assign_pipe_to_chains()
+
 function image_update()
 {
    if(document.getElementById("monitor_image")) {
@@ -498,5 +546,8 @@ $(document).ready(function() {
    });
    $("table td a.move-up, table td a.move-down").click(function(){
       obj_alter_position($(this));
+   });
+   $("table td a.assign-pipe-to-chains").click(function(){
+      obj_assign_pipe_to_chains($(this));
    });
 });

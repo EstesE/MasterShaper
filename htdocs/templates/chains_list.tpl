@@ -1,4 +1,4 @@
-{start_table icon=$icon_chains alt="pipe icon" title="Manage Chains" }
+{start_table icon=$icon_chains alt="chain icon" title="Manage Chains" }
 <table style="width: 100%;" class="withborder">
  <tr>
   <td colspan="4" style="text-align: center;">

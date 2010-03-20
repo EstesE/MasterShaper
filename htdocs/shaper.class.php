@@ -472,6 +472,9 @@ class MASTERSHAPER {
          case 'jqplot-data':
             $this->rpc_jqplot_data();
             break;
+         case 'get-chains-list':
+            $this->rpc_get_chains_list();
+            break;
          default:
             print "Unknown action";
             return false;
@@ -622,6 +625,19 @@ class MASTERSHAPER {
       print $obj->alter_position();
 
    } // rpc_alter_position()
+
+   /**
+    * return a list of chains
+    *
+    * @return string
+   */
+   public function rpc_get_chains_list()
+   {
+      require_once "class/pages/chains.php";
+      $obj = new Page_Chains;
+      print $obj->get_chains_list();
+
+   } // rpc_get_chains_list()
 
    /**
     * check login
@@ -1310,6 +1326,7 @@ class MASTERSHAPER {
          'toggle',
          'alter-position',
          'jqplot-data',
+         'get-chains-list',
       );
 
       if(in_array($page->action, $valid_actions))

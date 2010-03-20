@@ -9,6 +9,7 @@
   <link rel="icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
   <!--[if IE]><script language="javascript" type="text/javascript" src="{$web_path}/excanvas.js"></script><![endif]-->
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jquery-1.4.2.min.js"></script>
+  <!-- jqPlog -->
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/jquery.jqplot.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.cursor.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
@@ -18,6 +19,10 @@
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.barRenderer.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/plugins/jquery.color.js"></script>
+  <!-- jQuery UI -->
+  <link type="text/css" href="{$web_path}/jquery/ui/development-bundle/themes/smoothness/jquery-ui-1.7.2.custom.css" rel="Stylesheet" />   
+  <script type="text/javascript" src="{$web_path}/jquery/ui/development-bundle/ui/jquery-ui-1.7.2.custom.js"></script>
+  <!-- ower own js stuff -->
   <script type="text/javascript" src="{$web_path}/shaper.js"></script>
  </head>
  <body>
