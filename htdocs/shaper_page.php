@@ -17,6 +17,7 @@ class MASTERSHAPER_PAGE {
       }
 
       switch($page->action) {
+         case 'overview':
          case 'list':
             $content = $this->showList();
             break;
