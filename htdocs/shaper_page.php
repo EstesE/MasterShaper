@@ -18,6 +18,13 @@ class MASTERSHAPER_PAGE {
 
       switch($page->action) {
          case 'overview':
+         case 'chains':
+         case 'chains-jqPlot':
+         case 'pipes':
+         case 'pipes-jqPlot':
+         case 'bandwidth':
+         case 'bandwidth-jqPlot':
+         case 'options':
          case 'list':
             $content = $this->showList();
             break;
