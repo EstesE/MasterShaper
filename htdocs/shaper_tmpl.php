@@ -40,6 +40,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       }
 
       $this->assign('icon_chains', WEB_PATH .'/icons/flag_blue.gif');
+      $this->assign('icon_chains_assign_pipe', WEB_PATH .'/icons/flag_blue_with_purple_arrow.gif');
       $this->assign('icon_options', WEB_PATH .'/icons/options.gif');
       $this->assign('icon_pipes', WEB_PATH .'/icons/flag_pink.gif');
       $this->assign('icon_ports', WEB_PATH .'/icons/flag_orange.gif');

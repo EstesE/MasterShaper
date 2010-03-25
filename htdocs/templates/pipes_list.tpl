@@ -34,7 +34,7 @@
     <a class="toggle-off" id="pipe-{$pipe_idx}" to="off" title="Disable pipe { $pipe_name }" { if $pipe_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
     <a class="toggle-on" id="pipe-{$pipe_idx}" to="on" title="Enable pipe { $pipe_name }" { if $pipe_active == 'Y' } style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>
    </div>
-   <a class="assign-pipe-to-chains" id="pipe-{$pipe_idx}" title="Assign Pipe to one or more Chains">Assign to Chains</a>
+   <a class="assign-pipe-to-chains" id="pipe-{$pipe_idx}" title="Assign Pipe to one or more Chains"><img src="{ $icon_chains_assign_pipe }" alt="Assign Pipe to Chain" /></a>
   </td>
  </tr>
  { /pipe_list }
