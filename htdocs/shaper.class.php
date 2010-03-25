@@ -1000,14 +1000,25 @@ class MASTERSHAPER {
     *
     * this function will return all assigned filters
     * for the specified pipe
+    *
+    * @param int $pipe_idx
+    * @param bool $with_name
+    * @return MDB2_Result
     */
-   public function getFilters($pipe_idx)
+   public function getFilters($pipe_idx, $with_name = false)
    {
       global $db;
 
-      return $db->db_query("
+      $query = "
          SELECT
             af.apf_filter_idx as apf_filter_idx
+      ";
+      if($with_name)
+         $query.= ",
+            f.filter_name as filter_name
+         ";
+
+      $query.= "
          FROM
             ". MYSQL_PREFIX ."assign_filters_to_pipes af
          INNER JOIN
@@ -1018,7 +1029,9 @@ class MASTERSHAPER {
             af.apf_pipe_idx='". $pipe_idx ."'
          AND
             f.filter_active='Y'
-      ");
+      ";
+
+      return $db->db_query($query);
 
    } // getFilters()
 

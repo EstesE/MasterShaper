@@ -104,7 +104,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
     */
    public function smarty_pipe_list($params, $content, &$smarty, &$repeat)
    {
-      global $db, $tmpl;
+      global $ms, $db, $tmpl;
 
       $index = $smarty->get_template_vars('smarty.IB.pipe_list.index');
       if(!$index) {
@@ -116,24 +116,17 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
          $pipe_idx = $this->avail_pipes[$index];
          $pipe =  $this->pipes[$pipe_idx];
 
-         $filters = $db->db_query("
-            SELECT
-               filter_idx, filter_name
-            FROM ". MYSQL_PREFIX ."filters f
-            INNER JOIN ". MYSQL_PREFIX ."assign_filters_to_pipes apf
-               ON
-                  apf.apf_filter_idx=f.filter_idx
-            WHERE
-               apf.apf_pipe_idx='". $pipe->pipe_idx ."'
-         ");
+         $filters = $ms->getFilters($pipe->pipe_idx, true);
 
          if($filters->numRows() > 0) {
             $pipe_use_filters = array();
             while($filter = $filters->fetchRow()) {
-               $pipe_use_filters[$filter->filter_idx] = $filter->filter_name;
+               $pipe_use_filters[$filter->apf_filter_idx] = $filter->filter_name;
             }
             $tmpl->assign('pipe_use_filters', $pipe_use_filters);
          }
+         else
+            $tmpl->assign('pipe_use_filters', '*none*');
       
          $tmpl->assign('pipe_idx', $pipe_idx);
          $tmpl->assign('pipe_name', $pipe->pipe_name);
