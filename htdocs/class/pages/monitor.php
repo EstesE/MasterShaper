@@ -48,6 +48,9 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       if(isset($_POST['view']))
          $_SESSION['mode'] = $_POST['view'];
 
+      if(isset($page->action))
+         $_SESSION['mode'] = $page->action;
+
       // graph URL
       $image_loc = WEB_PATH ."/shaper_graph.php";
 
