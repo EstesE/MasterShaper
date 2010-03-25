@@ -834,7 +834,9 @@ class Ruleset_Interface {
 
                   default:
 
-                     $string.= "match ip protocol ". $ms->getProtocolNumberById($filter->filter_protocol_id) ." 0xff ";
+                     if($proto = $ms->getProtocolNumberById($filter->filter_protocol_id))
+                        $string.= "match ip protocol ". $proto ." 0xff ";
+
                      array_push($tmp_array, $string);
                      break;
                }
@@ -1522,7 +1524,8 @@ class Ruleset_Interface {
             }
          }
          else {
-            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe);
+            /* no filter selected */
+            $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe);
          }
       }
 
