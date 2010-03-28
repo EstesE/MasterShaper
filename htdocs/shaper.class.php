@@ -125,6 +125,12 @@ class MASTERSHAPER {
 
       /* show login box, if not already logged in */
       if(!$this->is_logged_in()) {
+
+         /* do not return anything for RPC-handler */
+         if($page->is_rpc_call())
+            return false;
+
+         /* return login page */
          $this->load_main_title();
          $tmpl->assign('content', $tmpl->fetch("login_box.tpl"));
          $tmpl->show("index.tpl");
@@ -141,8 +147,10 @@ class MASTERSHAPER {
       }
 
       $fqpn = BASE_PATH ."/class/pages/". $page->includefile;
+
       if(!file_exists($fqpn))
          $this->throwError("Page not found. Unable to include ". $fqpn);
+
       if(!is_readable($fqpn))
          $this->throwError("Unable to read ". $fqpn);
 
@@ -225,9 +233,15 @@ class MASTERSHAPER {
     *
     * return true if user is logged in
     * return false if user is not yet logged in
+    *
+    * @return bool
     */
    public function is_logged_in()
    {
+      /* if authentication is disabled, return true */
+      if(!$this->getOption('authentication'))
+         return true;
+
       if(isset($_SESSION['user_name']))
          return true;
 
