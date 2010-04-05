@@ -109,7 +109,7 @@ class Page_Users extends MASTERSHAPER_PAGE {
       }	       
 
       if($_POST['user_pass1'] != "nochangeMS") {
-         $_POST['user_pass'] = $_POST['user_pass1'];
+         $_POST['user_pass'] = md5($_POST['user_pass1']);
          unset($_POST['user_pass1']);
          unset($_POST['user_pass2']);
       }
