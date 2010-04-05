@@ -44,7 +44,17 @@
     <tr>
      <td style="width: 15px;"></td>
      <td style="vertical-align: middle;">
-      <div id="main_title">{$main_title}</div>
+      { if ! $user_name }
+       <div><img src="{ $icon_home }" />&nbsp;MasterShaper Login</div>
+      { else }
+       <form action="{ $rewriter->get_page_url('Logout') }" method="POST">
+       <input type='hidden' name='action' value='do_logout' />
+       <div>
+        <img src="{ $icon_home }" />&nbsp;MasterShaper Login - logged in as { $user_name }
+         (<input type='submit' value='Logout' />)
+       </div>
+       </form>
+      { /if }
      </td>
     </tr>
    </table>

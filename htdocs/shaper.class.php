@@ -120,18 +120,19 @@ class MASTERSHAPER {
       $tmpl->assign("page_title", "MasterShaper v". VERSION);
       $tmpl->assign('page', $page);
 
-      if($page->includefile == "[internal]")
+      /* page request handled by MS class itself */
+      if($page->includefile == "[internal]") {
          $this->handle_page_request();
+      }
 
       /* show login box, if not already logged in */
       if(!$this->is_logged_in()) {
 
-         /* do not return anything for RPC-handler */
+         /* do not return anything for a RPC call */
          if($page->is_rpc_call())
             return false;
 
          /* return login page */
-         $this->load_main_title();
          $tmpl->assign('content', $tmpl->fetch("login_box.tpl"));
          $tmpl->show("index.tpl");
          return;
@@ -156,8 +157,6 @@ class MASTERSHAPER {
          $this->throwError("Unable to read ". $fqpn);
 
       include $fqpn;
-
-      $this->load_main_title();
 
       $tmpl->show("index.tpl");
 
@@ -237,34 +236,20 @@ class MASTERSHAPER {
     */
    public function is_logged_in()
    {
+      global $tmpl;
+
       /* if authentication is disabled, return true */
       if(!$this->getOption('authentication'))
          return true;
 
-      if(isset($_SESSION['user_name']))
+      if(isset($_SESSION['user_name'])) {
+         $tmpl->assign('user_name', $_SESSION['user_name']);
          return true;
+      }
 
       return false; 
 
    } // is_logged_in()
-
-   /**
-    * returns current page title
-    */
-   public function load_main_title()
-   {
-      global $tmpl;
-
-      if(!$this->is_logged_in()) {
-         $tmpl->assign('main_title', "<img src=\"". WEB_PATH ."/icons/home.gif\" />&nbsp;MasterShaper Login");
-         return;
-      }
-
-      $tmpl->assign('main_title', "<img src=\"". WEB_PATH ."/icons/home.gif\" />&nbsp;MasterShaper"
-         ." - logged in as ". $_SESSION['user_name'] 
-         ." (<a href=\"javascript:js_logout();\" style=\"color: #ffffff;\">logout</a>)");
-
-   } // load_main_title()
 
    /**
     * return main content
@@ -538,7 +523,7 @@ class MASTERSHAPER {
    /**
     * check login
     */
-   public function login()
+   private function login()
    {
       if(!isset($_POST['user_name']) || empty($_POST['user_name']))
          $this->throwError(_("Please enter Username and Password."));
@@ -557,6 +542,25 @@ class MASTERSHAPER {
       return true;
 
    } // login()
+
+   /**
+    * general logout function
+    *
+    * this function will take care to destroy the active
+    * user session to force a logout.
+    *
+    * @return bool
+    */
+   private function logout()
+   {
+      if(!$this->destroySession()) {
+         print "failed to destroy user session!";
+         return false;
+      }
+
+      return true;
+
+   } // logout()
 
    /**
     * return all user details for the provided user_name
@@ -588,11 +592,19 @@ class MASTERSHAPER {
     */
    public function destroySession()
    {
+      /* is there really a session? */
+      if(!isset($_SESSION) || !is_array($_SESSION))
+         return false;
+
+      /* unset all session variables */
       foreach($_SESSION as $k => $v) {
          unset($_SESSION[$k]);
       }
 
+      /* finally destroy the active session */
       session_destroy();
+
+      return true;
 
    } // destroySession()
 
@@ -1185,25 +1197,33 @@ class MASTERSHAPER {
 
    private function handle_page_request()
    {
-      if(!isset($_POST))
+      if(!isset($_POST) || !is_array($_POST))
          return;
 
       if(!isset($_POST['action']))
          return;
 
-      $action = $_POST['action'];
+      switch($_POST['action']) {
 
-      switch($action) {
          case 'do_login':
-            if($this->login())
+            if($this->login()) {
+               /* on successful login, redirect browser to start page */
                Header("Location: ". WEB_PATH ."/");
+               exit(0);
+            }
             break;
+
          case 'do_logout':
-            if($this->logout())
+            if($this->logout()) {
+               /* on successful logout, redirect browser to login page */
                Header("Location: ". WEB_PATH ."/");
+               exit(0);
+            }
             break;
+
       }
-   }
+
+   } // handle_page_request()
 
    /**
     * check if called from command line

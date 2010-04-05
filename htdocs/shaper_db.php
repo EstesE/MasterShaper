@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '5');
+define('SCHEMA_VERSION', '6');
 
 /***************************************************************************
  *
@@ -909,7 +909,7 @@ class MASTERSHAPER_DB {
             (1, 'Overview', 'overview.html', '^/overview.html$', 'overview.php'),
             (2, 'Manage', 'manage.html', '^/manage.html$', 'manage.php'),
             (3, 'Login', 'login.html', '^/login.html$', '[internal]'),
-            (4, 'Login', 'logout.html', '^/logout.html$', '[internal]'),
+            (4, 'Logout', 'logout.html', '^/logout.html$', '[internal]'),
             (5, 'Chains List', 'chains/list.html', '^/chains/list.html$', 'chains.php'),
             (6, 'Pipes List', 'pipes/list.html', '^/pipes/list.html$', 'pipes.php'),
             (7, 'Filters List', 'filters/list.html', '^/filters/list.html$', 'filters.php'),
@@ -1028,9 +1028,27 @@ class MASTERSHAPER_DB {
          $this->setVersion(4);
       }
 
-      if($this->schmea_version < 5) {
+      if($this->schema_version < 5) {
          // introduce table MYSQL_PREFIX .'pages'
          $this->setVersion(5);
+      }
+
+      if($this->schema_version < 6) {
+
+         /* correct incorrectly named logout-page */
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."pages
+            SET
+               page_name='Logout'
+            WHERE
+               page_id LIKE '4'
+            AND
+               page_name LIKE 'Login'
+         ");
+
+         $this->setVersion(6);
+
       }
 
    } // upgrade_schema()
