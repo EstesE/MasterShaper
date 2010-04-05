@@ -130,3 +130,8 @@ div#jqp_monitor {
    width:            900px;
    padding:          15px;
 }
+
+div.menu_help {
+   font-size:        9px;
+   padding-left:     20px;
+}
