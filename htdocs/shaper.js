@@ -132,8 +132,10 @@ function draw_jqplot()
       if(data == undefined)
          return "Something went wrong when fetching values from server!";
 
-      var start_time  = data.start_time;
-      var end_time    = data.end_time;
+      var time_start_str  = data.time_start_str;
+      var time_end_str    = data.time_end_str;
+      var time_start_raw  = data.time_start_raw;
+      var time_end_raw    = data.time_end_raw;
       var interface   = data.interface;
       var scalemode   = data.scalemode;
       var graphmode   = data.graphmode;
@@ -156,7 +158,7 @@ function draw_jqplot()
       var plot_arr  = new Array();
       var names_arr = new Array();
 
-      var title = 'Current Bandwidth Usage - '+ end_time +" - Interface "+ interface;
+      var title = 'Current Bandwidth Usage - '+ time_end_str+" - Interface "+ interface;
 
       if(scalemode == "kbit")
          ylabel = "Bandwidth kbits per second";
@@ -188,49 +190,69 @@ function draw_jqplot()
       /* accumulated lines */
       if(graphmode == 0) {
          seriesStack = true;
+         xaxis_opts = {
+            autoscale:           false,
+            label:               'Time',
+            renderer:            $.jqplot.DateAxisRenderer,
+            tickOptions:         {formatString:'%H:%M:%S'},
+            min:                 time_start_raw,
+            max:                 time_end_raw
+            /*tickInterval:        '1 second'*/
+         }
+         plot_values = plot_arr;
       }
       /* simple lines */
       if(graphmode == 1) {
          seriesFill = false;
+         xaxis_opts = {
+            autoscale:           false,
+            label:               'Time',
+            renderer:            $.jqplot.DateAxisRenderer
+         }
+         plot_values = plot_arr;
       }
       /* bars */
       if(graphmode == 2) {
          seriesRenderer          = $.jqplot.BarRenderer;
          seriesRendererOptions   = { barPadding: 8, barMargin: 20 };
+         xaxis_opts = {};
       }
       /* pie */
       if(graphmode == 3) {
          seriesRenderer          = $.jqplot.PieRenderer;
          seriesRendererOptions   = { sliceMargin:8 };
+         xaxis_opts = {};
       }
 
+      // clear view
       $('#jqp_monitor').empty();
-      $.jqplot('jqp_monitor', plot_arr, {
-         title: title,
-         stackSeries: seriesStack,
+
+
+      // new plot
+      $.jqplot('jqp_monitor', plot_values, {
+         title:                     title,
+         stackSeries:               seriesStack,
          axes:{
             yaxis: {
-               labelRenderer:     $.jqplot.CanvasAxisLabelRenderer,
-               label:             ylabel,
-               autoscale:         true,
-               min:               0,
-               angel:             90,
-               enableFontSupport: true
+               labelRenderer:       $.jqplot.CanvasAxisLabelRenderer,
+               label:               ylabel,
+               autoscale:           true,
+               min:                 0,
+               angel:               90,
+               enableFontSupport:   true
             },
-            xaxis: {
-               autoscale:  false,
-            }
+            xaxis:                  xaxis_opts
          },
          seriesDefaults: {
-            fill:       seriesFill,
-            showMarker: false,
-            renderer:   seriesRenderer,
-            rendererOptions: seriesRendererOptions
+            fill:                   seriesFill,
+            showMarker:             false,
+            renderer:               seriesRenderer,
+            rendererOptions:        seriesRendererOptions
          },
-         series: names_arr,
+         series:                    names_arr,
          cursor:{
-            zoom:        true,
-            showTooltip: true
+            zoom:                   true,
+            showTooltip:            true
          },
          /*legend:{
             show:       true,
@@ -248,7 +270,8 @@ function draw_jqplot()
          legend.innerHTML+= "<br />" + names_arr[arrkey].label;
       }
    }
-}
+
+} // draw_jqplot()
 
 function obj_delete(element, target, idx)
 {

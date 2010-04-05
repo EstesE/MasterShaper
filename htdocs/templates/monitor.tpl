@@ -13,6 +13,7 @@
    <td style="text-align: center; width: 900px; height: 350px" rowspan="10">
     { if $monitor == "chains-jqPlot" || $monitor == "pipes-jqPlot" || $monitor == "bandwidth-jqPlot" }
      <div id="jqp_monitor"></div>
+     <div id="debug"></div>
     { else }
      <img src="{ $image_loc }" id="monitor_image" alt="monitor image" />
     { /if }

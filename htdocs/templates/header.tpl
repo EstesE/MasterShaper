@@ -17,8 +17,8 @@
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.cursor.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-  <!--<script language="javascript" type="text/javascript" src="{$web_path}/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>-->
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.barRenderer.min.js"></script>-->
   <!-- jQuery UI -->

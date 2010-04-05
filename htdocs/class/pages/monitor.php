@@ -227,34 +227,33 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       ");
 
       switch($_SESSION['mode']) {
+         /* chain- & pipe-view */
          default:
-            /* Chain & Pipe View */
-            while($row = $data->fetchRow()) {
-               if($stat = $this->extract_tc_stat($row->stat_data, $_SESSION['showif'] ."_")) {
-                  $tc_ids = array_keys($stat);
-                  foreach($tc_ids as $tc_id) {
-                     if(!isset($bigdata[$row->stat_time]))
-                        $bigdata[$row->stat_time] = Array();
-                     $bigdata[$row->stat_time][$tc_id] = $stat[$tc_id];
-                  }
-               }
-            }
+            $tc_match = $_SESSION['showif'] ."_";
             break;
 
          case 'bandwidth':
          case 'bandwidth-jqPlot':
             /* Bandwidth View */
-            while($row = $data->fetchRow()) {
-               if($stat = $this->extract_tc_stat($row->stat_data, "_1:1\$")) {
-                  $tc_ids = array_keys($stat);
-                  foreach($tc_ids as $tc_id) {
-                     if(!isset($bigdata[$row->stat_time]))
-                        $bigdata[$row->stat_time] = Array();
-                     $bigdata[$row->stat_time][$tc_id] = $stat[$tc_id];
-                  }
-               }
-            }
+
+            $tc_match = "_1:1\$";
             break;
+      }
+
+      while($row = $data->fetchRow()) {
+         
+         if(!($stat = $this->extract_tc_stat($row->stat_data, $tc_match)))
+            continue;
+
+         $tc_ids = array_keys($stat);
+
+         foreach($tc_ids as $tc_id) {
+
+            if(!isset($bigdata[$row->stat_time]))
+               $bigdata[$row->stat_time] = Array();
+
+            $bigdata[$row->stat_time][$tc_id] = $stat[$tc_id];
+         }
       }
 
       /* If we have no data here, maybe the tc_collector is not running. Stop here. */
@@ -267,12 +266,20 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
       foreach($timestamps as $timestamp) {
 
+         if(!isset($bigdata[$timestamp]))
+            continue;
+
+         if(!is_array($bigdata[$timestamp]))
+            continue;
+
          $tc_ids = array_keys($bigdata[$timestamp]);
 
          foreach($tc_ids as $tc_id) {
 
             if(!isset($plot_array[$tc_id]))
                $plot_array[$tc_id] = array();
+            if(!isset($time_ary[$tc_id]))
+               $time_ary[$tc_id] = array();
 
             $bw = $bigdata[$timestamp][$tc_id];
             switch($_SESSION['scalemode']) {
@@ -296,21 +303,27 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                   break;
             }
             array_push($plot_array[$tc_id], $bw);
+            array_push($time_ary[$tc_id], array($timestamp, $bw));
          }
       }
 
       /* What shell we graph? */
       switch($_SESSION['mode']) {
+
          case 'pipes':
          case 'pipes-jqPlot':
             switch($_SESSION['graphmode']) {
                case 0:
                case 1:
                   foreach($tc_ids as $tc_id) {
+
+                     /* don't draw tc-id's that are zero */
                      if(array_sum($plot_array[$tc_id]) <= 0)
                         continue;
+
                      if(!$this->isPipe($tc_id, $_SESSION['showif'], $_SESSION['showchain']))
                         continue;
+
                      array_push($this->total, $plot_array[$tc_id]);
                   }
                   /* sort so the most bandwidth consuming is on first place */
@@ -348,10 +361,18 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                   foreach($tc_ids as $tc_id) {
                      if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*00/", $tc_id))
                         continue;
+
+                     /* if chain's bandwidth usage is zero, ignore it */
+                     if($plot_array[$tc_id] <= 0)
+                        continue;
+
+                     /* do not return more then 15 chains */
                      if($counter > 15)
                         continue;
+
                      array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
-                     array_push($this->total, $plot_array[$tc_id]);
+                     //array_push($this->total, $plot_array[$tc_id]);
+                     array_push($this->total, $time_ary[$tc_id]);
                      $counter++;
                   }
                   /* sort so the most bandwidth consuming is on first place */
@@ -383,8 +404,6 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                   /* sort so the most bandwidth consuming is on first place */
                   array_multisort($this->total, SORT_DESC | SORT_NUMERIC);
                   $this->total = array($this->total);
-                  //return json_encode($this->total);
-                  //return;
                   break;
             }
 
@@ -403,12 +422,14 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       }
 
       $json_obj = Array(
-         'start_time' => strftime("%H:%M:%S", $time_past),
-         'end_time'   => strftime("%H:%M:%S", $time_now),
-         'interface'  => $_SESSION['showif'],
-         'scalemode'  => $_SESSION['scalemode'],
-         'graphmode'  => $_SESSION['graphmode'],
-         'data'       => json_encode($this->total)
+         'time_start_str' => strftime("%H:%M:%S", $time_past),
+         'time_start_raw' => $time_past,
+         'time_end_str'   => strftime("%H:%M:%S", $time_now),
+         'time_end_raw'   => $time_now,
+         'interface'      => $_SESSION['showif'],
+         'scalemode'      => $_SESSION['scalemode'],
+         'graphmode'      => $_SESSION['graphmode'],
+         'data'           => json_encode($this->total)
       );
 
       if(isset($this->names) && !empty($this->names))
