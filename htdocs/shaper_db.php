@@ -600,6 +600,7 @@ class MASTERSHAPER_DB {
              CREATE TABLE `". MYSQL_PREFIX ."assign_pipes_to_chains` (
               `apc_pipe_idx` int(11) NOT NULL,
               `apc_chain_idx` int(11) NOT NULL,
+              `apc_pipe_pos` int(11) DEFAULT NULL,
               PRIMARY KEY  (`apc_pipe_idx`,`apc_chain_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
