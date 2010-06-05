@@ -110,13 +110,19 @@ function init_shaper()
 
 function draw_jqplot()
 {
+   var showif = get_selected_interface();
+   var showchain = get_selected_chain();
+   var scalemode = get_selected_scalemode();
+
    $.ajax({
       type: 'POST',
       url: 'rpc.html',
       data: ({
          type : 'rpc',
          action : 'jqplot-data',
-         view : 'chains-jqPlot'
+         showif : showif,
+         scalemode : scalemode,
+         showchain : showchain
       }),
       dataType: 'json',
       error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -136,6 +142,7 @@ function draw_jqplot()
       var time_end_str    = data.time_end_str;
       var time_start_raw  = data.time_start_raw;
       var time_end_raw    = data.time_end_raw;
+
       var interface   = data.interface;
       var scalemode   = data.scalemode;
       var graphmode   = data.graphmode;
@@ -154,22 +161,13 @@ function draw_jqplot()
          return;
       }
 
+      document.getElementById("debug").innerHTML = 'Debug: ' + data.data;
       var plot_obj  = parse_json(data.data);
       var plot_arr  = new Array();
       var names_arr = new Array();
 
       var title = 'Current Bandwidth Usage - '+ time_end_str+" - Interface "+ interface;
-
-      if(scalemode == "kbit")
-         ylabel = "Bandwidth kbits per second";
-      if(scalemode == "kbyte")
-         ylabel = "Bandwidth kbytes per second";
-      if(scalemode == "Mbit")
-         ylabel = "Bandwidth Mbits per second";
-      if(scalemode == "Mbyte")
-         ylabel = "Bandwidth Mbytes per second";
-      if(scalemode == undefined)
-         ylabel = "Bandwidth per second";
+      ylabel = "Bandwidth " + scalemode;
 
       /* transform object to array */
       var j = 0;
@@ -520,6 +518,30 @@ function image_toggle_autoload()
    else {
       image_stop_autoload();
    }
+}
+
+function get_selected_interface()
+{
+   var showif =  document.getElementsByName('showif');
+   return currentSelect(showif[0]);
+
+} // get_selected_interface()
+
+function get_selected_scalemode()
+{
+   var scalemode = document.getElementsByName('scalemode');
+   return currentSelect(scalemode[0]);
+
+} // get_selected_scalemode()
+
+function get_selected_chain()
+{
+   var showchain = document.getElementsByName('showchain');
+
+   if(showchain == undefined)
+      return false;
+
+   return currentSelect(showchain[0]);
 }
 
 /**

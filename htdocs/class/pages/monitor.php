@@ -201,6 +201,13 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       /*     3  Pie plots               */
       /* ****************************** */
 
+      if(isset($_POST['showif']))
+         $_SESSION['showif'] = $_POST['showif'];
+      if(isset($_POST['scalemode']))
+         $_SESSION['scalemode'] = $_POST['scalemode'];
+      if(isset($_POST['showchain']))
+         $_SESSION['showchain'] = $_POST['showchain'];
+
       if(!isset($_SESSION['mode']) ||
          !isset($_SESSION['graphmode']) ||
          !isset($_SESSION['showchain']) ||
@@ -235,7 +242,6 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          case 'bandwidth':
          case 'bandwidth-jqPlot':
             /* Bandwidth View */
-
             $tc_match = "_1:1\$";
             break;
       }
@@ -256,6 +262,25 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          }
       }
 
+      /* $bigdata now contains data like
+       *
+       * [1275741024] => Array
+       *   (
+       *       [ipsec0] => 13747
+       *       [eth1] => 33792
+       *       [ipsec1] => 394
+       *       [eth0] => 86509
+       *   )
+       *
+       *  [1275741025] => Array
+       *   (
+       *       [ipsec0] => 7201
+       *       [eth1] => 1266
+       *       [ipsec1] => 0
+       *       [eth0] => 19934
+       *   )
+       */
+
       /* If we have no data here, maybe the tc_collector is not running. Stop here. */
       if(!isset($bigdata)) {
          return _("tc_collector.pl is inactive!");
@@ -264,46 +289,32 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       /* prepare graph arrays and fill up with data */
       $timestamps = array_keys($bigdata);
 
+      /* loop through all recorded timestamps */
       foreach($timestamps as $timestamp) {
 
+         // ignore empty data
          if(!isset($bigdata[$timestamp]))
             continue;
 
+         // ignore empty data
          if(!is_array($bigdata[$timestamp]))
             continue;
 
          $tc_ids = array_keys($bigdata[$timestamp]);
 
+         // loop through all found tc-id's
          foreach($tc_ids as $tc_id) {
 
+            // new tc-id? create an array for it
             if(!isset($plot_array[$tc_id]))
                $plot_array[$tc_id] = array();
-            if(!isset($time_ary[$tc_id]))
-               $time_ary[$tc_id] = array();
+            if(!isset($time_array[$tc_id]))
+               $time_array[$tc_id] = array();
 
-            $bw = $bigdata[$timestamp][$tc_id];
-            switch($_SESSION['scalemode']) {
-               case 'bit':
-                  break;
-               case 'byte':
-                  $bw = round($bw / 8, 1);
-                  break;
-               default:
-               case 'kbit':
-                  $bw = round($bw / 1024, 1);
-                  break;
-               case 'kbyte':
-                  $bw = round($bw / (1024*8), 1);
-                  break;
-               case 'mbit':
-                  $bw = round($bw / 1048576, 1);
-                  break;
-               case 'mbyte':
-                  $bw = round($bw / (1048576*8), 1);
-                  break;
-            }
+            $bw = $this->convert_to_bandwidth($bigdata[$timestamp][$tc_id]);
+
             array_push($plot_array[$tc_id], $bw);
-            array_push($time_ary[$tc_id], array($timestamp, $bw));
+            array_push($time_array[$tc_id], array($timestamp, $bw));
          }
       }
 
@@ -324,7 +335,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                      if(!$this->isPipe($tc_id, $_SESSION['showif'], $_SESSION['showchain']))
                         continue;
 
-                     array_push($this->total, $plot_array[$tc_id]);
+                     array_push($this->total, $time_array[$tc_id]);
                   }
                   /* sort so the most bandwidth consuming is on first place */
                   array_multisort($this->total, SORT_DESC | SORT_NUMERIC);
@@ -340,7 +351,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                      if($bps <= 0)
                         continue;
                      if($_SESSION['graphmode'] == 3)
-                        $name = $this->findname($tc_id, $_SESSION['showif']) ." (%d". $this->getScaleName($_SESSION['scalemode']) .")";
+                        $name = $this->findname($tc_id, $_SESSION['showif']) ." (%d". $this->get_scale_mode($_SESSION['scalemode']) .")";
                      else 
                         $name = $this->findname($tc_id, $_SESSION['showif']);
                      array_push($this->total, $bps);
@@ -372,7 +383,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
                      array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
                      //array_push($this->total, $plot_array[$tc_id]);
-                     array_push($this->total, $time_ary[$tc_id]);
+                     array_push($this->total, $time_array[$tc_id]);
                      $counter++;
                   }
                   /* sort so the most bandwidth consuming is on first place */
@@ -414,10 +425,16 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 	 
          case "bandwidth":
          case "bandwidth-jqPlot":
-	    
-            foreach($tc_ids as $tc_id) {
-               array_push($this->total, $p[$tc_id]);
-            }
+
+            // no data available for that interface? break out...
+            if(!isset($time_array[$_SESSION['showif']]))
+               break;
+            if(!is_array($time_array[$_SESSION['showif']]))
+               break;
+            if(empty($time_array[$_SESSION['showif']]))
+               break;
+
+            $this->total = array($time_array[$_SESSION['showif']]);
             break;
       }
 
@@ -427,7 +444,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          'time_end_str'   => strftime("%H:%M:%S", $time_now),
          'time_end_raw'   => $time_now,
          'interface'      => $_SESSION['showif'],
-         'scalemode'      => $_SESSION['scalemode'],
+         'scalemode'      => $this->get_scale_mode($_SESSION['scalemode']),
          'graphmode'      => $_SESSION['graphmode'],
          'data'           => json_encode($this->total)
       );
@@ -555,7 +572,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
    } // isChain()
 
-   private function getScaleName($scalemode)
+   private function get_scale_mode($scalemode)
    {
       switch($scalemode) {
          case 'bit':
@@ -570,10 +587,38 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             return 'mbit/s';
          case 'mbyte':
             return 'mbyte/s';
-
       }
 
-   } // getScaleName()
+   } // get_scale_mode()
+
+   private function convert_to_bandwidth($bw)
+   {
+      // it is what we have already...
+      if($_SESSION['scalemode'] == 'bit')
+         return $bw;
+
+      switch($_SESSION['scalemode']) {
+         case 'byte':
+            $bw = round($bw / 8, 1);
+            break;
+         default:
+         case 'kbit':
+            $bw = round($bw / 1024, 1);
+            break;
+         case 'kbyte':
+            $bw = round($bw / (1024*8), 1);
+            break;
+         case 'mbit':
+            $bw = round($bw / 1048576, 1);
+            break;
+         case 'mbyte':
+            $bw = round($bw / (1048576*8), 1);
+            break;
+      }
+
+      return $bw;
+
+   } // convert_to_bandwidth()
 
 } // class Page_Monitor
 

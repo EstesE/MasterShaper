@@ -38,7 +38,7 @@
      </tr>
      <tr>
       <td>
-       <select name="showif" onchange="graph_set_interface(this);">
+       <select name="showif">
         { interface_select_list }
        </select>
       </td>
@@ -57,8 +57,8 @@
      </tr>
      <tr>
       <td>
+       <select name="showchain">
         { chain_select_list }
-       <select name="showchain" onchange="graph_set_chain(this);">
        </select>
       </td>
      </tr>
@@ -70,7 +70,7 @@
   <tr>
    <td style="text-align: center;">
     Interface:<br />
-    <select name="showif" onchange="graph_set_interface(this);">
+    <select name="showif">
      { interface_select_list }
     </select>
    </td>
@@ -103,7 +103,7 @@
      </tr>
      <tr>
       <td>
-       <select name="scalemode" onchange="graph_set_scalemode(this);">
+       <select name="scalemode">
         <option value="bit" { if $scalemode == "bit" } selected="selected" { /if } >bit/s</option>
         <option value="byte" { if $scalemode == "byte" } selected="selected" { /if } >byte/s</option>
         <option value="kbit" { if $scalemode == "kbit" } selected="selected" { /if } >kbit/s</option>
