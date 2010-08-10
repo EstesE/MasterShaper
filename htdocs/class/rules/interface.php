@@ -27,8 +27,6 @@ define("BIDIRECTIONAL", 2);
 class Ruleset_Interface {
 
    private $initialized;
-   private $major_class;
-   private $minor_class;
    private $rules;
    private $if_id;
    private $db;
@@ -44,9 +42,7 @@ class Ruleset_Interface {
       $this->initialized = false;
       $this->rules       = Array();
 
-      $this->major_class    = 1;
-      $this->minor_class    = 1;
-      $this->current_chain  = 1;
+      $this->current_chain  = 0;
       $this->current_class  = 1;
       $this->current_filter = 1;
       $this->current_pipe   = 1;
@@ -81,6 +77,8 @@ class Ruleset_Interface {
     *
     * this function return the current state of the "initialized flag to
     * indicate whether the interface has been already initialized or not.
+    *
+    * @return bool
     */
    public function getStatus() 
    {
@@ -88,18 +86,13 @@ class Ruleset_Interface {
 
    } // getStatus()
 
-   private function getNextClassId()
-   {
-      $this->minor_class++;
-      return $this->major_class .":". $this->minor_class;
-
-   } // getNextClassId()
-
    /**
     * return ruleset
     *
     * this function will return the buffer in which all
     * the generated rules for this interface are stored.
+    *
+    * @return string
     */
    public function getRules()
    {
@@ -113,6 +106,8 @@ class Ruleset_Interface {
     * will return, if the interface assigned to this
     * class is enabled or disabled in MasterShaper
     * config.
+    *
+    * @return bool
     */
    public function isActive()
    {
@@ -120,6 +115,10 @@ class Ruleset_Interface {
 
    } // isActive()
 
+   /* return interface speed in kbit/s
+    *
+    * @return int
+    */
    private function getSpeed()
    {
       global $ms;
@@ -131,8 +130,9 @@ class Ruleset_Interface {
    /**
     * return interface id
     *
-    * return the unique primary database key
-    * as interface id.
+    * return the unique primary database key as interface id.
+    *
+    * @return int
     */
    private function getId()
    {
@@ -170,16 +170,27 @@ class Ruleset_Interface {
    private function getInterfaceDetails($if_idx)
    {
       $if = new Network_Interface($if_idx);
+
       return $if;
 
    } // getInterfaceDetails()
 
+   /**
+    * add comment-line to ruleset
+    *
+    * @param string $text
+    */
    private function addRuleComment($text)
    {
       $this->addRule("######### ". $text);
 
    } // addRuleComment()
 
+   /**
+    * add rule-lint to ruleset
+    *
+    * @param string $cmd
+    */
    private function addRule($cmd)
    {
       array_push($this->rules, $cmd);
@@ -215,6 +226,9 @@ class Ruleset_Interface {
 
       $bw = $this->getSpeed();
 
+      if(!$bw)
+         die("Unknown bandwidth for interface ". $this->if_id);
+
       switch($ms->getOption("classifier")) {
 
          default:
@@ -234,7 +248,9 @@ class Ruleset_Interface {
 
    } // addInitClass()
 
-   /* Adds the top level filter which brings traffic into the initClass */
+   /**
+    * adds the top level filter which brings traffic into the initClass
+    */
    private function addInitFilter($parent)
    {
       $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
@@ -1419,51 +1435,54 @@ class Ruleset_Interface {
       $chains = $this->getChains($netpath_idx);
 
       while($chain = $chains->fetchRow()) {
+
+         // prepare class identifiers for the now to-be-handled chain
+         $this->current_chain += 1;
+         $this->current_class  = 1;
+         $this->current_pipe   = 1;
+         $this->current_filter = 1;
+
          $this->addRuleComment("chain ". $chain->chain_name ."");
          /* chain doesn't ignore QoS? */
          if($chain->chain_sl_idx != 0)
-            $this->addClass("1:1", "1:". $this->current_chain . $this->current_class, $ms->get_service_level($chain->chain_sl_idx), $direction);
+            $this->addClass("1:1", "1:". $this->get_current_chain() . $this->get_current_class(), $ms->get_service_level($chain->chain_sl_idx), $direction);
 
          /* remember the assigned chain id */
-         $this->setChainID($chain->chain_idx, "1:". $this->current_chain . $this->current_class, "dst", "src");
+         $this->setChainID($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), "dst", "src");
 
          if($ms->getOption("filter") == "ipt") {
-            $this->addRule(IPT_BIN ." -t mangle -N ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
-            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getId(), "1:". $this->current_chain . $this->current_filter) ." -j ms-chain-". $this->getName() ."-1:". $this->current_chain . $this->current_filter);
+            $this->addRule(IPT_BIN ." -t mangle -N ms-chain-". $this->getName() ."-1:". $this->get_current_chain() . $this->current_filter);
+            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getId(), "1:". $this->get_current_chain() . $this->current_filter) ." -j ms-chain-". $this->getName() ."-1:". $this->get_current_chain() . $this->current_filter);
          }
 		   
          /* setup the filter definition to match traffic which should go into this chain */
          if($chain->chain_src_target != 0 || $chain->chain_dst_target != 0) {
-            $this->addHostFilter("1:1", "host", $chain, "1:". $this->current_chain . $this->current_filter, $direction);
+            $this->addHostFilter("1:1", "host", $chain, "1:". $this->get_current_chain() . $this->current_filter, $direction);
          } else {
-            $this->addMatchallFilter("1:1", "1:". $this->current_chain . $this->current_filter);
+            $this->addMatchallFilter("1:1", "1:". $this->get_current_chain() . $this->current_filter);
          }
 
-         /* chain doesn't ignore QoS? */
-         if($chain->chain_sl_idx != 0) {
+         /* chain does ignore QoS? then skip further processing */
+         if($chain->chain_sl_idx == 0)
+            continue;
 
-            /* chain uses fallback service level? */
-            if($chain->chain_fallback_idx != 0) {
-
-               $this->addRuleComment("generating pipes for ". $chain->chain_name ."");
-               $this->buildPipes($chain->chain_idx, "1:". $this->current_chain . $this->current_class, $direction);
-
-               // Fallback
-               $this->addClass("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99", $ms->get_service_level($chain->chain_fallback_idx), $direction, $ms->get_service_level($chain->chain_sl_idx));
-               $this->addSubQdisc($this->current_chain ."99:", "1:". $this->current_chain ."99", $ms->get_service_level($chain->chain_fallback_idx));
-               $this->addFallbackFilter("1:". $this->current_chain . $this->current_class, "1:". $this->current_chain ."99");
-               $this->setPipeID(-1, $chain->chain_idx, "1:". $this->current_chain ."99");
-            }
-            else {
-               $this->addRuleComment("chain without service level");
-               $this->addSubQdisc($this->current_chain . $this->current_class .":", "1:". $this->current_chain . $this->current_class, $ms->get_service_level($chain->chain_sl_idx));
-            }
+         /* chain uses fallback service level? if no, skip further */
+         if($chain->chain_fallback_idx == 0) {
+            $this->addRuleComment("chain without service level");
+            $this->addSubQdisc($this->get_current_chain() . $this->get_current_class() .":", "1:". $this->get_current_chain() . $this->get_current_class(), $ms->get_service_level($chain->chain_sl_idx));
+            continue;
          }
 
-//	 $this->current_class  = 1;
-//	 $this->current_filter = 1;
-	 //$this->current_chain  = dechex(hexdec($this->current_chain) + 1);
-         $this->current_chain+=1;
+         $this->addRuleComment("generating pipes for ". $chain->chain_name ."");
+         $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction);
+
+         // Fallback
+         $this->addRuleComment("fallback pipe");
+         $this->addClass("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."99", $ms->get_service_level($chain->chain_fallback_idx), $direction, $ms->get_service_level($chain->chain_sl_idx));
+         $this->addSubQdisc($this->get_current_chain() ."99:", "1:". $this->get_current_chain() ."99", $ms->get_service_level($chain->chain_fallback_idx));
+         $this->addFallbackFilter("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."99");
+         $this->setPipeID(-1, $chain->chain_idx, "1:". $this->get_current_chain() ."99");
+
 
       }
 
@@ -1473,8 +1492,18 @@ class Ruleset_Interface {
    {
       global $db;
 
-      return $db->db_query("SELECT * FROM ". MYSQL_PREFIX ."chains WHERE chain_active='Y' AND "
-         ."chain_netpath_idx='". $netpath_idx ."' ORDER BY chain_position ASC");
+      return $db->db_query("  
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."chains
+         WHERE
+            chain_active='Y'
+         AND "
+            ."chain_netpath_idx='". $netpath_idx ."'
+         ORDER BY
+            chain_position ASC
+      ");
 
    } // getChains()
 
@@ -1503,29 +1532,30 @@ class Ruleset_Interface {
 
       while($pipe = $pipes->fetchRow()) {
 
-         $this->current_pipe+=1;
-         $my_id = "1:". $this->current_chain . $this->current_pipe;
+         $this->current_pipe+= 1;
+
+         $my_id = "1:". $this->get_current_chain() . $this->get_current_pipe();
          $this->addRuleComment("pipe ". $pipe->pipe_name ."");
 
          $sl = $ms->get_service_level($pipe->pipe_sl_idx);
 
          /* add a new class for this pipe */
          $this->addClass($my_parent, $my_id, $sl, $chain_direction);
-         $this->addSubQdisc($this->current_chain . $this->current_pipe .":", $my_id, $sl);
-         $this->setPipeID($pipe->pipe_idx, $chain_idx, "1:". $this->current_chain . $this->current_pipe);
+         $this->addSubQdisc($this->get_current_chain() . $this->get_current_pipe() .":", $my_id, $sl);
+         $this->setPipeID($pipe->pipe_idx, $chain_idx, "1:". $this->get_current_chain() . $this->get_current_pipe());
 
          /* get the nescassary parameters */
          $filters = $ms->getFilters($pipe->pipe_idx);
 
-         if($filters->numRows() > 0) {
-            while($filter = $filters->fetchRow()) {
-               $detail = new Filter($filter->apf_filter_idx);
-               $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe);
-            }
-         }
-         else {
-            /* no filter selected */
+         /* no filter selected */
+         if($filters->numRows() <= 0) {
             $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe);
+            continue;
+         }
+
+         while($filter = $filters->fetchRow()) {
+            $detail = new Filter($filter->apf_filter_idx);
+            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe);
          }
       }
 
@@ -1625,6 +1655,36 @@ class Ruleset_Interface {
       return array('ip' => $hex_host, 'netmask' => $hex_subnet);
 
    } // convertIpToHex
+
+   /* get current chain ID in hex format
+    *
+    * @return string
+    */
+   private function get_current_chain()
+   {
+      return sprintf("%02x", $this->current_chain);
+
+   } // get_current_chain()
+
+   /* get current pipe ID in hex format
+    *
+    * @return string
+    */
+   private function get_current_pipe()
+   {
+      return sprintf("%02x", $this->current_pipe);
+
+   } // get_current_pipe()
+ 
+   /* get current class ID in hex format
+    *
+    * @return string
+    */
+   private function get_current_class()
+   {
+      return sprintf("%02x", $this->current_class);
+
+   } // get_current_class()
 
 } // class Ruleset_Interface
 
