@@ -43,9 +43,9 @@ class Ruleset_Interface {
       $this->rules       = Array();
 
       $this->current_chain  = 0;
-      $this->current_class  = 1;
-      $this->current_filter = 1;
-      $this->current_pipe   = 1;
+      $this->current_class  = NULL;
+      $this->current_filter = NULL;
+      $this->current_pipe   = NULL;
 
       $if = $this->getInterfaceDetails($if_id);
 
@@ -1451,15 +1451,15 @@ class Ruleset_Interface {
          $this->setChainID($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), "dst", "src");
 
          if($ms->getOption("filter") == "ipt") {
-            $this->addRule(IPT_BIN ." -t mangle -N ms-chain-". $this->getName() ."-1:". $this->get_current_chain() . $this->current_filter);
-            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getId(), "1:". $this->get_current_chain() . $this->current_filter) ." -j ms-chain-". $this->getName() ."-1:". $this->get_current_chain() . $this->current_filter);
+            $this->addRule(IPT_BIN ." -t mangle -N ms-chain-". $this->getName() ."-1:". $this->get_current_chain() . $this->get_current_filter());
+            $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getId(), "1:". $this->get_current_chain() . $this->get_current_filter()) ." -j ms-chain-". $this->getName() ."-1:". $this->get_current_chain() . $this->get_current_filter());
          }
 		   
          /* setup the filter definition to match traffic which should go into this chain */
          if($chain->chain_src_target != 0 || $chain->chain_dst_target != 0) {
-            $this->addHostFilter("1:1", "host", $chain, "1:". $this->get_current_chain() . $this->current_filter, $direction);
+            $this->addHostFilter("1:1", "host", $chain, "1:". $this->get_current_chain() . $this->get_current_filter(), $direction);
          } else {
-            $this->addMatchallFilter("1:1", "1:". $this->get_current_chain() . $this->current_filter);
+            $this->addMatchallFilter("1:1", "1:". $this->get_current_chain() . $this->get_current_filter());
          }
 
          /* chain does ignore QoS? then skip further processing */
@@ -1478,10 +1478,10 @@ class Ruleset_Interface {
 
          // Fallback
          $this->addRuleComment("fallback pipe");
-         $this->addClass("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."99", $ms->get_service_level($chain->chain_fallback_idx), $direction, $ms->get_service_level($chain->chain_sl_idx));
-         $this->addSubQdisc($this->get_current_chain() ."99:", "1:". $this->get_current_chain() ."99", $ms->get_service_level($chain->chain_fallback_idx));
-         $this->addFallbackFilter("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."99");
-         $this->setPipeID(-1, $chain->chain_idx, "1:". $this->get_current_chain() ."99");
+         $this->addClass("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."00", $ms->get_service_level($chain->chain_fallback_idx), $direction, $ms->get_service_level($chain->chain_sl_idx));
+         $this->addSubQdisc($this->get_current_chain() ."00:", "1:". $this->get_current_chain() ."00", $ms->get_service_level($chain->chain_fallback_idx));
+         $this->addFallbackFilter("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."00");
+         $this->setPipeID(-1, $chain->chain_idx, "1:". $this->get_current_chain() ."00");
 
 
       }
@@ -1532,7 +1532,7 @@ class Ruleset_Interface {
 
       while($pipe = $pipes->fetchRow()) {
 
-         $this->current_pipe+= 1;
+         $this->current_pipe+= 0x1;
 
          $my_id = "1:". $this->get_current_chain() . $this->get_current_pipe();
          $this->addRuleComment("pipe ". $pipe->pipe_name ."");
@@ -1662,7 +1662,7 @@ class Ruleset_Interface {
     */
    private function get_current_chain()
    {
-      return sprintf("%02x", $this->current_chain);
+      return sprintf("%02x", 0xff - $this->current_chain);
 
    } // get_current_chain()
 
@@ -1672,7 +1672,7 @@ class Ruleset_Interface {
     */
    private function get_current_pipe()
    {
-      return sprintf("%02x", $this->current_pipe);
+      return sprintf("%02x", 0xff - $this->current_pipe);
 
    } // get_current_pipe()
  
@@ -1682,9 +1682,16 @@ class Ruleset_Interface {
     */
    private function get_current_class()
    {
-      return sprintf("%02x", $this->current_class);
+      return sprintf("%02x", 0xff - $this->current_class);
 
    } // get_current_class()
+
+   private function get_current_filter()
+   {
+      return sprintf("%02x", 0xff - $this->current_filter);
+
+   } // get_current_filter()
+
 
 } // class Ruleset_Interface
 

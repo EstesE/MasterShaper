@@ -346,7 +346,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                case 1:
                   $counter = 0;
                   foreach($tc_ids as $tc_id) {
-                     if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*99/", $tc_id))
+                     if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*00/", $tc_id))
                         continue;
                      if($counter > 15)
                         continue;
@@ -362,10 +362,10 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                case 3:
                   $counter = 0;
                   foreach($tc_ids as $tc_id) {
-                     if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*99/", $tc_id))
+                     if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*00/", $tc_id))
                         continue;
                      $bps = round(array_sum($plot_array[$tc_id])/count($plot_array[$tc_id]), 0);
-                     if($bps <= 0 || preg_match("/1:.*99/", $tc_id))
+                     if($bps <= 0 || preg_match("/1:.*00/", $tc_id))
                         continue;
                      if($counter > 15)
                         continue;
@@ -447,7 +447,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    {
       global $db;
 
-      if(preg_match("/1:.*99/", $id)) {
+      if(preg_match("/1:.*00/", $id)) {
          return "Fallback";
       }
 
