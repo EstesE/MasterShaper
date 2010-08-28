@@ -1,11 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+	<meta charset="UTF-8" />
 	<title>jQuery UI Slider - Multiple sliders</title>
-	<link type="text/css" href="../../themes/base/ui.all.css" rel="stylesheet" />
-	<script type="text/javascript" src="../../jquery-1.3.2.js"></script>
-	<script type="text/javascript" src="../../ui/ui.core.js"></script>
-	<script type="text/javascript" src="../../ui/ui.slider.js"></script>
+	<link type="text/css" href="../../themes/base/jquery.ui.all.css" rel="stylesheet" />
+	<script type="text/javascript" src="../../jquery-1.4.2.js"></script>
+	<script type="text/javascript" src="../../ui/jquery.ui.core.js"></script>
+	<script type="text/javascript" src="../../ui/jquery.ui.widget.js"></script>
+	<script type="text/javascript" src="../../ui/jquery.ui.mouse.js"></script>
+	<script type="text/javascript" src="../../ui/jquery.ui.slider.js"></script>
 	<link type="text/css" href="../demos.css" rel="stylesheet" />
 	<style type="text/css">
 		#demo-frame > div.demo { padding: 10px !important; }
@@ -15,25 +18,23 @@
 	</style>
 	<script type="text/javascript">
 	$(function() {
-		// change defaults for range, animate and orientation
-		$.extend($.ui.slider.defaults, {
-			range: "min",
-			animate: true,
-			orientation: "vertical"
-		});
 		// setup master volume
 		$("#master").slider({
 			value: 60,
-			orientation: "horizontal"
+			orientation: "horizontal",
+			range: "min",
+			animate: true
 		});
 		// setup graphic EQ
 		$("#eq > span").each(function() {
 			// read initial values from markup and remove that
 			var value = parseInt($(this).text());
-			$(this).empty();
-			$(this).slider({
-				value: value
-			})
+			$(this).empty().slider({
+				value: value,
+				range: "min",
+				animate: true,
+				orientation: "vertical"
+			});
 		});
 	});
 	</script>
