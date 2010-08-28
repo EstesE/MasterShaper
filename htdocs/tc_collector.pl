@@ -175,7 +175,8 @@ while(1) {
       }
    }
 
-   if($sec_counter ne 10) {
+   if($sec_counter <= 10) {
+      sleep(1);
       next;
    }
 
@@ -262,6 +263,8 @@ sub getInterfaces() {
       )
       WHERE
          np.netpath_active='Y'
+      AND
+         iface.if_active='Y'
    ");
    $interface->execute();
    while(@result = $interface->fetchrow_array()) {

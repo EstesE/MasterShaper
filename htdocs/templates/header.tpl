@@ -20,14 +20,14 @@
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.barRenderer.min.js"></script>-->
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.barRenderer.min.js"></script>
   <!-- jQuery UI -->
   <link type="text/css" href="{$web_path}/jquery/ui/css/smoothness/jquery-ui-1.8.4.custom.css" rel="Stylesheet" />
   <script type="text/javascript" src="{$web_path}/jquery/ui/js/jquery-ui-1.8.4.custom.min.js"></script>
   <!-- mb.menu -->
   <script type="text/javascript" src="{$web_path}/jquery/menu/jquery.metadata.js"></script>
   <script type="text/javascript" src="{$web_path}/jquery/menu/jquery.hoverIntent.js"></script>
-  <script type="text/javascript" src="{$web_path}/jquery/menu/mbMenu.js"></script>
+  <script type="text/javascript" src="{$web_path}/jquery/menu/mbMenu.min.js"></script>
   <!-- our own js stuff -->
   <script type="text/javascript" src="{$web_path}/shaper.js"></script>
  </head>

@@ -214,11 +214,6 @@ class MASTERSHAPER {
          define('BASE_PATH', getcwd());
       }
 
-      if(!is_dir(BASE_PATH ."/jpgraph")) {
-         print "Can't locate jpgraph in &lt;". BASE_PATH ."/jpgraph&gt;<br />\n";
-         $missing = true;
-      }
-
       if(isset($missing))
          return false;
 

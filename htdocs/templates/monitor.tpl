@@ -11,23 +11,17 @@
     Graph Options
    </td>
    <td style="text-align: center; width: 900px; height: 350px" rowspan="10">
-    { if $monitor == "chains-jqPlot" || $monitor == "pipes-jqPlot" || $monitor == "bandwidth-jqPlot" }
-     <div id="jqp_monitor"></div>
-     <div id="debug"></div>
-    { else }
-     <img src="{ $image_loc }" id="monitor_image" alt="monitor image" />
-    { /if }
+    <div id="jqp_monitor"></div>
+    <div id="debug"></div>
    </td>
    <td style="height: 350px" rowspan="10">
-    { if $monitor == "chains-jqPlot" || $monitor == "pipes-jqPlot" || $monitor == "bandwidth-jqPlot" }
      <div id="jqp_legend"></div>
-    { /if }
    </td>
   </tr>
   <tr>
    <td>&nbsp;</td>
   </tr>
-  { if $monitor == "bandwidth" || $monitor == "bandwidth-jqPlot" } 
+  { if $monitor == "bandwidth-jqPlot" }
   <tr>
    <td>
     <table class="noborder" style="width: 100%; text-align: center;">
@@ -66,7 +60,7 @@
    </td>
   </tr>
   { /if }
-  { if $monitor == "pipes" || $monitor == "chains" || $monitor == "pipes-jqPlot" || $monitor == "chains-jqPlot" }
+  { if $monitor == "pipes-jqPlot" || $monitor == "chains-jqPlot" }
   <tr>
    <td style="text-align: center;">
     Interface:<br />

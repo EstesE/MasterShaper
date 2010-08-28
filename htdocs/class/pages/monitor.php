@@ -25,6 +25,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
    private $total;
    private $names;
+   private $colors;
+   private $color_count;
 
    /**
     * Page_Monitor constructor
@@ -37,6 +39,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
       $this->total = Array();
       $this->names = Array();
+      $this->colors = Array();
+      $this->color_count = -1;
 
    } // __construct()
 
@@ -51,21 +55,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       if(isset($page->action))
          $_SESSION['mode'] = $page->action;
 
-      // graph URL
-      $image_loc = WEB_PATH ."/shaper_graph.php";
-
       switch($_SESSION['mode']) {
-         case 'chains':
-            $view = "Chains";
-            break;
-         case 'pipes':
-            $view = "Pipes";
-            if(!isset($_SESSION['showchain']) || $_SESSION['showchain'] == -1)
-               $_SESSION['showchain'] = $this->getFirstChain();
-            break;
-         case 'bandwidth':
-            $view = "Bandwidth";
-            break;
          case 'chains-jqPlot':
             $view = "Chains (jqPlot)";
             break;
@@ -77,10 +67,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             break;
       }
 
-      /* pre-set some variables with default values, if not yet set.
-         shaper_graph.php is designed to stop execution, if this vars
-         are not set.
-      */
+      // pre-set some variables with default values, if not yet set.
       if(!isset($_SESSION['showif'])) 
          $_SESSION['showif'] = $this->getFirstInterface();
       if(!isset($_SESSION['mode']))
@@ -109,24 +96,43 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
    } // showList()
 
+   /**
+    * return the id of the first locatable chain.
+    *
+    * @return int
+    */
    private function getFirstChain()
    {
       global $db;
 
       // Get only chains which do not Ignore QoS and are active
       $chain = $db->db_fetchSingleRow("
-         SELECT chain_idx
-         FROM ". MYSQL_PREFIX ."chains
+         SELECT
+            chain_idx
+         FROM
+            ". MYSQL_PREFIX ."chains
          WHERE
             chain_sl_idx!=0
-         AND chain_active='Y'
-         ORDER BY chain_position ASC
-         LIMIT 0,1
+         AND
+            chain_active='Y'
+         ORDER BY
+            chain_position ASC
+         LIMIT
+            0,1
       ");
-      return $chain->chain_idx;
+
+      if(isset($chain->chain_idx))
+         return $chain->chain_idx;
+
+      return 0;
 
    } // getFirstChain()
 
+   /**
+    * return the interface name of the first, active to-be-found interface
+    *
+    * @return string
+    */
    private function getFirstInterface()
    {
       global $ms;
@@ -137,7 +143,11 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
    } // getFirstInterface()
 
- 
+   /**
+    * smarty function to generate a HTML select list of chains
+    *
+    * @return string
+    */
    public function smarty_chain_select_list($params, &$smarty)
    {
       global $db;
@@ -167,6 +177,11 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
    } // smarty_chain_select_list
 
+   /**
+    * smarty function to generate a HTML select list of interfaces
+    *
+    * @return string
+    */
    public function smarty_interface_select_list($params, &$smarty)
    {
       global $ms;
@@ -189,6 +204,11 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
    } // smarty_interface_select_list()
 
+   /**
+    * prepare the values-array for jqPlog
+    *
+    * @return mixed
+    */
    public function get_jqplot_values()
    {
       global $db;
@@ -239,9 +259,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             $tc_match = $_SESSION['showif'] ."_";
             break;
 
-         case 'bandwidth':
+         /* bandwidth-view */
          case 'bandwidth-jqPlot':
-            /* Bandwidth View */
             $tc_match = "_1:1\$";
             break;
       }
@@ -314,14 +333,17 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             $bw = $this->convert_to_bandwidth($bigdata[$timestamp][$tc_id]);
 
             array_push($plot_array[$tc_id], $bw);
-            array_push($time_array[$tc_id], array($timestamp, $bw));
+            /* jqPlot wants timestamp in milliseconds, so we are multipling with 1000 */
+            array_push($time_array[$tc_id], array(($timestamp*1000), $bw));
          }
       }
 
       /* What shell we graph? */
       switch($_SESSION['mode']) {
 
-         case 'pipes':
+         /**
+          * Drawing pipes
+          */
          case 'pipes-jqPlot':
             switch($_SESSION['graphmode']) {
                case 0:
@@ -335,10 +357,12 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                      if(!$this->isPipe($tc_id, $_SESSION['showif'], $_SESSION['showchain']))
                         continue;
 
+                     array_push($this->colors, $this->get_color());
+                     array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
                      array_push($this->total, $time_array[$tc_id]);
                   }
                   /* sort so the most bandwidth consuming is on first place */
-                  array_multisort($this->total, SORT_DESC | SORT_NUMERIC);
+                  array_multisort($this->total, SORT_DESC | SORT_NUMERIC, $this->names, $this->colors);
                   break;
 
                case 2:
@@ -357,14 +381,16 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                      array_push($this->total, $bps);
                   }
                   /* sort so the most bandwidth consuming is on first place */
-                  array_multisort($this->total, SORT_DESC | SORT_NUMERIC, $this->names);
+                  array_multisort($this->total, SORT_DESC | SORT_NUMERIC, $this->names, $this->colors);
                   break;
             }
             break;
 
-         case 'chains':
          case 'chains-jqPlot':
 
+            /**
+             * Drawing chains
+             */
             switch($_SESSION['graphmode']) {
                case 0:
                case 1:
@@ -381,13 +407,14 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                      if($counter > 15)
                         continue;
 
+                     array_push($this->colors, $this->get_color());
                      array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
                      //array_push($this->total, $plot_array[$tc_id]);
                      array_push($this->total, $time_array[$tc_id]);
                      $counter++;
                   }
                   /* sort so the most bandwidth consuming is on first place */
-                  array_multisort($this->total, SORT_DESC | SORT_NUMERIC);
+                  array_multisort($this->total, SORT_DESC | SORT_NUMERIC, $this->names, $this->colors);
                   break;
 
                case 2:
@@ -423,7 +450,6 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             }
             break;
 	 
-         case "bandwidth":
          case "bandwidth-jqPlot":
 
             // no data available for that interface? break out...
@@ -439,10 +465,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       }
 
       $json_obj = Array(
-         'time_start_str' => strftime("%H:%M:%S", $time_past),
-         'time_start_raw' => $time_past,
-         'time_end_str'   => strftime("%H:%M:%S", $time_now),
-         'time_end_raw'   => $time_now,
+         'time_end'       => strftime("%H:%M:%S", $time_now),
          'interface'      => $_SESSION['showif'],
          'scalemode'      => $this->get_scale_mode($_SESSION['scalemode']),
          'graphmode'      => $_SESSION['graphmode'],
@@ -451,12 +474,18 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
       if(isset($this->names) && !empty($this->names))
          $json_obj['names'] = json_encode($this->names);
+      if(isset($this->colors) && !empty($this->colors))
+         $json_obj['colors'] = json_encode($this->colors);
 
       return(json_encode($json_obj));
 
    } // get_jqplot_values()
 
-   /* splitup tc_collector string */
+   /**
+    * splitup tc_collector string that is stored in the database
+    *
+    * @return array
+    */
    private function extract_tc_stat($line, $limit_to = "")
    {  
       $data  = Array();
@@ -466,14 +495,14 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       foreach($pairs as $pair) {
 
          list($key, $value) = split('=', $pair);
-         if(preg_match("/". $limit_to ."/", $key)) {
-            $key = preg_replace("/". $limit_to ."/", "", $key);
-            //$key = "bla".str_replace(":", "_", $key);
-            if($value >= 0)
-               $data[$key] = $value;
-            else
-               $data[$key] = 0;
-         }
+         if(!preg_match("/". $limit_to ."/", $key))
+            continue;
+
+         $key = preg_replace("/". $limit_to ."/", "", $key);
+         if($value >= 0)
+            $data[$key] = $value;
+         else
+            $data[$key] = 0;
       }
 
       return $data;
@@ -489,32 +518,44 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          return "Fallback";
       }
 
-      if($tc_id = $db->db_fetchSingleRow("
-         SELECT id_pipe_idx, id_chain_idx
-         FROM ". MYSQL_PREFIX ."tc_ids
+      $tc_id = $db->db_fetchSingleRow("
+         SELECT
+            id_pipe_idx,
+            id_chain_idx
+         FROM
+            ". MYSQL_PREFIX ."tc_ids
          WHERE
             id_tc_id='". $id ."'
-         AND id_if='". $interface ."'
-      ")) {
-	 
-         if($tc_id->id_pipe_idx != 0) {
+         AND
+            id_if='". $interface ."'
+      ");
 
-            $pipe = $db->db_fetchSingleRow("
-               SELECT pipe_name
-               FROM ". MYSQL_PREFIX ."pipes
-               WHERE pipe_idx='". $tc_id->id_pipe_idx ."'
-            ");
-            return $pipe->pipe_name;
-         }
+      if(!$tc_id)
+         return "n/a";
 
-         if($tc_id->id_chain_idx != 0) {
-            $chain = $db->db_fetchSingleRow("
-               SELECT chain_name
-               FROM ". MYSQL_PREFIX ."chains
-               WHERE chain_idx='". $tc_id->id_chain_idx ."'
-            ");
-            return $chain->chain_name;
-         }
+      if(isset($tc_id->id_pipe_idx) and $tc_id->id_pipe_idx != 0) {
+
+         $pipe = $db->db_fetchSingleRow("
+            SELECT
+               pipe_name
+            FROM
+               ". MYSQL_PREFIX ."pipes
+            WHERE
+               pipe_idx='". $tc_id->id_pipe_idx ."'
+         ");
+         return $pipe->pipe_name;
+      }
+
+      if(isset($tc_id->id_chain_idx) and $tc_id->id_chain_idx != 0) {
+         $chain = $db->db_fetchSingleRow("
+            SELECT
+               chain_name
+            FROM
+               ". MYSQL_PREFIX ."chains
+            WHERE
+               chain_idx='". $tc_id->id_chain_idx ."'
+         ");
+         return $chain->chain_name;
       }
 
       return $id;
@@ -595,7 +636,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    {
       // it is what we have already...
       if($_SESSION['scalemode'] == 'bit')
-         return $bw;
+         return round($bw, 1);
 
       switch($_SESSION['scalemode']) {
          case 'byte':
@@ -619,6 +660,36 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       return $bw;
 
    } // convert_to_bandwidth()
+
+   private function get_color()
+   {
+      $seriesColors = Array(
+         "#4bb2c5",
+         "#EAA228",
+         "#c5b47f",
+         "#579575",
+         "#839557",
+         "#958c12",
+         "#953579",
+         "#4b5de4",
+         "#d8b83f",
+         "#ff5800",
+         "#0085cc",
+         "#c747a3",
+         "#cddf5a",
+         "#FBD178",
+         "#26B4E3",
+         "#bd70c7"
+      );
+
+      if($this->color_count == count($seriesColors)-1)
+         $this->color_count = -1;
+
+      $this->color_count++;
+
+      return $seriesColors[$this->color_count];
+
+   } // get_color()
 
 } // class Page_Monitor
 

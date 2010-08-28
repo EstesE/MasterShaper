@@ -21,6 +21,7 @@
 
 var NetScape4 = (navigator.appName == "Netscape" && parseInt(navigator.appVersion) < 5);
 var autoload = undefined;
+var jqp = undefined;
 
 function addOption(theSel, theText, theValue)
 {		
@@ -118,9 +119,9 @@ function draw_jqplot()
       type: 'POST',
       url: 'rpc.html',
       data: ({
-         type : 'rpc',
-         action : 'jqplot-data',
-         showif : showif,
+         type      : 'rpc',
+         action    : 'jqplot-data',
+         showif    : showif,
          scalemode : scalemode,
          showchain : showchain
       }),
@@ -138,17 +139,15 @@ function draw_jqplot()
       if(data == undefined)
          return "Something went wrong when fetching values from server!";
 
-      var time_start_str  = data.time_start_str;
-      var time_end_str    = data.time_end_str;
-      var time_start_raw  = data.time_start_raw;
-      var time_end_raw    = data.time_end_raw;
-
+      var time_end    = data.time_end;
       var interface   = data.interface;
       var scalemode   = data.scalemode;
       var graphmode   = data.graphmode;
 
       if(data.names)
          var names_obj= parse_json(data.names);
+      if(data.colors)
+         var colors_obj = parse_json(data.colors);
 
       /* default values */
       var seriesStack = false;
@@ -161,12 +160,18 @@ function draw_jqplot()
          return;
       }
 
-      document.getElementById("debug").innerHTML = 'Debug: ' + data.data;
+      // enable for some debugging output
+      //document.getElementById("debug").innerHTML = 'Debug: ' + data.data;
+      //document.getElementById("debug").innerHTML = 'Debug: ' + data.names;
+      //document.getElementById("debug").innerHTML = 'Debug: ' + data.colors;
+
       var plot_obj  = parse_json(data.data);
       var plot_arr  = new Array();
       var names_arr = new Array();
+      /* a default color is a must, otherwise jqplot refuses to work */
+      var colors_arr = new Array('#4444aa');
 
-      var title = 'Current Bandwidth Usage - '+ time_end_str+" - Interface "+ interface;
+      var title = 'Current Bandwidth Usage - '+ time_end +" - Interface "+ interface;
       ylabel = "Bandwidth " + scalemode;
 
       /* transform object to array */
@@ -177,7 +182,14 @@ function draw_jqplot()
       }
       j = 0;
       for (var i in names_obj) {
-         names_arr[j] = { label: names_obj[i] };
+         names_arr[j] = {
+            label: names_obj[i]
+         };
+         j++;
+      }
+      j = 0;
+      for (var i in colors_obj) {
+         colors_arr[j] = colors_obj[i];
          j++;
       }
 
@@ -189,13 +201,11 @@ function draw_jqplot()
       if(graphmode == 0) {
          seriesStack = true;
          xaxis_opts = {
-            autoscale:           false,
+            autoscale:           true,
             label:               'Time',
             renderer:            $.jqplot.DateAxisRenderer,
             tickOptions:         {formatString:'%H:%M:%S'},
-            min:                 time_start_raw,
-            max:                 time_end_raw
-            /*tickInterval:        '1 second'*/
+            tickInterval:        '10 seconds'
          }
          plot_values = plot_arr;
       }
@@ -203,7 +213,7 @@ function draw_jqplot()
       if(graphmode == 1) {
          seriesFill = false;
          xaxis_opts = {
-            autoscale:           false,
+            autoscale:           true,
             label:               'Time',
             renderer:            $.jqplot.DateAxisRenderer
          }
@@ -223,13 +233,16 @@ function draw_jqplot()
       }
 
       // clear view
-      $('#jqp_monitor').empty();
+      //$('#jqp_monitor').empty();
+      //jqplot.replot({resetAxes:true});
 
+      //if(jqp == undefined) {
 
-      // new plot
-      $.jqplot('jqp_monitor', plot_values, {
+         // new plot
+         jqp = $.jqplot('jqp_monitor', plot_values, {
+         /* title */
          title:                     title,
-         stackSeries:               seriesStack,
+         /* axes styling */
          axes:{
             yaxis: {
                labelRenderer:       $.jqplot.CanvasAxisLabelRenderer,
@@ -243,15 +256,22 @@ function draw_jqplot()
          },
          seriesDefaults: {
             fill:                   seriesFill,
-            showMarker:             false,
+            showMarker:             true,
             renderer:               seriesRenderer,
             rendererOptions:        seriesRendererOptions
          },
-         series:                    names_arr,
          cursor:{
-            zoom:                   true,
-            showTooltip:            true
+            show:                   false,
+            showVerticalLine:       true,
+            showHorizontalLine:     false,
+            showTooltip:            true,
+            showCursorLegend:       false,
+            useAxesFormatters:      true,
+            zoom:                   true
          },
+         stackSeries:               seriesStack,
+         series:                    names_arr,
+         seriesColors:              colors_arr
          /*legend:{
             show:       true,
             location:   'ne',
@@ -259,17 +279,28 @@ function draw_jqplot()
          }*/
        }
       );
+      /*}
+      else {
+         jqp.series[0].data = seriesStack;
+         jqp.series[0].color = colors_arr;
+         jqp.replot({ resetAxes: true });
+      }*/
 
       var legend = document.getElementById('jqp_legend');
 
       legend.innerHTML = '';
 
       for(var arrkey in names_arr) {
-         legend.innerHTML+= "<br />" + names_arr[arrkey].label;
+         legend.innerHTML+= "<br /><font color='" + colors_arr[arrkey] + "'>" + names_arr[arrkey].label + "</font>";
       }
    }
 
 } // draw_jqplot()
+
+function set_graph_mode()
+{
+
+}
 
 function obj_delete(element, target, idx)
 {
@@ -312,8 +343,17 @@ function currentRadio(obj)
    }
 }
 
+/**
+ * get current selected value from a HTML select item
+ *
+ * @param obj object
+ * @return string
+ */
 function currentSelect(obj)
 {
+   if(!obj)
+      return;
+
    for(cnt = 0; cnt < obj.length; cnt++) {
       if(obj[cnt].selected)
          return obj[cnt].value;
@@ -461,19 +501,8 @@ function obj_assign_pipe_to_chains(element)
 
 function image_update()
 {
-   if(document.getElementById("monitor_image")) {
-      /* get the current image url */
-      url = document.getElementById("monitor_image").src;
-      /* remove the current uniq id from the string */
-      url = url.replace(/\?uniqid=.*/, '');
-      uniq = new Date();
-      uniq = "?uniqid="+uniq.getTime();
-      /* reload the image with a new uniq id */
-      document.getElementById("monitor_image").src = url + uniq;
-   }
-   if(document.getElementById("jqp_monitor")) {
-      draw_jqplot();
-   }
+   $('#jqp_monitor').empty();
+   draw_jqplot();
 
 } // image_update()
 
@@ -493,13 +522,11 @@ function image_autoload()
 function image_start_autoload()
 {
    if(autoload == undefined) {
-      autoload = setTimeout("image_autoload()", 5000);
+      autoload = setTimeout("image_autoload()", 10000);
    }
 
    /* load jqplot for first time */
-   if(document.getElementById("jqp_monitor")) {
-      draw_jqplot();
-   }
+   draw_jqplot();
 
 } // image_start_autoload()
 
@@ -626,4 +653,5 @@ $(document).ready(function() {
       obj_assign_pipe_to_chains($(this));
    });
    load_menu();
+   //$.jqplot.config.enablePlugins = true;
 });
