@@ -818,7 +818,13 @@ class Ruleset_Interface {
                   /* IP */
                   case 4:
 
-                     $string.= "match ip ";
+                     if($this->isGRE()) {
+                        $string.= "match u16 ";
+                        //0x". $proto_hex ." ffffffff at 32";
+                     }
+                     else {
+                        $string.= "match ip ";
+                     }
                      $str_ports = "";
                      $cnt_ports = 0;
                      $ports = $ms->getPorts($filter->filter_idx);
@@ -829,18 +835,36 @@ class Ruleset_Interface {
                            $dst_ports = $ms->extractPorts($port->port_number);
                            if($dst_ports != 0) {
                               foreach($dst_ports as $dst_port) {
-                                 $tmp_str = $string ." [DIRECTION] ". $dst_port ." 0xffff ";
-                                 if($filter->filter_tos > 0)
-                                    $tmp_str.= "match ip tos ". $filter->filter_tos ." 0xff ";
+                                 if($this->isGRE()) {
+                                    $port_hex = $this->convertPortToHex($dst_port);
+                                    $tmp_str = $string ." 0x". $port_hex ." 0xffff at [DIRECTION]";
+                                    if($filter->filter_tos > 0)
+                                       $tmp_str.= "match u8 ". sprintf("%02x", $filter->filter_tos) ." 0xff at 27 ";
 
-                                 switch($pipe->pipe_direction) {
-                                    case UNIDIRECTIONAL:
-                                       array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
-                                       break;
-                                    case BIDIRECTIONAL:
-                                       array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
-                                       array_push($tmp_array, str_replace("[DIRECTION]", "sport", $tmp_str));
-                                       break;
+                                    switch($pipe->pipe_direction) {
+                                       case UNIDIRECTIONAL:
+                                          array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
+                                          break;
+                                       case BIDIRECTIONAL:
+                                          array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
+                                          array_push($tmp_array, str_replace("[DIRECTION]", "44", $tmp_str));
+                                          break;
+                                    }
+                                 }
+                                 else {
+                                    $tmp_str = $string ." [DIRECTION] ". $dst_port ." 0xffff ";
+                                    if($filter->filter_tos > 0)
+                                       $tmp_str.= "match ip tos ". $filter->filter_tos ." 0xff ";
+
+                                    switch($pipe->pipe_direction) {
+                                       case UNIDIRECTIONAL:
+                                          array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
+                                          break;
+                                       case BIDIRECTIONAL:
+                                          array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
+                                          array_push($tmp_array, str_replace("[DIRECTION]", "sport", $tmp_str));
+                                          break;
+                                    }
                                  }
                               }
                            }
@@ -850,10 +874,18 @@ class Ruleset_Interface {
 
                   default:
 
-                     if($proto = $ms->getProtocolNumberById($filter->filter_protocol_id))
-                        $string.= "match ip protocol ". $proto ." 0xff ";
+                     if($proto = $ms->getProtocolNumberById($filter->filter_protocol_id)) {
 
-                     array_push($tmp_array, $string);
+                        if($this->isGRE()) {
+                           $proto_hex = $this->convertProtoToHex($proto);
+                           $string.= "match u8 0x". $proto_hex ." 0xff at 33";
+                        }
+                        else {
+                           $string.= "match ip protocol ". $proto ." 0xff ";
+                        }
+                        array_push($tmp_array, $string);
+
+                     }
                      break;
                }
             }
@@ -1655,6 +1687,30 @@ class Ruleset_Interface {
       return array('ip' => $hex_host, 'netmask' => $hex_subnet);
 
    } // convertIpToHex
+
+   /**
+    * convert an Protocol ID number into a hex value
+    *
+    * @param int $ProtocolId
+    * @return string
+    */
+   private function convertProtoToHex($ProtocolId)
+   {
+      return sprintf("%02x", $ProtocolId);
+
+   } // convertProtoToHex
+
+   /**
+    * convert an port number into a hex value
+    *
+    * @param int $PortNumber
+    * @return string
+    */
+   private function convertPortToHex($PortNumber)
+   {
+      return sprintf("%04x", $PortNumber);
+
+   } // convertPortToHex
 
    /* get current chain ID in hex format
     *
