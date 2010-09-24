@@ -737,17 +737,18 @@ class Ruleset_Interface {
          case 'GROUP':
 
             $result = $db->db_query("
-               SELECT atg_target_idx
-               FROM ". MYSQL_PREFIX ."assign_target_groups 
-               WHERE atg_group_idx='". $target_idx ."'
+               SELECT
+                  atg_target_idx
+               FROM
+                  ". MYSQL_PREFIX ."assign_target_groups
+               WHERE
+                  atg_group_idx LIKE '". $target_idx ."'
             ");
 
             while($target = $result->fetchRow()) {
                $members = $this->getTargetHosts($target->atg_target_idx);
-               $i = count($targets);
                foreach($members as $member) {
-                  $targets[$i] = $member;
-                  $i++;
+                  array_push($targets, $member);
                }
             }
             break;
@@ -807,7 +808,7 @@ class Ruleset_Interface {
             $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 1 [HOST_DEFS] ";
 
             /* filter matches a specific network protocol */
-            if($filter->filter_protocol_id >= 0) {
+            if(isset($filter) && !empty($filter) && $filter->filter_protocol_id >= 0) {
 
                switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
 
@@ -889,7 +890,7 @@ class Ruleset_Interface {
                      break;
                }
             }
-            else 
+            else
                array_push($tmp_array, $string);
 
             if($pipe->pipe_src_target != 0 && $pipe->pipe_dst_target == 0) {
@@ -912,6 +913,7 @@ class Ruleset_Interface {
                         }
                      }
                      else {
+
                         foreach($tmp_array as $tmp_arr) {
                            switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
