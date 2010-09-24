@@ -631,6 +631,7 @@ class MASTERSHAPER_DB {
               `filter_name` varchar(255) default NULL,
               `filter_protocol_id` int(11) default NULL,
               `filter_tos` varchar(4) default NULL,
+              `filter_dscp` varchar(4) default NULL,
               `filter_tcpflag_syn` char(1) default NULL,
               `filter_tcpflag_ack` char(1) default NULL,
               `filter_tcpflag_fin` char(1) default NULL,
@@ -1049,6 +1050,21 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(6);
+
+      }
+
+      if($this->schema_version < 7) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."filters
+            ADD
+              filter_dscp varchar(4) default NULL
+            AFTER
+               filter_tos
+         ");
+
+         $this->setVersion(7);
 
       }
 

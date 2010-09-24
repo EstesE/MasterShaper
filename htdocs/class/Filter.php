@@ -38,6 +38,7 @@ class Filter extends MsObject {
             'filter_name' => 'text',
             'filter_protocol_id' => 'integer',
             'filter_tos' => 'text',
+            'filter_dscp' => 'text',
             'filter_tcpflag_syn' => 'text',
             'filter_tcpflag_ack' => 'text',
             'filter_tcpflag_fin' => 'text',

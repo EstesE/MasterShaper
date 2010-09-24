@@ -119,6 +119,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       if($_POST['filter_protocol_id'] == -1 &&
          count($_POST['used']) <= 1 &&
          $_POST['filter_tos'] == -1 &&
+         $_POST['filter_dscp'] == -1 &&
          !$_POST['filter_tcpflag_syn'] &&
          !$_POST['filter_tcpflag_ack'] &&
          !$_POST['filter_tcpflag_fin'] &&

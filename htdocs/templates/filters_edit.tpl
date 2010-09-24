@@ -106,6 +106,32 @@
    Match a specific TOS flag.
   </td>
  </tr>
+ <tr>
+  <td style="white-space: nowrap;">
+   DSCP flags:
+  </td>
+  <td>
+   <select name="filter_dscp">
+    <option value="-1"   { if $filter->filter_dscp == "-1" } selected="selected" { /if }>Default</option>
+    <option value="AF11"   { if $filter->filter_dscp == "AF11" } selected="selected" { /if }>AF11</option>
+    <option value="AF12"   { if $filter->filter_dscp == "AF12" } selected="selected" { /if }>AF12</option>
+    <option value="AF13"   { if $filter->filter_dscp == "AF13" } selected="selected" { /if }>AF13</option>
+    <option value="AF21"   { if $filter->filter_dscp == "AF21" } selected="selected" { /if }>AF21</option>
+    <option value="AF22"   { if $filter->filter_dscp == "AF22" } selected="selected" { /if }>AF21</option>
+    <option value="AF23"   { if $filter->filter_dscp == "AF23" } selected="selected" { /if }>AF21</option>
+    <option value="AF31"   { if $filter->filter_dscp == "AF31" } selected="selected" { /if }>AF31</option>
+    <option value="AF32"   { if $filter->filter_dscp == "AF32" } selected="selected" { /if }>AF32</option>
+    <option value="AF33"   { if $filter->filter_dscp == "AF33" } selected="selected" { /if }>AF33</option>
+    <option value="AF41"   { if $filter->filter_dscp == "AF41" } selected="selected" { /if }>AF41</option>
+    <option value="AF42"   { if $filter->filter_dscp == "AF42" } selected="selected" { /if }>AF42</option>
+    <option value="AF43"   { if $filter->filter_dscp == "AF43" } selected="selected" { /if }>AF43</option>
+    <option value="EF"   { if $filter->filter_dscp == "EF" } selected="selected" { /if }>EF</option>
+   </select>
+  </td>
+  <td>
+   Match a specific DSCP flag. Expedited Forwarding (EF), Assured Forwarding (AF), Default is Best Effort (BE).
+  </td>
+ </tr>
  { if $filter_mode == "ipt" }
  <input type="hidden" name="filter_ipt" value="true" />
  <tr>

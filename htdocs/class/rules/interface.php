@@ -807,6 +807,19 @@ class Ruleset_Interface {
 
             $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 1 [HOST_DEFS] ";
 
+            if($this->isGRE()) {
+               if($filter->filter_tos > 0)
+                  $string.= "match u8 ". sprintf("%02x", $filter->filter_tos) ." 0xff at 27 ";
+               if($filter->filter_dscp != -1)
+                  $string.= "match u8 ". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xff at 27 ";
+            }
+            else {
+               if($filter->filter_tos > 0)
+                  $string.= "match ip tos ". $filter->filter_tos ." 0xff ";
+               if($filter->filter_dscp != -1)
+                  $string.= "match ip tos ". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xff ";
+            }
+
             /* filter matches a specific network protocol */
             if(isset($filter) && !empty($filter) && $filter->filter_protocol_id >= 0) {
 
@@ -839,8 +852,6 @@ class Ruleset_Interface {
                                  if($this->isGRE()) {
                                     $port_hex = $this->convertPortToHex($dst_port);
                                     $tmp_str = $string ." 0x". $port_hex ." 0xffff at [DIRECTION]";
-                                    if($filter->filter_tos > 0)
-                                       $tmp_str.= "match u8 ". sprintf("%02x", $filter->filter_tos) ." 0xff at 27 ";
 
                                     switch($pipe->pipe_direction) {
                                        case UNIDIRECTIONAL:
@@ -854,8 +865,6 @@ class Ruleset_Interface {
                                  }
                                  else {
                                     $tmp_str = $string ." [DIRECTION] ". $dst_port ." 0xffff ";
-                                    if($filter->filter_tos > 0)
-                                       $tmp_str.= "match ip tos ". $filter->filter_tos ." 0xff ";
 
                                     switch($pipe->pipe_direction) {
                                        case UNIDIRECTIONAL:
@@ -1234,6 +1243,10 @@ class Ruleset_Interface {
             // TOS flags matching 
             if($filter->filter_tos > 0)
                $match_str.= " -m tos --tos ". $filter->filter_tos;
+
+            // DSCP flags matching
+            if($filter->filter_dscp != -1)
+               $match_str.= " -m dscp --dscp-class ". $filter->filter_dscp;
 
             // packet length matching 
             if($filter->filter_packet_length > 0)
@@ -1750,6 +1763,28 @@ class Ruleset_Interface {
 
    } // get_current_filter()
 
+   private function get_dscp_hex_value($dscp_class)
+   {
+      switch($dscp_class) {
+         case 'AF11': $hex = "0x0a"; break;
+         case 'AF12': $hex = "0x0c"; break;
+         case 'AF13': $hex = "0x0e"; break;
+         case 'AF21': $hex = "0x12"; break;
+         case 'AF22': $hex = "0x14"; break;
+         case 'AF23': $hex = "0x16"; break;
+         case 'AF31': $hex = "0x1a"; break;
+         case 'AF32': $hex = "0x1c"; break;
+         case 'AF33': $hex = "0x1e"; break;
+         case 'AF41': $hex = "0x22"; break;
+         case 'AF42': $hex = "0x24"; break;
+         case 'AF43': $hex = "0x26"; break;
+         case 'EF':   $hex = "0x2e"; break;
+         default:     $hex = "0x00"; break;
+      }
+
+      return $hex;
+
+   } // get_dscp_hex_value
 
 } // class Ruleset_Interface
 
