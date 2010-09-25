@@ -32,6 +32,18 @@ class Ruleset_Interface {
    private $db;
    private $parent;
 
+   /****
+    * Just to record the positions of IP packet header fields
+    * when within an GRE-encapsulated tunnel:
+    *
+    * Pos (Byte)     Lenght (Bytes)    What
+    * 25             1                 Type of Service (TOS, DSCP)
+    * 33             1                 Protocol
+    * 36             4                 Source IP address
+    * 40             4                 Destination IP address
+    *
+    ****/
+
    /**
     * Ruleset_Interface constructor
     *
@@ -444,7 +456,13 @@ class Ruleset_Interface {
          default:
          case 'tc':
 
-            $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id);
+            if($this->isGRE()) {
+               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match u8 0x06 0xff at 33 match u8 0x05 0x0f at 24 match u16 0x0000 0xffc0 at 26 match u8 0x10 0xff at 57 flowid ". $id);
+            }
+            else {
+               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id);
+               //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x10 0xff at nexthdr+13 match u16 0x0000 0xffc0 at 2 flowid ". $id);
+            }
 
             break;
 
@@ -809,15 +827,15 @@ class Ruleset_Interface {
 
             if($this->isGRE()) {
                if($filter->filter_tos > 0)
-                  $string.= "match u8 ". sprintf("%02x", $filter->filter_tos) ." 0xff at 27 ";
-               if($filter->filter_dscp != -1)
-                  $string.= "match u8 ". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xff at 27 ";
+                  $string.= "match u8 ". sprintf("%02x", $filter->filter_tos) ." 0xff at 25 ";
+               if(!empty($filter->filter_dscp) && $filter->filter_dscp != -1)
+                  $string.= "match u8 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0x3f at 25 ";
             }
             else {
                if($filter->filter_tos > 0)
                   $string.= "match ip tos ". $filter->filter_tos ." 0xff ";
-               if($filter->filter_dscp != -1)
-                  $string.= "match ip tos ". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xff ";
+               if(!empty($filter->filter_dscp) && $filter->filter_dscp != -1)
+                  $string.= "match ip tos 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0x3f ";
             }
 
             /* filter matches a specific network protocol */
@@ -834,7 +852,6 @@ class Ruleset_Interface {
 
                      if($this->isGRE()) {
                         $string.= "match u16 ";
-                        //0x". $proto_hex ." ffffffff at 32";
                      }
                      else {
                         $string.= "match ip ";
@@ -1765,24 +1782,41 @@ class Ruleset_Interface {
 
    private function get_dscp_hex_value($dscp_class)
    {
+      /* below we have to shift into 6-bit DSCP class value
+         two further bits so we have the actual value we can
+         match in the 8-bit long TOS field.
+       */
       switch($dscp_class) {
-         case 'AF11': $hex = "0x0a"; break;
-         case 'AF12': $hex = "0x0c"; break;
-         case 'AF13': $hex = "0x0e"; break;
-         case 'AF21': $hex = "0x12"; break;
-         case 'AF22': $hex = "0x14"; break;
-         case 'AF23': $hex = "0x16"; break;
-         case 'AF31': $hex = "0x1a"; break;
-         case 'AF32': $hex = "0x1c"; break;
-         case 'AF33': $hex = "0x1e"; break;
-         case 'AF41': $hex = "0x22"; break;
-         case 'AF42': $hex = "0x24"; break;
-         case 'AF43': $hex = "0x26"; break;
-         case 'EF':   $hex = "0x2e"; break;
-         default:     $hex = "0x00"; break;
+         // AF11 = 0x0a
+         case 'AF11': $dscp = 10 << 2; break;
+         // AF12 = 0x0c
+         case 'AF12': $dscp = 12 << 2; break;
+         // AF13 = 0x0e
+         case 'AF13': $dscp = 14 << 2; break;
+         // AF21 = 0x12
+         case 'AF21': $dscp = 18 << 2; break;
+         // AF22 = 0x14
+         case 'AF22': $dscp = 20 << 2; break;
+         // AF23 = 0x16
+         case 'AF23': $dscp = 22 << 2; break;
+         // AF31 = 0x1a
+         case 'AF31': $dscp = 26 << 2; break;
+         // AF32 = 0x1c
+         case 'AF32': $dscp = 28 << 2; break;
+         // AF33 = 0x1e
+         case 'AF33': $dscp = 30 << 2; break;
+         // AF41 = 0x22
+         case 'AF41': $dscp = 34 << 2; break;
+         // AF42 = 0x24
+         case 'AF42': $dscp = 36 << 2; break;
+         // AF43 = 0x26
+         case 'AF43': $dscp = 38 << 2; break;
+         // EF = 0x2e
+         case 'EF':   $dscp = 46 << 2; break;
+         default:     $dscp = 0 << 2; break;
       }
 
-      return $hex;
+      return sprintf("%02x", $dscp);
 
    } // get_dscp_hex_value
 
