@@ -1,8 +1,8 @@
-{ if $monitor == "chains" || $monitor == "chains-jqPlot" }
+{ if $monitor == "chains" }
  {start_table icon=$icon_chains alt="chain icon" title="Traffic Monitoring - $view" }
-{ elseif $monitor == "pipes" || $monitor == "pipes-jqPlot" }
+{ elseif $monitor == "pipes" }
  {start_table icon=$icon_pipes alt="pipe icon" title="Traffic Monitoring - $view" }
-{ elseif $monitor == "bandwidth" || $monitor == "bandwidth-jqPlot" }
+{ elseif $monitor == "bandwidth" }
  {start_table icon=$icon_bandwidth alt="bandwidth icon" title="Traffic Monitoring - $view" }
 { /if }
  <table style="width: 100%;" class="withborder">
@@ -21,7 +21,7 @@
   <tr>
    <td>&nbsp;</td>
   </tr>
-  { if $monitor == "bandwidth-jqPlot" }
+  { if $monitor == "bandwidth" }
   <tr>
    <td>
     <table class="noborder" style="width: 100%; text-align: center;">
@@ -40,7 +40,7 @@
     </table>
    </td>
   </tr>
-  { elseif $monitor == "pipes" || $monitor == "pipes-jqPlot" }
+  { elseif $monitor == "pipes" }
   <tr>
    <td style="text-align: center;">
     <table class="noborder" style="width: 100%; text-align: center;">
@@ -60,7 +60,7 @@
    </td>
   </tr>
   { /if }
-  { if $monitor == "pipes-jqPlot" || $monitor == "chains-jqPlot" }
+  { if $monitor == "pipes" || $monitor == "chains" }
   <tr>
    <td style="text-align: center;">
     Interface:<br />

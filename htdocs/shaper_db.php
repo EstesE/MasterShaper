@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '6');
+define('SCHEMA_VERSION', '8');
 
 /***************************************************************************
  *
@@ -936,11 +936,8 @@ class MASTERSHAPER_DB {
             (42, 'Rules Show', 'rules/show.html', '^/rules/show.html$', 'ruleset.php'),
             (43, 'Others About', 'others/about.html', '^/others/about.html$', 'about.php'),
             (44, 'Monitoring Chains', 'monitoring/chains.html', '^/monitoring/chains.html$', 'monitor.php'),
-            (45, 'Monitoring Chains jqPlot', 'monitoring/chains-jqPlot.html', '^/monitoring/chains-jqPlot.html$', 'monitor.php'),
             (46, 'Monitoring Pipes', 'monitoring/pipes.html', '^/monitoring/pipes.html$', 'monitor.php'),
-            (47, 'Monitoring Pipes jqPlot', 'monitoring/pipes-jqPlot.html', '^/monitoring/pipes-jqPlot.html$', 'monitor.php'),
             (48, 'Monitoring Bandwidth', 'monitoring/bandwidth.html', '^/monitoring/bandwidth.html$', 'monitor.php'),
-            (49, 'Monitoring Bandwidth jqPlot', 'monitoring/bandwidth-jqPlot.html', '^/monitoring/bandwidth-jqPlot.html$', 'monitor.php'),
             (50, 'Monitoring', 'monitoring/mode.html', '^/monitoring/mode.html$', 'monitor.php'),
             (51, 'RPC Call', 'rpc.html', 'rpc.html', '[internal]');
          ");
@@ -1049,6 +1046,30 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(7);
+
+      }
+
+      if($this->schema_version < 8) {
+
+         $this->db_query("
+            DELETE FROM
+               `". MYSQL_PREFIX ."pages`
+            WHERE (
+                  page_id LIKE 45
+               AND
+                  page_name LIKE 'Monitoring Chains jqPlot'
+            ) OR (
+                  page_id LIKE 47
+               AND
+                  page_name LIKE 'Monitoring Pipes jqPlot'
+            ) OR (
+                  page_id LIKE 49
+               AND
+                  page_name LIKE 'Monitoring Bandwidth jqPlot'
+            )
+         ");
+
+         $this->setVersion(8);
 
       }
 

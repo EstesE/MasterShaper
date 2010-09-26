@@ -138,11 +138,8 @@ class Page {
          'about',
          'mode',
          'chains',
-         'chains-jqPlot',
          'pipes',
-         'pipes-jqPlot',
          'bandwidth',
-         'bandwidth-jqPlot',
          'rpc',
       );
 

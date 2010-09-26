@@ -56,14 +56,14 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          $_SESSION['mode'] = $page->action;
 
       switch($_SESSION['mode']) {
-         case 'chains-jqPlot':
-            $view = "Chains (jqPlot)";
+         case 'chains':
+            $view = "Chains";
             break;
-         case 'pipes-jqPlot':
-            $view = "Pipes (jqPlot)";
+         case 'pipes':
+            $view = "Pipes";
             break;
-         case 'bandwidth-jqPlot':
-            $view = "Bandwidth (jqPlot)";
+         case 'bandwidth':
+            $view = "Bandwidth";
             break;
       }
 
@@ -265,7 +265,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             break;
 
          /* bandwidth-view */
-         case 'bandwidth-jqPlot':
+         case 'bandwidth':
             $tc_match = "_1:1\$";
             break;
       }
@@ -349,7 +349,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          /**
           * Drawing pipes
           */
-         case 'pipes-jqPlot':
+         case 'pipes':
             switch($_SESSION['graphmode']) {
                case 0:
                case 1:
@@ -391,7 +391,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             }
             break;
 
-         case 'chains-jqPlot':
+         case 'chains':
 
             /**
              * Drawing chains
@@ -455,7 +455,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             }
             break;
 	 
-         case "bandwidth-jqPlot":
+         case "bandwidth":
 
             // no data available for that interface? break out...
             if(!isset($time_array[$_SESSION['showif']]))

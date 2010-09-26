@@ -326,8 +326,8 @@ class MASTERSHAPER {
          case 'alter-position':
             $this->rpc_alter_position();
             break;
-         case 'jqplot-data':
-            $this->rpc_jqplot_data();
+         case 'graph-data':
+            $this->rpc_graph_data();
             break;
          case 'get-chains-list':
             $this->rpc_get_chains_list();
@@ -1107,13 +1107,13 @@ class MASTERSHAPER {
     *
     * @return string
     */
-   public function rpc_jqplot_data()
+   public function rpc_graph_data()
    {
       require_once "class/pages/monitor.php";
       $obj = new Page_Monitor;
       print $obj->get_jqplot_values();
  
-   } // rpc_jqplot_data()
+   } // rpc_graph_data()
 
    public function change_graph()
    {
@@ -1293,7 +1293,7 @@ class MASTERSHAPER {
          'delete',
          'toggle',
          'alter-position',
-         'jqplot-data',
+         'graph-data',
          'get-chains-list',
          'get-sub-menu',
       );

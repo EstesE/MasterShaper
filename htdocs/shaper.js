@@ -120,7 +120,7 @@ function draw_jqplot()
       url: 'rpc.html',
       data: ({
          type      : 'rpc',
-         action    : 'jqplot-data',
+         action    : 'graph-data',
          showif    : showif,
          scalemode : scalemode,
          showchain : showchain
