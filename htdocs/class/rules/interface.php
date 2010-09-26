@@ -1703,18 +1703,26 @@ class Ruleset_Interface {
     */
    private function convertIpToHex($host)
    {
+      global $ms;
+
       $ipv4 = new Net_IPv4;
       $parsed = $ipv4->parseAddress($host);
+
+      // if CIDR contains no netmask or was unparsable, we assume /32
+      if(empty($parsed->netmask))
+         $parsed->netmask = "255.255.255.255";
+
       if(!$ipv4->validateIP($parsed->ip))
-         return _("Incorrect IP address! Can not convert it to hex!");
+         $ms->throwError(_("Incorrect IP address! Can not convert it to hex!"));
+
       if(!$ipv4->validateNetmask($parsed->netmask))
-         return _("Incorrect Netmask! Can not convert it to hex!");
+         $ms->throwError(_("Incorrect Netmask! Can not convert it to hex!"));
 
       if(($hex_host = $ipv4->atoh($parsed->ip)) == false)
-         die(_("Failed to convert ". $parsed->ip ." to hex!"));
+         $ms->throwError(_("Failed to convert ". $parsed->ip ." to hex!"));
 
       if(($hex_subnet = $ipv4->atoh($parsed->netmask)) == false)
-         die(_("Failed to convert ". $parsed->netmask ." to hex!"));
+         $ms->throwError(_("Failed to convert ". $parsed->netmask ." to hex!"));
 
       return array('ip' => $hex_host, 'netmask' => $hex_subnet);
 
