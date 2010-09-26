@@ -1,0 +1,233 @@
+This document contains the release test-procedure for MasterShaper v0.6.
+
+Possible states:
+
+[OPEN]    [_]
+[SUCCESS] [s]
+[FAILED]  [f]
+
+****************************************************************
+* Test details
+*
+* Date:      2008-10-11
+* OS:        Debian Lenny (5.0r6, all security updates applied)
+* WebServer: Apache2 x.x.x
+* PHP:       x.x.x
+* MySQL:     x.x.x
+****************************************************************
+
+* [OPEN] Test 1 - Fresh installation
+
+* [OPEN] Test 2 - Upgrade from previous version
+
+* [OPEN] Test 3 - Operation
+
+ - [_] Login as user 'admin'
+ - [_] Settings -> Targets -> Create a new Target
+        # Name: test1
+        # IP: 1.1.1.1
+        # Save
+ - [_] Settings -> Targets -> Create a new Target
+        # Name: test2
+        # MAC: ff:ff:ff:ff:ff:ff
+        # Save
+ - [_] Settings -> Targets -> Create a new Target
+        # Name: testgroup
+        # members: test1 + test2
+        # Save
+ - [_] Settings -> Targets -> Edit test1
+        # Name: test1a
+        # IP: 1.1.1.2
+        # Save
+ - [_] Settings -> Targets -> Edit test2
+        # Name: test2a
+        # MAC: ff:ff:fff:ff:ff:fe
+        # Save
+ - [_] Settings -> Targets -> Edit testgroup
+        # Name: testgroupa
+        # Remove member test2a
+        # Save
+ - [_] Settings -> Targets -> Delete targets
+        # test1a
+        # test2a
+        # testgroup
+ - [_] Settings -> Ports -> Create a new Port
+        # Name: test1
+        # Description: bla1
+        # Number: 12345
+ - [_] Settings -> Ports -> Edit test1
+        # Name: test1a
+        # Descrption: bla1a
+        # Numbers: 12346
+ - [_] Settings -> Ports -> Delete test1a
+ - [_] Settings -> Protocols -> Create a new Protocol
+        # Name: test1
+        # Number: 11
+ - [_] Settings -> Protocols -> Edit test1
+        # Name: test1a
+        # Numbers: 12
+ - [_] Settings -> Protocols -> Delete test1a
+ - [_] Settings -> Service Levels -> Create a new Serice Level
+        # Name: test1
+        # Classifier: HTB
+        # I1 -> I2
+          - Bandwidth: 10
+          - Bandwidth ceil: 20
+          - Bandwidth burst: 30
+        # I2 -> I1
+          - Bandwidth: 40
+          - Bandwidth ceil: 50
+          - Bandwidth burst: 60
+        # Priority: Low (4)
+        # Queuing Discipline: SFQ
+        # Save
+ - [_] Settings -> Service Levels -> Edit test1
+        # Name: test1a
+        # Classifier: HTB
+        # I1 -> I2
+          - Bandwidth: 11
+          - Bandwidth ceil: 22
+          - Bandwidth burst: 33
+        # I2 -> I1
+          - Bandwidth: 44
+          - Bandwidth ceil: 55
+          - Bandwidth burst: 66
+        # Priority: High (2)
+        # Queuing Discipline: ESFQ
+        # Save
+ - [_] Settings -> Service Levels -> Delete test1a
+ - [_] Options
+        # Language: German
+        # ACK packets: highest priority        
+        # Classifier: HTB
+        # Default Queuing Discipline: SFQ
+        # Traffic filter: tc-filter
+        # Mode: Router
+        # Authentication: Yes
+        # Save
+ - [_] Settings -> Users -> Create a new User
+        # Name: test1
+        # Password: test1
+        # again: test2
+        # Status: Enabled
+        # Permissions: Manage Options, Manage Users
+        # Save
+          - fail with password must match
+          - return and two times test1 as password
+ - [_] Login as user test1
+ - [_] Login as user admin
+ - [_] Settings -> Users -> Edit test1
+        # Name: test1a
+        # Password: test1a
+        # again: test1a
+        # Status: Disabled
+        # Permissions: ALL
+        # Save
+ - [_] Settings -> Users -> Toggle test1a active
+ - [_] Settings -> Users -> Delete test1a
+ - [_] Settings -> Interfaces -> Add a new Interface
+        # Name: test1
+        # Status: Enabled
+        # Bandwidth: 100M
+        # IFB: Disabled
+        # Save
+ - [_] Settings -> Interfaces -> Edit test1
+        # Name: test1a
+        # Status: Disabled
+        # Bandwidth: 100K
+        # IFB: Enabled
+        # Save
+ - [_] Settings -> Interfaces -> Toggle test1a active
+ - [_] Settings -> Interfaces -> Delete test1a
+ - [_] Settings -> Network Paths -> Define a new Network Path
+        # Name: test1
+        # Status: Enabled
+        # Interface 1: eth0,
+        # Interface 2: eth1, inside GRE-tunnel enabled
+        # IMQ: No
+        # Save
+ - [_] Settings -> Network Paths -> Edit test1
+        # Name: test1a
+        # Status: Disabled
+        # Interface 1: eth1, inside GRE-tunnel enabled
+        # Interface 2: eth0
+        # IMQ: Yes
+        # Save
+ - [_] Settings -> Network Paths -> Toggle test1a active
+ - [_] Settings -> Network Paths -> Delete test1a
+ - [_] Manage -> Filters -> Create a new Filter
+        # Name: test1
+        # Status: Active
+        # Protocols: TCP
+        # Match ports: ssh (22), https (443)
+        # TOS flags: Minimize-Delay 16 (0x10)
+        # DSCP flags: AF12
+        # Save
+ - [_] Manage -> Filters -> Edit test1
+        # Name: test1a
+        # Status: Inactive
+        # Protocols: ESP
+        # Match ports: remove all
+        # TOS flags: Minimize-Cost 2 (0x02)
+        # DSCP flags: EF
+        # Save
+ - [_] Manage -> Filters -> Toggle test1a active
+ - [_] Manage -> Filters -> Delete test1a
+ - [_] Manage -> Pipes -> Create a new Pipe
+        # Name: test1
+        # Status: Active
+        # Match targets: any <-> any
+        # Pipes: HTTP & SMTP
+        # Service-Level: High priority
+        # Save
+ - [_] Manage -> Pipes -> Edit test1
+        # Name: test1a
+        # Status: Inactive
+        # Match targets: target --> target
+        # Pipes: remove all
+        # Service-Level: Low priority
+        # Save
+ - [_] Manage -> Pipes -> Assign to Chains
+ - [_] Manage -> Chains -> remove Pipe from assigned Chain
+ - [_] Manage -> Chains -> Toggle test1a active
+ - [_] Manage -> Chains -> Delete test1a
+ - [_] Manage -> Chains -> Create a new Chain
+        # Name: test1
+        # Status: Active
+        # Service Level: High Priority
+        # Fallback: General Fallback
+        # Network Path: eth0
+        # Match targets: any <-> any
+        # Pipes: Ping
+        # Save
+ - [_] Manage -> Chains -> Edit test1
+        # Name: test1a
+        # Status: Inactive
+        # Service Level: Low Priority
+        # Fallback: General Fallback
+        # Network Path: eth1
+        # Match targets: target --> target
+        # Pipes: remove all
+        # Save
+ - [_] Manage -> Chains -> Toggle test1a active
+ - [_] Manage -> Chains -> Delete test1a
+ - [_] Overview -> Select one and change
+        # Service Level
+        # Fallback
+        # Source
+        # Direction
+        # Destination
+        # Action
+ - [_] Overview - Change position of Pipe
+        # up
+        # down
+ - [_] Overview - Change position of Chain
+        # up
+        # down
+ - [_] Overview - Change position of Network Path
+        # up
+        # down
+ - [_] Rules -> Show
+ - [_] Rules -> Load
+ - [_] Rules -> Unload
+ - [_] Rules -> Load (debug)
