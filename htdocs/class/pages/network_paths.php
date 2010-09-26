@@ -153,6 +153,12 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
          $ms->throwError(_("A interface within a network path can not be used twice! Please select different interfaces"));
       }
 
+      if(!isset($_POST['netpath_if1_inside_gre']) || empty($_POST['netpath_if1_inside_gre']))
+         $_POST['netpath_if1_inside_gre'] = 'N';
+
+      if(!isset($_POST['netpath_if2_inside_gre']) || empty($_POST['netpath_if2_inside_gre']))
+         $_POST['netpath_if2_inside_gre'] = 'N';
+
       $np_data = $ms->filter_form_data($_POST, 'netpath_');
 
       if(!$np->update($np_data))
