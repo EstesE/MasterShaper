@@ -219,9 +219,13 @@ class MASTERSHAPER_TMPL extends Smarty {
       }
 
       $result = $db->db_query("
-         SELECT target_idx, target_name
-         FROM ". MYSQL_PREFIX ."targets
-         ORDER BY target_name
+         SELECT
+            target_idx,
+            target_name
+         FROM
+            ". MYSQL_PREFIX ."targets
+         ORDER BY
+            target_name
       ");
 
       while($row = $result->fetchRow()) {
@@ -247,9 +251,12 @@ class MASTERSHAPER_TMPL extends Smarty {
       }
 
       $result = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."service_levels
-         ORDER BY sl_name ASC
+         SELECT
+             *
+         FROM
+            ". MYSQL_PREFIX ."service_levels
+         ORDER BY
+            sl_name ASC
       ");
 
       while($row = $result->fetchRow()) {
@@ -286,9 +293,12 @@ class MASTERSHAPER_TMPL extends Smarty {
       }
 
       $result = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."network_paths
-         ORDER BY netpath_name ASC
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."network_paths
+         ORDER BY
+            netpath_name ASC
       ");
 
       while($row = $result->fetchRow()) {

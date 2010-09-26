@@ -45,9 +45,12 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       $this->filters = Array();
 
       $res_filters = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."filters
-         ORDER BY filter_name ASC
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."filters
+         ORDER BY
+            filter_name ASC
       ");
    
       $cnt_filters = 0;
@@ -272,9 +275,12 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       global $db;
 
       $result = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."protocols
-         ORDER BY proto_name ASC
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."protocols
+         ORDER BY
+            proto_name ASC
       ");
       
       while($row = $result->fetchRow()) {
@@ -304,30 +310,53 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       global $ms, $db;
 
       switch($params['mode']) {
+
          case 'unused':
-            $ports = $db->db_query("
-               SELECT port_idx, port_name, port_number
-               FROM ". MYSQL_PREFIX ."ports
+
+            $sth = $db->db_prepare("
+               SELECT
+                  port_idx,
+                  port_name,
+                  port_number
+               FROM
+                  ". MYSQL_PREFIX ."ports
                LEFT JOIN ". MYSQL_PREFIX ."assign_ports_to_filters
                   ON port_idx=". MYSQL_PREFIX ."assign_ports_to_filters.afp_port_idx
                WHERE
-                  ". MYSQL_PREFIX ."assign_ports_to_filters.afp_filter_idx <> '". $params['filter_idx'] ."'
+                  ". MYSQL_PREFIX ."assign_ports_to_filters.afp_filter_idx <> ?
                OR
                   ISNULL(". MYSQL_PREFIX ."assign_ports_to_filters.afp_filter_idx)
-               ORDER BY port_name ASC
+               ORDER BY
+                  port_name ASC
             ");
+
+            $ports = $db->db_execute($sth, array(
+               $params['filter_idx']
+            ));
             break;
+
          case 'used':
-            $ports = $db->db_query("
-               SELECT p.port_idx, p.port_name, p.port_number
-               FROM ". MYSQL_PREFIX ."assign_ports_to_filters
-               LEFT JOIN ". MYSQL_PREFIX ."ports p
+
+            $sth = $db->db_prepare("
+               SELECT
+                  p.port_idx,
+                  p.port_name,
+                  p.port_number
+               FROM
+                  ". MYSQL_PREFIX ."assign_ports_to_filters
+               LEFT JOIN
+                  ". MYSQL_PREFIX ."ports p
                   ON p.port_idx = afp_port_idx
                WHERE
-                  afp_filter_idx = '". $params['filter_idx'] ."'
+                  afp_filter_idx LIKE ?
                ORDER BY p.port_name ASC
             ");
+
+            $ports = $db->db_execute($sth, array(
+               $params['filter_idx']
+            ));
             break;
+
          default:
             $ms->throwError('unknown mode');
             break;
@@ -358,27 +387,50 @@ class Page_Filters extends MASTERSHAPER_PAGE {
 
       switch($params['mode']) {
          case 'unused':
-            $l7protos = $db->db_query("
-               SELECT l7proto_idx, l7proto_name
-               FROM ". MYSQL_PREFIX ."l7_protocols
+
+            $sth = $db->db_prepare("
+               SELECT
+                  l7proto_idx,
+                  l7proto_name
+               FROM
+                  ". MYSQL_PREFIX ."l7_protocols
                LEFT JOIN ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
                   ON l7proto_idx=afl7_l7proto_idx
-                     AND afl7_filter_idx = '". $params['filter_idx'] ."'
+                     AND afl7_filter_idx LIKE ?
                WHERE
-                  afl7_filter_idx <> '". $params['filter_idx'] ."'
-               OR ISNULL(afl7_filter_idx)
-               ORDER BY l7proto_name ASC
+                  afl7_filter_idx <> ?
+               OR
+                  ISNULL(afl7_filter_idx)
+               ORDER BY
+                  l7proto_name ASC
             ");              
+
+            $l7protos = $db->db_execute($sth, array(
+               $params['filter_idx'],
+               $params['filter_idx']
+            ));
             break;
+
          case 'used':
-            $l7protos = $db->db_query("
-               SELECT l7proto_idx, l7proto_name
-               FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
+
+            $l7protos = $db->db_prepare("
+               SELECT
+                  l7proto_idx,
+                  l7proto_name
+               FROM
+                  ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
                LEFT JOIN ". MYSQL_PREFIX ."l7_protocols
                   ON l7proto_idx=afl7_l7proto_idx
-               WHERE afl7_filter_idx = '". $params['filter_idx'] ."'
-               ORDER BY l7proto_name ASC
+               WHERE
+                  afl7_filter_idx LIKE ?
+               ORDER BY
+                  l7proto_name ASC
             "); 
+
+            $l7protos = $db->db_execute($sth, array(
+               $params['filter_idx']
+            ));
+
             break;
       }
 

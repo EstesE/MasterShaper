@@ -45,9 +45,12 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
       $this->service_levels = Array();
 
       $res_sl = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."service_levels
-         ORDER BY sl_name ASC
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."service_levels
+         ORDER BY
+            sl_name ASC
       ");
 
       $cnt_sl = 0; 

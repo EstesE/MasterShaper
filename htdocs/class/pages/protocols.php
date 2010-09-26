@@ -55,7 +55,7 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
       $this->avail_protocols = Array();
       $this->protocols = Array();
 
-      $res_protocols = $db->db_query("
+      $sth = $db->db_prepare("
          SELECT
             proto_idx
          FROM
@@ -63,8 +63,13 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
          ORDER BY
             proto_name ASC
          LIMIT
-            ". $limit .", ". $this->items_per_page
-      );
+            ?, ?
+      ");
+
+      $res_protocols = $db->db_execute($sth, array(
+         $limit,
+         $this->items_per_page
+      ));
 
       while($protocol = $res_protocols->fetchrow()) {
          $this->avail_protocols[] = $protocol->proto_idx;

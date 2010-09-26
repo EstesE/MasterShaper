@@ -68,11 +68,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       
       /* get a list of network paths */
       $res_network_paths = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."network_paths
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."network_paths
          WHERE
             netpath_active='Y'
-         ORDER BY netpath_position
+         ORDER BY
+            netpath_position ASC
       ");
 
       while($network_path = $res_network_paths->fetchRow()) {
@@ -88,15 +91,22 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
 
          /* get a list of chains for the current netpath */
-         $res_chains = $db->db_query("
-            SELECT *
-            FROM ". MYSQL_PREFIX ."chains
+         $sth = $db->db_prepare("
+            SELECT
+               *
+            FROM
+               ". MYSQL_PREFIX ."chains
             WHERE 
-               chain_netpath_idx='". $network_path->netpath_idx ."'
+               chain_netpath_idx LIKE ?
             AND 
                chain_active='Y'
-            ORDER BY chain_position ASC
+            ORDER BY
+               chain_position ASC
          ");
+
+         $res_chains = $db->db_execute($sth, array(
+            $network_path->netpath_idx
+         ));
 
          while($chain = $res_chains->fetchRow()) {
 
@@ -109,55 +119,68 @@ class Page_Overview extends MASTERSHAPER_PAGE {
             $this->filters[$network_path->netpath_idx][$chain->chain_idx] = Array();
 
             /* pipes are only available if the chain DOES NOT ignore QoS or DOES NOT use fallback service level */
-            if($chain->chain_sl_idx != 0 && $chain->chain_fallback_idx != 0) {
+            if($chain->chain_sl_idx == 0 || $chain->chain_fallback_idx == 0) {
+               $this->cnt_chains++;
+               continue;
+            }
     
-               $res_pipes = $db->db_query("
-                     SELECT
-                        p.*
-                     FROM
-                        ". MYSQL_PREFIX ."pipes p
-                     INNER JOIN
-                        ". MYSQL_PREFIX ."assign_pipes_to_chains apc
-                     ON
-                        p.pipe_idx=apc.apc_pipe_idx
-                     WHERE
-                        apc.apc_chain_idx='". $chain->chain_idx ."'
-                     AND
-                        p.pipe_active='Y'
-                     ORDER BY
-                        p.pipe_position ASC
+            $sth = $db->db_prepare("
+               SELECT
+                  p.*
+               FROM
+                  ". MYSQL_PREFIX ."pipes p
+               INNER JOIN
+                  ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+               ON
+                  p.pipe_idx=apc.apc_pipe_idx
+               WHERE
+                  apc.apc_chain_idx LIKE ?
+               AND
+                  p.pipe_active='Y'
+               ORDER BY
+                  p.pipe_position ASC
+            ");
+
+            $res_pipes = $db->db_execute($sth, array(
+               $chain->chain_idx
+            ));
+
+            while($pipe = $res_pipes->fetchRow()) {
+
+               $this->avail_pipes[$network_path->netpath_idx][$chain->chain_idx][$this->cnt_pipes] = $pipe->pipe_idx;
+               $this->pipes[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = $pipe;
+
+               $this->cnt_filters = 0;
+               $this->avail_filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
+               $this->filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
+
+               $sth = $db->db_prepare("
+                  SELECT
+                     a.filter_idx as filter_idx,
+                     a.filter_name as filter_name
+                  FROM
+                     ". MYSQL_PREFIX ."filters a,
+                     ". MYSQL_PREFIX ."assign_filters_to_pipes b
+                  WHERE
+                     b.apf_pipe_idx LIKE ?
+                  AND
+                     b.apf_filter_idx=a.filter_idx
+                  AND
+                     a.filter_active='Y'
                ");
 
-               while($pipe = $res_pipes->fetchRow()) {
+               $res_filters = $db->db_execute($sth, array(
+                  $pipe->pipe_idx
+               ));
 
-                  $this->avail_pipes[$network_path->netpath_idx][$chain->chain_idx][$this->cnt_pipes] = $pipe->pipe_idx;
-                  $this->pipes[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = $pipe;
-   
-                  $this->cnt_filters = 0;
-                  $this->avail_filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
-                  $this->filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
+               while($filter = $res_filters->fetchRow()) {
 
-                  $res_filters = $db->db_query("
-                     SELECT a.filter_idx as filter_idx, a.filter_name as filter_name
-                     FROM ". MYSQL_PREFIX ."filters a, ". MYSQL_PREFIX ."assign_filters_to_pipes b
-                     WHERE
-                        b.apf_pipe_idx='". $pipe->pipe_idx ."'
-                     AND
-                        b.apf_filter_idx=a.filter_idx
-                     AND
-                        a.filter_active='Y'
-                  ");
+                  $this->avail_filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx][$this->cnt_filters] = $filter->filter_idx;
+                  $this->filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx][$filter->filter_idx] = $filter;
 
-                  while($filter = $res_filters->fetchRow()) {
-   
-                     $this->avail_filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx][$this->cnt_filters] = $filter->filter_idx;
-                     $this->filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx][$filter->filter_idx] = $filter;
-
-                     $this->cnt_filters++;
-         
-                  }
-                  $this->cnt_pipes++;
+                  $this->cnt_filters++;
                }
+               $this->cnt_pipes++;
             }
             $this->cnt_chains++;
          }
@@ -544,26 +567,38 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          switch($_POST['move_obj']) {
             case 'chain':
             case 'pipe':
-               $db->db_query("
+               $sth = $db->db_prepare("
                   UPDATE
                      ". MYSQL_PREFIX . $obj_table ."
                   SET
-                     ". $obj_col ."_position='". $my_pos->position ."'
+                     ". $obj_col ."_position=?
                   WHERE
-                     ". $obj_col ."_position='". $new_pos ."'
+                     ". $obj_col ."_position LIKE ?
                   AND
-                     ". $obj_parent ."=". $my_pos->parent_idx ."
+                     ". $obj_parent ." LIKE ?
                ");
+
+               $db->db_execute($sth, array(
+                  $my_pos->position,
+                  $new_pos,
+                  $my_pos->parent_idx
+               ));
                break;
+
             case 'netpath':
-               $db->db_query("
+               $sth = $db->db_prepare("
                   UPDATE
                      ". MYSQL_PREFIX . $obj_table ."
                   SET
-                     ". $obj_col ."_position='". $my_pos->position ."'
+                     ". $obj_col ."_position=?
                   WHERE
-                     ". $obj_col ."_position='". $new_pos ."'
+                     ". $obj_col ."_position LIKE ?
                ");
+
+               $db->db_execute($sth, array(
+                  $my_pos->position,
+                  $new_pos
+               ));
                break;
          }
       }
@@ -576,26 +611,37 @@ class Page_Overview extends MASTERSHAPER_PAGE {
             $dir = "+1";
 
          switch($_POST['move_obj']) {
+
             case 'chain':
             case 'pipe':
-               $db->db_query("
+               $sth = $db->db_execute("
                   UPDATE
                      ". MYSQL_PREFIX . $obj_table ."
                   SET
-                     ". $obj_col ."_position=". $obj_col ."_position" . $dir ."
+                     ". $obj_col ."_position = ?
                   WHERE
-                     ". $obj_parent ."=". $my_pos->parent_idx ."
+                     ". $obj_parent ." LIKE ?
                ");
+               $db->db_execute($sth, array(
+                  $obj_col ."_position" . $dir,
+                  $my_pos->parent_idx
+               ));
                break;
+
             case 'netpath':
-               $db->db_query("
+
+               $sth = $db->db_prepare("
                   UPDATE
                      ". MYSQL_PREFIX . $obj_table ."
                   SET
-                     ". $obj_col ."_position=". $obj_col ."_position" . $dir ."
+                     ". $obj_col ."_position = ?
                   WHERE
-                     ". $obj_col ."_position='". $new_pos ."'
+                     ". $obj_col ."_position LIKE ?
                ");
+               $db->db_execute($sth, array(
+                  $obj_col ."_position" . $dir,
+                  $new_pos
+               ));
                break;
          }
 
@@ -607,13 +653,19 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $new_pos = 1;
 
       /* set objects new position */
-      $db->db_query("
-         UPDATE ". MYSQL_PREFIX . $obj_table ."
+      $sth = $db->db_prepare("
+         UPDATE
+            ". MYSQL_PREFIX . $obj_table ."
          SET
-            ". $obj_col ."_position='". $new_pos ."'
+            ". $obj_col ."_position=?
          WHERE
-            ". $obj_col ."_idx='". $idx ."';
+            ". $obj_col ."_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $new_pos,
+         $idx
+      ));
 
       return "ok";
 
@@ -627,145 +679,234 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       global $ms, $db;
 
       if(isset($_POST['chain_sl_idx']) && is_array($_POST['chain_sl_idx'])) {
+
          /* save all chain service levels */
          foreach($_POST['chain_sl_idx'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."chains
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."chains
                SET
-                  chain_sl_idx='". $v ."'
+                  chain_sl_idx=?
                WHERE
-                  chain_idx='". $k ."'
+                  chain_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['chain_fallback_idx']) && is_array($_POST['chain_fallback_idx'])) {
+
          /* save all chain fallback service levels */
          foreach($_POST['chain_fallback_idx'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."chains
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."chains
                SET
-                  chain_fallback_idx='". $v ."'
+                  chain_fallback_idx = ?
                WHERE
-                  chain_idx='". $k ."'
+                  chain_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['chain_src_target']) && is_array($_POST['chain_src_target'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_src_target'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."chains
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."chains
                SET
-                  chain_src_target='". $v ."'
+                  chain_src_target = ?
                WHERE
-                  chain_idx='". $k ."'
+                  chain_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['chain_dst_target']) && is_array($_POST['chain_dst_target'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_dst_target'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."chains
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."chains
                SET
-                  chain_dst_target='". $v ."'
+                  chain_dst_target = ?
                WHERE
-                  chain_idx='". $k ."'
+                  chain_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['chain_direction']) && is_array($_POST['chain_direction'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_direction'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."chains
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."chains
                SET
-                  chain_direction='". $v ."'
+                  chain_direction = ?
                WHERE
-                  chain_idx='". $k ."'
+                  chain_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['chain_action']) && is_array($_POST['chain_action'])) {
          /* save all chain fallback service levels */
          foreach($_POST['chain_action'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."chains
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."chains
                SET
-                  chain_action='". $v ."'
+                  chain_action = ?
                WHERE
-                  chain_idx='". $k ."'
+                  chain_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['pipe_sl_idx']) && is_array($_POST['pipe_sl_idx'])) {
          /* save all pipe service levels */
          foreach($_POST['pipe_sl_idx'] as $k => $v) {
-            $db->db_query("
+
+            $sth = $db->db_prepare("
                UPDATE ". MYSQL_PREFIX ."pipes
                SET
-                  pipe_sl_idx='". $v ."'
+                  pipe_sl_idx = ?
                WHERE
-                  pipe_idx='". $k ."'
+                  pipe_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['pipe_src_target']) && is_array($_POST['pipe_src_target'])) {
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_src_target'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."pipes
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."pipes
                SET
-                  pipe_src_target='". $v ."'
+                  pipe_src_target = ?
                WHERE
-                  pipe_idx='". $k ."'
+                  pipe_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['pipe_dst_target']) && is_array($_POST['pipe_dst_target'])) {
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_dst_target'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."pipes
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."pipes
                SET
-                  pipe_dst_target='". $v ."'
+                  pipe_dst_target = ?
                WHERE
-                  pipe_idx='". $k ."'
+                  pipe_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['pipe_direction']) && is_array($_POST['pipe_direction'])) {
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_direction'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."pipes
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."pipes
                SET
-                  pipe_direction='". $v ."'
+                  pipe_direction = ?
                WHERE
-                  pipe_idx='". $k ."'
+                  pipe_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 
       if(isset($_POST['pipe_action']) && is_array($_POST['pipe_action'])) {
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_action'] as $k => $v) {
-            $db->db_query("
-               UPDATE ". MYSQL_PREFIX ."pipes
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."pipes
                SET
-                  pipe_action='". $v ."'
+                  pipe_action = ?
                WHERE
-                  pipe_idx='". $k ."'
+                  pipe_idx LIKE ?
             ");
+
+            $db->db_execute($sth, array(
+               $v,
+               $k
+            ));
+
          }
       }
 

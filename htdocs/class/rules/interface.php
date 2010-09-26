@@ -754,14 +754,18 @@ class Ruleset_Interface {
 
          case 'GROUP':
 
-            $result = $db->db_query("
+            $sth = $db->db_prepare("
                SELECT
                   atg_target_idx
                FROM
                   ". MYSQL_PREFIX ."assign_target_groups
                WHERE
-                  atg_group_idx LIKE '". $target_idx ."'
+                  atg_group_idx LIKE ?
             ");
+
+            $result = $db->db_execute($sth, array(
+               $target_idx
+            ));
 
             while($target = $result->fetchRow()) {
                $members = $this->getTargetHosts($target->atg_target_idx);
@@ -782,8 +786,25 @@ class Ruleset_Interface {
    {
       global $db;
 
-      $db->db_query("INSERT INTO ". MYSQL_PREFIX ."tc_ids (id_pipe_idx, id_chain_idx, id_if, id_tc_id) "
-			 ."VALUES ('0', '". $chain_idx ."', '". $this->getName() ."', '". $chain_tc_id ."')");
+      $sth = $db->db_prepare("
+         INSERT INTO ". MYSQL_PREFIX ."tc_ids (
+            id_pipe_idx,
+            id_chain_idx,
+            id_if,
+            id_tc_id
+         ) VALUES (
+            '0',
+            ?,
+            ?,
+            ?
+         )
+      ");
+
+      $db->db_execute($sth, array(
+         $chain_idx,
+         $this->getName(),
+         $chain_tc_id
+      ));
 
    } // setChainID()
 
@@ -792,8 +813,27 @@ class Ruleset_Interface {
    {
       global $db;
 
-      $db->db_query("INSERT INTO ". MYSQL_PREFIX ."tc_ids (id_pipe_idx, id_chain_idx, id_if, id_tc_id) "
-			 ."VALUES ('". $pipe_idx ."', '". $chain_tc_id ."', '". $this->getName() ."', '". $pipe_tc_id ."')");
+      $sth = $db->db_prepare("
+         INSERT INTO ". MYSQL_PREFIX ."tc_ids (
+            id_pipe_idx,
+            id_chain_idx,
+            id_if,
+            id_tc_id
+         ) VALUES (
+            ?,
+            ?,
+            ?,
+            ?
+         )
+      ");
+
+      $db->db_execute($sth, array(
+         $pipe_idx,
+         $chain_tc_id,
+         $this->getName(),
+         $pipe_tc_id
+      ));
+
    } // setPipeID()
 
    /**
@@ -1556,7 +1596,7 @@ class Ruleset_Interface {
    {
       global $db;
 
-      return $db->db_query("  
+      $sth = $db->db_prepare("
          SELECT
             *
          FROM
@@ -1564,10 +1604,16 @@ class Ruleset_Interface {
          WHERE
             chain_active='Y'
          AND "
-            ."chain_netpath_idx='". $netpath_idx ."'
+            ."chain_netpath_idx LIKE ?
          ORDER BY
             chain_position ASC
       ");
+
+      $result = $db->db_execute($sth, array(
+         $netpath_idx
+      ));
+
+      return $result;
 
    } // getChains()
 
@@ -1577,7 +1623,7 @@ class Ruleset_Interface {
       global $ms, $db;
 
       /* get all active pipes for this chain */
-      $pipes = $db->db_query("
+      $sth = $db->db_prepare("
          SELECT
             p.*
          FROM
@@ -1589,10 +1635,14 @@ class Ruleset_Interface {
          WHERE
             p.pipe_active='Y'
          AND
-            apc.apc_chain_idx='". $chain_idx ."'
+            apc.apc_chain_idx LIKE ?
          ORDER BY
             p.pipe_position ASC"
       );
+
+      $pipes = $db->db_execute($sth, array(
+         $chain_idx
+      ));
 
       while($pipe = $pipes->fetchRow()) {
 

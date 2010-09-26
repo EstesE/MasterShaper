@@ -431,7 +431,18 @@ class Ruleset {
    {
       global $db;
 
-      return $db->db_query("SELECT * FROM ". MYSQL_PREFIX ."network_paths WHERE netpath_active='Y' ORDER BY netpath_position");
+      $result = $db->db_query("
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."network_paths
+         WHERE
+            netpath_active LIKE 'Y'
+         ORDER BY
+            netpath_position
+      ");
+
+      return $result;
 
    } // getActiveNetpaths()
 

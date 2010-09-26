@@ -45,9 +45,12 @@ class Page_Chains extends MASTERSHAPER_PAGE {
       $this->chains = Array();
 
       $res_chains = $db->db_query("
-         SELECT c.*, sl.sl_name as chain_sl_name,
+         SELECT
+            c.*,
+            sl.sl_name as chain_sl_name,
             slfall.sl_name as chain_fallback_name
-         FROM ". MYSQL_PREFIX ."chains c
+         FROM
+            ". MYSQL_PREFIX ."chains c
          LEFT JOIN ". MYSQL_PREFIX ."service_levels sl
             ON
                c.chain_sl_idx=sl.sl_idx
@@ -206,7 +209,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          ");
       }
       else {
-         $unused_pipes = $db->db_query("
+         $sth = $db->db_prepare("
             SELECT DISTINCT
                p.pipe_idx,
                p.pipe_name
@@ -218,13 +221,17 @@ class Page_Chains extends MASTERSHAPER_PAGE {
                FROM
                   ". MYSQL_PREFIX ."assign_pipes_to_chains
                WHERE
-                  apc_chain_idx=". $db->db_quote($params['chain_idx']) ."
+                  apc_chain_idx LIKE ?
             ) apc
             ON
                apc.apc_pipe_idx=p.pipe_idx
             WHERE
                apc.apc_chain_idx IS NULL
          ");
+
+         $unused_pipes = $db->db_execute($sth, array(
+            $params['chain_idx']
+         ));
       }
 
       while($pipe = $unused_pipes->fetchrow()) {
@@ -245,9 +252,10 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          return;
       }
 
-      $used_pipes = $db->db_query("
+      $sth = $db->db_prepare("
          SELECT DISTINCT
-            p.pipe_idx, p.pipe_name
+            p.pipe_idx,
+            p.pipe_name
          FROM
             ". MYSQL_PREFIX ."pipes p
          INNER JOIN (
@@ -256,11 +264,15 @@ class Page_Chains extends MASTERSHAPER_PAGE {
             FROM
                ". MYSQL_PREFIX ."assign_pipes_to_chains
             WHERE
-               apc_chain_idx='". $params['chain_idx'] ."'
+               apc_chain_idx LIKE ?
          ) apc
          ON
             apc.apc_pipe_idx=p.pipe_idx
-         ");
+      ");
+
+      $used_pipes = $db->db_execute($sth, array(
+         $params['chain_idx']
+      ));
 
       while($pipe = $used_pipes->fetchrow()) {
          $string.= "<option value=\"". $pipe->pipe_idx ."\">". $pipe->pipe_name ."</option>\n";
@@ -296,7 +308,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $ms->throwError("Unknown ID provided in get_chains_list()");
       }
 
-      $res_chains = $db->db_query("
+      $sth = $db->db_prepare("
          SELECT
             c.chain_idx,
             c.chain_name,
@@ -309,11 +321,15 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          ON (
                c.chain_idx=apc.apc_chain_idx
             AND
-               apc.apc_pipe_idx='". $id ."'
+               apc.apc_pipe_idx LIKE ?
          )
          ORDER BY
             c.chain_name ASC
       ");
+
+      $res_chains = $db->db_execute($sth, array(
+         $id
+      ));
 
       $cnt_chains = 0;
 

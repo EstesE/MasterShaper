@@ -85,54 +85,72 @@ class Filter extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_ports_to_filters
          WHERE
-            afp_filter_idx='". $this->id ."'
+            afp_filter_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       foreach($_POST['used'] as $use) {
 
          if(empty($use))
             continue;
 
-         $db->db_query("
+         $sth = $db->db_prepare("
             INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (
                afp_filter_idx,
                afp_port_idx
             ) VALUES (
-               '". $this->id ."',
-               '". $use ."'
+               ?,
+               ?
             )
          ");
+
+         $db->db_execute($sth, array(
+            $this->id,
+            $use
+         ));
       }
 
       /* is our work done? */
       if(!isset($_POST['filter_l7_used']) || empty($_POST['filter_l7_used']))
          return true;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
          WHERE
-            afl7_filter_idx='". $this->id ."'
+            afl7_filter_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       foreach($_POST['filter_l7_used'] as $use) {
 
          if(empty($use))
             continue;
 
-         $db->db_query("
+         $sth = $db->db_prepare("
             INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (
                afl7_filter_idx,
                afl7_l7proto_idx
             ) VALUES (
-               '". $this->id ."',
-               '". $use ."'
+               ?,
+               ?
             )
          ");
+
+         $db->db_execute($sth, array(
+            $this->id,
+            $use
+         ));
       }
 
       return true;
@@ -146,26 +164,38 @@ class Filter extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_ports_to_filters
          WHERE
-            afp_filter_idx='". $this->id ."'
+            afp_filter_idx LIKE ?
       ");
 
-      $db->db_query("
+      $db->db_execute($sth, array(
+         $this->id
+      ));
+
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
          WHERE
-            afl7_filter_idx='". $this->id ."'
+            afl7_filter_idx LIKE ?
       ");
 
-      $db->db_query("
+      $db->db_execute($sth, array(
+         $this->id
+      ));
+
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_filters_to_pipes
          WHERE
-            apf_filter_idx='". $this->id ."'
+            apf_filter_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       return true;
       

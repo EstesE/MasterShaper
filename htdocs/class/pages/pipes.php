@@ -166,7 +166,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
          ");
       }
       else {
-         $unused_filters = $db->db_query("
+         $sth = $db->db_prepare("
             SELECT DISTINCT
                f.filter_idx, f.filter_name
             FROM
@@ -177,13 +177,18 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
                FROM
                   ". MYSQL_PREFIX ."assign_filters_to_pipes
                WHERE
-                  apf_pipe_idx=". $db->db_quote($params['pipe_idx']) ."
+                  apf_pipe_idx LIKE ?
             ) apf
             ON
                apf.apf_filter_idx=f.filter_idx
             WHERE
                apf.apf_pipe_idx IS NULL
          ");
+
+         $unused_filters = $db->db_execute($sth, array(
+            $params['pipe_idx']
+         ));
+
       }
          
       while($filter = $unused_filters->fetchrow()) {
@@ -204,9 +209,10 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
 
       global $db;
 
-      $used_filters = $db->db_query("
+      $sth = $db->db_prepare("
          SELECT DISTINCT
-            f.filter_idx, f.filter_name
+            f.filter_idx,
+            f.filter_name
          FROM
             ". MYSQL_PREFIX ."filters f
          INNER JOIN (
@@ -215,12 +221,16 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             FROM
                ". MYSQL_PREFIX ."assign_filters_to_pipes
             WHERE
-               apf_pipe_idx='". $params['pipe_idx'] ."'
+               apf_pipe_idx LIKE ?
          ) apf
          ON
             apf.apf_filter_idx=f.filter_idx
       ");
          
+      $used_filters = $db->db_execute($sth, array(
+         $params['pipe_idx']
+      ));
+
       while($filter = $used_filters->fetchrow()) {
          $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
       }
@@ -283,26 +293,35 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
 
       /* delete all connection between chains and this pipe */
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_pipes_to_chains
          WHERE
-            apc_pipe_idx='". $page->id ."'
+            apc_pipe_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       foreach($_POST['chains'] as $chain) {
 
-         $db->db_query("
+         $sth = $db->db_prepare("
             INSERT INTO
                ". MYSQL_PREFIX ."assign_pipes_to_chains
             (
                apc_pipe_idx,
                apc_chain_idx
             ) VALUES (
-               '". $page->id ."',
-               '". $chain ."'
+               ?,
+               ?
             )
          ");
+
+         $db->db_execute($sth, array(
+            $page->id,
+            $chain
+         ));
       }
 
       return true;

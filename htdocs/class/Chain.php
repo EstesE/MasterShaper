@@ -88,27 +88,36 @@ class Chain extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_pipes_to_chains
          WHERE
-            apc_chain_idx='". $this->id ."'
+            apc_chain_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       foreach($_POST['used'] as $use) {
 
          if(empty($use))
             continue;
 
-         $db->db_query("
+         $sth = $db->db_prepare("
             INSERT INTO ". MYSQL_PREFIX ."assign_pipes_to_chains (
                apc_pipe_idx,
                apc_chain_idx
             ) VALUES (
-               '". $use ."',
-               '". $this->id ."'
+               ?,
+               ?
             )
          ");
+
+         $db->db_execute($sth, array(
+            $use,
+            $this->id
+         ));
       }
 
       return true;
@@ -126,12 +135,16 @@ class Chain extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_pipes_to_chains
          WHERE
-            apc_chain_idx='". $this->id ."'
+            apc_chain_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       return true;
 

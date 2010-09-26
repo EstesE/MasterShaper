@@ -82,27 +82,37 @@ class Pipe extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_filters_to_pipes
          WHERE
-            apf_pipe_idx='". $_POST['pipe_idx'] ."'
+            apf_pipe_idx LIKE ?
       ");
+
+      //  $_POST['pipe_idx'] ."'
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       foreach($_POST['used'] as $use) {
 
          if(empty($use))
             continue;
 
-         $db->db_query("
+         $sth = $db->db_prepare("
             INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (
                apf_pipe_idx,
                apf_filter_idx
             ) VALUES (
-               '". $this->id ."',
-               '". $use ."'
+               ?,
+               ?
             )
          ");
+
+         $db->db_execute($sth, array(
+            $this->id,
+            $use
+         ));
       }
 
       return true;
@@ -116,18 +126,27 @@ class Pipe extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_filters_to_pipes
          WHERE
-               apf_pipe_idx='". $this->id ."'
+               apf_pipe_idx LIKE ?
       ");
-      $db->db_query("
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
+
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_pipes_to_chains
          WHERE
-            apc_pipe_idx='". $this->id ."'
+            apc_pipe_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       return true;
 

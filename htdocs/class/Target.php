@@ -55,27 +55,36 @@ class Target extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_target_groups
          WHERE
-            atg_group_idx='". $this->id ."'
+            atg_group_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       foreach($_POST['used'] as $use) {
 
          if(empty($use))
             continue;
 
-         $db->db_query("
+         $sth = $db->db_prepare("
             INSERT INTO ". MYSQL_PREFIX ."assign_target_groups (
                atg_group_idx,
                atg_target_idx
             ) VALUES (
-               '". $this->id ."',
-               '". $use ."'
+               ?,
+               ?
             )
          ");
+
+         $db->db_execute($sth, array(
+            $this->id,
+            $use
+         ));
       }
 
       return true;
@@ -86,19 +95,28 @@ class Target extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_target_groups
          WHERE
-            atg_group_idx='". $idx ."'
+            atg_group_idx LIKE ?
       ");
-      $db->db_query("
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
+
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_target_groups
          WHERE
-            atg_target_idx='". $idx ."'
+            atg_target_idx LIKE ?
       ");
          
+      $db->db_execute($sth, array(
+         $this->id
+      ));
+
       return true;
    
    } // delete()

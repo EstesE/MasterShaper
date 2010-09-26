@@ -53,12 +53,16 @@ class Port extends MsObject {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_ports_to_filters
          WHERE
-            afp_port_idx='". $this->id ."'
+            afp_port_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
    
       return true;
 

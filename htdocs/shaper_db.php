@@ -515,22 +515,6 @@ class MASTERSHAPER_DB {
 
    } // getConnStatus()
 
-   /**
-    * quote string
-    *
-    * this function handsover the provided string to the MDB2
-    * quote() function which will return the, for the selected
-    * database system, correctly quoted string.
-    *
-    * @param string $query
-    * @return string
-    */
-   public function db_quote($obj)
-   {
-      return $this->db->quote($obj);
-
-   } // db_quote()
-
    public function install_schema()
    {
       $this->schema_version = $this->getVersion();

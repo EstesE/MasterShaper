@@ -179,9 +179,12 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       }
 
       $result = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."interfaces
-         ORDER BY if_name ASC
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."interfaces
+         ORDER BY
+            if_name ASC
       ");
 
       while($row = $result->fetchRow()) {

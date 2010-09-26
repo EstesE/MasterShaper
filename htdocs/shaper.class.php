@@ -430,8 +430,7 @@ class MASTERSHAPER {
       print "unknown error";
       return false;
 
-   } // rpc_delete_object()
-
+   } // rpc_toggle_object_status()
 
    private function load_class($object_name, $id = null)
    {
@@ -631,14 +630,20 @@ class MASTERSHAPER {
    {
       global $db;
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          REPLACE INTO ". MYSQL_PREFIX ."settings (
-            setting_key, setting_value
+            setting_key,
+            setting_value
          ) VALUES (
-            '". $key ."',
-            '". $value ."'
+            ?,
+            ?
          )
       ");
+
+      $db->db_execute($sth, array(
+         $key,
+         $value
+      ));
 
    } // setOption()
 
@@ -916,6 +921,7 @@ class MASTERSHAPER {
          SELECT
             af.apf_filter_idx as apf_filter_idx
       ";
+
       if($with_name)
          $query.= ",
             f.filter_name as filter_name
@@ -929,12 +935,18 @@ class MASTERSHAPER {
          ON
             af.apf_filter_idx=f.filter_idx
          WHERE
-            af.apf_pipe_idx='". $pipe_idx ."'
+            af.apf_pipe_idx LIKE ?
          AND
             f.filter_active='Y'
       ";
 
-      return $db->db_query($query);
+      $sth = $db->db_prepare($query);
+
+      $res = $db->db_execute($sth, array(
+         $pipe_idx
+      ));
+
+      return $res;
 
    } // getFilters()
 
@@ -952,26 +964,42 @@ class MASTERSHAPER {
       $numbers = "";
 
       /* first get all the port id's for that filter */
-      $ports = $db->db_query("
-         SELECT afp_port_idx
-         FROM ". MYSQL_PREFIX ."assign_ports_to_filters
+      $sth = $db->db_prepare("
+         SELECT
+            afp_port_idx
+         FROM
+            ". MYSQL_PREFIX ."assign_ports_to_filters
          WHERE
-            afp_filter_idx='". $filter_idx ."'
+            afp_filter_idx LIKE ?
       ");
+
+      $ports = $db->db_execute($sth, array(
+         $filter_idx
+      ));
 
       while($port = $ports->fetchRow()) {
          $numbers.= $port->afp_port_idx .",";
       }
 
       /* now look up the IANA port numbers for that ports */
-      if($numbers != "") {
-         $numbers = substr($numbers, 0, strlen($numbers)-1);
-         $list = $db->db_query("
-            SELECT port_name, port_number
-            FROM ". MYSQL_PREFIX ."ports
-            WHERE
-               port_idx IN (". $numbers .")");
-      }
+      if(empty($numbers))
+         return NULL;
+
+      $numbers = substr($numbers, 0, strlen($numbers)-1);
+
+      $sth = $db->db_prepare("
+         SELECT
+            port_name,
+            port_number
+         FROM
+            ". MYSQL_PREFIX ."ports
+         WHERE
+            port_idx IN (?)
+      ");
+
+      $list = $db->db_execute($sth, array(
+         $numbers
+      ));
 
       return $list;
 
@@ -1026,25 +1054,39 @@ class MASTERSHAPER {
       $list = NULL;
       $numbers = "";
 
-      $protocols = $db->db_query("
-         SELECT afl7_l7proto_idx
-         FROM ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
+      $sth = $db->db_prepare("
+         SELECT
+            afl7_l7proto_idx
+         FROM
+            ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
          WHERE
-            afl7_filter_idx='". $filter_idx ."'");
+            afl7_filter_idx LIKE ?
+      ");
+
+      $protocols = $db->db_execute($sth, array(
+         $filter_idx
+      ));
 
       while($protocol = $protocols->fetchRow()) {
          $numbers.= $protocol->afl7_l7proto_idx .",";
       }
 
-      if($numbers != "") {
-         $numbers = substr($numbers, 0, strlen($numbers)-1);
-         $list = $db->db_query("
-            SELECT l7proto_name
-            FROM ". MYSQL_PREFIX ."l7_protocols
-            WHERE
-               l7proto_idx IN (". $numbers .")
-         ");
-      }
+      if(empty($numbers))
+         return NULL;
+
+      $numbers = substr($numbers, 0, strlen($numbers)-1);
+      $sth = $db->db_prepare("
+         SELECT
+            l7proto_name
+         FROM
+            ". MYSQL_PREFIX ."l7_protocols
+         WHERE
+            l7proto_idx IN (?)
+      ");
+
+      $list = $db->db_execute($sth, array(
+         $numbers
+      ));
 
       return $list;
 
@@ -1102,7 +1144,8 @@ class MASTERSHAPER {
       global $db;
 
       $result = $db->db_query("
-         SELECT DISTINCT if_name
+         SELECT
+            DISTINCT if_name
          FROM
             shaper2_interfaces iface
          INNER JOIN
@@ -1115,6 +1158,7 @@ class MASTERSHAPER {
          WHERE
             np.netpath_active='Y'
       ");
+
       return $result;
 
    } // getActiveInterfaces()

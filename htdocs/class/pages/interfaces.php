@@ -45,9 +45,12 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
       $this->interfaces = Array();
 
       $res_interfaces = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."interfaces
-         ORDER BY if_name ASC
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."interfaces
+         ORDER BY
+            if_name ASC
       ");
    
       $cnt_interfaces = 0;

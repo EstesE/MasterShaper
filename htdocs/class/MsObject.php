@@ -53,7 +53,7 @@ class MsObject {
          FROM
             ". MYSQL_PREFIX . $this->table_name ."
          WHERE 
-            ". $this->col_name ."_idx=?
+            ". $this->col_name ."_idx LIKE ?
       ", array('integer'));
 
       $res = $db->db_execute($sth, array(
@@ -107,12 +107,16 @@ class MsObject {
          return false;
 
       /* generic delete */
-      $db->db_query("
+      $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX . $this->table_name ."
          WHERE
-            ". $this->col_name ."_idx='". $this->id ."'
+            ". $this->col_name ."_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
       if(method_exists($this, 'post_delete'))
          $this->post_delete();
@@ -159,7 +163,7 @@ class MsObject {
       $arr_values = Array();
 
       foreach(array_keys($this->fields) as $key) {
-         $sql.= $key ."=?, ";
+         $sql.= $key ." = ?, ";
          $arr_values[] = $this->$key;
       }
       $sql = substr($sql, 0, strlen($sql)-2) .' ';
@@ -169,7 +173,7 @@ class MsObject {
          $this->$idx_name = 'NULL';
       }
       else {
-         $sql.= 'WHERE '. $this->col_name .'_idx=?';
+         $sql.= 'WHERE '. $this->col_name .'_idx LIKE ?';
          $arr_values[] = $this->id;
       }
 
@@ -207,14 +211,19 @@ class MsObject {
       elseif($to == "off")
          $new_status = 'N';
 
-      $db->db_query("
+      $sth = $db->db_prepare("
          UPDATE
             ". MYSQL_PREFIX . $this->table_name ."
          SET
-            ". $this->col_name ."_active='". $new_status ."'
+            ". $this->col_name ."_active = ?
          WHERE
-            ". $this->col_name ."_idx='". $this->id ."'
+            ". $this->col_name ."_idx LIKE ?
       ");
+
+      $db->db_execute($sth, array(
+         $new_status,
+         $this->id
+      ));
 
       return true;
 

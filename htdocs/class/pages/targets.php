@@ -233,28 +233,48 @@ class Page_Targets extends MASTERSHAPER_PAGE {
       switch($group) {
 
          case 'unused':
-            $result = $db->db_query("
-               SELECT t.target_idx, t.target_name
-               FROM ". MYSQL_PREFIX ."targets t
-               LEFT JOIN ". MYSQL_PREFIX ."assign_target_groups atg
-                  ON t.target_idx=atg.atg_target_idx
+            $sth = $db->db_prepare("
+               SELECT
+                  t.target_idx,
+                  t.target_name
+               FROM
+                  ". MYSQL_PREFIX ."targets t
+               LEFT JOIN
+                  ". MYSQL_PREFIX ."assign_target_groups atg
+               ON
+                  t.target_idx=atg.atg_target_idx
                WHERE
-                  atg.atg_group_idx <> '". $idx ."'
+                  atg.atg_group_idx NOT LIKE ?
                OR
                   ISNULL(atg.atg_group_idx)
-               ORDER BY t.target_name ASC
+               ORDER BY
+                  t.target_name ASC
             ");
+            $result = $db->db_execute($sth, array(
+               $idx
+            ));
             break;
+
          case 'used':
-            $result = $db->db_query("
-               SELECT t.target_idx, t.target_name
-               FROM ". MYSQL_PREFIX ."assign_target_groups atg
-               LEFT JOIN ". MYSQL_PREFIX ."targets t
-                  ON t.target_idx = atg.atg_target_idx
+
+            $sth = $db->db_prepare("
+               SELECT
+                  t.target_idx,
+                  t.target_name
+               FROM
+                  ". MYSQL_PREFIX ."assign_target_groups atg
+               LEFT JOIN
+                  ". MYSQL_PREFIX ."targets t
+               ON
+                  t.target_idx = atg.atg_target_idx
                WHERE
-                  atg_group_idx = '". $idx ."'
-               ORDER BY t.target_name ASC
+                  atg_group_idx LIKE ?
+               ORDER BY
+                  t.target_name ASC
             ");
+            $result = $db->db_execute($sth, array(
+               $idx
+            ));
             break;
       }
 

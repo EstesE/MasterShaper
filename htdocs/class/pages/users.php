@@ -44,9 +44,12 @@ class Page_Users extends MASTERSHAPER_PAGE {
       $cnt_users = 0;
 
       $res_users = $db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."users
-         ORDER BY user_name ASC
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."users
+         ORDER BY
+            user_name ASC
       ");
 	
       while($user = $res_users->fetchrow()) {

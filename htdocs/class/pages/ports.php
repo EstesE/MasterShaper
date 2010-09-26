@@ -52,7 +52,7 @@ class Page_Ports extends MASTERSHAPER_PAGE {
 
       $num_ports = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM ". MYSQL_PREFIX ."ports");
 
-      $res_ports = $db->db_query("
+      $sth = $db->db_prepare("
          SELECT
             port_idx
          FROM
@@ -60,8 +60,13 @@ class Page_Ports extends MASTERSHAPER_PAGE {
          ORDER BY
             port_name ASC
          LIMIT
-            ". $limit .", ". $this->items_per_page
-      );
+            ?, ?
+      ");
+
+      $res_ports = $db->db_execute($sth, array(
+         $limit,
+         $this->items_per_page
+      ));
 
       $cnt_ports = $res_ports->numRows();
 	

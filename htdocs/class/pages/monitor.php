@@ -239,19 +239,24 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       $time_now  = mktime();
       $time_past = mktime() - 120;
 
-      $data = $db->db_query("
+      $sth = $db->db_prepare("
          SELECT
             stat_time,
             stat_data
          FROM
             ". MYSQL_PREFIX ."stats
          WHERE 
-            stat_time>='". $time_past ."'
+            stat_time >= ?
          AND
-            stat_time<='". $time_now ."'
+            stat_time <= ?
          ORDER BY
             stat_time ASC
       ");
+
+      $data = $db->db_execute($sth, array(
+         $time_past,
+         $time_now
+      ));
 
       switch($_SESSION['mode']) {
          /* chain- & pipe-view */
