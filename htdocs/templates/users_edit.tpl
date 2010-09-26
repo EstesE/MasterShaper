@@ -82,7 +82,7 @@
  <input type="checkbox" value="Y" name="user_manage_ports" { if $user->user_manage_ports == "Y" } checked="checked" { /if } />&nbsp;Manage Ports<br />
  <input type="checkbox" value="Y" name="user_manage_protocols" { if $user->user_manage_protocols == "Y" } checked="checked" { /if } />&nbsp;Manage Protocols<br />
  <input type="checkbox" value="Y" name="user_manage_targets" { if $user->user_manage_targets == "Y" } checked="checked" { /if } />&nbsp;Manage Targets<br />
- <input type="checkbox" value="Y" name="user_manage_users" { if $user->user_manage_users == "Y" } checked="checked" { /if } />&nbsp;Manage User<br />
+ <input type="checkbox" value="Y" name="user_manage_users" { if $user->user_manage_users == "Y" } checked="checked" { /if } />&nbsp;Manage Users<br />
  <input type="checkbox" value="Y" name="user_manage_options" { if $user->user_manage_options == "Y" } checked="checked" { /if } />&nbsp;Manage Options<br />
  <input type="checkbox" value="Y" name="user_manage_servicelevels" { if $user->user_manage_servicelevels == "Y" } checked="checked" { /if } />&nbsp;Manage Service Levels<br />
  <input type="checkbox" value="Y" name="user_load_rules" { if $user->user_load_rules == "Y" } checked="checked" { /if } />&nbsp;Load &amp; Unload Ruleset<br />
