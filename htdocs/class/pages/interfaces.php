@@ -106,6 +106,7 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
          $tmpl->assign('if_idx', $if_idx);
          $tmpl->assign('if_name', $if->if_name);
          $tmpl->assign('if_speed', $if->if_speed);
+         $tmpl->assign('if_fallback_idx', $if->if_fallback_idx);
          $tmpl->assign('if_active', $if->if_active);
 
          $index++;

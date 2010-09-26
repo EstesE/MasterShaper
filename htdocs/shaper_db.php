@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '8');
+define('SCHEMA_VERSION', '9');
 
 /***************************************************************************
  *
@@ -655,6 +655,7 @@ class MASTERSHAPER_DB {
               `if_idx` int(11) NOT NULL auto_increment,
               `if_name` varchar(255) default NULL,
               `if_speed` varchar(255) default NULL,
+              `if_fallback_idx` int(11) default NULL,
               `if_ifb` char(1) default NULL,
               `if_active` char(1) default NULL,
               PRIMARY KEY  (`if_idx`)
@@ -1070,6 +1071,21 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(8);
+
+      }
+
+      if($this->schema_version < 9) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."interfaces
+            ADD
+               if_fallback_idx int(11) default NULL
+            AFTER
+               if_speed
+         ");
+
+         $this->setVersion(9);
 
       }
 

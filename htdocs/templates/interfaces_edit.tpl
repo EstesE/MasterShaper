@@ -64,6 +64,18 @@
   </td>
  </tr>
  <tr>
+  <td style="white-space: nowrap;">Fallback:</td>
+  <td style="white-space: nowrap;">
+   <select name="if_fallback_idx">
+    <option value="0" { if $if->if_fallback_idx == 0 } selected="selected" { /if } >--- No Fallback ---</option>
+    { service_level_select_list sl_idx=$if->if_fallback_idx }
+   </select>
+  </td>
+  <td>
+   If none of the defined chains matches, you can define here a final fallback service level per interface.
+  </td>
+ </tr>
+ <tr>
   <td>
    IFB:
   </td>

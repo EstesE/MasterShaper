@@ -37,6 +37,7 @@ class Network_Interface extends MsObject {
             'if_idx' => 'integer',
             'if_name' => 'text',
             'if_speed' => 'text',
+            'if_fallback_idx' => 'integer',
             'if_ifb' => 'text',
             'if_active' => 'text',
          ),
@@ -44,6 +45,7 @@ class Network_Interface extends MsObject {
 
       if(!isset($id) || empty($id)) {
          $this->if_active = 'Y';
+         $this->if_fallback_idx = 0;
       }
 
    } // __construct()

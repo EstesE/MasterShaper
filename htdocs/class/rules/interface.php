@@ -51,6 +51,8 @@ class Ruleset_Interface {
     */
    public function __construct($if_id, $if_gre)
    {
+      global $ms;
+
       $this->initialized = false;
       $this->rules       = Array();
 
@@ -59,13 +61,15 @@ class Ruleset_Interface {
       $this->current_filter = NULL;
       $this->current_pipe   = NULL;
 
-      $if = $this->getInterfaceDetails($if_id);
+      if(!$if = $this->getInterfaceDetails($if_id))
+         $ms->throwError("Something is really wrong now.");
 
-      $this->if_id          = $if_id;
-      $this->if_name        = $if->if_name;
-      $this->if_speed       = $if->if_speed;
-      $this->if_active      = $if->if_active;
-      $this->if_gre         = $if_gre;
+      $this->if_id           = $if_id;
+      $this->if_name         = $if->if_name;
+      $this->if_speed        = $if->if_speed;
+      $this->if_fallback_idx = $if->if_fallback_idx;
+      $this->if_active       = $if->if_active;
+      $this->if_gre          = $if_gre;
 
    } // __construct()
 
@@ -1482,20 +1486,19 @@ class Ruleset_Interface {
 
    } // addPipeFilter()
 
-   private function addFallbackFilter($parent, $filter = "")
+   private function addFallbackFilter($parent, $filter)
    {
       global $ms;
 
       switch($ms->getOption("filter")) {
-
-	 default:
-	 case 'tc':
-	    $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 5 u32 match u32 0 0 flowid ". $filter);
-	    break;
-	 case 'ipt':
-	    $this->addRule(IPT_BIN ." -t mangle -A ms-chain-". $this->getName() ."-". $parent ." -j CLASSIFY --set-class ". $filter);
-	    $this->addRule(IPT_BIN ." -t mangle -A ms-chain-". $this->getName() ."-". $parent ." -j RETURN");
-	    break;
+         default:
+         case 'tc':
+            $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 5 u32 match u32 0 0 flowid ". $filter);
+            break;
+         case 'ipt':
+            $this->addRule(IPT_BIN ." -t mangle -A ms-chain-". $this->getName() ."-". $parent ." -j CLASSIFY --set-class ". $filter);
+            $this->addRule(IPT_BIN ." -t mangle -A ms-chain-". $this->getName() ."-". $parent ." -j RETURN");
+            break;
       }
 
    } // addFallbackFilter()
@@ -1558,12 +1561,17 @@ class Ruleset_Interface {
             $this->addRule(IPT_BIN ." -t mangle -N ms-chain-". $this->getName() ."-1:". $this->get_current_chain() . $this->get_current_filter());
             $this->addRule(IPT_BIN ." -t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getId(), "1:". $this->get_current_chain() . $this->get_current_filter()) ." -j ms-chain-". $this->getName() ."-1:". $this->get_current_chain() . $this->get_current_filter());
          }
+
+         /*if($chain->chain_sl_idx == 0)
+            $filter_flow_target = "1:1";
+         else*/
+         $filter_flow_target = "1:". $this->get_current_chain() . $this->get_current_filter();
 		   
          /* setup the filter definition to match traffic which should go into this chain */
          if($chain->chain_src_target != 0 || $chain->chain_dst_target != 0) {
-            $this->addHostFilter("1:1", "host", $chain, "1:". $this->get_current_chain() . $this->get_current_filter(), $direction);
+            $this->addHostFilter("1:1", "host", $chain, $filter_flow_target, $direction);
          } else {
-            $this->addMatchallFilter("1:1", "1:". $this->get_current_chain() . $this->get_current_filter());
+            $this->addMatchallFilter("1:1", $filter_flow_target);
          }
 
          /* chain does ignore QoS? then skip further processing */
@@ -1586,7 +1594,6 @@ class Ruleset_Interface {
          $this->addSubQdisc($this->get_current_chain() ."00:", "1:". $this->get_current_chain() ."00", $ms->get_service_level($chain->chain_fallback_idx));
          $this->addFallbackFilter("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."00");
          $this->setPipeID(-1, $chain->chain_idx, "1:". $this->get_current_chain() ."00");
-
 
       }
 
@@ -1706,7 +1713,6 @@ class Ruleset_Interface {
       $this->addRuleComment("Initialize Interface ". $this->getName());
 
       $this->addRootQdisc("1:");
-
 
       /* Initial iptables rules */
       if($ms->getOption("filter") == "ipt") 
@@ -1877,6 +1883,35 @@ class Ruleset_Interface {
       return sprintf("%02x", $dscp);
 
    } // get_dscp_hex_value
+
+   /**
+    * all the pending jobs for that interface
+    *
+    * will be called from Ruleset class.
+    */
+   public function finish()
+   {
+      if(isset($this->if_fallback_idx) && !empty($this->if_fallback_idx))
+         $this->add_interface_fallback();
+
+   } // finish()
+
+   /**
+    * add a fallback service level class to the
+    * actual interface.
+    */
+   private function add_interface_fallback()
+   {
+      global $ms;
+
+      /*$this->current_chain += 1;
+
+      $this->addRuleComment("interface fallback");
+      $this->addClass("1:1", "1:". $this->get_current_chain() . $this->get_current_class(), $ms->get_service_level($this->if_fallback_idx));
+      $this->addSubQdisc($this->get_current_chain() . $this->get_current_class() .":", "1:". $this->get_current_chain() . $this->get_current_class(), $ms->get_service_level($this->if_fallback_idx));
+      $this->addFallbackFilter("1:1", "1:". $this->get_current_chain() . $this->get_current_class());*/
+
+   } // add_interface_fallback()
 
 } // class Ruleset_Interface
 

@@ -163,40 +163,45 @@ class Ruleset {
          if($have_if2 && $this->interfaces[$netpath->netpath_if2]->isActive() != "Y") 
             $do_nothing = true;  
 
-         if(!$do_nothing) {
+         if($do_nothing)
+            continue;
 
-            $this->addRuleComment(MS_PRE, "Rules for Network Path ". $netpath->netpath_name);
+         $this->addRuleComment(MS_PRE, "Rules for Network Path ". $netpath->netpath_name);
 
-            /* tc structure
-               1: root qdisc
-                1:1 root class (dev. bandwidth limit)
-                 1:2
-                 1:3
-                 1:4
-            */
+         /* tc structure
+            1: root qdisc
+             1:1 root class (dev. bandwidth limit)
+              1:2
+              1:3
+              1:4
+         */
 
-            /* only initialize the interface if it isn't already */
-            if(!$this->interfaces[$netpath->netpath_if1]->getStatus()) {
-               $this->interfaces[$netpath->netpath_if1]->Initialize("in");
-            }
+         /* only initialize the interface if it isn't already */
+         if(!$this->interfaces[$netpath->netpath_if1]->getStatus()) {
+            $this->interfaces[$netpath->netpath_if1]->Initialize("in");
+         }
 
-            /* only initialize the interface if it isn't already */
-            if($have_if2 && !$this->interfaces[$netpath->netpath_if2]->getStatus()) {
-               $this->interfaces[$netpath->netpath_if2]->Initialize("out");
-            }
-		  
-            if($netpath->netpath_imq == "Y") {
-               $this->interfaces[$netpath->netpath_if1]->buildChains($netpath->netpath_idx, "in");
-               if($have_if2)
-                  $this->interfaces[$netpath->netpath_if2]->buildChains($netpath->netpath_idx, "out");
-            }
-            else {
-               $this->interfaces[$netpath->netpath_if1]->buildChains($netpath->netpath_idx, "in");
-               if($have_if2)
-                  $this->interfaces[$netpath->netpath_if2]->buildChains($netpath->netpath_idx, "out");
-            }
+         /* only initialize the interface if it isn't already */
+         if($have_if2 && !$this->interfaces[$netpath->netpath_if2]->getStatus()) {
+            $this->interfaces[$netpath->netpath_if2]->Initialize("out");
+         }
+
+         if($netpath->netpath_imq == "Y") {
+            $this->interfaces[$netpath->netpath_if1]->buildChains($netpath->netpath_idx, "in");
+            if($have_if2)
+               $this->interfaces[$netpath->netpath_if2]->buildChains($netpath->netpath_idx, "out");
+         }
+         else {
+            $this->interfaces[$netpath->netpath_if1]->buildChains($netpath->netpath_idx, "in");
+            if($have_if2)
+               $this->interfaces[$netpath->netpath_if2]->buildChains($netpath->netpath_idx, "out");
          }
       }
+
+      // finish all interfaces (ex. add a interface fallback class, ...)
+      /*foreach($this->interfaces as $if) {
+         $if->finish();
+      }*/
 
       return true;
 
