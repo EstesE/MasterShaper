@@ -229,4 +229,4 @@ class MsObject {
 
    } // toggle_status()
 
-} // Object
+} // MsObject
