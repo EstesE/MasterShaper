@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '9');
+define('SCHEMA_VERSION', '12');
 
 /***************************************************************************
  *
@@ -584,6 +584,7 @@ class MASTERSHAPER_DB {
              CREATE TABLE `". MYSQL_PREFIX ."assign_pipes_to_chains` (
               `apc_pipe_idx` int(11) NOT NULL,
               `apc_chain_idx` int(11) NOT NULL,
+              `apc_sl_idx` int(11) NOT NULL,
               `apc_pipe_pos` int(11) DEFAULT NULL,
               PRIMARY KEY  (`apc_pipe_idx`,`apc_chain_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
@@ -693,7 +694,6 @@ class MASTERSHAPER_DB {
               `pipe_idx` int(11) NOT NULL auto_increment,
               `pipe_name` varchar(255) default NULL,
               `pipe_sl_idx` int(11) default NULL,
-              `pipe_position` int(11) default NULL,
               `pipe_src_target` int(11) default NULL,
               `pipe_dst_target` int(11) default NULL,
               `pipe_direction` int(11) default NULL,
@@ -1086,6 +1086,63 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(9);
+
+      }
+
+      if($this->schema_version < 10) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            ADD
+               apc_sl_idx int(11) NOT NULL
+            AFTER
+               apc_chain_idx
+         ");
+
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            SET
+               apc_sl_idx = '0'
+         ");
+
+         $this->setVersion(10);
+
+      }
+
+      if($this->schema_version < 11) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            ADD
+               apc_pipe_active char(1) default NULL
+            AFTER
+               apc_sl_idx
+         ");
+
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            SET
+               apc_pipe_active = 'Y'
+         ");
+
+         $this->setVersion(11);
+
+      }
+
+      if($this->schema_version < 12) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."pipes
+            DROP
+              pipe_position
+         ");
+
+         $this->setVersion(12);
 
       }
 

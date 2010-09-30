@@ -394,35 +394,60 @@ class MASTERSHAPER {
       global $page;
 
       if(!isset($_POST['id'])) {
-         print "id is missing!";
+         print "[id] is missing!";
          return false;
       }
       if(!isset($_POST['to'])) {
-         print "to is missing!";
+         print "[to] is missing!";
          return false;
       }
       if(!in_array($_POST['to'], Array('on', 'off'))) {
-         print "to in incorrect format!";
+         print "[to] in incorrect format!";
          return false;
       }
 
       $id = $_POST['id'];
       $to = $_POST['to'];
+      $parent = $_POST['parent'];
 
       if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
-         print "id in incorrect format!";
+         print "[id] in incorrect format!";
          return false;
       }
 
       $request_object = $parts[1];
       $id = $parts[2];
 
-      if(!($obj = $this->load_class($request_object, $id))) {
+      /* if no parent has been specified, we can go one toggling
+       * objects status.
+       */
+      if(empty($parent)) {
+
+         if(!($obj = $this->load_class($request_object, $id))) {
+            print "unable to locate class for ". $request_object;
+            return false;
+         }
+
+         if($obj->toggle_status($to)) {
+            print "ok";
+            return true;
+         }
+      }
+
+      if(!empty($parent) && preg_match('/(.*)-([0-9]+)/', $parent, $parts_parent) === false) {
+         print "[parent] in incorrect format!";
+         return false;
+      }
+
+      $parent_request_object = $parts_parent[1];
+      $parent_id = $parts_parent[2];
+
+      if(!($obj = $this->load_class($parent_request_object, $parent_id))) {
          print "unable to locate class for ". $request_object;
          return false;
       }
 
-      if($obj->toggle_status($to)) {
+      if($obj->toggle_child_status($to, $request_object, $id)) {
          print "ok";
          return true;
       }
@@ -432,7 +457,13 @@ class MASTERSHAPER {
 
    } // rpc_toggle_object_status()
 
-   private function load_class($object_name, $id = null)
+   /**
+    * Generic class load function
+    *
+    * This function validates the requested class name
+    * and then tries to load the corresponding class.
+    */
+   public function load_class($object_name, $id = null)
    {
       switch($object_name) {
          case 'target':

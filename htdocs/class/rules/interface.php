@@ -1635,7 +1635,9 @@ class Ruleset_Interface {
       /* get all active pipes for this chain */
       $sth = $db->db_prepare("
          SELECT
-            p.*
+            p.*,
+            apc.apc_sl_idx,
+            apc.apc_pipe_active
          FROM
             ". MYSQL_PREFIX ."pipes p
          INNER JOIN
@@ -1647,7 +1649,7 @@ class Ruleset_Interface {
          AND
             apc.apc_chain_idx LIKE ?
          ORDER BY
-            p.pipe_position ASC"
+            apc.apc_pipe_pos ASC"
       );
 
       $pipes = $db->db_execute($sth, array(
@@ -1656,10 +1658,19 @@ class Ruleset_Interface {
 
       while($pipe = $pipes->fetchRow()) {
 
+         // if pipe has been locally (for this chain) disabled, we can skip it.
+         if($pipe->apc_pipe_active != 'Y')
+            continue;
+
          $this->current_pipe+= 0x1;
 
          $my_id = "1:". $this->get_current_chain() . $this->get_current_pipe();
          $this->addRuleComment("pipe ". $pipe->pipe_name ."");
+
+         // check if pipes original service level has been overruled locally
+         // for this chain. if so, we proceed with the local service level.
+         if(isset($pipe->apc_sl_idx) && !empty($pipe->apc_sl_idx))
+            $pipe->pipe_sl_idx = $pipe->apc_sl_idx;
 
          $sl = $ms->get_service_level($pipe->pipe_sl_idx);
 

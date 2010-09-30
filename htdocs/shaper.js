@@ -373,6 +373,7 @@ function obj_toggle_status(element)
 {
    var toggle_id = element.attr("id");
    var toggle_to = element.attr("to");
+   var toggle_parent = element.attr("parent");
 
    if(toggle_id == undefined || toggle_id == "") {
       alert('no attribute "id" found!');
@@ -382,20 +383,32 @@ function obj_toggle_status(element)
       alert('no attribute "to" found!');
       return;
    }
+   // no parent, set null value
+   if(toggle_parent == undefined || toggle_parent == "") {
+      toglgle_parent = '';
+   }
 
    $.ajax({
       type: "POST",
       url: "rpc.html",
-      data: ({type : 'rpc', action : 'toggle', id : toggle_id, to : toggle_to }),
+      data: ({
+         type : 'rpc',
+         action : 'toggle',
+         id : toggle_id,
+         to : toggle_to,
+         parent : toggle_parent
+      }),
       error: function(XMLHttpRequest, textStatus, errorThrown) {
          alert('Failed to contact server! ' + textStatus);
       },
       success: function(data){
-         // toggle all parent's children
-         $('#' + element.parent().attr("id") + ' > *').toggle();
-         if(data == "ok\n")
-            return;
+         if(data == "ok\n") {
+            // toggle all parent's children
+            $('#' + element.parent().attr("id") + ' > *').toggle();
+            return true;
+         }
          alert('Server returned: ' + data + data.length);
+         return false;
       }
    });
 

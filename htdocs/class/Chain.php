@@ -33,6 +33,9 @@ class Chain extends MsObject {
       parent::__construct($id, Array(
          'table_name' => 'chains',
          'col_name' => 'chain',
+         'child_names' => Array(
+            'pipe' => 'apc',
+         ),
          'fields' => Array(
             'chain_idx' => 'integer',
             'chain_name' => 'text',
@@ -88,6 +91,12 @@ class Chain extends MsObject {
    {
       global $db;
 
+      if(!isset($_POST['pipe_sl_idx']) || empty($_POST['pipe_sl_idx']))
+         return true;
+
+      if(!isset($_POST['pipe_active']) || empty($_POST['pipe_active']))
+         return true;
+
       $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_pipes_to_chains
@@ -99,16 +108,48 @@ class Chain extends MsObject {
          $this->id
       ));
 
-      foreach($_POST['used'] as $use) {
+      // nothing more to do for us?
+      if(!isset($_POST['used']) || empty($_POST['used']))
+         return true;
+
+      $used = $_POST['used'];
+      $pipe_sl_idx = $_POST['pipe_sl_idx'];
+      $pipe_active = $_POST['pipe_active'];
+
+      $pipe_position = 1;
+
+      foreach($used as $use) {
 
          if(empty($use))
             continue;
 
+         // skip if not a valid value
+         if(!is_numeric($use))
+            continue;
+
+         // override of service level?
+         if(isset($pipe_sl_idx[$use]) && is_numeric($pipe_sl_idx[$use]))
+            $override_sl = $pipe_sl_idx[$use];
+         else
+            $override_sl = 0;
+
+         // override of pipe state within this chain
+         if(isset($pipe_active[$use]) && in_array($pipe_active[$use], Array('Y','N')))
+            $override_active = $pipe_active[$use];
+         else
+            $override_active = 'Y';
+
          $sth = $db->db_prepare("
             INSERT INTO ". MYSQL_PREFIX ."assign_pipes_to_chains (
                apc_pipe_idx,
-               apc_chain_idx
+               apc_chain_idx,
+               apc_sl_idx,
+               apc_pipe_pos,
+               apc_pipe_active
             ) VALUES (
+               ?,
+               ?,
+               ?,
                ?,
                ?
             )
@@ -116,8 +157,14 @@ class Chain extends MsObject {
 
          $db->db_execute($sth, array(
             $use,
-            $this->id
+            $this->id,
+            $override_sl,
+            $pipe_position,
+            $override_active,
          ));
+
+         $pipe_position++;
+
       }
 
       return true;

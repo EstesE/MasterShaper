@@ -85,16 +85,59 @@ class Page_Chains extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      $this->avail_pipes = Array();
+      $this->pipes = Array();
+
+      if($page->id != 0)
          $chain = new Chain($page->id);
-      }
-      else {
+      else
          $chain = new Chain;
+
+      $sth = $db->db_prepare("
+         SELECT DISTINCT
+            p.pipe_idx,
+            p.pipe_name,
+            p.pipe_sl_idx,
+            apc.apc_pipe_idx,
+            apc.apc_sl_idx,
+            apc.apc_pipe_active
+         FROM
+            ". MYSQL_PREFIX ."pipes p
+         LEFT JOIN (
+            SELECT
+               apc_pipe_idx,
+               apc_sl_idx,
+               apc_pipe_active,
+               apc_pipe_pos,
+               /* just a trick to get the correct order of result */
+               apc_pipe_pos IS NULL as pos_null
+            FROM
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            WHERE
+               apc_chain_idx LIKE ?
+         ) apc
+         ON
+            apc.apc_pipe_idx=p.pipe_idx
+         ORDER BY
+            pos_null DESC,
+            apc_pipe_pos ASC
+      ");
+
+      $pipes = $db->db_execute($sth, array(
+         $page->id
+      ));
+
+      $cnt_pipes = 0;
+
+      while($pipe = $pipes->fetchRow()) {
+         $this->avail_pipes[$cnt_pipes] = $pipe->pipe_idx;
+         $this->pipes[$pipe->pipe_idx] = $pipe;
+         $cnt_pipes++;
       }
+
       $tmpl->assign('chain', $chain);
 
-      $tmpl->register_function("unused_pipes_select_list", array(&$this, "smarty_unused_pipes_select_list"), false);
-      $tmpl->register_function("used_pipes_select_list", array(&$this, "smarty_used_pipes_select_list"), false);
+      $tmpl->register_block("pipe_list", array(&$this, "smarty_pipe_list"), false);
 
       return $tmpl->fetch("chains_edit.tpl");
 
@@ -187,100 +230,43 @@ class Page_Chains extends MASTERSHAPER_PAGE {
 
    } // store()
 
-   public function smarty_unused_pipes_select_list($params, &$smarty)
+   /**
+    * template function which will be called from the chain editing template
+    */
+   public function smarty_pipe_list($params, $content, &$smarty, &$repeat)
    {
-      global $db;
+      global $tmpl;
 
-      if(!array_key_exists('chain_idx', $params)) {
-         $smarty->trigger_error("smarty_unused_pipes_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
+      $index = $tmpl->get_template_vars('smarty.IB.pipe_list.index');
+      if(!$index) {
+         $index = 0;
       }
 
-      if(!isset($params['chain_idx'])) {
-         $unused_pipes = $db->db_query("
-            SELECT
-               pipe_idx,
-               pipe_name
-            FROM
-               ". MYSQL_PREFIX ."pipes
-            ORDER BY
-               pipe_name ASC
-         ");
+      if($index < count($this->avail_pipes)) {
+
+         $pipe_idx = $this->avail_pipes[$index];
+         $pipe =  $this->pipes[$pipe_idx];
+
+         // check if pipes original service level got overruled
+         if(isset($pipe->apc_sl_idx) && !empty($pipe->apc_sl_idx))
+            $pipe->sl_in_use = $pipe->apc_sl_idx;
+         else
+            // no override
+            $pipe->sl_in_use = -1;
+
+         $tmpl->assign('pipe', $pipe);
+
+         $index++;
+         $tmpl->assign('smarty.IB.pipe_list.index', $index);
+         $repeat = true;
       }
       else {
-         $sth = $db->db_prepare("
-            SELECT DISTINCT
-               p.pipe_idx,
-               p.pipe_name
-            FROM
-               ". MYSQL_PREFIX ."pipes p
-            LEFT OUTER JOIN (
-               SELECT DISTINCT
-                  apc_pipe_idx, apc_chain_idx
-               FROM
-                  ". MYSQL_PREFIX ."assign_pipes_to_chains
-               WHERE
-                  apc_chain_idx LIKE ?
-            ) apc
-            ON
-               apc.apc_pipe_idx=p.pipe_idx
-            WHERE
-               apc.apc_chain_idx IS NULL
-         ");
-
-         $unused_pipes = $db->db_execute($sth, array(
-            $params['chain_idx']
-         ));
+         $repeat =  false;
       }
 
-      while($pipe = $unused_pipes->fetchrow()) {
-         $string.= "<option value=\"". $pipe->pipe_idx ."\">". $pipe->pipe_name ."</option>\n";
-      }
+      return $content;
 
-      return $string;
-
-   } // smarty_unused_pipes_select_list()
-
-   public function smarty_used_pipes_select_list($params, &$smarty)
-   {
-      global $db;
-
-      if(!array_key_exists('chain_idx', $params)) {
-         $smarty->trigger_error("smarty_used_pipes_select_list: missing 'chain_idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-
-      $sth = $db->db_prepare("
-         SELECT DISTINCT
-            p.pipe_idx,
-            p.pipe_name
-         FROM
-            ". MYSQL_PREFIX ."pipes p
-         INNER JOIN (
-            SELECT
-               apc_pipe_idx
-            FROM
-               ". MYSQL_PREFIX ."assign_pipes_to_chains
-            WHERE
-               apc_chain_idx LIKE ?
-         ) apc
-         ON
-            apc.apc_pipe_idx=p.pipe_idx
-      ");
-
-      $used_pipes = $db->db_execute($sth, array(
-         $params['chain_idx']
-      ));
-
-      while($pipe = $used_pipes->fetchrow()) {
-         $string.= "<option value=\"". $pipe->pipe_idx ."\">". $pipe->pipe_name ."</option>\n";
-      }
-
-      return $string;
-
-   } // smarty_used_pipes_select_list()
+   } // smarty_pipe_list()
 
    /**
     * return a list of chains used for the assign-pipe-to-chains feature
@@ -387,7 +373,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
 
    } // smarty_chain_dialog_list()
 
-}
+} // Page_Chains
 
 $obj = new Page_Chains;
 $obj->handler();

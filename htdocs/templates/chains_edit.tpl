@@ -97,28 +97,41 @@
  </tr>
  <tr>
   <td>Pipes:</td>
-  <td>
-   <table class="noborder">
+  <td style="vertical-align: top;">
+   <table class="withborder2" id="pipelist">
+    <thead>
     <tr>
-     <td>
-      <select size="10" name="avail[]" multiple="multiple">
-       <option value="">********* Unused *********</option>
-       { unused_pipes_select_list chain_idx=$chain->chain_idx }
-      </select>
-     </td>
-     <td>&nbsp;</td>
-     <td>
-      <input type="button" value="&gt;&gt;" onclick="moveOptions(document.forms['chains'].elements['avail[]'], document.forms['chains'].elements['used[]']);" /><br />
-      <input type="button" value="&lt;&lt;" onclick="moveOptions(document.forms['chains'].elements['used[]'], document.forms['chains'].elements['avail[]']);" />
-     </td>
-     <td>&nbsp;</td>
-     <td>
-      <select size="10" name="used[]" multiple="multiple">
-       <option value="">********* Used *********</option>
-       { used_pipes_select_list chain_idx=$chain->chain_idx }
-      </select>
-     </td>
+     <td><img src="{ $icon_pipes }" alt="pipe icon" />&nbsp;<i>Pipe</i></td>
+     <td><i>Used</i></td>
+     <td><img src="{ $icon_servicelevels }" alt="servicelevel icon" />&nbsp;<i>Service Level (override in this chain only)</i></td>
+     <td><i>Status</i></td>
     </tr>
+    </thead>
+     <tbody id="pipes">
+    { pipe_list }
+     <tr id="pipe{$pipe->pipe_idx}" { if $pipe->apc_pipe_idx == 0 } style="opacity: 0.5;" { /if }>
+      <td>
+       <img src="{ $icon_pipes }" alt="pipe icon" />&nbsp;{ $pipe->pipe_name }
+      </td>
+      <td style="text-align: center;">
+       <input type="checkbox" name="used[]" value="{$pipe->pipe_idx}" { if $pipe->apc_pipe_idx != 0 } checked="checked" { /if } onclick="if(this.checked == false) $('table#pipelist tbody#pipes tr#pipe{$pipe->pipe_idx}').fadeTo(500, 0.50); else $('table#pipelist tbody#pipes tr#pipe{$pipe->pipe_idx}').fadeTo(500, 1);" />
+      </td>
+      <td>
+       <select name="pipe_sl_idx[{$pipe->pipe_idx}]">
+        <option value="0">*** No override ***</option>
+        { service_level_select_list sl_idx=$pipe->sl_in_use }
+       </select>
+      </td>
+      <td style="text-align: center;">
+       <input type="hidden" id="pipe-active-{$pipe->pipe_idx}" name="pipe_active[{$pipe->pipe_idx}]" value="{$pipe->apc_pipe_active}" />
+       <div class="toggle" id="toggle-{$pipe->pipe_idx}" style="display: inline;">
+        <a class="toggle-off" id="pipe-{$pipe->pipe_idx}" parent="chain-{$chain->chain_idx}" to="off" title="Disable pipe { $pipe->pipe_name }" { if $pipe->apc_pipe_active != "Y" } style="display: none;" { /if } onclick="$('#pipe-active-{$pipe->pipe_idx}').val('N');"><img src="{ $icon_active }" alt="active icon" /></a>
+        <a class="toggle-on" id="pipe-{$pipe->pipe_idx}" parent="chain-{$chain->chain_idx}" to="on" title="Enable pipe { $pipe->pipe_name }" { if $pipe->apc_pipe_active == "Y" } style="display: none;" { /if } onclick="$('#pipe-active-{$pipe->pipe_idx}').val('Y');"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
+       </div>
+      </td>
+     </tr>
+    { /pipe_list }
+     </tbody>
    </table>
   </td>
  </tr>
@@ -131,4 +144,18 @@
  </tr>
 </table>
 </form>
+{literal}
+<script language="JavaScript">
+   $(function(){
+      $("table#pipelist tbody#pipes").sortable({
+         accept:      'tbody#pipe',
+         greedy:      true,
+         cursor:      'crosshair',
+         placeholder: 'ui-state-highlight',
+         delay:       250
+      });
+      $("table#pipelist tbody#pipes").disableSelection();
+   });
+</script>
+{/literal}
 { page_end focus_to='chain_name' }

@@ -37,7 +37,6 @@ class Pipe extends MsObject {
             'pipe_idx' => 'integer',
             'pipe_name' => 'text',
             'pipe_sl_idx' => 'integer',
-            'pipe_position' => 'integer',
             'pipe_src_target' => 'integer',
             'pipe_dst_target' => 'integer',
             'pipe_direction' => 'integer',
@@ -71,8 +70,6 @@ class Pipe extends MsObject {
          WHERE
             apc_chain_idx='". $_POST['chain_idx'] ."'
       ");
-
-      $this->pipe_position = ($max_pos->pos+1);
 
       return true;
 

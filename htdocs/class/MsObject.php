@@ -9,6 +9,7 @@ class MsObject {
 
    var $table_name;
    var $col_name;
+   var $child_names;
    var $fields;
 
    public function __construct($id = null, $init_data)
@@ -30,6 +31,9 @@ class MsObject {
       $this->table_name = $init_data['table_name'];
       $this->col_name = $init_data['col_name'];
       $this->fields = $init_data['fields'];
+
+      if(array_key_exists('child_names', $init_data))
+         $this->child_names = $init_data['child_names'];
 
       if(isset($id)) {
          $this->id = $id;
@@ -228,5 +232,62 @@ class MsObject {
       return true;
 
    } // toggle_status()
+
+   public function toggle_child_status($to, $child_obj, $child_id)
+   {
+      global $db, $ms;
+
+      if(!isset($this->child_names)) {
+         $ms->throwError("This object has no childs at all!");
+         return false;
+      }
+      if(!isset($this->child_names[$child_obj])) {
+         $ms->throwError("Requested child is not known to this object!");
+         return false;
+      }
+
+      $prefix = $this->child_names[$child_obj];
+
+      if(!($child_obj = $ms->load_class($child_obj, $child_id))) {
+         $ms->throwError("unable to locate class for ". $child_obj);
+         return false;
+      }
+
+      if(!isset($this->id))
+         return false;
+      if(!is_numeric($this->id))
+         return false;
+      if(!isset($this->table_name))
+         return false;
+      if(!isset($this->col_name))
+         return false;
+      if(!in_array($to, Array('off', 'on')))
+         return false;
+
+      if($to == "on")
+         $new_status = 'Y';
+      elseif($to == "off")
+         $new_status = 'N';
+
+      $sth = $db->db_prepare("
+         UPDATE
+            ". MYSQL_PREFIX ."assign_". $child_obj->table_name ."_to_". $this->table_name ."
+         SET
+            ". $prefix ."_". $child_obj->col_name ."_active = ?
+         WHERE
+            ". $prefix ."_". $this->col_name ."_idx LIKE ?
+         AND
+            ". $prefix ."_". $child_obj->col_name ."_idx LIKE ?
+      ");
+
+      $db->db_execute($sth, array(
+         $new_status,
+         $this->id,
+         $child_id
+      ));
+
+      return true;
+
+   } // toggle_child_status()
 
 } // MsObject

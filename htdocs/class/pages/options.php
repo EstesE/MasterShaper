@@ -340,10 +340,10 @@ class Page_Options extends MASTERSHAPER_PAGE {
             break;
          case 'Pipes':
             $db->db_query("INSERT INTO ". MYSQL_PREFIX ."pipes (pipe_name, pipe_sl_idx, "
-                               ."pipe_position, pipe_src_target, pipe_dst_target, pipe_direction, pipe_active)
+                               ."pipe_src_target, pipe_dst_target, pipe_direction, pipe_active)
              VALUES ('". $object->pipe_name 
                                ."', '". $ms->getServiceLevelByName($object->sl_name) 
-                               ."', '". $object->pipe_position ."', '". $object->pipe_src_target ."', '". $object->pipe_dst_target ."', '". $object->pipe_direction ."', '". $object->pipe_active ."')");
+                               ."', '". $object->pipe_src_target ."', '". $object->pipe_dst_target ."', '". $object->pipe_direction ."', '". $object->pipe_active ."')");
             $id = $db->db_getid();
             $filters = split('#', $object->filters);
             foreach($filters as $filter) {

@@ -101,7 +101,7 @@
  </tr>
  <tr>
   <td colspan="3">
-   <img src="{ $icon_pipes }" alt="pipe icon" />&nbsp;Bandwidth
+   <img src="{ $icon_pipes }" alt="pipe icon" />&nbsp;Bandwidth default
   </td>
  </tr>
  <tr>
@@ -111,7 +111,7 @@
    { service_level_select_list sl_idx=$pipe->pipe_sl_idx }
    </select>
   </td>
-  <td>Bandwidth limit for this pipe.</td>
+  <td>Default bandwidth limit for this pipe. It can be overriden per chain as soon as you assigned this pipe to it.</td>
  </tr>
  <tr>
   <td colspan="3">&nbsp;</td>

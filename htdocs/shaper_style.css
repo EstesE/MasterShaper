@@ -135,3 +135,8 @@ div.menu_help {
    font-size:        9px;
    padding-left:     20px;
 }
+
+.ui-state-highlight {
+   height:           20px;
+   line-height:      15px;
+}

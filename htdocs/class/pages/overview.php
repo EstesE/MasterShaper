@@ -126,7 +126,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
     
             $sth = $db->db_prepare("
                SELECT
-                  p.*
+                  *
                FROM
                   ". MYSQL_PREFIX ."pipes p
                INNER JOIN
@@ -138,7 +138,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                AND
                   p.pipe_active='Y'
                ORDER BY
-                  p.pipe_position ASC
+                  apc.apc_pipe_pos ASC
             ");
 
             $res_pipes = $db->db_execute($sth, array(
@@ -363,7 +363,11 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
          $tmpl->assign('pipe_idx', $pipe_idx);
          $tmpl->assign('pipe_name', $pipe->pipe_name);
-         $tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
+         // check if pipes original service level got overruled
+         if(isset($pipe->apc_sl_idx) && !empty($pipe->apc_sl_idx))
+            $tmpl->assign('pipe_sl_idx', $pipe->apc_sl_idx);
+         else
+            $tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
          $tmpl->assign('pipe_fallback_idx', $pipe->pipe_fallback_idx);
          $tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
          $tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
