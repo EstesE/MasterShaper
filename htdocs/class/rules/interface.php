@@ -434,7 +434,7 @@ class Ruleset_Interface {
             break;
 
          case 'ESFQ':
-            $string.= "esfq ". $ms->getESFQParams($sl);
+            $string.= "esfq ". $this->get_esfq_params($sl);
             break;
 
          case 'HFSC':
@@ -442,7 +442,7 @@ class Ruleset_Interface {
             break;
 
          case 'NETEM':
-            $string.= "netem ". $ms->getNETEMParams($sl);
+            $string.= "netem ". $this->get_netem_params($sl);
             break;
 
       }
@@ -1912,6 +1912,86 @@ class Ruleset_Interface {
       $this->addFallbackFilter("1:1", "1:". $this->get_current_chain() . $this->get_current_class());*/
 
    } // add_interface_fallback()
+
+   /*
+    * get NETEM parameter string
+    *
+    * this function returns the parameter string for the NETEM qdisc
+    *
+    * @param mixed $sl
+    * @return string
+    */
+   function get_netem_params($sl)
+   {
+      if(!empty($sl->sl_netem_delay) && is_numeric($sl->sl_netem_delay)) {
+         $params.= "delay ". $sl->sl_netem_delay ."ms ";
+
+         if(!empty($sl->sl_netem_jitter) && is_numeric($sl->sl_netem_jitter)) {
+            $params.= $sl->sl_netem_jitter ."ms ";
+
+            if(!empty($sl->sl_netem_random) && is_numeric($sl->sl_netem_random)) {
+               $params.= $sl->sl_netem_random ."% ";
+            }
+         }
+
+         if($sl->sl_netem_distribution != "ignore") {
+            $params.= "distribution ". $sl->sl_netem_distribution ." ";
+         }
+      }
+
+      if(!empty($sl->sl_netem_loss) && is_numeric($sl->sl_netem_loss)) {
+         $params.= "loss ". $sl->sl_netem_loss ."% ";
+      }
+
+      if(empty($sl->sl_netem_duplication) && is_numeric($sl->sl_netem_duplication)) {
+         $params.= "duplicate ". $sl->sl_netem_duplication ."% ";
+      }
+
+      if(empty($sl->sl_netem_gap) && is_numeric($sl->sl_netem_gap)) {
+         $params.= "gap ". $sl->sl_netem_gap ." ";
+      }
+
+      if(!empty($sl->sl_netem_reorder_percentage) && is_numeric($sl->sl_netem_reorder_percentage)) {
+         $params.= "reorder ". $sl->sl_netem_reorder_percentage ."% ";
+         if(!empty($sl->sl_netem_reorder_correlation) && is_numeric($sl->sl_netem_reorder_correlation )) {
+            $params.= $sl->sl_netem_reorder_correlation ."% ";
+         }
+      }
+
+      return $params;
+
+   } // get_netem_params()
+
+   /**
+    * get ESFQ parameter string
+    *
+    * this function returns the parameter string for the ESFQ qdisc
+    *
+    * @param mixed $sl
+    * @return string
+    */
+   function get_esfq_params($sl)
+   {
+      $params = "";
+
+      if(!empty($sl->sl_esfq_perturb) && is_numeric($sl->sl_esfq_perturb))
+         $params.= "perturb ". $sl->sl_esfq_perturb ." ";
+
+      if(!empty($sl->sl_esfq_limit) && is_numeric($sl->sl_esfq_limit))
+         $params.= "limit ". $sl->sl_esfq_limit ." ";
+
+      if(!empty($sl->sl_esfq_depth) && is_numeric($sl->sl_esfq_depth))
+         $params.= "depth ". $sl->sl_esfq_depth ." ";
+
+      if(!empty($sl->sl_esfq_divisor) && is_numeric($sl->sl_esfq_divisor))
+         $params.= "divisor ". $sl->sl_esfq_divisor ." ";
+
+      if(!empty($sl->sl_esfq_hash))
+         $params.= "hash ". $sl->sl_esfq_hash;
+
+      return $params;
+
+   } // get_esfq_params()
 
 } // class Ruleset_Interface
 
