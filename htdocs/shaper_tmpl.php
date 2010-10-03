@@ -244,12 +244,6 @@ class MASTERSHAPER_TMPL extends Smarty {
    {
       global $ms, $db;
 
-      if(!array_key_exists('sl_idx', $params)) {
-         $this->trigger_error("smarty_service_level_select_list: missing 'sl_idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-
       $result = $db->db_query("
          SELECT
              *
@@ -261,7 +255,7 @@ class MASTERSHAPER_TMPL extends Smarty {
 
       while($row = $result->fetchRow()) {
          $string.= "<option value=\"". $row->sl_idx ."\"";
-         if($row->sl_idx == $params['sl_idx']) {
+         if(isset($params['sl_idx']) && $row->sl_idx == $params['sl_idx']) {
             $string.= " selected=\"selected\"";
          }
          switch($ms->getOption("classifier")) {
