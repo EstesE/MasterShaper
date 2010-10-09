@@ -894,17 +894,18 @@ class Ruleset_Interface {
                   /* IP */
                   case 4:
 
-                     if($this->isGRE()) {
-                        $string.= "match u16 ";
-                     }
-                     else {
-                        $string.= "match ip ";
-                     }
-                     $str_ports = "";
-                     $cnt_ports = 0;
                      $ports = $ms->getPorts($filter->filter_idx);
 
                      if($ports) {
+
+                        if($this->isGRE()) {
+                           $string.= "match u16 ";
+                        }
+                        else {
+                           $string.= "match ip ";
+                        }
+                        $str_ports = "";
+                        $cnt_ports = 0;
 
                         while($port = $ports->fetchRow()) {
                            $dst_ports = $ms->extractPorts($port->port_number);
@@ -940,8 +941,13 @@ class Ruleset_Interface {
                               }
                            }
                         }
+                        // we break here if there where ports selected.
+                        // otherwise we go to the default: clause
+                        // to match on IP, TCP and UDP protocols only.
+                        break;
                      }
-                     break;
+                     // there is no break; here for IP, TCP and UDP withouts ports. we use
+                     // the default clause now!
 
                   default:
 
