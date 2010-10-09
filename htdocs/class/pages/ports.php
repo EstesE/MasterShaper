@@ -172,23 +172,28 @@ class Page_Ports extends MASTERSHAPER_PAGE {
          $ms->throwError(_("A port with that name already exists!"));
       }
 
-      /* only one or several ports */
+      // has to user provided one or multiple ports
       if(preg_match("/,/", $_POST['port_number']) || preg_match("/-/", $_POST['port_number'])) {
-         $temp_ports = split(",", $_POST['port_number']);
-         foreach($temp_ports as $port) {
-            $port = trim($port); 
-            if(preg_match("/-/", $port)) {
-               list($lower, $higher) = split("-", $port);
+         $is_numeric = true;
+         // split the port number string into an array
+         $port_numbers = split(",", $_POST['port_number']);
+         foreach($port_numbers as $port_number) {
+            $port_number = trim($port_number);
+            // if value contains a list, split the string
+            if(preg_match("/-/", $port_number)) {
+               list($lower, $higher) = split("-", $port_number);
                if(!is_numeric($lower) || $lower <= 0 || $lower >= 65536)
-                  $is_numeric = 0;
+                  $is_numeric = false;
                if(!is_numeric($higher) || $higher <= 0 || $higher >= 65536)
-                  $is_numeric = 0;
+                  $is_numeric = false;
             }
             else {
-              if(!is_numeric($port) || $port <= 0 || $port >= 65536)
-                  $is_numeric = 0;
+              if(!is_numeric($port_number) || $port_number <= 0 || $port_number >= 65536)
+                  $is_numeric = false;
             }
          }
+         if(!$is_numeric)
+            $ms->throwError(_("Please enter a valid port number range as shown in the example!"));
       }
       elseif(!is_numeric($_POST['port_number']) ||
          $_POST['port_number'] <= 0 || $_POST['port_number'] >= 65536) {
