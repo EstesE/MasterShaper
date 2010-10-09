@@ -894,9 +894,7 @@ class Ruleset_Interface {
                   /* IP */
                   case 4:
 
-                     $ports = $ms->getPorts($filter->filter_idx);
-
-                     if($ports) {
+                     if($ports = $ms->getPorts($filter->filter_idx)) {
 
                         if($this->isGRE()) {
                            $string.= "match u16 ";
@@ -907,36 +905,36 @@ class Ruleset_Interface {
                         $str_ports = "";
                         $cnt_ports = 0;
 
-                        while($port = $ports->fetchRow()) {
-                           $dst_ports = $ms->extractPorts($port->port_number);
-                           if($dst_ports != 0) {
-                              foreach($dst_ports as $dst_port) {
-                                 if($this->isGRE()) {
-                                    $port_hex = $this->convertPortToHex($dst_port);
-                                    $tmp_str = $string ." 0x". $port_hex ." 0xffff at [DIRECTION]";
+                        foreach($ports as $port) {
+                           $dst_ports = $ms->extractPorts($port[number]);
+                           if($dst_ports == 0)
+                              continue;
+                           foreach($dst_ports as $dst_port) {
+                              if($this->isGRE()) {
+                                 $port_hex = $this->convertPortToHex($dst_port);
+                                 $tmp_str = $string ." 0x". $port_hex ." 0xffff at [DIRECTION]";
 
-                                    switch($pipe->pipe_direction) {
-                                       case UNIDIRECTIONAL:
-                                          array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
-                                          break;
-                                       case BIDIRECTIONAL:
-                                          array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
-                                          array_push($tmp_array, str_replace("[DIRECTION]", "44", $tmp_str));
-                                          break;
-                                    }
+                                 switch($pipe->pipe_direction) {
+                                    case UNIDIRECTIONAL:
+                                       array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
+                                       break;
+                                    case BIDIRECTIONAL:
+                                       array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
+                                       array_push($tmp_array, str_replace("[DIRECTION]", "44", $tmp_str));
+                                       break;
                                  }
-                                 else {
-                                    $tmp_str = $string ." [DIRECTION] ". $dst_port ." 0xffff ";
+                              }
+                              else {
+                                 $tmp_str = $string ." [DIRECTION] ". $dst_port ." 0xffff ";
 
-                                    switch($pipe->pipe_direction) {
-                                       case UNIDIRECTIONAL:
-                                          array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
-                                          break;
-                                       case BIDIRECTIONAL:
-                                          array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
-                                          array_push($tmp_array, str_replace("[DIRECTION]", "sport", $tmp_str));
-                                          break;
-                                    }
+                                 switch($pipe->pipe_direction) {
+                                    case UNIDIRECTIONAL:
+                                       array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
+                                       break;
+                                    case BIDIRECTIONAL:
+                                       array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
+                                       array_push($tmp_array, str_replace("[DIRECTION]", "sport", $tmp_str));
+                                       break;
                                  }
                               }
                            }
@@ -1275,12 +1273,11 @@ class Ruleset_Interface {
                      $cnt_ports = 0;
 
                      // Which ports are selected for this filter 
-                     $ports = $ms->getPorts($filter->filter_idx);
+                     if($ports = $ms->getPorts($filter->filter_idx)) {
 
-                     if($ports) {
-                        while($port = $ports->fetchRow()) {
+                        foreach($ports as $port) {
                            // If this port is definied as range or list get all the single ports 
-                           $dst_ports = $ms->extractPorts($port->port_number);
+                           $dst_ports = $ms->extractPorts($port['number']);
                            if($dst_ports != 0) {
                               foreach($dst_ports as $dst_port) {
                                  array_push($all_ports, $dst_port);

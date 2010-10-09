@@ -966,9 +966,14 @@ class MASTERSHAPER {
       /* first get all the port id's for that filter */
       $sth = $db->db_prepare("
          SELECT
-            afp_port_idx
+            p.port_name as port_name,
+            p.port_number as port_number
          FROM
-            ". MYSQL_PREFIX ."assign_ports_to_filters
+            ". MYSQL_PREFIX ."assign_ports_to_filters afp
+         INNER JOIN
+            ". MYSQL_PREFIX ."ports p
+         ON
+            afp.afp_port_idx=p.port_idx
          WHERE
             afp_filter_idx LIKE ?
       ");
@@ -977,58 +982,56 @@ class MASTERSHAPER {
          $filter_idx
       ));
 
+      $numbers = Array();
+
       while($port = $ports->fetchRow()) {
-         $numbers.= $port->afp_port_idx .",";
+         array_push($numbers, array(
+            'name' => $port->port_name,
+            'number' => $port->port_number
+         ));
       }
 
       /* now look up the IANA port numbers for that ports */
       if(empty($numbers))
          return NULL;
 
-      $numbers = substr($numbers, 0, strlen($numbers)-1);
-
-      $sth = $db->db_prepare("
-         SELECT
-            port_name,
-            port_number
-         FROM
-            ". MYSQL_PREFIX ."ports
-         WHERE
-            port_idx IN (?)
-      ");
-
-      $list = $db->db_execute($sth, array(
-         $numbers
-      ));
-
-      return $list;
+      return $numbers;
 
    } // getPorts()
 
    /* extract all ports from a string */
    public function extractPorts($string)
    {
-      if($string != "" && !preg_match("/any/", $string)) {
-         $string = str_replace(" ", "", $string);
-         $ports = split(",", $string);
-
-         $targets = Array();
-         foreach($ports as $port) {
-            if(preg_match("/.*-.*/", $port)) {
-               list($start, $end) = split("-", $port);
-               for($i = $start*1; $i <= $end*1; $i++) {
-                  array_push($targets, $i);
-               }
-            }
-            else {
-               array_push($targets, $port);
-            }
-         }
-         return $targets;
-      }
-      else {
+      if(empty($string) || preg_match("/any/", $string))
          return NULL;
+
+      $string = str_replace(" ", "", $string);
+      $ports = split(",", $string);
+
+      $targets = Array();
+
+      foreach($ports as $port) {
+
+         $port = trim($port);
+
+         if(!preg_match("/.*-.*/", $port)) {
+            array_push($targets, $port);
+            continue;
+         }
+
+         list($start, $end) = split("-", $port);
+         // if the user try to fool us...
+         if($end < $start) {
+            $tmp = $end;
+            $end = $start;
+            $start = $tmp;
+         }
+         for($i = $start*1; $i <= $end*1; $i++) {
+            array_push($targets, $i);
+         }
       }
+
+      return $targets;
 
    } // extractPorts()
 
