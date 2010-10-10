@@ -187,6 +187,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $this->cnt_network_paths++;
       }
 
+      $tmpl->assign('cnt_network_paths', $this->cnt_network_paths);
       $tmpl->register_function("sl_list", array(&$this, "smarty_sl_list"), false);
       $tmpl->register_function("target_list", array(&$this, "smarty_target_list"), false);
       $tmpl->register_block("ov_netpath", array(&$this, "smarty_ov_netpath"));

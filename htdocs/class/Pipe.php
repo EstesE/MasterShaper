@@ -123,6 +123,7 @@ class Pipe extends MsObject {
    {
       global $db;
 
+      // remove all filter associations
       $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_filters_to_pipes
@@ -134,6 +135,7 @@ class Pipe extends MsObject {
          $this->id
       ));
 
+      // remove all chains associations
       $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_pipes_to_chains
