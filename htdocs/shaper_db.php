@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '12');
+define('SCHEMA_VERSION', '13');
 
 /***************************************************************************
  *
@@ -582,11 +582,13 @@ class MASTERSHAPER_DB {
       if(!$this->db_check_table_exists(MYSQL_PREFIX .'assign_pipes_to_chains')) {
          $this->db_query("
              CREATE TABLE `". MYSQL_PREFIX ."assign_pipes_to_chains` (
+              `apc_idx` int(11) NOT NULL auto_increment,
               `apc_pipe_idx` int(11) NOT NULL,
               `apc_chain_idx` int(11) NOT NULL,
               `apc_sl_idx` int(11) NOT NULL,
               `apc_pipe_pos` int(11) DEFAULT NULL,
-              PRIMARY KEY  (`apc_pipe_idx`,`apc_chain_idx`)
+              PRIMARY KEY  (`apc_idx`),
+              KEY `apc_pipe_to_chain`  (`apc_pipe_idx`,`apc_chain_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
@@ -1143,6 +1145,33 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(12);
+
+      }
+
+      if($this->schema_version < 13) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            DROP PRIMARY KEY
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            ADD
+              `apc_idx` int(11) NOT NULL auto_increment PRIMARY KEY
+            FIRST
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            ADD
+               KEY `apc_pipe_to_chain`  (`apc_pipe_idx`,`apc_chain_idx`)
+         ");
+
+         $this->setVersion(13);
 
       }
 
