@@ -188,8 +188,6 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       }
 
       $tmpl->assign('cnt_network_paths', $this->cnt_network_paths);
-      $tmpl->register_function("sl_list", array(&$this, "smarty_sl_list"), false);
-      $tmpl->register_function("target_list", array(&$this, "smarty_target_list"), false);
       $tmpl->register_block("ov_netpath", array(&$this, "smarty_ov_netpath"));
       $tmpl->register_block("ov_chain", array(&$this, "smarty_ov_chain"));
       $tmpl->register_block("ov_pipe", array(&$this, "smarty_ov_pipe"));
@@ -198,66 +196,6 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       return $tmpl->fetch("overview.tpl");
 
    } // showList()
-
-   public function smarty_sl_list($params, &$smarty)
-   {
-      global $db;
-
-      if(!array_key_exists('idx', $params)) {
-         $tmpl->trigger_error("smarty_sl_list: missing 'idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-
-      $res_sl = $db->db_query("
-         SELECT
-            *
-         FROM
-            ". MYSQL_PREFIX ."service_levels
-         ORDER BY
-            sl_name ASC
-      ");
-
-      while($sl = $res_sl->fetchRow()) {
-         $string.= "<option value=\"". $sl->sl_idx ."\"";
-         if($sl->sl_idx == $params['idx'])
-            $string.= " selected=\"selected\"";
-         $string.= ">". $sl->sl_name ."</option>\n";
-      }
-
-      return $string;
-
-   } // smarty_sl_list()
-
-   public function smarty_target_list($params, &$smarty)
-   {
-      global $db;
-
-      if(!array_key_exists('idx', $params)) {
-         $tmpl->trigger_error("smarty_target_list: missing 'idx' parameter", E_USER_WARNING);
-         $repeat = false;
-         return;
-      }
-
-      $res_targets = $db->db_query("
-         SELECT
-            *
-         FROM
-            ". MYSQL_PREFIX ."targets
-         ORDER BY
-            target_name ASC
-      ");
-
-      while($target = $res_targets->fetchRow()) {
-         $string.= "<option value=\"". $target->target_idx ."\"";
-         if($target->target_idx == $params['idx'])
-            $string.= " selected=\"selected\"";
-         $string.= ">". $target->target_name ."</option>\n";
-      }
-
-      return $string;
-
-   } // smarty_target_list()
 
    public function smarty_ov_netpath($params, $content, &$smarty, &$repeat)
    {
@@ -336,7 +274,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
    public function smarty_ov_pipe($params, $content, &$smarty, &$repeat)
    {
-      global $db, $tmpl;
+      global $db, $tmpl, $ms;
 
       if(!array_key_exists('np_idx', $params)) {
          $tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
@@ -365,15 +303,15 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $tmpl->assign('pipe_idx', $pipe_idx);
          $tmpl->assign('pipe_name', $pipe->pipe_name);
          // check if pipes original service level got overruled
-         if(isset($pipe->apc_sl_idx) && !empty($pipe->apc_sl_idx))
-            $tmpl->assign('pipe_sl_idx', $pipe->apc_sl_idx);
-         else
-            $tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
+         $tmpl->assign('pipe_sl_name', $ms->getServiceLevelName($pipe->pipe_sl_idx));
+         $tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
          $tmpl->assign('pipe_fallback_idx', $pipe->pipe_fallback_idx);
          $tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
          $tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
          $tmpl->assign('pipe_direction', $pipe->pipe_direction);
          $tmpl->assign('pipe_action', $pipe->pipe_action);
+         $tmpl->assign('apc_idx', $pipe->apc_idx);
+         $tmpl->assign('apc_sl_idx', $pipe->apc_sl_idx);
          $tmpl->assign('counter', $index+1);
 
          if($pipe->pipe_sl_idx != 0) {
@@ -812,15 +750,17 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       }
 
       if(isset($_POST['pipe_sl_idx']) && is_array($_POST['pipe_sl_idx'])) {
+
          /* save all pipe service levels */
          foreach($_POST['pipe_sl_idx'] as $k => $v) {
 
             $sth = $db->db_prepare("
-               UPDATE ". MYSQL_PREFIX ."pipes
+               UPDATE
+                  ". MYSQL_PREFIX ."assign_pipes_to_chains
                SET
-                  pipe_sl_idx = ?
+                  apc_sl_idx = ?
                WHERE
-                  pipe_idx LIKE ?
+                  apc_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(

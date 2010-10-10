@@ -58,7 +58,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
      <td style="text-align: center;">
       <select name="chain_sl_idx[{ $chain_idx }]">
        <option value="0">--- Ignore QoS ---</option>
-       { sl_list idx=$chain_sl_idx }
+       { service_level_select_list details=no sl_idx=$chain_sl_idx }
       </select>
      </td> 
 
@@ -66,7 +66,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
      <td style="text-align: center;">
       <select name="chain_fallback_idx[{ $chain_idx }]">
        <option value="0">--- No Fallback ---</option>
-       { sl_list idx=$chain_fallback_idx }
+       { service_level_select_list details=no sl_idx=$chain_fallback_idx }
       </select>
      </td>
     { else }
@@ -76,7 +76,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
      <td style="text-align: center;">
       <select name="chain_src_target[{ $chain_idx }]">
        <option value="0">any</option>
-       { target_list idx=$chain_src_target }
+       { target_select_list target_idx=$chain_src_target }
       </select>
      </td>
      <td style="text-align: center;">
@@ -88,7 +88,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
      <td style="text-align: center;">
       <select name="chain_dst_target[{ $chain_idx }]">
        <option value="0">any</option>
-       { target_list idx=$chain_dst_target }
+       { target_select_list target_idx=$chain_dst_target }
       </select>
      </td>
      <td style="text-align: center;">
@@ -117,15 +117,16 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
       <a href="{$rewriter->get_page_url('Pipe Edit', $pipe_idx)}" title="Modify pipe { $pipe_name }">{ $pipe_name }</a>
      </td>
      <td style="text-align: center;">
-      <select name="pipe_sl_idx[{ $pipe_idx }]"> 
-      { sl_list idx=$pipe_sl_idx }
+      <select name="pipe_sl_idx[{ $apc_idx }]">
+       <option value="0">*** { $pipe_sl_name } ***</option>
+       { service_level_select_list details=no sl_idx=$apc_sl_idx }
       </select>
      </td>
      <td>&nbsp;</td>
      <td style="text-align: center;">
       <select name="pipe_src_target[{ $pipe_idx }]">
        <option value="0">any</option>
-       { target_list idx=$pipe_src_target }
+       { target_select_list target_idx=$pipe_src_target }
       </select>
      </td>
      <td style="text-align: center;">
@@ -137,7 +138,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
      <td style="text-align: center;">
       <select name="pipe_dst_target[{ $pipe_idx }]">
        <option value="0">any</option>
-       { target_list idx=$pipe_dst_target }
+       { target_select_list target_idx=$pipe_dst_target }
       </select>
      </td>
      <td style="text-align: center;">

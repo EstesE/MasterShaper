@@ -244,6 +244,10 @@ class MASTERSHAPER_TMPL extends Smarty {
    {
       global $ms, $db;
 
+      // per default we show all service level details
+      if(!array_key_exists('details', $params))
+         $params['details'] = 'yes';
+
       $result = $db->db_query("
          SELECT
              *
@@ -254,23 +258,31 @@ class MASTERSHAPER_TMPL extends Smarty {
       ");
 
       while($row = $result->fetchRow()) {
-         $string.= "<option value=\"". $row->sl_idx ."\"";
-         if(isset($params['sl_idx']) && $row->sl_idx == $params['sl_idx']) {
-            $string.= " selected=\"selected\"";
-         }
-         switch($ms->getOption("classifier")) {
-            case 'HTB':
-               $string.= ">". $row->sl_name ." (in: ". $row->sl_htb_bw_in_rate ."kbit/s, out: ". $row->sl_htb_bw_out_rate ."kbit/s)</option>\n";
-               break;
-            case 'HFSC':
-               $string.= ">". $row->sl_name ." (in: ". $row->sl_hfsc_in_dmax ."ms,". $row->sl_hfsc_in_rate ."kbit/s, out: ". $row->sl_hfsc_out_dmax ."ms,". $row->sl_hfsc_bw_out_rate ."kbit/s)</option>\n";
-               break;
-            case 'CBQ':
-               $string.= ">". $row->sl_name ." (in: ". $row->sl_cbq_in_rate ."kbit/s, out: ". $row->sl_cbq_out_rate ."kbit/s)</option>\n";
-               break;
-         }
 
+         $string.= "<option value=\"". $row->sl_idx ."\"";
+
+         if(isset($params['sl_idx']) && $row->sl_idx == $params['sl_idx'])
+            $string.= " selected=\"selected\"";
+
+         $string.= ">". $row->sl_name;
+
+         if($params['details'] == 'yes') {
+
+            switch($ms->getOption("classifier")) {
+               case 'HTB':
+                  $string.= "(in: ". $row->sl_htb_bw_in_rate ."kbit/s, out: ". $row->sl_htb_bw_out_rate ."kbit/s)";
+                  break;
+               case 'HFSC':
+                  $string.= "(in: ". $row->sl_hfsc_in_dmax ."ms,". $row->sl_hfsc_in_rate ."kbit/s, out: ". $row->sl_hfsc_out_dmax ."ms,". $row->sl_hfsc_bw_out_rate ."kbit/s)";
+                  break;
+               case 'CBQ':
+                  $string.= "(in: ". $row->sl_cbq_in_rate ."kbit/s, out: ". $row->sl_cbq_out_rate ."kbit/s)";
+                  break;
+            }
+         }
       }
+
+      $string.= "</option>\n";
 
       return $string;
 
