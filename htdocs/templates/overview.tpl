@@ -18,16 +18,16 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
 </div>
 { /if }
 { ov_netpath }
-<table style="width: 100%;" id="netpath{$netpath_idx}">
+<table style="width: 100%;" id="netpath{$netpath->netpath_idx}">
  <tr>
   <td style="height: 15px;" />
  </tr>
  <tr>
   <td>
    &nbsp;
-   Network Path '{ $netpath_name }'
-   <a class="move-down" type="netpath" idx="{ $netpath_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
-   <a class="move-up" type="netpath" idx="{ $netpath_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
+   Network Path '{ $netpath->netpath_name }'
+   <a class="move-down" type="netpath" idx="{ $netpath->netpath_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
+   <a class="move-up" type="netpath" idx="{ $netpath->netpath_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
   </td>
  </tr>
  <tr>
@@ -47,26 +47,25 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
      <td class="colhead" style="text-align: center;">Position</td>
     </tr>
 
- { ov_chain np_idx=$netpath_idx }
+ { ov_chain np_idx=$netpath->netpath_idx }
 
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain_idx}">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain->chain_idx}">
      <td colspan="2">
-      <input type="hidden" name="chains[{ $chain_cnt }]" value="{ $chain_idx }" />
       <img src="{ $icon_chains }" alt="chain icon" />&nbsp;
-      <a href="{$rewriter->get_page_url('Chain Edit', $chain_idx)}" title="Modify chain { $chain_name }">{ $chain_name }</a>
+      <a href="{$rewriter->get_page_url('Chain Edit', $chain->chain_idx)}" title="Modify chain { $chain->chain_name }">{ $chain->chain_name }</a>
      </td>
      <td style="text-align: center;">
-      <select name="chain_sl_idx[{ $chain_idx }]">
+      <select name="chain_sl_idx[{ $chain->chain_idx }]">
        <option value="0">--- Ignore QoS ---</option>
-       { service_level_select_list details=no sl_idx=$chain_sl_idx }
+       { service_level_select_list details=no sl_idx=$chain->chain_sl_idx }
       </select>
      </td> 
 
     { if $chain_has_sl }
      <td style="text-align: center;">
-      <select name="chain_fallback_idx[{ $chain_idx }]">
+      <select name="chain_fallback_idx[{ $chain->chain_idx }]">
        <option value="0">--- No Fallback ---</option>
-       { service_level_select_list details=no sl_idx=$chain_fallback_idx }
+       { service_level_select_list details=no sl_idx=$chain->chain_fallback_idx }
       </select>
      </td>
     { else }
@@ -74,47 +73,47 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
     { /if }
 
      <td style="text-align: center;">
-      <select name="chain_src_target[{ $chain_idx }]">
+      <select name="chain_src_target[{ $chain->chain_idx }]">
        <option value="0">any</option>
-       { target_select_list target_idx=$chain_src_target }
+       { target_select_list target_idx=$chain->chain_src_target }
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="chain_direction[{ $chain_idx }]">
-       <option value="1" { if $chain_direction == 1 } selected="selected" { /if }>--&gt;</option>
-       <option value="2" { if $chain_direction == 2 } selected="selected" { /if }>&lt;-&gt;</option>
+      <select name="chain_direction[{ $chain->chain_idx }]">
+       <option value="1" { if $chain->chain_direction == 1 } selected="selected" { /if }>--&gt;</option>
+       <option value="2" { if $chain->chain_direction == 2 } selected="selected" { /if }>&lt;-&gt;</option>
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="chain_dst_target[{ $chain_idx }]">
+      <select name="chain_dst_target[{ $chain->chain_idx }]">
        <option value="0">any</option>
-       { target_select_list target_idx=$chain_dst_target }
+       { target_select_list target_idx=$chain->chain_dst_target }
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="chain_action[{ $chain_idx }]">
-       <option value="accept" { if $chain_action == "accept" } selected="selected" { /if }>Accept</option>
-       <option value="drop" { if $chain_action == "drop" } selected="selected" { /if }>Drop</option>
-       <option value="reject" { if $chain_action == "reject" } selected="selected" { /if }>Reject</option>
+      <select name="chain_action[{ $chain->chain_idx }]">
+       <option value="accept" { if $chain->chain_action == "accept" } selected="selected" { /if }>Accept</option>
+       <option value="drop" { if $chain->chain_action == "drop" } selected="selected" { /if }>Drop</option>
+       <option value="reject" { if $chain->chain_action == "reject" } selected="selected" { /if }>Reject</option>
       </select>
      </td>
      <td style="text-align: center;">
-      <a class="move-down" type="chain" idx="{ $chain_idx }"><img src="{ $icon_chains_arrow_down }" alt="Move chain down" /></a>
-      <a class="move-up" type="chain" idx="{ $chain_idx }"><img src="{ $icon_chains_arrow_up }" alt="Move chain up" /></a>
+      <a class="move-down" type="chain" idx="{ $chain->chain_idx }"><img src="{ $icon_chains_arrow_down }" alt="Move chain down" /></a>
+      <a class="move-up" type="chain" idx="{ $chain->chain_idx }"><img src="{ $icon_chains_arrow_up }" alt="Move chain up" /></a>
      </td>
     </tr> 
 
   <!-- pipes are only available if the chain DOES NOT ignore
        QoS or DOES NOT use fallback service level
   -->
-  { if $chain_sl_idx != 0 && $chain_fallback_idx != 0 }
-   { ov_pipe np_idx=$netpath_idx chain_idx=$chain_idx }
-    <input type="hidden" name="pipes[{ $pipe_counter }]" value="{ $pipe_idx }" />
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe_idx}">
+  { if $chain->chain_sl_idx != 0 && $chain->chain_fallback_idx != 0 }
+   { ov_pipe np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx }
+    <input type="hidden" name="pipes[{ $pipe_counter }]" value="{ $pipe->pipe_idx }" />
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe->pipe_idx}">
      <td style="text-align: center;">{ $counter }</td>
      <td>
       <img src="{ $icon_pipes }" alt="pipes icon" />&nbsp;
-      <a href="{$rewriter->get_page_url('Pipe Edit', $pipe_idx)}" title="Modify pipe { $pipe_name }">{ $pipe_name }</a>
+      <a href="{$rewriter->get_page_url('Pipe Edit', $pipe->pipe_idx)}" title="Modify pipe { $pipe->pipe_name }">{ $pipe->pipe_name }</a>
      </td>
      <td style="text-align: center;">
       <select name="pipe_sl_idx[{ $apc_idx }]">
@@ -124,47 +123,45 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
      </td>
      <td>&nbsp;</td>
      <td style="text-align: center;">
-      <select name="pipe_src_target[{ $pipe_idx }]">
+      <select name="pipe_src_target[{ $pipe->pipe_idx }]">
        <option value="0">any</option>
-       { target_select_list target_idx=$pipe_src_target }
+       { target_select_list target_idx=$pipe->pipe_src_target }
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="pipe_direction[{ $pipe_idx }]">
-       <option value="1" { if $pipe_direction == 1 } selected="selected" { /if }>--&gt;</option>
-       <option value="2" { if $pipe_direction == 2 } selected="selected" { /if }>&lt;-&gt;</option>
+      <select name="pipe_direction[{ $pipe->pipe_idx }]">
+       <option value="1" { if $pipe->pipe_direction == 1 } selected="selected" { /if }>--&gt;</option>
+       <option value="2" { if $pipe->pipe_direction == 2 } selected="selected" { /if }>&lt;-&gt;</option>
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="pipe_dst_target[{ $pipe_idx }]">
+      <select name="pipe_dst_target[{ $pipe->pipe_idx }]">
        <option value="0">any</option>
-       { target_select_list target_idx=$pipe_dst_target }
+       { target_select_list target_idx=$pipe->pipe_dst_target }
       </select>
      </td>
      <td style="text-align: center;">
-      <select name="pipe_action[{ $pipe_idx }]">
-       <option value="accept" { if $pipe_action == "accept" } selected="selected" { /if}>Accept</option>
-       <option value="drop" { if $pipe_action == "drop" } selected="selected" { /if }>Drop</option>
-       <option value="reject" { if $pipe_action == "reject" } selected="selected" { /if }>Reject</option>
+      <select name="pipe_action[{ $pipe->pipe_idx }]">
+       <option value="accept" { if $pipe->pipe_action == "accept" } selected="selected" { /if}>Accept</option>
+       <option value="drop" { if $pipe->pipe_action == "drop" } selected="selected" { /if }>Drop</option>
+       <option value="reject" { if $pipe->pipe_action == "reject" } selected="selected" { /if }>Reject</option>
       </select>
      </td>
      <td style="text-align: center;">
-      <a class="move-down" type="pipe" idx="{ $pipe_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
-      <a class="move-up" type="pipe" idx="{ $pipe_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
+      <a class="move-down" type="pipe" idx="{ $pipe->pipe_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
+      <a class="move-up" type="pipe" idx="{ $pipe->pipe_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
      </td>
     </tr> 
-    { ov_filter np_idx=$netpath_idx chain_idx=$chain_idx pipe_idx=$pipe_idx }
+    { ov_filter np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx pipe_idx=$pipe->pipe_idx }
     <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
      <td>&nbsp;</td>
      <td colspan="7">
       <img src="{ $icon_treeend }" alt="tree" />
       <img src="{ $icon_filters }" alt="filter icon" />&nbsp;
-      <a href="{$rewriter->get_page_url('Filter Edit', $filter_idx)}" title="Modify filter { $filter_name }">{ $filter_name }</a>
+      <a href="{$rewriter->get_page_url('Filter Edit', $filter->filter_idx)}" title="Modify filter { $filter->filter_name }">{ $filter->filter_name }</a>
      </td>
      <td>&nbsp;</td>
     </tr> 
-
-
     {/ov_filter}
    {/ov_pipe}
   {/if}

@@ -89,7 +89,6 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $this->avail_network_paths[$this->cnt_network_paths] = $network_path->netpath_idx;
          $this->network_paths[$network_path->netpath_idx] = $network_path;
 
-
          /* get a list of chains for the current netpath */
          $sth = $db->db_prepare("
             SELECT
@@ -210,8 +209,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
          $np_idx = $this->avail_network_paths[$index];
          $np =  $this->network_paths[$np_idx];
-         $tmpl->assign('netpath_idx', $np_idx);
-         $tmpl->assign('netpath_name', $np->netpath_name);
+         $tmpl->assign('netpath', $np);
 
          $index++;
          $tmpl->assign('smarty.IB.ov_netpath.index', $index);
@@ -245,14 +243,8 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
          $chain_idx = $this->avail_chains[$np_idx][$index];
          $chain =  $this->chains[$np_idx][$chain_idx];
-         $tmpl->assign('chain_idx', $chain_idx);
-         $tmpl->assign('chain_name', $chain->chain_name);
-         $tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
-         $tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
-         $tmpl->assign('chain_src_target', $chain->chain_src_target);
-         $tmpl->assign('chain_dst_target', $chain->chain_dst_target);
-         $tmpl->assign('chain_direction', $chain->chain_direction);
-         $tmpl->assign('chain_action', $chain->chain_action);
+
+         $tmpl->assign('chain', $chain);
 
          if($chain->chain_sl_idx != 0)
             $tmpl->assign('chain_has_sl', true);
@@ -300,23 +292,11 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $pipe_idx = $this->avail_pipes[$np_idx][$chain_idx][$index];
          $pipe = $this->pipes[$np_idx][$chain_idx][$pipe_idx];
 
-         $tmpl->assign('pipe_idx', $pipe_idx);
-         $tmpl->assign('pipe_name', $pipe->pipe_name);
-         // check if pipes original service level got overruled
+         $tmpl->assign('pipe', $pipe);
          $tmpl->assign('pipe_sl_name', $ms->getServiceLevelName($pipe->pipe_sl_idx));
-         $tmpl->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
-         $tmpl->assign('pipe_fallback_idx', $pipe->pipe_fallback_idx);
-         $tmpl->assign('pipe_src_target', $pipe->pipe_src_target);
-         $tmpl->assign('pipe_dst_target', $pipe->pipe_dst_target);
-         $tmpl->assign('pipe_direction', $pipe->pipe_direction);
-         $tmpl->assign('pipe_action', $pipe->pipe_action);
          $tmpl->assign('apc_idx', $pipe->apc_idx);
          $tmpl->assign('apc_sl_idx', $pipe->apc_sl_idx);
          $tmpl->assign('counter', $index+1);
-
-         if($pipe->pipe_sl_idx != 0) {
-            $tmpl->assign('pipe_has_sl', 'true');
-         }
 
          $index++;
          $tmpl->assign('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx, $index);
@@ -365,8 +345,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $filter_idx = $this->avail_filters[$np_idx][$chain_idx][$pipe_idx][$index];
          $filter = $this->filters[$np_idx][$chain_idx][$pipe_idx][$filter_idx];
 
-         $tmpl->assign('filter_idx', $filter_idx);
-         $tmpl->assign('filter_name', $filter->filter_name);
+         $tmpl->assign('filter', $filter);
 
          $index++;
          $tmpl->assign('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx, $index);
@@ -500,6 +479,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          return "ok";
 
       //return $new_pos ." ". $my_pos->position ." ". $my_pos->max;
+
       /* new position can not be below null */
       if($new_pos == 0)
          $new_pos = 1;
