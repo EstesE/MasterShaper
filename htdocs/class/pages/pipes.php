@@ -311,12 +311,14 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
                ". MYSQL_PREFIX ."assign_pipes_to_chains
             (
                apc_pipe_idx,
-               apc_chain_idx'
-               apc_sl_idx
+               apc_chain_idx,
+               apc_sl_idx,
+               apc_pipe_active
             ) VALUES (
                ?,
                ?,
-               0
+               0,
+               'Y'
             )
          ");
 
