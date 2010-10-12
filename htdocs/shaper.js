@@ -297,10 +297,36 @@ function draw_jqplot()
 
 } // draw_jqplot()
 
-function set_graph_mode()
+function set_graph_mode(to)
 {
+   var showif = get_selected_interface();
+   var showchain = get_selected_chain();
+   var scalemode = get_selected_scalemode();
 
-}
+   $.ajax({
+      type: "POST",
+      url: "rpc.html",
+      data: ({
+         type      : 'rpc',
+         action    : 'graph-mode',
+         graphmode : to,
+         scalemode : scalemode,
+         interface : showif,
+         chain     : showchain
+      }),
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+         alert('Failed to contact server! ' + textStatus);
+      },
+      success: function(data){
+         if(data == "ok\n") {
+            return true;
+         }
+         alert('Server returned: ' + data + data.length);
+         return false;
+      }
+   });
+
+} // set_graph_mode()
 
 function obj_delete(element, target, idx)
 {

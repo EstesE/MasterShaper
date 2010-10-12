@@ -247,57 +247,6 @@ class MASTERSHAPER {
    } // is_logged_in()
 
    /**
-    * return main content
-    */
-   public function get_content($request = "")
-   {
-      switch($request) {
-         case 'overview':
-            $obj = new MASTERSHAPER_OVERVIEW($this);
-            break;
-         case 'targets':
-            $obj = new MASTERSHAPER_TARGETS($this);
-            break;
-         case 'ports':
-            $obj = new MASTERSHAPER_PORTS($this);
-            break;
-         case 'protocols':
-            $obj = new MASTERSHAPER_PROTOCOLS($this);
-            break;
-         case 'servicelevels':
-            $obj = new MASTERSHAPER_SERVICELEVELS($this);
-            break;
-         case 'options':
-            $obj = new MASTERSHAPER_OPTIONS($this);
-            break;
-         case 'users':
-            $obj = new MASTERSHAPER_USERS($this);
-            break;
-         case 'interfaces':
-            $obj = new MASTERSHAPER_INTERFACES($this);
-            break;
-         case 'networkpaths':
-            $obj = new MASTERSHAPER_NETPATHS($this);
-            break;
-         case 'filters':
-            $obj = new MASTERSHAPER_FILTERS($this);
-            break;
-         case 'pipes':
-            $obj = new MASTERSHAPER_PIPES($this);
-            break;
-         case 'chains':
-            $obj = new MASTERSHAPER_CHAINS($this);
-            break;
-         case 'about':
-            $obj = new MASTERSHAPER_ABOUT($this);
-            break;
-      }
-      if(isset($obj))
-         return $obj->show();
-
-   } // get_content()
-
-   /**
     * Generic RPC call handler
     *
     * @return string
@@ -328,6 +277,9 @@ class MASTERSHAPER {
             break;
          case 'graph-data':
             $this->rpc_graph_data();
+            break;
+         case 'graph-mode':
+            $this->rpc_graph_mode();
             break;
          case 'get-chains-list':
             $this->rpc_get_chains_list();
@@ -1141,7 +1093,7 @@ class MASTERSHAPER {
     *
     * @return string
     */
-   public function rpc_graph_data()
+   private function rpc_graph_data()
    {
       require_once "class/pages/monitor.php";
       $obj = new Page_Monitor;
@@ -1149,29 +1101,96 @@ class MASTERSHAPER {
  
    } // rpc_graph_data()
 
-   public function change_graph()
+   /**
+    * change settings which graph is going to be displayed
+    */
+   private function rpc_graph_mode()
    {
-      if(!isset($_POST['action']))
-         return "missing action";
-      if(!isset($_POST['value']))
-         return "missing value";
+      if(isset($_POST['graphmode']) && $this->is_valid_graph_mode($_POST['graphmode']))
+         $_SESSION['graphmode'] = $_POST['graphmode'];
 
-      switch($_POST['action']) {
-         case 'graphmode':
-            $_SESSION['graphmode'] = $_POST['value'];
-            break;
-         case 'scalemode':
-            $_SESSION['scalemode'] = $_POST['value'];
-            break;
-         case 'interface':
-            $_SESSION['showif'] = $_POST['value'];
-            break;
-         case 'chain':
-            $_SESSION['showchain'] = $_POST['value'];
-            break;
-      }
+      if(isset($_POST['scalemode']) && $this->is_valid_scale_mode($_POST['scalemode']))
+         $_SESSION['scalemode'] = $_POST['scalemode'];
+
+      if(isset($_POST['interface']) && $this->is_valid_interface($_POST['interface']))
+         $_SESSION['showif'] = $_POST['interface'];
+
+      if(isset($_POST['chain']) && $this->is_valid_chain($_POST['chain']))
+         $_SESSION['showchain'] = $_POST['chain'];
+
+      print "ok";
 
    } // change_graph()
+
+   /**
+    * check if requested graph mode is valid
+    *
+    * @param int $mode
+    * @return boolean
+    */
+   private function is_valid_graph_mode($mode)
+   {
+      if(!is_numeric($mode))
+         return false;
+
+      if(!in_array($mode, Array(0,1,2,3)))
+         return false;
+
+      return true;
+
+   } // is_valid_graph_mode()
+
+   /**
+    * check if requested scale mode is valid
+    *
+    * @param string $mode
+    * @return boolean
+    */
+   private function is_valid_scale_mode($mode)
+   {
+      if(in_array($mode, Array('bit', 'byte', 'kbit', 'kbyte', 'mbit', 'mbyte')))
+         return true;
+
+      return false;
+
+   } // is_valid_scale_mode()
+
+   /**
+    * check if requested interface is valid
+    *
+    * @param string $if
+    * @return boolean
+    */
+   private function is_valid_interface($if)
+   {
+      $interfaces = $this->getActiveInterfaces();
+
+      while($interface = $interfaces->fetchRow()) {
+         if($if === $interface->if_name)
+            return true;
+      }
+
+      return false;
+
+   } // is_valid_interface()
+
+   /**
+    * check if requested chain is valid
+    *
+    * @param int $chain_idx
+    * @return boolean
+    */
+   private function is_valid_chain($chain_idx)
+   {
+      if(!is_numeric($chain_idx))
+         return false;
+
+      if(!($obj = new Chain($chain_idx)))
+         return false;
+
+      return true;
+
+   } // is_valid_chain()
 
    public function getActiveInterfaces()
    {
@@ -1328,6 +1347,7 @@ class MASTERSHAPER {
          'toggle',
          'alter-position',
          'graph-data',
+         'graph-mode',
          'get-chains-list',
          'get-sub-menu',
       );

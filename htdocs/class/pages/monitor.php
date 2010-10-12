@@ -305,7 +305,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
        *   )
        */
 
-      /* If we have no data here, maybe the tc_collector is not running. Stop here. */
+      /* If we have no data here, maybe the tc_collector is not running. Stop. */
       if(!isset($bigdata)) {
          return _("tc_collector.pl is inactive!");
       }
@@ -350,9 +350,12 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
           * Drawing pipes
           */
          case 'pipes':
+
             switch($_SESSION['graphmode']) {
+
                case 0:
                case 1:
+
                   foreach($tc_ids as $tc_id) {
 
                      /* don't draw tc-id's that are zero */
@@ -372,17 +375,25 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
                case 2:
                case 3:
+
                   foreach($tc_ids as $tc_id) {
+
                      if(!$this->isPipe($tc_id, $_SESSION['showif'], $_SESSION['showchain']))
                         continue;
+
                      $bps = round(array_sum($plot_array[$tc_id])/count($plot_array[$tc_id]), 0);
+
                      /* skip if out-of-range */
                      if($bps <= 0)
                         continue;
+
                      if($_SESSION['graphmode'] == 3)
                         $name = $this->findname($tc_id, $_SESSION['showif']) ." (%d". $this->get_scale_mode($_SESSION['scalemode']) .")";
                      else 
                         $name = $this->findname($tc_id, $_SESSION['showif']);
+
+                     array_push($this->colors, $this->get_color());
+                     array_push($this->names, $name);
                      array_push($this->total, $bps);
                   }
                   /* sort so the most bandwidth consuming is on first place */
@@ -414,7 +425,6 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
                      array_push($this->colors, $this->get_color());
                      array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
-                     //array_push($this->total, $plot_array[$tc_id]);
                      array_push($this->total, $time_array[$tc_id]);
                      $counter++;
                   }

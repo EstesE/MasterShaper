@@ -79,10 +79,10 @@
      </tr>
      <tr>
       <td>
-       <input type="radio" name="graphmode" value="0" { if $graphmode == 0 } checked="checked" { /if } onclick="graph_set_mode(0); if(this.blur) this.blur();" class="radio" /><img src="{$web_path}/icons/graph_accu_lines.png" alt="accumulated lines" title="accumulated lines" /><br />
-       <input type="radio" name="graphmode" value="1" { if $graphmode == 1 } checked="checked" { /if } onclick="graph_set_mode(1); if(this.blur) this.blur();" class="radio" /><img src="{$web_path}/icons/graph_lines.png" alt="lines" title="lines" /><br />
-       <input type="radio" name="graphmode" value="2" { if $graphmode == 2 } checked="checked" { /if } onclick="graph_set_mode(2); if(this.blur) this.blur();" class="radio" /><img src="{$web_path}/icons/graph_bars.png" alt="bars" title="bars" /><br />
-       <input type="radio" name="graphmode" value="3" { if $graphmode == 3 } checked="checked" { /if } onclick="graph_set_mode(3); if(this.blur) this.blur();" class="radio" /><img src="{$web_path}/icons/graph_pie_plot.png" alt="pie plot" title="pie plot" /><br />
+       <input type="radio" name="graphmode" value="0" { if $graphmode == 0 } checked="checked" { /if } onclick="set_graph_mode(0); if(this.blur) this.blur();" class="radio" /><img src="{$web_path}/icons/graph_accu_lines.png" alt="accumulated lines" title="accumulated lines" /><br />
+       <input type="radio" name="graphmode" value="1" { if $graphmode == 1 } checked="checked" { /if } onclick="set_graph_mode(1); if(this.blur) this.blur();" class="radio" /><img src="{$web_path}/icons/graph_lines.png" alt="lines" title="lines" /><br />
+       <input type="radio" name="graphmode" value="2" { if $graphmode == 2 } checked="checked" { /if } onclick="set_graph_mode(2); if(this.blur) this.blur();" class="radio" /><img src="{$web_path}/icons/graph_bars.png" alt="bars" title="bars" /><br />
+       <input type="radio" name="graphmode" value="3" { if $graphmode == 3 } checked="checked" { /if } onclick="set_graph_mode(3); if(this.blur) this.blur();" class="radio" /><img src="{$web_path}/icons/graph_pie_plot.png" alt="pie plot" title="pie plot" /><br />
       </td>
      </tr>
     </table>
