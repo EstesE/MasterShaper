@@ -218,6 +218,12 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $ms->check_object_exists('chain', $_POST['chain_name']))
          $ms->throwError(_("A chain with such a name already exists!"));
 
+      // if chain gets moved to another network path, reset chain_position
+      if(!isset($new) && $_POST['chain_netpath_idx'] != $chain->chain_netpath_idx) {
+         $np = new Network_path($_POST['chain_netpath_idx']);
+         $_POST['chain_position'] = $np->get_next_chain_position();
+      }
+
       $chain_data = $ms->filter_form_data($_POST, 'chain_'); 
 
       if(!$chain->update($chain_data))

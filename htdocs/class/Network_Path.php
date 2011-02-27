@@ -71,6 +71,33 @@ class Network_Path extends MsObject {
 
    } // pre_save()
 
+   /**
+    * get next chain position
+    *
+    * this function returns the next free chain position
+    * available for the actual network path.
+    *
+    */
+   public function get_next_chain_position()
+   {
+      global $db;
+
+      $max_pos = $db->db_fetchSingleRow("
+         SELECT
+            MAX(chain_position) as pos
+         FROM
+            ". MYSQL_PREFIX ."chains
+         WHERE
+            chain_netpath_idx LIKE '". $this->id ."'
+      ");
+
+      if(!empty($max_pos->pos))
+         return ($max_pos->pos+1);
+
+      return 0;
+
+   } // get_next_chain_position()
+
 } // class Network_Path
 
 ?>
