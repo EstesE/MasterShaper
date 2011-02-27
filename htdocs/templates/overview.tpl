@@ -25,7 +25,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
  <tr>
   <td>
    &nbsp;
-   Network Path '{ $netpath->netpath_name }'
+   <img src="{ $icon_interfaces }" alt="network path icon" />&nbsp;<a href="{$rewriter->get_page_url('Network Path Edit', $netpath->netpath_idx)}" title="Modify network path { $netpath->netpath_name }">Network Path { $netpath->netpath_name }</a>
    <a class="move-down" type="netpath" idx="{ $netpath->netpath_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
    <a class="move-up" type="netpath" idx="{ $netpath->netpath_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
   </td>
