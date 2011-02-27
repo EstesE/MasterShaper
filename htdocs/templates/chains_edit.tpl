@@ -98,6 +98,7 @@
  <tr>
   <td>Pipes:</td>
   <td style="vertical-align: top;">
+   <i>(Drag &amp; drop pipes to change order.)</i><br />
    <table class="withborder2" id="pipelist">
     <thead>
     <tr>
@@ -109,8 +110,8 @@
     </thead>
      <tbody id="pipes">
     { pipe_list }
-     <tr id="pipe{$pipe->pipe_idx}" { if $pipe->apc_pipe_idx == 0 } style="opacity: 0.5;" { /if }>
-      <td>
+     <tr id="pipe{$pipe->pipe_idx}" { if $pipe->apc_pipe_idx == 0 } style="opacity: 0.5;" { /if } onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+      <td class="pipes_dragger">
        <img src="{ $icon_pipes }" alt="pipe icon" />&nbsp;{ $pipe->pipe_name }
       </td>
       <td style="text-align: center;">
@@ -155,6 +156,14 @@
          delay:       250
       });
       $("table#pipelist tbody#pipes").disableSelection();
+      $('td.pipes_dragger').hover(
+         function() {
+             $(this).css('cursor','crosshair');
+         },
+         function() {
+             $(this).css('cursor','auto');
+         }
+      );
    });
 </script>
 {/literal}
