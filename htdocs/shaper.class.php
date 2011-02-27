@@ -384,6 +384,9 @@ class MASTERSHAPER {
             print "ok";
             return true;
          }
+
+         print "unknown error occured when trying to change status of ". $request_object ." ". $id;
+         return false;
       }
 
       if(!empty($parent) && preg_match('/(.*)-([0-9]+)/', $parent, $parts_parent) === false) {
@@ -395,7 +398,7 @@ class MASTERSHAPER {
       $parent_id = $parts_parent[2];
 
       if(!($obj = $this->load_class($parent_request_object, $parent_id))) {
-         print "unable to locate class for ". $request_object;
+         print "unable to locate class for ". $parent_request_object;
          return false;
       }
 
