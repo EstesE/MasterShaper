@@ -105,7 +105,7 @@
     { chain_list }
      <tr id="chain{$chain->chain_idx}" { if $chain->chain_active != 'Y' } style="opacity: 0.5;" { /if } onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
       <td class="chain_dragger">
-       <img src="{ $icon_chains }" alt="chain icon" />&nbsp;{ $chain->chain_name }
+       <a href="{$rewriter->get_page_url('Chain Edit', $chain->chain_idx)}" title="Edit chain {$chain->chain_name}"><img src="{ $icon_chains }" alt="chain icon" />&nbsp;{ $chain->chain_name }</a>
       </td>
       <td style="text-align: center;">
        <input type="hidden" name="used[]" value="{$chain->chain_idx}" />

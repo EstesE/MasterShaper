@@ -112,7 +112,7 @@
     { pipe_list }
      <tr id="pipe{$pipe->pipe_idx}" { if $pipe->apc_pipe_idx == 0 } style="opacity: 0.5;" { /if } onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
       <td class="pipes_dragger">
-       <img src="{ $icon_pipes }" alt="pipe icon" />&nbsp;{ $pipe->pipe_name }
+       <a href="{$rewriter->get_page_url('Pipe Edit', $pipe->pipe_idx)}" title="Edit pipe {$pipe->pipe_name}"><img src="{ $icon_pipes }" alt="pipe icon" />&nbsp;{ $pipe->pipe_name }</a>
       </td>
       <td style="text-align: center;">
        <input type="checkbox" name="used[]" value="{$pipe->pipe_idx}" { if $pipe->apc_pipe_idx != 0 } checked="checked" { /if } onclick="if(this.checked == false) $('table#pipelist tbody#pipes tr#pipe{$pipe->pipe_idx}').fadeTo(500, 0.50); else $('table#pipelist tbody#pipes tr#pipe{$pipe->pipe_idx}').fadeTo(500, 1);" />
