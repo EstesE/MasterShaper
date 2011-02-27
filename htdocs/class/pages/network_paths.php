@@ -62,6 +62,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       }
 
       $tmpl->register_block("netpath_list", array(&$this, "smarty_netpath_list"));
+
       return $tmpl->fetch("network_paths_list.tpl");
    
    } // showList() 
@@ -76,13 +77,46 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
+      $this->avail_chains = Array();
+      $this->chains = Array();
+
       if($page->id != 0)
          $np = new Network_Path($page->id);
       else
          $np = new Network_Path;
 
+      $sth = $db->db_prepare("
+         SELECT DISTINCT
+            c.chain_idx,
+            c.chain_name,
+            c.chain_active,
+            c.chain_position IS NULL as pos_null
+         FROM
+            ". MYSQL_PREFIX ."chains c
+         WHERE
+            c.chain_netpath_idx LIKE ?
+         ORDER BY
+            pos_null DESC,
+            chain_position ASC
+      ");
+
+      $chains = $db->db_execute($sth, array(
+         $page->id
+      ));
+
+      $cnt_chains = 0;
+
+      while($chain = $chains->fetchRow()) {
+         $this->avail_chains[$cnt_chains] = $chain->chain_idx;
+         $this->chains[$chain->chain_idx] = $chain;
+         $cnt_chains++;
+      }
+
       $tmpl->assign('np', $np);
       $tmpl->register_function("if_select_list", array(&$this, "smarty_if_select_list"), false);
+
+      $tmpl->register_block("chain_list", array(&$this, "smarty_chain_list"), false);
+
       return $tmpl->fetch("network_paths_edit.tpl");
 
    } // showEdit()
@@ -203,6 +237,37 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       return $string;
 
    } // smarty_if_select_list()
+
+   /**
+    * template function which will be called from the network path editing template
+    */
+   public function smarty_chain_list($params, $content, &$smarty, &$repeat)
+   {
+      global $tmpl;
+
+      $index = $tmpl->get_template_vars('smarty.IB.chain_list.index');
+      if(!$index) {
+         $index = 0;
+      }
+
+      if($index < count($this->avail_chains)) {
+
+         $chain_idx = $this->avail_chains[$index];
+         $chain =  $this->chains[$chain_idx];
+
+         $tmpl->assign('chain', $chain);
+
+         $index++;
+         $tmpl->assign('smarty.IB.chain_list.index', $index);
+         $repeat = true;
+      }
+      else {
+         $repeat =  false;
+      }
+
+      return $content;
+
+   } // smarty_chain_list()
 
 } // class Page_Network_Paths
 

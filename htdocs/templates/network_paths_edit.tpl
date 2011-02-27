@@ -91,6 +91,38 @@
   </td>
  </tr>
  <tr>
+  <td>Chains:</td>
+  <td style="vertical-align: top;">
+   <i>(Drag &amp; drop chains to change order.)</i><br />
+   <table class="withborder2" id="chainlist">
+    <thead>
+     <tr>
+      <td><img src="{ $icon_chains }" alt="chain icon" />&nbsp;<i>Chain</i></td>
+      <td><i>Status</i></td>
+     </tr>
+    </thead>
+    <tbody id="chains">
+    { chain_list }
+     <tr id="chain{$chain->chain_idx}" { if $chain->chain_active != 'Y' } style="opacity: 0.5;" { /if } onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+      <td class="chain_dragger">
+       <img src="{ $icon_chains }" alt="chain icon" />&nbsp;{ $chain->chain_name }
+      </td>
+      <td style="text-align: center;">
+       <input type="hidden" name="used[]" value="{$chain->chain_idx}" />
+       <input type="hidden" id="chain-active-{$chain->chain_idx}" name="chain_active[{$chain->chain_idx}]" value="{$chain->apc_chain_idx}" />
+       <div class="toggle" id="toggle-{$chain->chain_idx}" style="display: inline;">
+        <a class="toggle-off" id="chain-{$chain->chain_idx}" to="off" title="Disable chain { $chain->chain_name }" { if $chain->chain_active != "Y" } style="display: none;" { /if } onclick="$('#chain-active-{$chain->chain_idx}').val('N'); $('table#chainlist tbody#chains tr#chain{$chain->chain_idx}').fadeTo(500, 0.50);"><img src="{ $icon_active }" alt="active icon" /></a>
+        <a class="toggle-on" id="chain-{$chain->chain_idx}" to="on" title="Enable chain { $chain->chain_name }" { if $chain->chain_active == "Y" } style="display: none;" { /if } onclick="$('#chain-active-{$chain->chain_idx}').val('Y'); $('table#chainlist tbody#chains tr#chain{$chain->chain_idx}').fadeTo(500, 1);"><img src="{ $icon_inactive }" alt="inactive icon" /></a>
+       </div>
+      </td>
+     </tr>
+    { /chain_list }
+     </tbody>
+   </table>
+  </td>
+  <td>Select chains bound to this network path.</td>
+ </tr>
+ <tr>
   <td colspan="3">
    &nbsp;
   </td>
@@ -101,4 +133,26 @@
   <td>Save your settings.</td>
  </tr>
 </table>
+{literal}
+<script language="JavaScript">
+   $(function(){
+      $("table#chainlist tbody#chains").sortable({
+         accept:      'tbody#chain',
+         greedy:      true,
+         cursor:      'crosshair',
+         placeholder: 'ui-state-highlight',
+         delay:       250
+      });
+      $("table#chainlist tbody#chains").disableSelection();
+      $('td.chain_dragger').hover(
+         function() {
+             $(this).css('cursor','crosshair');
+         },
+         function() {
+             $(this).css('cursor','auto');
+         }
+      );
+   });
+</script>
+{/literal}
 { page_end focus_to='netpath_name' }

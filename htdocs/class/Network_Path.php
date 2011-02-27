@@ -33,6 +33,9 @@ class Network_Path extends MsObject {
       parent::__construct($id, Array(
          'table_name' => 'network_paths',
          'col_name' => 'netpath',
+         'child_names' => Array(
+            'chain' => 'chain',
+         ),
          'fields' => Array(
             'netpath_idx' => 'integer',
             'netpath_name' => 'text',
@@ -97,6 +100,49 @@ class Network_Path extends MsObject {
       return 0;
 
    } // get_next_chain_position()
+
+   public function post_save()
+   {
+      global $db;
+
+      if(!isset($_POST['chain_active']) || empty($_POST['chain_active']))
+         return true;
+
+      $used = $_POST['used'];
+      $chain_active = $_POST['chain_active'];
+
+      $chain_position = 1;
+
+      foreach($used as $use) {
+
+         if(empty($use))
+            continue;
+
+         // skip if not a valid value
+         if(!is_numeric($use))
+            continue;
+
+         $sth = $db->db_prepare("
+            UPDATE
+               ". MYSQL_PREFIX ."chains
+            SET
+               chain_position = ?
+            WHERE
+               chain_idx LIKE ?
+         ");
+
+         $db->db_execute($sth, array(
+            $chain_position,
+            $use,
+         ));
+
+         $chain_position++;
+
+      }
+
+      return true;
+
+   } // post_save()
 
 } // class Network_Path
 
