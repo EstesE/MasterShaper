@@ -1026,7 +1026,15 @@ class MASTERSHAPER {
     */
    public function getConnmarkId($string1, $string2)
    {
-      return "0x". dechex(crc32($string1 . str_replace(":", "", $string2))* -1);
+      // if dechex returned string longer than 8 chars,
+      // we are running 64 kernel, so we have to shift
+      // first 8 chars from left.
+
+      $tmp =  dechex((float) crc32($string1 . str_replace(":", "", $string2))* -1);
+      if(strlen($tmp)>8)
+         $tmp = substr($tmp,8);
+
+      return "0x".$tmp;
 
    } // getConnmarkId()
 
