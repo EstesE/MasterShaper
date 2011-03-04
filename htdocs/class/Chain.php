@@ -180,7 +180,7 @@ class Chain extends MsObject {
     */
    public function post_delete()
    {
-      global $db;
+      global $db, $ms;
 
       $sth = $db->db_prepare("
          DELETE FROM
@@ -192,6 +192,8 @@ class Chain extends MsObject {
       $db->db_execute($sth, array(
          $this->id
       ));
+
+      $ms->update_positions('chains', $this->chain_netpath_idx);
 
       return true;
 

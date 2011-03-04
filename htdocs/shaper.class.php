@@ -1467,14 +1467,16 @@ class MASTERSHAPER {
     * update position
     *
     */
-   public function update_positions($obj_type, $ms_objects)
+   public function update_positions($obj_type, $ms_objects = NULL)
    {
       global $db;
 
       if($obj_type == "pipes") {
 
+         // loop through all provided chain ids
          foreach($ms_objects as $chain) {
 
+            // get all pipes used by chain
             $pipes = $db->db_query("
                SELECT
                   apc_pipe_idx as pipe_idx
@@ -1486,6 +1488,7 @@ class MASTERSHAPER {
                   apc_pipe_pos ASC
             ");
 
+            // update all pipes position assign to this chain
             $pos = 1;
 
             while($pipe = $pipes->fetchRow()) {
@@ -1509,6 +1512,80 @@ class MASTERSHAPER {
 
                $pos++;
             }
+         }
+      }
+
+      if($obj_type == "chains") {
+
+         // get all chains assign to this network-path
+         $chains = $db->db_query("
+            SELECT
+               chain_idx
+            FROM
+               ". MYSQL_PREFIX ."chains
+            WHERE
+               chain_netpath_idx LIKE '". $ms_objects ."'
+            ORDER BY
+               chain_position ASC
+         ");
+
+         $pos = 1;
+
+         while($chain = $chains->fetchRow()) {
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."chains
+               SET
+                  chain_position=?
+               WHERE
+                 chain_idx=?
+               AND
+                 chain_netpath_idx=?
+            ");
+
+            $db->db_execute($sth, array(
+               $pos,
+               $chain->chain_idx,
+               $ms_objects
+            ));
+
+            $pos++;
+         }
+      }
+
+      if($obj_type == "networkpaths") {
+
+         $pos = 1;
+
+         $nps = $db->db_query("
+            SELECT
+               netpath_idx
+            FROM
+               ". MYSQL_PREFIX ."network_paths
+            ORDER BY
+               netpath_position ASC
+         ");
+
+         $pos = 1;
+
+         while($np = $nps->fetchRow()) {
+
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."network_paths
+               SET
+                  netpath_position=?
+               WHERE
+                  netpath_idx=?
+            ");
+
+            $db->db_execute($sth, array(
+               $pos,
+               $np->netpath_idx
+            ));
+
+            $pos++;
          }
       }
 

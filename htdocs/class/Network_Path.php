@@ -144,6 +144,14 @@ class Network_Path extends MsObject {
 
    } // post_save()
 
+   public function post_delete()
+   {
+      global $ms;
+
+      $ms->update_positions('networkpaths');
+
+   } // post_delete()
+
 } // class Network_Path
 
 ?>
