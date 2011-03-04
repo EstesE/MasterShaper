@@ -1462,6 +1462,58 @@ class MASTERSHAPER {
 
    } // check_object_exist
 
+
+   /**
+    * update position
+    *
+    */
+   public function update_positions($obj_type, $ms_objects)
+   {
+      global $db;
+
+      if($obj_type == "pipes") {
+
+         foreach($ms_objects as $chain) {
+
+            $pipes = $db->db_query("
+               SELECT
+                  apc_pipe_idx as pipe_idx
+               FROM
+                  ". MYSQL_PREFIX ."assign_pipes_to_chains
+               WHERE
+                  apc_chain_idx LIKE '". $chain ."'
+               ORDER BY
+                  apc_pipe_pos ASC
+            ");
+
+            $pos = 1;
+
+            while($pipe = $pipes->fetchRow()) {
+
+               $sth = $db->db_prepare("
+                  UPDATE
+                     ". MYSQL_PREFIX ."assign_pipes_to_chains
+                  SET
+                     apc_pipe_pos=?
+                  WHERE
+                     apc_pipe_idx=?
+                  AND
+                     apc_chain_idx=?
+               ");
+
+               $db->db_execute($sth, array(
+                  $pos,
+                  $pipe->pipe_idx,
+                  $chain
+               ));
+
+               $pos++;
+            }
+         }
+      }
+
+   } // update_positions
+
 } // class MASTERSHAPER
 
 /***************************************************************************

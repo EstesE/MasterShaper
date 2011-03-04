@@ -117,7 +117,11 @@ class Pipe extends MsObject {
    } // post_save()
 
    /** 
-    * delete pipe
+    * post delete pipe function
+    *
+    * perform several cleaning up tasks after a
+    * pipe has been removed.
+    *
     */
    public function post_delete()
    {
@@ -135,6 +139,21 @@ class Pipe extends MsObject {
          $this->id
       ));
 
+      // get all chains this pipe was associated with
+      $result = $db->db_query("
+         SELECT
+            apc_chain_idx as chain_idx
+         FROM
+            ". MYSQL_PREFIX ."assign_pipes_to_chains
+         WHERE
+            apc_pipe_idx LIKE '". $this->id ."'
+      ");
+
+      $chains = Array();
+      while($chain = $result->fetchRow()) {
+         array_push($chains, $chain->chain_idx);
+      }
+
       // remove all chains associations
       $sth = $db->db_prepare("
          DELETE FROM
@@ -146,6 +165,13 @@ class Pipe extends MsObject {
       $db->db_execute($sth, array(
          $this->id
       ));
+
+      if(empty($chains))
+         return true;
+
+      global $ms;
+
+      $ms->update_positions('pipes', $chains);
 
       return true;
 
