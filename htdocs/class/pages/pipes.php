@@ -313,18 +313,37 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
                apc_pipe_idx,
                apc_chain_idx,
                apc_sl_idx,
-               apc_pipe_active
+               apc_pipe_active,
+               apc_pipe_pos
             ) VALUES (
                ?,
                ?,
                0,
-               'Y'
+               'Y',
+               (
+                  /* a workaround to trigger a temp-table
+                     as MySQL do not allow query a to-be-
+                     updated table
+                  */
+                  SELECT
+                     MAX(apc_pipe_pos)+1
+                  FROM (
+                     SELECT
+                        apc_pipe_pos,
+                        apc_chain_idx
+                     FROM
+                        ". MYSQL_PREFIX ."assign_pipes_to_chains
+                  ) as temp
+                  WHERE
+                     temp.apc_chain_idx LIKE ?
+               )
             )
          ");
 
          $db->db_execute($sth, array(
             $page->id,
-            $chain
+            $chain,
+            $chain,
          ));
       }
 
