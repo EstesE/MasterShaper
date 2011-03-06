@@ -330,7 +330,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       ");
 
       $db->db_execute($sth, array(
-         $this->id
+         $page->id
       ));
 
       foreach($_POST['chains'] as $chain) {
