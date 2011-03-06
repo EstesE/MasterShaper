@@ -90,6 +90,35 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       else
          $pipe = new Pipe();
 
+      /* get a list of chains that use this pipe */
+      $sth = $db->db_prepare("
+         SELECT
+            c.chain_idx,
+            c.chain_name
+         FROM
+            ". MYSQL_PREFIX ."chains c
+         INNER JOIN
+            ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+         ON
+            apc.apc_chain_idx=c.chain_idx
+         WHERE
+            apc.apc_pipe_idx LIKE ?
+         ORDER BY
+            c.chain_name ASC
+      ");
+
+      $assigned_chains = $db->db_execute($sth, array(
+         $page->id,
+      ));
+
+      if($assigned_chains->numRows() > 0) {
+         $chain_use_pipes = array();
+         while($chain = $assigned_chains->fetchRow()) {
+            $chain_use_pipes[$chain->chain_idx] = $chain->chain_name;
+         }
+         $tmpl->assign('chain_use_pipes', $chain_use_pipes);
+      }
+
       $tmpl->assign('pipe', $pipe);
 
       $tmpl->register_function("unused_filters_select_list", array(&$this, "smarty_unused_filters_select_list"), false);

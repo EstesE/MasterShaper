@@ -123,4 +123,12 @@
  </tr>
 </table>
 </form>
+<p class="footnote">
+This pipe is assigned to the following chains:<br />
+{ foreach from=$chain_use_pipes key=chain_idx item=chain_name name=chains }
+ <a href="{$rewriter->get_page_url('Chain Edit', $chain_idx)}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{ $chain_name }</a>{ if ! $smarty.foreach.filters.last},{/if}
+{ foreachelse }
+ none
+{ /foreach }
+</p>
 { page_end focus_to='pipe_name' }

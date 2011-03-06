@@ -104,6 +104,16 @@ table.rootVoice tr td {
    white-space:      nowrap;
 }
 
+p.footnote {
+	font-family:      Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size:        10px;
+}
+
+p.footnote a {
+	font-family:      Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size:        10px;
+}
+
 .menuSelector {
    background-color: #f2f2ff;
 }
