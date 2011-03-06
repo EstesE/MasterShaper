@@ -21,44 +21,44 @@
  *
  ***************************************************************************/
 
-class Network_Interface extends MsObject {
+class Host_Profile extends MsObject {
 
    /**
-    * Network_Interface constructor
+    * Host_Profile constructor
     *
-    * Initialize the Network_Interface class
+    * Initialize the Host_Profile class
     */
    public function __construct($id = null)
    {
       parent::__construct($id, Array(
-         'table_name' => 'interfaces',
-         'col_name' => 'if',
+         'table_name' => 'host_profiles',
+         'col_name' => 'host',
+         'child_names' => Array(
+            'chain' => 'chain',
+         ),
          'fields' => Array(
-            'if_idx' => 'integer',
-            'if_name' => 'text',
-            'if_speed' => 'text',
-            'if_fallback_idx' => 'integer',
-            'if_ifb' => 'text',
-            'if_active' => 'text',
-            'if_host_idx' => 'integer',
+            'host_idx' => 'integer',
+            'host_name' => 'text',
+            'host_active' => 'text',
          ),
       ));
 
       if(!isset($id) || empty($id)) {
-         $this->if_active = 'Y';
-         $this->if_fallback_idx = 0;
+         $this->host_active = 'Y';
       }
 
    } // __construct()
 
-   public function pre_save()
+   public function pre_delete()
    {
-      global $ms;
+      global $db, $ms;
 
-      $this->if_host_idx = $ms->get_current_host_profile();
+      if($this->id == 1) {
+         $ms->throwError('You can not delete the default host profile!');
+      }
 
-   } // pre_save()
+   } // pre_delete()
 
-} // class Network_Interface
+} // class Host_Profile
 
 ?>

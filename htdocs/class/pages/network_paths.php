@@ -39,7 +39,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
     */
    public function showList()
    {
-      global $db, $tmpl;
+      global $ms, $db, $tmpl;
 
       $this->avail_netpaths = Array();
       $this->netpaths = Array();
@@ -49,6 +49,8 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
             *
          FROM
             ". MYSQL_PREFIX ."network_paths
+         WHERE
+            netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             netpath_name ASC
       ");
@@ -75,7 +77,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       if($this->is_storing())
          $this->store();
 
-      global $db, $tmpl, $page;
+      global $ms, $db, $tmpl, $page;
 
       $this->avail_chains = Array();
       $this->chains = Array();
@@ -95,13 +97,16 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
             ". MYSQL_PREFIX ."chains c
          WHERE
             c.chain_netpath_idx LIKE ?
+         AND
+            c.chain_host_idx LIKE ?
          ORDER BY
             pos_null DESC,
             chain_position ASC
       ");
 
       $chains = $db->db_execute($sth, array(
-         $page->id
+         $page->id,
+         $ms->get_current_host_profile(),
       ));
 
       $cnt_chains = 0;
@@ -210,7 +215,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
     */
    public function smarty_if_select_list($params, &$smarty)
    {
-      global $db;
+      global $ms, $db;
 
       if(!array_key_exists('if_idx', $params)) {
          $smarty->trigger_error("getSLList: missing 'if_idx' parameter", E_USER_WARNING);
@@ -223,6 +228,8 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
             *
          FROM
             ". MYSQL_PREFIX ."interfaces
+         WHERE
+            if_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             if_name ASC
       ");

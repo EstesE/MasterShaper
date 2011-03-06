@@ -73,7 +73,9 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          FROM
             ". MYSQL_PREFIX ."network_paths
          WHERE
-            netpath_active='Y'
+            netpath_active LIKE 'Y'
+         AND
+            netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             netpath_position ASC
       ");
@@ -98,13 +100,16 @@ class Page_Overview extends MASTERSHAPER_PAGE {
             WHERE 
                chain_netpath_idx LIKE ?
             AND 
-               chain_active='Y'
+               chain_active LIKE 'Y'
+            AND
+               chain_host_idx LIKE ?
             ORDER BY
                chain_position ASC
          ");
 
          $res_chains = $db->db_execute($sth, array(
-            $network_path->netpath_idx
+            $network_path->netpath_idx,
+            $ms->get_current_host_profile(),
          ));
 
          while($chain = $res_chains->fetchRow()) {
@@ -405,6 +410,39 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       // get objects current position
       switch($_POST['move_obj']) {
          case 'chain':
+            $query = "
+               SELECT
+                  ". $obj_col ."_position as position,
+                  ". $obj_parent ." as parent_idx,
+                  (
+                     /* get colums max position */
+                     SELECT
+                        MAX(". $obj_col ."_position)
+                     FROM
+                        ". MYSQL_PREFIX . $obj_table ."
+                     WHERE
+                        /* but only for our parents objects */
+                        ". $obj_parent ." = (
+                        SELECT
+                           ". $obj_parent ."
+                        FROM
+                           ". MYSQL_PREFIX . $obj_table ."
+                        WHERE
+                           ". $obj_col ."_idx LIKE '". $idx ."'
+                        AND
+                           ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
+                     )
+                     AND
+                        ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
+                  ) as max
+               FROM
+                  ". MYSQL_PREFIX . $obj_table ."
+               WHERE
+                  ". $obj_col ."_idx='". $idx ."'
+               AND
+                  ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
+            ";
+            break;
          case 'pipe':
             $query = "
                SELECT
@@ -443,11 +481,15 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                         MAX(". $obj_col ."_position)
                      FROM
                         ". MYSQL_PREFIX . $obj_table ."
+                     WHERE
+                        ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
                   ) as max
                FROM
                   ". MYSQL_PREFIX .  $obj_table ."
                WHERE
                   ". $obj_col ."_idx='". $idx ."'
+               AND
+                  ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
             ";
             break;
       }
@@ -489,6 +531,27 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          /* move all other objects away */
          switch($_POST['move_obj']) {
             case 'chain':
+               $sth = $db->db_prepare("
+                  UPDATE
+                     ". MYSQL_PREFIX . $obj_table ."
+                  SET
+                     ". $obj_col ."_position=?
+                  WHERE
+                     ". $obj_col ."_position LIKE ?
+                  AND
+                     ". $obj_parent ." LIKE ?
+                  AND
+                     ". $obj_col ."_host_idx LIKE ?
+               ");
+
+               $db->db_execute($sth, array(
+                  $my_pos->position,
+                  $new_pos,
+                  $my_pos->parent_idx,
+                  $ms->get_current_host_profile(),
+               ));
+               break;
+
             case 'pipe':
                $sth = $db->db_prepare("
                   UPDATE
@@ -516,11 +579,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                      ". $obj_col ."_position=?
                   WHERE
                      ". $obj_col ."_position LIKE ?
+                  AND
+                     ". $obj_col ."_host_idx LIKE ?
                ");
 
                $db->db_execute($sth, array(
                   $my_pos->position,
-                  $new_pos
+                  $new_pos,
+                  $ms->get_current_host_profile(),
                ));
                break;
          }
@@ -536,6 +602,24 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          switch($_POST['move_obj']) {
 
             case 'chain':
+               $sth = $db->db_execute("
+                  UPDATE
+                     ". MYSQL_PREFIX . $obj_table ."
+                  SET
+                     ". $obj_col ."_position = ?
+                  WHERE
+                     ". $obj_parent ." LIKE ?
+                  AND
+                     ". $obj_col ."_host_idx LIKE ?
+               ");
+               $db->db_execute($sth, array(
+                  $obj_col ."_position" . $dir,
+                  $my_pos->parent_idx,
+                  $ms->get_current_host_profile(),
+               ));
+               break;
+
+
             case 'pipe':
                $sth = $db->db_execute("
                   UPDATE
@@ -560,14 +644,16 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                      ". $obj_col ."_position = ?
                   WHERE
                      ". $obj_col ."_position LIKE ?
+                  AND
+                     ". $obj_col ."_host_idx LIKE ?
                ");
                $db->db_execute($sth, array(
                   $obj_col ."_position" . $dir,
-                  $new_pos
+                  $new_pos,
+                  $ms->get_current_host_profile(),
                ));
                break;
          }
-
       }
 
       if($new_pos == -1)
@@ -576,19 +662,44 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $new_pos = 1;
 
       /* set objects new position */
-      $sth = $db->db_prepare("
-         UPDATE
-            ". MYSQL_PREFIX . $obj_table ."
-         SET
-            ". $obj_col ."_position=?
-         WHERE
-            ". $obj_col ."_idx LIKE ?
-      ");
+      switch($_POST['move_obj']) {
+         case 'chain':
+         case 'netpath':
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX . $obj_table ."
+               SET
+                  ". $obj_col ."_position=?
+               WHERE
+                  ". $obj_col ."_idx LIKE ?
+               AND
+                  ". $obj_col ."_host_idx LIKE ?
+            ");
 
-      $db->db_execute($sth, array(
-         $new_pos,
-         $idx
-      ));
+            $db->db_execute($sth, array(
+               $new_pos,
+               $idx,
+               $ms->get_current_host_profile(),
+            ));
+
+            break;
+         case 'pipe':
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX . $obj_table ."
+               SET
+                  ". $obj_col ."_position=?
+               WHERE
+                  ". $obj_col ."_idx LIKE ?
+            ");
+
+            $db->db_execute($sth, array(
+               $new_pos,
+               $idx
+            ));
+
+            break;
+      }
 
       return "ok";
 
@@ -613,11 +724,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   chain_sl_idx=?
                WHERE
                   chain_idx LIKE ?
+               AND
+                  chain_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $v,
-               $k
+               $k,
+               $ms->get_current_host_profile(),
             ));
 
          }
@@ -635,11 +749,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   chain_fallback_idx = ?
                WHERE
                   chain_idx LIKE ?
+               AND
+                  chain_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $v,
-               $k
+               $k,
+               $ms->get_current_host_profile(),
             ));
 
          }
@@ -656,11 +773,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   chain_src_target = ?
                WHERE
                   chain_idx LIKE ?
+               AND
+                  chain_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $v,
-               $k
+               $k,
+               $ms->get_current_host_profile(),
             ));
 
          }
@@ -677,11 +797,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   chain_dst_target = ?
                WHERE
                   chain_idx LIKE ?
+               AND
+                  chain_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $v,
-               $k
+               $k,
+               $ms->get_current_host_profile(),
             ));
 
          }
@@ -698,11 +821,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   chain_direction = ?
                WHERE
                   chain_idx LIKE ?
+               AND
+                  chain_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $v,
-               $k
+               $k,
+               $ms->get_current_host_profile(),
             ));
 
          }
@@ -719,11 +845,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   chain_action = ?
                WHERE
                   chain_idx LIKE ?
+               AND
+                  chain_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $v,
-               $k
+               $k,
+               $ms->get_current_host_profile(),
             ));
 
          }

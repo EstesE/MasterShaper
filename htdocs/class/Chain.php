@@ -49,6 +49,7 @@ class Chain extends MsObject {
             'chain_action' => 'text',
             'chain_tc_id' => 'text',
             'chain_netpath_idx' => 'integer',
+            'chain_host_idx' => 'integer',
          ),
       ));
 
@@ -66,7 +67,7 @@ class Chain extends MsObject {
     */
    public function pre_save()
    {
-      global $db;
+      global $ms, $db;
 
       /* no prework if chain already exists */
       if(isset($this->id))
@@ -78,10 +79,14 @@ class Chain extends MsObject {
          FROM
             ". MYSQL_PREFIX ."chains
          WHERE
-            chain_netpath_idx='". $_POST['chain_netpath_idx'] ."'
+            chain_netpath_idx LIKE '". $_POST['chain_netpath_idx'] ."'
+         AND
+            chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
       ");
 
       $this->chain_position = ($max_pos->pos+1);
+
+      $this->chain_host_idx = $ms->get_current_host_profile();
 
       return true;
 

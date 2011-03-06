@@ -103,7 +103,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
     */
    private function getFirstChain()
    {
-      global $db;
+      global $ms, $db;
 
       // Get only chains which do not Ignore QoS and are active
       $chain = $db->db_fetchSingleRow("
@@ -112,9 +112,11 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          FROM
             ". MYSQL_PREFIX ."chains
          WHERE
-            chain_sl_idx!=0
+            chain_sl_idx NOT LIKE 0
          AND
-            chain_active='Y'
+            chain_active LIKE 'Y'
+         AND
+            chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             chain_position ASC
          LIMIT
@@ -150,7 +152,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
     */
    public function smarty_chain_select_list($params, &$smarty)
    {
-      global $db;
+      global $ms, $db;
 
       // list only chains which do not Ignore QoS and are active
       $chains = $db->db_query("
@@ -165,6 +167,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             chain_active='Y'
          AND
             chain_fallback_idx<>'0'
+         AND
+            chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             chain_position ASC
       ");
@@ -211,7 +215,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
     */
    public function get_jqplot_values()
    {
-      global $db;
+      global $ms, $db;
 
       /* ****************************** */
       /* graphmode                      */
@@ -249,13 +253,16 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             stat_time >= ?
          AND
             stat_time <= ?
+         AND
+            stat_host_idx LIKE ?
          ORDER BY
             stat_time ASC
       ");
 
       $data = $db->db_execute($sth, array(
          $time_past,
-         $time_now
+         $time_now,
+         $ms->get_current_host_profile(),
       ));
 
       switch($_SESSION['mode']) {
@@ -527,7 +534,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    /* returns pipe/chain name according tc_id */
    private function findName($id, $interface)
    {
-      global $db;
+      global $ms, $db;
 
       if(preg_match("/1:.*00/", $id)) {
          return "Fallback";
@@ -543,6 +550,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             id_tc_id='". $id ."'
          AND
             id_if='". $interface ."'
+         AND
+            id_host_idx LIKE '". $ms->get_current_host_profile() ."'
       ");
 
       if(!$tc_id)
@@ -568,7 +577,9 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             FROM
                ". MYSQL_PREFIX ."chains
             WHERE
-               chain_idx='". $tc_id->id_chain_idx ."'
+               chain_idx LIKE '". $tc_id->id_chain_idx ."'
+            AND
+               chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ");
          return $chain->chain_name;
       }
@@ -580,7 +591,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    /* check if tc_id is a pipe */
    private function isPipe($tc_id, $if, $chain)
    {
-      global $db;
+      global $ms, $db;
 
       if($db->db_fetchSingleRow("
          SELECT
@@ -588,13 +599,15 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          FROM
             ". MYSQL_PREFIX ."tc_ids
          WHERE
-            id_if='". $if ."'
+            id_if LIKE '". $if ."'
          AND
-            id_chain_idx='". $chain ."'
+            id_chain_idx LIKE '". $chain ."'
          AND
-            id_pipe_idx<>0
+            id_pipe_idx NOT LIKE 0
          AND
-            id_tc_id='". $tc_id ."'
+            id_tc_id LIKE '". $tc_id ."'
+         AND
+            id_host_idx LIKE '". $ms->get_current_host_profile() ."'
       ")) {
          return true;
       }
@@ -606,7 +619,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    /* check if tc_id is a chain */
    private function isChain($tc_id, $if)
    {
-      global $db;
+      global $ms, $db;
 
       if($db->db_fetchSingleRow("
          SELECT
@@ -614,11 +627,13 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          FROM
             ". MYSQL_PREFIX ."tc_ids
          WHERE
-            id_if='". $if ."'
+            id_if LIKE '". $if ."'
          AND 
-            id_tc_id='". $tc_id ."'
+            id_tc_id LIKE '". $tc_id ."'
          AND
-            id_pipe_idx=0")) {
+            id_pipe_idx LIKE 0
+         AND
+            id_host_idx LIKE '". $ms->get_current_host_profile() ."'")) {
 
          return true;
 

@@ -80,4 +80,4 @@ class Rewriter {
 
    } // instance()
 
-}
+} // class Rewriter

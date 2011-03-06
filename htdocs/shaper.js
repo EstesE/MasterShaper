@@ -328,6 +328,45 @@ function set_graph_mode(to)
 
 } // set_graph_mode()
 
+function set_host_profile()
+{
+   var selectbox = document.getElementsByName("active_host_profile")[0];
+
+   if(!selectbox) {
+      alert('Unable to locate element active_host_profile');
+      return false;
+   }
+
+   var hostprofile = selectbox.options[selectbox.selectedIndex].value;
+
+   if(!hostprofile) {
+      alert('Unable to get selected host_profile');
+      return false;
+   }
+
+   $.ajax({
+      type: "POST",
+      url: "rpc.html",
+      data: ({
+         type      : 'rpc',
+         action    : 'host-profile',
+         hostprofile : hostprofile
+      }),
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+         alert('Failed to contact server! ' + textStatus);
+      },
+      success: function(data){
+         if(data == "ok\n") {
+            window.location.reload();
+            return true;
+         }
+         alert('Server returned: ' + data + data.length);
+         return false;
+      }
+   });
+
+} // set_host_profile()
+
 function obj_delete(element, target, idx)
 {
    var del_id = element.attr("id");

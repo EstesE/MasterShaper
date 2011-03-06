@@ -62,15 +62,6 @@ class Pipe extends MsObject {
       if(isset($this->id))
          return true;
 
-      $max_pos = $db->db_fetchSingleRow("
-         SELECT
-            MAX(apc_pipe_pos) as pos
-         FROM
-            ". MYSQL_PREFIX ."assign_pipes_to_chains
-         WHERE
-            apc_chain_idx='". $_POST['chain_idx'] ."'
-      ");
-
       return true;
 
    } // pre_save();

@@ -39,7 +39,7 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
     */
    public function showList()
    {
-      global $db, $tmpl;
+      global $ms, $db, $tmpl;
 
       $this->avail_interfaces = Array();
       $this->interfaces = Array();
@@ -49,6 +49,8 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
             *
          FROM
             ". MYSQL_PREFIX ."interfaces
+         WHERE
+            if_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             if_name ASC
       ");

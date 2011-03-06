@@ -46,6 +46,7 @@ class Network_Path extends MsObject {
             'netpath_position' => 'integer',
             'netpath_imq' => 'text',
             'netpath_active' => 'text',
+            'netpath_host_idx' => 'integer',
          ),
       ));
 
@@ -60,16 +61,21 @@ class Network_Path extends MsObject {
     */
    public function pre_save()
    {
-      global $db;
+      global $ms, $db;
 
       $max_pos = $db->db_fetchSingleRow("
          SELECT
             MAX(netpath_position) as pos
          FROM
             ". MYSQL_PREFIX ."network_paths
+         WHERE
+            netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
       ");
 
       $this->netpath_position = ($max_pos->pos+1);
+
+      $this->netpath_host_idx = $ms->get_current_host_profile();
+
       return true;
 
    } // pre_save()
@@ -83,7 +89,7 @@ class Network_Path extends MsObject {
     */
    public function get_next_chain_position()
    {
-      global $db;
+      global $ms, $db;
 
       $max_pos = $db->db_fetchSingleRow("
          SELECT
@@ -92,6 +98,8 @@ class Network_Path extends MsObject {
             ". MYSQL_PREFIX ."chains
          WHERE
             chain_netpath_idx LIKE '". $this->id ."'
+         AND
+            chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
       ");
 
       if(!empty($max_pos->pos))
@@ -103,7 +111,7 @@ class Network_Path extends MsObject {
 
    public function post_save()
    {
-      global $db;
+      global $ms, $db;
 
       if(!isset($_POST['chain_active']) || empty($_POST['chain_active']))
          return true;
@@ -129,11 +137,14 @@ class Network_Path extends MsObject {
                chain_position = ?
             WHERE
                chain_idx LIKE ?
+            AND
+               chain_host_idx LIKE ?
          ");
 
          $db->db_execute($sth, array(
             $chain_position,
             $use,
+            $ms->get_current_host_profile(),
          ));
 
          $chain_position++;

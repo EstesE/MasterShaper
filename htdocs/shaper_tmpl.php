@@ -67,6 +67,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_bandwidth', WEB_PATH .'/icons/bandwidth.gif');
       $this->assign('icon_update', WEB_PATH .'/icons/update.gif');
       $this->assign('icon_interfaces', WEB_PATH .'/icons/network_card.gif');
+      $this->assign('icon_hosts', WEB_PATH .'/icons/host.png');
       $this->assign('icon_treeend', WEB_PATH .'/icons/tree_end.gif');
       $this->assign('icon_rules_show', WEB_PATH .'/icons/show.gif');
       $this->assign('icon_rules_load', WEB_PATH .'/icons/enable.gif');
@@ -91,6 +92,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
       $this->register_function("service_level_select_list", array(&$this, "smarty_service_level_select_list"), false);
       $this->register_function("network_path_select_list", array(&$this, "smarty_network_path_select_list"), false);
+      $this->register_function("host_profile_select_list", array(&$this, "smarty_host_profile_select_list"), false);
 
    } // __construct()
 
@@ -319,6 +321,31 @@ class MASTERSHAPER_TMPL extends Smarty {
 
    } // smarty_network_path_select_list()
 
-}
+   public function smarty_host_profile_select_list($params, &$smarty)
+   {
+      global $ms, $db;
+
+      $result = $db->db_query("
+         SELECT
+            *
+         FROM
+            ". MYSQL_PREFIX ."host_profiles
+         ORDER BY
+            host_name ASC
+      ");
+
+      while($row = $result->fetchRow()) {
+         $string.= "<option value=\"". $row->host_idx ."\"";
+         if($row->host_idx == $ms->get_current_host_profile()) {
+            $string.= " selected=\"selected\"";
+         }
+         $string.= ">". $row->host_name ."</option>\n";
+      }
+
+      return $string;
+
+   } // smarty_host_profile_select_list()
+
+} // class MASTERSHAPER_TMPL
 
 ?>

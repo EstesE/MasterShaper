@@ -39,7 +39,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
     */
    public function showList()
    {
-      global $db, $tmpl;
+      global $ms, $db, $tmpl;
 
       $this->avail_pipes = Array();
       $this->pipes = Array();
@@ -57,6 +57,8 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             ". MYSQL_PREFIX ."chains c
          ON
             apc.apc_chain_idx=c.chain_idx
+         WHERE
+            c.chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             apc.apc_chain_idx ASC,
             p.pipe_name ASC
@@ -80,7 +82,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
     */
    public function showEdit()
    {
-      global $db, $page, $tmpl;
+      global $ms, $db, $page, $tmpl;
 
       if($this->is_storing())
          $this->store();
@@ -103,12 +105,15 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             apc.apc_chain_idx=c.chain_idx
          WHERE
             apc.apc_pipe_idx LIKE ?
+         AND
+            c.chain_host_idx LIKE ?
          ORDER BY
             c.chain_name ASC
       ");
 
       $assigned_chains = $db->db_execute($sth, array(
          $page->id,
+         $ms->get_current_host_profile(),
       ));
 
       if($assigned_chains->numRows() > 0) {

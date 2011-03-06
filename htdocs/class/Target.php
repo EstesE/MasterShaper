@@ -119,7 +119,7 @@ class Target extends MsObject {
 
       return true;
    
-   } // delete()
+   } // post_delete()
 
 } // class Target
 

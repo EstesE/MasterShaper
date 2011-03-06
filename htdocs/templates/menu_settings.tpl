@@ -44,7 +44,13 @@
  <li>
   <a class="{ldelim}action: 'location.href=\'{$rewriter->get_page_url('Network Paths List')}\''{rdelim}">
    <img src="{$icon_interfaces}" />&nbsp;Network Paths<br />
-   <div class="menu_help">form interfaces to network-paths</div>
+   <div class="menu_help">form interfaces into network-paths</div>
+  </a>
+ </li>
+ <li>
+  <a class="{ldelim}action: 'location.href=\'{$rewriter->get_page_url('Host Profiles List')}\''{rdelim}">
+   <img src="{$icon_hosts}" />&nbsp;Host Profiles<br />
+   <div class="menu_help">add or modify host profiles</div>
   </a>
  </li>
 </div>

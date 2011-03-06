@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '13');
+define('SCHEMA_VERSION', '14');
 
 /***************************************************************************
  *
@@ -607,6 +607,7 @@ class MASTERSHAPER_DB {
               `chain_action` varchar(16) default NULL,
               `chain_tc_id` varchar(16) default NULL,
               `chain_netpath_idx` int(11) default NULL,
+              `chain_host_idx` int(11) default NULL,
               PRIMARY KEY  (`chain_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
@@ -661,6 +662,7 @@ class MASTERSHAPER_DB {
               `if_fallback_idx` int(11) default NULL,
               `if_ifb` char(1) default NULL,
               `if_active` char(1) default NULL,
+              `if_host_idx` int(11) default NULL,
               PRIMARY KEY  (`if_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");   
@@ -686,6 +688,7 @@ class MASTERSHAPER_DB {
               `netpath_position` int(11) default NULL,
               `netpath_imq` varchar(1) default NULL,
               `netpath_active` varchar(1) default NULL,
+              `netpath_host_idx` int(11) default NULL,
               PRIMARY KEY  (`netpath_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
@@ -806,6 +809,7 @@ class MASTERSHAPER_DB {
             CREATE TABLE `". MYSQL_PREFIX ."stats` (
               `stat_time` int(11) NOT NULL default '0',
               `stat_data` text,
+              `stat_host_idx` int(11) default NULL,
               PRIMARY KEY  (`stat_time`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
@@ -830,6 +834,7 @@ class MASTERSHAPER_DB {
               `id_if` varchar(255) default NULL,
               `id_tc_id` varchar(255) default NULL,
               `id_color` varchar(7) default NULL,
+              `id_host_idx` int(11) default NULL,
               KEY `id_pipe_idx` (`id_pipe_idx`),
               KEY `id_chain_idx` (`id_chain_idx`),
               KEY `id_if` (`id_if`),
@@ -877,6 +882,23 @@ class MASTERSHAPER_DB {
                'Y',
                'Y',
                'Y',
+               'Y'
+            )");
+      }
+
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'hosts')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."hosts` (
+              `host_idx` int(11) NOT NULL auto_increment,
+              `host_name` varchar(32) default NULL,
+              `host_active` char(1) default NULL,
+              PRIMARY KEY  (`host_idx`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+         ");
+         $this->db_query("
+            INSERT INTO ". MYSQL_PREFIX ."hosts VALUES (
+               NULL,
+               'Default Host',
                'Y'
             )");
       }
@@ -943,6 +965,9 @@ class MASTERSHAPER_DB {
             (48, 'Monitoring Bandwidth', 'monitoring/bandwidth.html', '^/monitoring/bandwidth.html$', 'monitor.php'),
             (50, 'Monitoring', 'monitoring/mode.html', '^/monitoring/mode.html$', 'monitor.php'),
             (51, 'RPC Call', 'rpc.html', 'rpc.html', '[internal]');
+            (52, 'Host Profile List', 'host-profiles/list.html', '^/host-profiles/list.html$', 'host_profiles.php'),
+            (53, 'Host Profile New', 'host-profiles/new.html', '^/host-profiles/new.html$', 'host_profiles.php'),
+            (54, 'Host Profile Edit', 'host-profiles/edit-[id].html', '^/host-profiles/edit-([0-9]+).html$', 'host_profiles.php'),
          ");
       }
 
@@ -984,7 +1009,8 @@ class MASTERSHAPER_DB {
       if($this->schema_version < 3) {
 
          $this->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."assign_pipes_to_chains
+            INSERT INTO
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
             SELECT
                pipe_idx, pipe_chain_idx
             FROM
@@ -1172,6 +1198,98 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(13);
+
+      }
+
+      if($this->schema_version < 14) {
+
+         // install new tables
+         $this->install_tables();
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."chains
+            ADD
+              `chain_host_idx` int(11) default NULL
+         ");
+
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."chains
+            SET
+               chain_host_idx=1
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."interfaces
+            ADD
+              `if_host_idx` int(11) default NULL
+         ");
+
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."interfaces
+            SET
+              if_host_idx=1
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."network_paths
+            ADD
+              `netpath_host_idx` int(11) default NULL
+         ");
+
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."network_paths
+            SET
+               netpath_host_idx=1
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."stats
+            ADD
+              `stat_host_idx` int(11) default NULL
+         ");
+
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."stats
+            SET
+               stat_host_idx=1
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."tc_ids
+            ADD
+              `id_host_idx` int(11) default NULL,
+         ");
+
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."tc_ids
+            SET
+               id_host_idx=1
+         ");
+
+         $this->db_query("
+            INSERT INTO ". MYSQL_PREFIX ."pages (
+               page_id,
+               page_name,
+               page_uri,
+               page_uri_pattern,
+               page_includefile
+            ) VALUES
+               (52, 'Host Profiles List', 'host-profiles/list.html', '^/host-profiles/list.html$', 'host_profiles.php'),
+               (53, 'Host Profile New', 'host-profiles/new.html', '^/host-profiles/new.html$', 'host_profiles.php'),
+               (54, 'Host Profile Edit', 'host-profiles/edit-[id].html', '^/host-profiles/edit-([0-9]+).html$', 'host_profiles.php')
+         ");
+
+         $this->setVersion(14);
 
       }
 

@@ -39,7 +39,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
     */
    public function showList()
    {
-      global $db, $tmpl;
+      global $ms, $db, $tmpl;
 
       $this->avail_chains = Array();
       $this->chains = Array();
@@ -51,12 +51,16 @@ class Page_Chains extends MASTERSHAPER_PAGE {
             slfall.sl_name as chain_fallback_name
          FROM
             ". MYSQL_PREFIX ."chains c
-         LEFT JOIN ". MYSQL_PREFIX ."service_levels sl
-            ON
-               c.chain_sl_idx=sl.sl_idx
-         LEFT JOIN ". MYSQL_PREFIX ."service_levels slfall
-            ON
-               c.chain_fallback_idx=slfall.sl_idx
+         LEFT JOIN
+            ". MYSQL_PREFIX ."service_levels sl
+         ON
+            c.chain_sl_idx=sl.sl_idx
+         LEFT JOIN
+            ". MYSQL_PREFIX ."service_levels slfall
+         ON
+            c.chain_fallback_idx=slfall.sl_idx
+         WHERE
+            c.chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             c.chain_name ASC
       ");
@@ -281,7 +285,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
     */
    public function get_chains_list()
    {
-      global $db, $tmpl, $ms;
+      global $ms, $db, $tmpl;
 
       $this->avail_chains = Array();
       $this->chains = Array();
@@ -315,12 +319,15 @@ class Page_Chains extends MASTERSHAPER_PAGE {
             AND
                apc.apc_pipe_idx LIKE ?
          )
+         AND
+            c.chain_host_idx LIKE ?
          ORDER BY
             c.chain_name ASC
       ");
 
       $res_chains = $db->db_execute($sth, array(
-         $id
+         $id,
+         $ms->get_current_host_profile(),
       ));
 
       $cnt_chains = 0;

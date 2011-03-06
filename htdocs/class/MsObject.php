@@ -110,6 +110,9 @@ class MsObject {
       if(!isset($this->col_name))
          return false;
 
+      if(method_exists($this, 'pre_delete'))
+         $this->pre_delete();
+
       /* generic delete */
       $sth = $db->db_prepare("
          DELETE FROM

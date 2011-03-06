@@ -54,10 +54,10 @@ my $sec_counter = 0;
 my (%bandwidth, %last_bytes, %config, %options);
 
 # helper vars
-my ($now, $interface, $ms_options, $msg, $level, $line);
+my ($now, $ms_options, $msg, $level, $line);
 my ($key, $value, $data, $tc_if, $current_bytes);
 my ($current_bw, $aver_bw, $date, $file, $sth);
-my ($dbh, $tc, %counter);
+my ($dbh, $tc, %counter, $hostprofile);
 my @tc_interfaces = ();
 my @temp_array = ();
 my @result = ();
@@ -216,10 +216,20 @@ while(1) {
    if($data ne "") {
       # printMsg($data);
       $sth = $dbh->prepare("
-         INSERT INTO ". $config{'mysql_prefix'} ."stats (stat_data, stat_time)
-         VALUES ('". $data ."', '". $now ."')
+         INSERT INTO ". $config{'mysql_prefix'} ."stats (
+            stat_data,
+            stat_time,
+            stat_host_idx
+         ) VALUES (
+            ?,
+            ?,
+            ?
+         )
       ") || printMsg(LOG_WARN, "Error on preparing data: ". $dbh->errstr);
 
+      $sth->bind_param(1, $data);
+      $sth->bind_param(2, $now);
+      $sth->bind_param(3, $hostprofile);
       $sth->execute() || printMsg(LOG_WARN, "Error on inserting data: ". $sth->errstr);
       $sth->finish();
 
@@ -249,9 +259,34 @@ mysql_disconnect();
 # returns the used interfaces
 sub getInterfaces() {
 
+   my $sth;
+   my @host;
+
+   $sth = $dbh->prepare("
+      SELECT
+         host_idx
+      FROM
+         $config{'mysql_prefix'}host_profiles
+      WHERE
+         host_name LIKE ?
+   ");
+
+   $sth->bind_param(1, $config{'host_profile'});
+   $sth->execute;
+
+   if(!(@host = $sth->fetchrow_array())) {
+      printMsg(LOG_WARN, "Unable to detect host profile $config{'host_profile'}");
+      exit(1);
+   }
+   $sth->finish();
+
+   $hostprofile = $host[0];
+
    my @temp = ();
-   $interface = $dbh->prepare("
-      SELECT DISTINCT if_name
+
+   $sth = $dbh->prepare("
+      SELECT DISTINCT
+         if_name
       FROM
          $config{'mysql_prefix'}interfaces iface
       INNER JOIN
@@ -262,15 +297,22 @@ sub getInterfaces() {
          np.netpath_if2=iface.if_idx
       )
       WHERE
-         np.netpath_active='Y'
+         np.netpath_active LIKE 'Y'
       AND
-         iface.if_active='Y'
+         iface.if_active LIKE 'Y'
+      AND
+         if_host_idx LIKE ?
+      AND
+         netpath_host_idx LIKE ?
    ");
-   $interface->execute();
-   while(@result = $interface->fetchrow_array()) {
+
+   $sth->bind_param(1, $hostprofile);
+   $sth->bind_param(2, $hostprofile);
+   $sth->execute();
+   while(@result = $sth->fetchrow_array()) {
       push(@temp, $result[0]);
    }
-   $interface->finish();
+   $sth->finish();
    return @temp;
 }
 

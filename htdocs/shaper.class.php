@@ -39,6 +39,7 @@ require_once "class/Protocol.php";
 require_once "class/Service_Level.php";
 require_once "class/Target.php";
 require_once "class/User.php";
+require_once "class/Host_Profile.php";
 
 define('DEBUG', 1);
 
@@ -287,6 +288,9 @@ class MASTERSHAPER {
          case 'get-sub-menu':
             $this->rpc_get_sub_menu();
             break;
+         case 'host-profile':
+            $this->rpc_set_host_profile();
+            break;
          default:
             print "Unknown action";
             return false;
@@ -442,6 +446,9 @@ class MASTERSHAPER {
          case 'networkpath':
             $obj = new Network_Path($id);
             break;
+         case 'hostprofile':
+            $obj = new Host_Profile($id);
+            break;
          case 'filter':
             $obj = new Filter($id);
             break;
@@ -518,6 +525,9 @@ class MASTERSHAPER {
 
       $_SESSION['user_name'] = $_POST['user_name'];
       $_SESSION['user_idx'] = $user->user_idx;
+
+      if(!isset($_SESSION['host_profile']) || empty($_SESSION['host_profile']) || !is_numeric($_SESSION['host_profile']))
+         $_SESSION['host_profile'] = 1;
 
       return true;
 
@@ -1131,7 +1141,27 @@ class MASTERSHAPER {
 
       print "ok";
 
-   } // change_graph()
+   } // rpc_change_graph()
+
+   /**
+    * change host profile
+    */
+   private function rpc_set_host_profile()
+   {
+      if(!isset($_POST['hostprofile']) || !is_numeric($_POST['hostprofile'])) {
+         print "invalid host profile";
+         return false;
+      }
+
+      if(!$this->is_valid_host_profile($_POST['hostprofile'])) {
+         print "invalid host profile";
+         return false;
+      }
+
+      $_SESSION['host_profile'] = $_POST['hostprofile'];
+      print "ok";
+
+   } // rpc_change_graph()
 
    /**
     * check if requested graph mode is valid
@@ -1203,6 +1233,28 @@ class MASTERSHAPER {
 
    } // is_valid_chain()
 
+   /**
+    * checks if provided host profile id is valid
+    *
+    * @return boolean
+    */
+   private function is_valid_host_profile($host_idx)
+   {
+      global $db;
+
+      if($db->db_fetchSingleRow("
+         SELECT
+            host_idx
+         FROM
+            ". MYSQL_PREFIX ."host_profiles
+         WHERE
+            host_idx LIKE '". $host_idx ."'"))
+         return true;
+
+      return false;
+
+   } // is_valid_host_profile()
+
    public function getActiveInterfaces()
    {
       global $db;
@@ -1220,7 +1272,11 @@ class MASTERSHAPER {
             np.netpath_if2=iface.if_idx
          )
          WHERE
-            np.netpath_active='Y'
+            np.netpath_active LIKE 'Y'
+         AND
+            np.netpath_host_idx LIKE ". $this->get_current_host_profile() ."
+         AND
+            iface.if_host_idx LIKE ". $this->get_current_host_profile() ."
       ");
 
       return $result;
@@ -1361,6 +1417,7 @@ class MASTERSHAPER {
          'graph-mode',
          'get-chains-list',
          'get-sub-menu',
+         'host-profile',
       );
 
       if(in_array($page->action, $valid_actions))
@@ -1442,6 +1499,10 @@ class MASTERSHAPER {
             $table = 'network_paths';
             $column = 'netpath';
             break;
+         case 'hostprofile':
+            $table = 'host_profiles';
+            $column = 'host';
+            break;
          default:
             $ms->throwError('Unknown object type');
             return;
@@ -1518,16 +1579,23 @@ class MASTERSHAPER {
       if($obj_type == "chains") {
 
          // get all chains assign to this network-path
-         $chains = $db->db_query("
+         $sth = $db->db_prepare("
             SELECT
                chain_idx
             FROM
                ". MYSQL_PREFIX ."chains
             WHERE
-               chain_netpath_idx LIKE '". $ms_objects ."'
+               chain_netpath_idx LIKE ?
+            AND
+               chain_host_idx LIKE ?
             ORDER BY
                chain_position ASC
          ");
+
+         $chains = $db->db_execute($sth, array(
+            $ms_objects,
+            $this->get_current_host_profile(),
+         ));
 
          $pos = 1;
 
@@ -1539,15 +1607,18 @@ class MASTERSHAPER {
                SET
                   chain_position=?
                WHERE
-                 chain_idx=?
+                 chain_idx LIKE ?
                AND
-                 chain_netpath_idx=?
+                 chain_netpath_idx LIKE ?
+               AND
+                 chain_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $pos,
                $chain->chain_idx,
-               $ms_objects
+               $ms_objects,
+               $this->get_current_host_profile(),
             ));
 
             $pos++;
@@ -1558,14 +1629,20 @@ class MASTERSHAPER {
 
          $pos = 1;
 
-         $nps = $db->db_query("
+         $sth = $db->db_prepare("
             SELECT
                netpath_idx
             FROM
                ". MYSQL_PREFIX ."network_paths
+            WHERE
+               netpath_host_idx LIKE ?
             ORDER BY
                netpath_position ASC
          ");
+
+         $nps = $db->db_execute($sth, array(
+            $this->get_current_host_profile(),
+         ));
 
          $pos = 1;
 
@@ -1577,19 +1654,31 @@ class MASTERSHAPER {
                SET
                   netpath_position=?
                WHERE
-                  netpath_idx=?
+                  netpath_idx LIKE ?
+               AND
+                  netpath_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $pos,
-               $np->netpath_idx
+               $np->netpath_idx,
+               $this->get_current_host_profile(),
             ));
 
             $pos++;
          }
       }
 
-   } // update_positions
+   } // update_positions()
+
+   public function get_current_host_profile()
+   {
+      if(isset($_SESSION['host_profile']) && !empty($_SESSION['host_profile']))
+         return $_SESSION['host_profile'];
+
+      return 1;
+
+   } // get_current_host_profile()
 
 } // class MASTERSHAPER
 

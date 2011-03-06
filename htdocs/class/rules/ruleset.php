@@ -368,11 +368,11 @@ class Ruleset {
    private function getColor($text)
    {
       if(strstr($text, "########"))
-	 return "#666666";
+         return "#666666";
       if(strstr($text, TC_BIN))
-	 return "#AF0000";
+         return "#AF0000";
       if(strstr($text, IPT_BIN))
-	 return "#0000AF";
+         return "#0000AF";
 
       return "#000000";
 
@@ -434,7 +434,7 @@ class Ruleset {
 
    private function getActiveNetpaths()
    {
-      global $db;
+      global $ms, $db;
 
       $result = $db->db_query("
          SELECT
@@ -443,6 +443,8 @@ class Ruleset {
             ". MYSQL_PREFIX ."network_paths
          WHERE
             netpath_active LIKE 'Y'
+         AND
+            netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
             netpath_position
       ");

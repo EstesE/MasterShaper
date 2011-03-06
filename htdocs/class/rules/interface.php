@@ -1604,7 +1604,7 @@ class Ruleset_Interface {
 
    private function getChains($netpath_idx)
    {
-      global $db;
+      global $ms, $db;
 
       $sth = $db->db_prepare("
          SELECT
@@ -1613,14 +1613,17 @@ class Ruleset_Interface {
             ". MYSQL_PREFIX ."chains
          WHERE
             chain_active='Y'
-         AND "
-            ."chain_netpath_idx LIKE ?
+         AND
+            chain_netpath_idx LIKE ?
+         AND
+            chain_host_idx LIKE ?
          ORDER BY
             chain_position ASC
       ");
 
       $result = $db->db_execute($sth, array(
-         $netpath_idx
+         $netpath_idx,
+         $ms->get_current_host_profile(),
       ));
 
       return $result;

@@ -41,9 +41,9 @@
   <!-- page title -->
   <div style="background-color: #aaaaaa; height: 2px;"></div>
   <div style="height: 30px; color: #FFFFFF; background-color: #174581; vertical-align: middle;" class="tablehead">
-   <table style="height: 30px">
+   <table style="height: 30px; width: 100%">
     <tr>
-     <td style="width: 15px;"></td>
+     <td style="width: 15px;">&nbsp;</td>
      <td style="vertical-align: middle;">
       { if ! $user_name }
        <div><img src="{ $icon_home }" />&nbsp;MasterShaper Login</div>
@@ -57,6 +57,15 @@
        </form>
       { /if }
      </td>
+     <td style="text-align: right; vertical-align: middle;">
+      { if $user_name }
+       Host Profile:
+       <select name="active_host_profile" onchange="set_host_profile()">
+        { host_profile_select_list }
+       </select>
+      { /if  }
+     </td>
+     <td style="width: 15px;">&nbsp;</td>
     </tr>
    </table>
   </div>
