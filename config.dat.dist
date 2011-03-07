@@ -11,4 +11,5 @@
   <ipt_bin>/sbin/iptables</ipt_bin>
   <sudo_bin>/usr/bin/sudo</sudo_bin>
   <temp_path>/tmp</temp_path>
+  <host_profile>Default Host</host_profile>
 </config>
