@@ -886,7 +886,7 @@ class MASTERSHAPER_DB {
             )");
       }
 
-      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'hosts')) {
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'host_profiles')) {
          $this->db_query("
             CREATE TABLE `". MYSQL_PREFIX ."hosts` (
               `host_idx` int(11) NOT NULL auto_increment,
