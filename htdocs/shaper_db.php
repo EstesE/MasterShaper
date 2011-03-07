@@ -1266,7 +1266,7 @@ class MASTERSHAPER_DB {
             ALTER TABLE
                ". MYSQL_PREFIX ."tc_ids
             ADD
-              `id_host_idx` int(11) default NULL,
+              `id_host_idx` int(11) default NULL
          ");
 
          $this->db_query("
