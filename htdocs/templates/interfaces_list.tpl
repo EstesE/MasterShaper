@@ -12,6 +12,7 @@
  <tr>
   <td><img src="{ $icon_interfaces }" alt="interface icon" />&nbsp;<i>Interface</i></td>
   <td><img src="{ $icon_interfaces }" alt="interface icon" />&nbsp;<i>Bandwidth</i></td>
+  <td><img src="{ $icon_servicelevels }" alt="service level icon" />&nbsp;<i>Fallback Service Level</i></td>
   <td style="text-align: center;"><i>Options</i></td>
  </tr>
  { interface_list }
@@ -22,6 +23,13 @@
   </td>
   <td>
    { $if_speed }
+  </td>
+  <td>
+   { if $if_fallback_idx != 0 }
+    <a href="{$rewriter->get_page_url('Service Level Edit', $if_fallback_idx)}" title="Edit service level $if_fallback_name"><img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;{$if_fallback_name}</a>
+   { else }
+    &nbsp;
+   { /if }
   </td>
   <td style="text-align: center;">
    <a class="delete" id="interface-{$if_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>

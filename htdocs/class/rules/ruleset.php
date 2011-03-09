@@ -199,9 +199,9 @@ class Ruleset {
       }
 
       // finish all interfaces (ex. add a interface fallback class, ...)
-      /*foreach($this->interfaces as $if) {
+      foreach($this->interfaces as $if) {
          $if->finish();
-      }*/
+      }
 
       return true;
 

@@ -1581,9 +1581,11 @@ class Ruleset_Interface {
          if($chain->chain_sl_idx == 0)
             continue;
 
-         /* chain uses fallback service level? if no, skip further */
+         /* chain uses fallback service level? if no, add a qdisc
+            and skip further processing of this chain
+         */
          if($chain->chain_fallback_idx == 0) {
-            $this->addRuleComment("chain without service level");
+            $this->addRuleComment("chain without fallback service level");
             $this->addSubQdisc($this->get_current_chain() . $this->get_current_class() .":", "1:". $this->get_current_chain() . $this->get_current_class(), $ms->get_service_level($chain->chain_sl_idx));
             continue;
          }
@@ -1921,12 +1923,12 @@ class Ruleset_Interface {
    {
       global $ms;
 
-      /*$this->current_chain += 1;
+      $this->current_chain += 1;
 
       $this->addRuleComment("interface fallback");
       $this->addClass("1:1", "1:". $this->get_current_chain() . $this->get_current_class(), $ms->get_service_level($this->if_fallback_idx));
       $this->addSubQdisc($this->get_current_chain() . $this->get_current_class() .":", "1:". $this->get_current_chain() . $this->get_current_class(), $ms->get_service_level($this->if_fallback_idx));
-      $this->addFallbackFilter("1:1", "1:". $this->get_current_chain() . $this->get_current_class());*/
+      $this->addFallbackFilter("1:1", "1:". $this->get_current_chain() . $this->get_current_class());
 
    } // add_interface_fallback()
 

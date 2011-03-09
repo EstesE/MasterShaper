@@ -93,7 +93,7 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
     */
    public function smarty_interface_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
+      global $ms, $tmpl;
 
       $index = $smarty->get_template_vars('smarty.IB.if_list.index');
       if(!$index) {
@@ -109,6 +109,8 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
          $tmpl->assign('if_name', $if->if_name);
          $tmpl->assign('if_speed', $if->if_speed);
          $tmpl->assign('if_fallback_idx', $if->if_fallback_idx);
+         if($if->if_fallback_idx != 0)
+            $tmpl->assign('if_fallback_name', $ms->getServiceLevelName($if->if_fallback_idx));
          $tmpl->assign('if_active', $if->if_active);
 
          $index++;
