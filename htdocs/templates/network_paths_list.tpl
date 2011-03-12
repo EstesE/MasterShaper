@@ -22,10 +22,10 @@
    <a href="{$rewriter->get_page_url('Network Path Edit', $netpath_idx)}">{ $netpath_name }</a>
   </td>
   <td>
-   { $netpath_if1 } { if $netpath_if1_inside_gre == 'Y' }(inside GRE){ /if }
+   <a href="{ $rewriter->get_page_url('Interface Edit', $netpath_if1_idx) }" title="Edit interface { $netpath_if1_name }"><img src="{ $icon_interfaces }" alt="interface icon" />&nbsp;{ $netpath_if1_name }</a> { if $netpath_if1_inside_gre == 'Y' }(inside GRE){ /if }
   </td>
   <td>
-   { $netpath_if2 } { if $netpath_if2_inside_gre == 'Y' }(inside GRE){ /if }
+   <a href="{ $rewriter->get_page_url('Interface Edit', $netpath_if2_idx) }" title="Edit interface { $netpath_if2_name }"><img src="{ $icon_interfaces }" alt="interface icon" />&nbsp;{ $netpath_if2_name }</a> { if $netpath_if2_inside_gre == 'Y' }(inside GRE){ /if }
   </td>
   <td style="text-align: center;">
    <a class="delete" id="networkpath-{$netpath_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>

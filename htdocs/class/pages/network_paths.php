@@ -146,9 +146,11 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
          $tmpl->assign('netpath_idx', $netpath_idx);
          $tmpl->assign('netpath_name', $netpath->netpath_name);
          $tmpl->assign('netpath_active', $netpath->netpath_active);
-         $tmpl->assign('netpath_if1', $ms->getInterfaceName($netpath->netpath_if1));
+         $tmpl->assign('netpath_if1_idx', $netpath->netpath_if1);
+         $tmpl->assign('netpath_if1_name', $ms->getInterfaceName($netpath->netpath_if1));
          $tmpl->assign('netpath_if1_inside_gre', $netpath->netpath_if1_inside_gre);
-         $tmpl->assign('netpath_if2', $ms->getInterfaceName($netpath->netpath_if2));
+         $tmpl->assign('netpath_if2_idx', $netpath->netpath_if2);
+         $tmpl->assign('netpath_if2_name', $ms->getInterfaceName($netpath->netpath_if2));
          $tmpl->assign('netpath_if2_inside_gre', $netpath->netpath_if2_inside_gre);
 
          $index++;
