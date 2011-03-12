@@ -352,4 +352,12 @@
   <td>Save settings.</td>
  </tr>
 </table> 
+<p class="footnote">
+This filter is assigned to the following pipes:<br />
+{ foreach from=$pipe_use_filters key=pipe_idx item=pipe_name name=pipes }
+ <a href="{$rewriter->get_page_url('Pipe Edit', $pipe_idx)}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{ $pipe_name }</a>{ if ! $smarty.foreach.pipes.last},{/if}
+{ foreachelse }
+ none
+{ /foreach }
+</p>
 { page_end focus_to='filter_name' }

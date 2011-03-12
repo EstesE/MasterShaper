@@ -81,6 +81,35 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       else
          $filter = new filter;
 
+      /* get a list of pipes that use this filter */
+      $sth = $db->db_prepare("
+         SELECT
+            p.pipe_idx,
+            p.pipe_name
+         FROM
+            ". MYSQL_PREFIX ."pipes p
+         INNER JOIN
+            ". MYSQL_PREFIX ."assign_filters_to_pipes afp
+         ON
+            afp.apf_pipe_idx=p.pipe_idx
+         WHERE
+            afp.apf_filter_idx LIKE ?
+         ORDER BY
+            p.pipe_name ASC
+      ");
+
+      $assigned_pipes = $db->db_execute($sth, array(
+         $page->id,
+      ));
+
+      if($assigned_pipes->numRows() > 0) {
+         $pipe_use_filters = array();
+         while($pipe = $assigned_pipes->fetchRow()) {
+            $pipe_use_filters[$pipe->pipe_idx] = $pipe->pipe_name;
+         }
+         $tmpl->assign('pipe_use_filters', $pipe_use_filters);
+      }
+
       $tmpl->assign('filter', $filter);
       $tmpl->assign('filter_mode', $ms->getOption("filter"));
 
