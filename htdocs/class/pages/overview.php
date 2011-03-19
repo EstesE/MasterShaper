@@ -297,6 +297,21 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $pipe_idx = $this->avail_pipes[$np_idx][$chain_idx][$index];
          $pipe = $this->pipes[$np_idx][$chain_idx][$pipe_idx];
 
+         // check if pipes service level got overriden
+         $ovrd_sl = $db->db_fetchSingleRow("
+            SELECT
+               apc_sl_idx
+            FROM
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            WHERE
+               apc_chain_idx LIKE '". $chain_idx ."'
+            AND
+               apc_pipe_idx LIKE '". $pipe_idx ."'
+         ");
+
+         if(isset($ovrd_sl->apc_sl_idx) && !empty($ovrd_sl->apc_sl_idx))
+            $pipe->pipe_sl_idx = $ovrd_sl->apc_sl_idx;
+
          $tmpl->assign('pipe', $pipe);
          $tmpl->assign('pipe_sl_name', $ms->getServiceLevelName($pipe->pipe_sl_idx));
          $tmpl->assign('apc_idx', $pipe->apc_idx);
