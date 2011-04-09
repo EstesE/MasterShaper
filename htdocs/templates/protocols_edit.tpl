@@ -43,4 +43,12 @@
  </tr>
 </table>
 </form>
+<p class="footnote">
+This protocol is assigned to the following filters:<br />
+{ foreach from=$filter_use_protocol key=filter_idx item=filter_name name=filters }
+ <a href="{$rewriter->get_page_url('Filter Edit', $filter_idx)}" title="Edit filter { $filter_name }"><img src="{$icon_filters}" alt="filter icon" />&nbsp;{ $filter_name }</a>{ if ! $smarty.foreach.filters.last},{/if}
+{ foreachelse }
+ none
+{ /foreach }
+</p>
 { page_end focus_to='proto_name' }

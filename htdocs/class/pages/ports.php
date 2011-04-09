@@ -107,6 +107,33 @@ class Page_Ports extends MASTERSHAPER_PAGE {
       else
          $port = new Port;
 
+      /* get a list of filters that use this ports */
+      $sth = $db->db_prepare("
+         SELECT
+            f.filter_idx,
+            f.filter_name
+         FROM
+            ". MYSQL_PREFIX ."filters f
+         INNER JOIN ". MYSQL_PREFIX ."assign_ports_to_filters afp
+            ON afp.afp_filter_idx=f.filter_idx
+         WHERE
+            afp.afp_port_idx LIKE ?
+         ORDER BY
+            f.filter_name ASC
+      ");
+
+      $assigned_filters = $db->db_execute($sth, array(
+         $page->id,
+      ));
+
+      if($assigned_filters->numRows() > 0) {
+         $filter_use_port = array();
+         while($filter = $assigned_filters->fetchRow()) {
+            $filter_use_port[$filter->filter_idx] = $filter->filter_name;
+         }
+         $tmpl->assign('filter_use_port', $filter_use_port);
+      }
+
       $tmpl->assign('port', $port);
 
      return $tmpl->fetch("ports_edit.tpl");

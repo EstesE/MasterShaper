@@ -86,6 +86,70 @@ class Page_Targets extends MASTERSHAPER_PAGE {
       else
          $target = new Target;
 
+      /* get a list of objects that use this target */
+      $sth = $db->db_prepare("
+         (
+            SELECT
+               'group' as type,
+               t.target_idx as idx,
+               t.target_name as name
+            FROM
+               ". MYSQL_PREFIX ."targets t
+            INNER JOIN ". MYSQL_PREFIX ."assign_target_groups atg
+               ON t.target_idx=atg.atg_group_idx
+            WHERE
+               atg.atg_target_idx LIKE ?
+            ORDER BY
+               t.target_name
+         )
+         UNION
+         (
+            SELECT
+               'chain' as type,
+               c.chain_idx as idx,
+               c.chain_name as name
+            FROM
+               ". MYSQL_PREFIX ."chains c
+            WHERE
+               c.chain_src_target LIKE ?
+            OR
+               c.chain_dst_target LIKE ?
+            ORDER BY
+               c.chain_name
+         )
+         UNION
+         (
+            SELECT
+               'pipe' as type,
+               p.pipe_idx as idx,
+               p.pipe_name as name
+            FROM
+               ". MYSQL_PREFIX ."pipes p
+            WHERE
+               p.pipe_src_target LIKE ?
+            OR
+               p.pipe_dst_target LIKE ?
+            ORDER BY
+               p.pipe_name
+         )
+      ");
+
+      $assigned_obj = $db->db_execute($sth, array(
+         $page->id,
+         $page->id,
+         $page->id,
+         $page->id,
+         $page->id,
+      ));
+
+      if($assigned_obj->numRows() > 0) {
+         $obj_use_target = array();
+         while($obj = $assigned_obj->fetchRow()) {
+            array_push($obj_use_target, $obj);
+         }
+         $tmpl->assign('obj_use_target', $obj_use_target);
+      }
+
       $tmpl->assign('target', $target);
 
       $tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);

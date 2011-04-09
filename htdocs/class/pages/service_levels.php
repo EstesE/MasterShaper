@@ -95,6 +95,79 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
       else
          $tmpl->assign('qdiscmode', $_GET['qdiscmode']);
 
+      /* get a list of objects that use this target */
+      $sth = $db->db_prepare("
+         (
+            SELECT
+               'pipe' as type,
+               p.pipe_idx as idx,
+               p.pipe_name as name
+            FROM
+               ". MYSQL_PREFIX ."pipes p
+            INNER JOIN ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+               ON p.pipe_idx=apc.apc_pipe_idx
+            WHERE
+               apc.apc_sl_idx LIKE ?
+            ORDER BY
+               p.pipe_name
+         )
+         UNION
+         (
+            SELECT
+               'chain' as type,
+               c.chain_idx as idx,
+               c.chain_name as name
+            FROM
+               ". MYSQL_PREFIX ."chains c
+            WHERE
+               c.chain_sl_idx LIKE ?
+            ORDER BY
+               c.chain_name
+         )
+         UNION
+         (
+            SELECT
+               'pipe' as type,
+               p.pipe_idx as idx,
+               p.pipe_name as name
+            FROM
+               ". MYSQL_PREFIX ."pipes p
+            WHERE
+               p.pipe_sl_idx LIKE ?
+            ORDER BY
+               p.pipe_name
+         )
+         UNION
+         (
+            SELECT
+               'interface' as type,
+               iface.if_idx as idx,
+               iface.if_name as name
+            FROM
+               ". MYSQL_PREFIX ."interfaces iface
+            WHERE
+               iface.if_fallback_idx LIKE ?
+            ORDER BY
+               iface.if_name
+         )
+      ");
+
+      $assigned_obj = $db->db_execute($sth, array(
+         $page->id,
+         $page->id,
+         $page->id,
+         $page->id,
+      ));
+
+      if($assigned_obj->numRows() > 0) {
+         $obj_use_target = array();
+         while($obj = $assigned_obj->fetchRow()) {
+            array_push($obj_use_target, $obj);
+         }
+         $tmpl->assign('obj_use_target', $obj_use_target);
+      }
+
+
       return $tmpl->fetch("service_levels_edit.tpl");
 
    } // showEdit()

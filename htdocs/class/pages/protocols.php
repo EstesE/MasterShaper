@@ -108,6 +108,31 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
       else
          $protocol = new Protocol;
 
+      /* get a list of filters that use this protocol */
+      $sth = $db->db_prepare("
+         SELECT
+            f.filter_idx,
+            f.filter_name
+         FROM
+            ". MYSQL_PREFIX ."filters f
+         WHERE
+            f.filter_protocol_id LIKE ?
+         ORDER BY
+            f.filter_name ASC
+      ");
+
+      $assigned_filters = $db->db_execute($sth, array(
+         $page->id,
+      ));
+
+      if($assigned_filters->numRows() > 0) {
+         $filter_use_protocol = array();
+         while($filter = $assigned_filters->fetchRow()) {
+            $filter_use_protocol[$filter->filter_idx] = $filter->filter_name;
+         }
+         $tmpl->assign('filter_use_protocol', $filter_use_protocol);
+      }
+
       $tmpl->assign('protocol', $protocol);
       return $tmpl->fetch("protocols_edit.tpl");
 

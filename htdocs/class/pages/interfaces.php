@@ -83,6 +83,35 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
       else
          $if = new Network_Interface;
 
+      /* get a list of network paths that use this interface */
+      $sth = $db->db_prepare("
+         SELECT
+            np.netpath_idx,
+            np.netpath_name
+         FROM
+            ". MYSQL_PREFIX ."network_paths np
+         WHERE
+            np.netpath_if1 LIKE ?
+         OR
+            np.netpath_if2 LIKE ?
+         ORDER BY
+            np.netpath_name ASC
+      ");
+
+      $assigned_nps = $db->db_execute($sth, array(
+         $page->id,
+         $page->id,
+      ));
+
+      if($assigned_nps->numRows() > 0) {
+         $np_use_if = array();
+         while($np = $assigned_nps->fetchRow()) {
+            $np_use_if[$np->netpath_idx] = $np->netpath_name;
+         }
+         $tmpl->assign('np_use_if', $np_use_if);
+      }
+
+
       $tmpl->assign('if', $if);
       return $tmpl->fetch("interfaces_edit.tpl");
 

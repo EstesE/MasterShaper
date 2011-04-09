@@ -99,4 +99,12 @@
   <td>Save your settings.</td>
  </tr>
 </table>
+<p class="footnote">
+This interface is assigned to the following network paths:<br />
+{ foreach from=$np_use_if key=np_idx item=np_name name=networkpaths }
+ <a href="{$rewriter->get_page_url('Network Path Edit', $np_idx)}" title="Edit network path { $np_name }"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{ $np_name }</a>{ if ! $smarty.foreach.filters.last},{/if}
+{ foreachelse }
+ none
+{ /foreach }
+</p>
 { page_end focus_to='if_name' }
