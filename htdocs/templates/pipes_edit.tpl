@@ -41,9 +41,13 @@
   <td>
    <table class="noborder">
     <tr>
-     <td>Source</td>
+     <td>Source
+      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Target Edit', 0)}', $('select[name=pipe_src_target]').val());" />
+     </td>
      <td>&nbsp;</td>
-     <td style="text-align: right;">Destination</td>
+     <td style="text-align: right;">Destination
+      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Target Edit', 0)}', $('select[name=pipe_dst_target]').val());" />
+     </td>
     </tr>
     <tr>
      <td>
@@ -110,6 +114,7 @@
    <select name="pipe_sl_idx">
    { service_level_select_list sl_idx=$pipe->pipe_sl_idx }
    </select>
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Service Level Edit', 0)}', $('select[name=pipe_sl_idx]').val());" />
   </td>
   <td>Default bandwidth limit for this pipe. It can be overriden per chain as soon as you assigned this pipe to it.</td>
  </tr>

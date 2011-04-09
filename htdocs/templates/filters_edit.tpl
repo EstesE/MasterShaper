@@ -45,6 +45,7 @@
     <option value="-1">--- Ignore ---</option>
     { protocol_select_list proto_idx=`$filter->filter_protocol_id` }
    </select>
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Protocol Edit', 0)}', $('select[name=filter_protocol_id]').val());" />
   </td>
   <td>
    Match on this protocol. Select TCP or UDP if you want to use port definitions! If you want to match both TCP &amp; UDP use IP as protocol. Be aware that tc-filter can not differ between TCP &amp; UDP. It will match both at the same time!

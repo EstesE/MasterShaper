@@ -39,6 +39,7 @@
     { service_level_select_list sl_idx=$chain->chain_sl_idx }
     <option value="0" { if $chain->chain_sl_idx == 0 } selected="selected" { /if } >--- Ignore QoS ---</option>
    </select>
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Service Level Edit', 0)}', $('select[name=chain_sl_idx]').val());" />
   </td>
  </tr>
  <tr>
@@ -48,6 +49,7 @@
     { service_level_select_list sl_idx=$chain->chain_fallback_idx }
     <option value="0" { if $chain->chain_fallback_idx == 0 } selected="selected" { /if } >--- No Fallback ---</option>
    </select>
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Service Level Edit', 0)}', $('select[name=chain_fallback_idx]').val());" />
   </td>
  </tr>
  <tr>
@@ -61,6 +63,7 @@
    <select name="chain_netpath_idx">
     { network_path_select_list np_idx=$chain->chain_netpath_idx }
    </select>
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Network Path Edit', 0)}', $('select[name=chain_netpath_idx]').val());" />
   </td>
  </tr>
  <tr>
@@ -68,9 +71,13 @@
   <td style="white-space: nowrap;">
    <table class="noborder">
     <tr>
-     <td>Target</td>
+     <td>Target
+      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Target Edit', 0)}', $('select[name=chain_src_target]').val());" />
+     </td>
      <td>&nbsp;</td>
-     <td style="text-align: right;">Target</td>
+     <td style="text-align: right;">Target
+      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Target Edit', 0)}', $('select[name=chain_dst_target]').val());" />
+     </td>
     </tr>
     <tr>
      <td>
