@@ -70,6 +70,7 @@
     <option value="0" { if $if->if_fallback_idx == 0 } selected="selected" { /if } >--- No Fallback ---</option>
     { service_level_select_list sl_idx=$if->if_fallback_idx }
    </select>
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Service Level Edit', 0)}', $('select[name=if_fallback_idx]').val());" />
   </td>
   <td>
    If none of the defined chains matches, you can define here a final fallback service level per interface.
