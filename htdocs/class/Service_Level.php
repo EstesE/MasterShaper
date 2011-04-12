@@ -66,6 +66,8 @@ class Service_Level extends MsObject {
             'sl_netem_gap' => 'text',
             'sl_netem_reorder_percentage' => 'text',
             'sl_netem_reorder_correlation' => 'text',
+            'sl_sfq_perturb' => 'text',
+            'sl_sfq_quantum' => 'text',
             'sl_esfq_perturb' => 'text',
             'sl_esfq_limit' => 'text',
             'sl_esfq_depth' => 'text',
@@ -73,6 +75,12 @@ class Service_Level extends MsObject {
             'sl_esfq_hash' => 'text',
          ),
       ));
+
+      /* it seems a new service level gets created, preset some values */
+      if(!isset($id) || empty($id)) {
+         $this->sl_sfq_perturb     = 10;
+         $this->sl_sfq_quantum     = 1532;
+      }
 
    } // __construct()
 

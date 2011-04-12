@@ -224,7 +224,30 @@
    Select the to be used Queuing Discipline.
   </td>
  </tr>
- { if $qdiscmode == "ESFQ" }
+ { if $qdiscmode == "SFQ" }
+ <tr>
+  <td>
+   Perturb:
+  </td>
+  <td>
+   <input type="text" name="sl_sfq_perturb" size="25" value="{ $sl->sl_sfq_perturb }" />
+  </td>
+  <td>
+   Reconfigure hashing once this many seconds. Default is 10. Change only if you know what you do!
+  </td>
+ </tr>
+ <tr>
+  <td>
+   Quantum:
+  </td>
+  <td>
+   <input type="text" name="sl_sfq_quantum" size="25" value="{ $sl->sl_sfq_quantum }" />
+  </td>
+  <td>
+   Amount of bytes a stream is allowed to dequeue before the next queue gets a turn. Default is 1532. Do not set below the MTU. Change only if you know what you do!
+  </td>
+ </tr>
+ { elseif $qdiscmode == "ESFQ" }
  <tr>
   <td>
    Perturb:

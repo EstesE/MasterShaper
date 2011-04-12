@@ -311,6 +311,20 @@ class Ruleset_Interface {
                      if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
                   }
+                  /* this value remains hardcoded here.
+                     *******
+                     It might be good time to touch concept of quantums
+                     now. In fact when more classes want to borrow
+                     bandwidth they are each given some number of bytes
+                     before serving other competing class. This number
+                     is called quantum. You should see that if several
+                     classes are competing for parent's bandwidth then
+                     they get it in proportion of their quantums. It is
+                     important to know that for precise operation
+                     quantums need to be as small as possible and
+                     larger than MTU.
+                     *******
+                  */
                   $string.= " quantum 1532";
                   break;
 				      
@@ -378,7 +392,8 @@ class Ruleset_Interface {
                      if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
                   }
-                  $string.= " quantum 1532";
+                  if(isset($sl->sl_sfq_quantum) && is_numeric($sl->sl_sfq_quantum))
+                     $string.= " quantum ". $sl->sl_sfq_quantum;
                   break;
 
                case 'HFSC':
@@ -431,6 +446,10 @@ class Ruleset_Interface {
          default:
          case 'SFQ':
             $string.="sfq";
+            if(isset($sl->sl_sfq_perturb) && is_numeric($sl->sl_sfq_perturb))
+               $string.= " perturb ". $sl->sl_sfq_perturb;
+            if(isset($sl->sl_sfq_quantum) && is_numeric($sl->sl_sfq_quantum))
+               $string.= " quantum ". $sl->sl_sfq_quantum;
             break;
 
          case 'ESFQ':

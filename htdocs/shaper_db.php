@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '14');
+define('SCHEMA_VERSION', '15');
 
 /***************************************************************************
  *
@@ -777,6 +777,8 @@ class MASTERSHAPER_DB {
               `sl_cbq_out_priority` varchar(255) default NULL,
               `sl_cbq_bounded` char(1) default NULL,
               `sl_qdisc` varchar(255) default NULL,
+              `sl_sfq_perturb` varchar(255) default NULL,
+              `sl_sfq_quantum` varchar(255) default NULL,
               `sl_netem_delay` varchar(255) default NULL,
               `sl_netem_jitter` varchar(255) default NULL,
               `sl_netem_random` varchar(255) default NULL,
@@ -1290,6 +1292,33 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(14);
+
+      }
+
+      if($this->schema_version < 15) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."service_levels
+            ADD
+               sl_sfq_perturb varchar(255) default NULL
+            AFTER
+               sl_qdisc,
+            ADD
+               sl_sfq_quantum varchar(255) default NULL
+            AFTER
+               sl_sfq_perturb
+         ");
+
+         $this->db_query("
+            UPDATE
+               ". MYSQL_PREFIX ."service_levels
+            SET
+               sl_sfq_perturb = '10',
+               sl_sfq_quantum = '1532'
+         ");
+
+         $this->setVersion(15);
 
       }
 

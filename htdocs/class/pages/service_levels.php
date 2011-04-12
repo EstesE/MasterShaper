@@ -89,8 +89,10 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
          $tmpl->assign('classifier', $_GET['classifier']);
 
       if(!isset($_GET['qdiscmode'])) {
-         if(isset($sl))
+         if($page->id != 0)
             $tmpl->assign('qdiscmode', $sl->sl_qdisc);
+         else
+            $tmpl->assign('qdiscmode', $ms->getOption("qdisc"));
       }
       else
          $tmpl->assign('qdiscmode', $_GET['qdiscmode']);
