@@ -523,6 +523,7 @@ class MASTERSHAPER_DB {
          $this->getVersion() < SCHEMA_VERSION) {
 
          $this->install_tables();
+         return true;
       }
 
       $this->upgrade_schema();
