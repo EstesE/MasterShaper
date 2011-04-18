@@ -59,6 +59,8 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             apc.apc_chain_idx=c.chain_idx
          WHERE
             c.chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
+         OR /* if pipe is not assigned to chain yet */
+            c.chain_host_idx IS NULL
          ORDER BY
             apc.apc_chain_idx ASC,
             p.pipe_name ASC
