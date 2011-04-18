@@ -721,7 +721,7 @@ class MASTERSHAPER_DB {
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
          $this->db_query(" 
-            LOAD DATA INFILE
+            LOAD DATA LOCAL INFILE
                '". BASE_PATH ."/contrib/port-numbers.csv'
             IGNORE INTO TABLE
                ". MYSQL_PREFIX ."ports
@@ -742,7 +742,7 @@ class MASTERSHAPER_DB {
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
          $this->db_query("
-            LOAD DATA INFILE
+            LOAD DATA LOCAL INFILE
                '". BASE_PATH ."/contrib/protocol-numbers.csv'
             IGNORE INTO TABLE
                ". MYSQL_PREFIX ."protocols
