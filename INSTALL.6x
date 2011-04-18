@@ -25,4 +25,5 @@ Enable mod_rewrite in your Apache configuration and use the following configurat
    RewriteRule ^/shaper/network-paths/(.*) /srv/shaper/htdocs/index.php/$1
    RewriteRule ^/shaper/others/(.*) /srv/shaper/htdocs/index.php/$1
    RewriteRule ^/shaper/monitoring/(.*) /srv/shaper/htdocs/index.php/$1
+   RewriteRule ^/shaper/host-profiles/(.*) /srv/shaper/htdocs/index.php/$1
    Alias /shaper/ /srv/shaper/htdocs/
