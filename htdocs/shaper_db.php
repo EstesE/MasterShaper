@@ -587,6 +587,7 @@ class MASTERSHAPER_DB {
               `apc_pipe_idx` int(11) NOT NULL,
               `apc_chain_idx` int(11) NOT NULL,
               `apc_sl_idx` int(11) NOT NULL,
+              `apc_pipe_active` char(1) default NULL,
               `apc_pipe_pos` int(11) DEFAULT NULL,
               PRIMARY KEY  (`apc_idx`),
               KEY `apc_pipe_to_chain`  (`apc_pipe_idx`,`apc_chain_idx`)
