@@ -891,7 +891,7 @@ class MASTERSHAPER_DB {
 
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'host_profiles')) {
          $this->db_query("
-            CREATE TABLE `". MYSQL_PREFIX ."hosts` (
+            CREATE TABLE `". MYSQL_PREFIX ."host_profiles` (
               `host_idx` int(11) NOT NULL auto_increment,
               `host_name` varchar(32) default NULL,
               `host_active` char(1) default NULL,
@@ -899,7 +899,7 @@ class MASTERSHAPER_DB {
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
          $this->db_query("
-            INSERT INTO ". MYSQL_PREFIX ."hosts VALUES (
+            INSERT INTO ". MYSQL_PREFIX ."host_profiles VALUES (
                NULL,
                'Default Host',
                'Y'
