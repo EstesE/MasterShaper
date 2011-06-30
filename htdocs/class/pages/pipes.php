@@ -62,7 +62,6 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
          OR /* if pipe is not assigned to chain yet */
             c.chain_host_idx IS NULL
          ORDER BY
-            apc.apc_chain_idx ASC,
             p.pipe_name ASC
       ");
 
