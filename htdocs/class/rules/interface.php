@@ -892,13 +892,13 @@ class Ruleset_Interface {
                if($filter->filter_tos > 0)
                   $string.= "match u8 ". sprintf("%02x", $filter->filter_tos) ." 0xff at 25 ";
                if(!empty($filter->filter_dscp) && $filter->filter_dscp != -1)
-                  $string.= "match u8 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0x3f at 25 ";
+                  $string.= "match u8 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xfc at 25 ";
             }
             else {
                if($filter->filter_tos > 0)
                   $string.= "match ip tos ". $filter->filter_tos ." 0xff ";
                if(!empty($filter->filter_dscp) && $filter->filter_dscp != -1)
-                  $string.= "match ip tos 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0x3f ";
+                  $string.= "match u8 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xfc at 1 ";
             }
 
             /* filter matches a specific network protocol */
