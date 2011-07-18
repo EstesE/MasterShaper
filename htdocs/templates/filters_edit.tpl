@@ -118,8 +118,8 @@
     <option value="AF12"   { if $filter->filter_dscp == "AF12" } selected="selected" { /if }>AF12</option>
     <option value="AF13"   { if $filter->filter_dscp == "AF13" } selected="selected" { /if }>AF13</option>
     <option value="AF21"   { if $filter->filter_dscp == "AF21" } selected="selected" { /if }>AF21</option>
-    <option value="AF22"   { if $filter->filter_dscp == "AF22" } selected="selected" { /if }>AF21</option>
-    <option value="AF23"   { if $filter->filter_dscp == "AF23" } selected="selected" { /if }>AF21</option>
+    <option value="AF22"   { if $filter->filter_dscp == "AF22" } selected="selected" { /if }>AF22</option>
+    <option value="AF23"   { if $filter->filter_dscp == "AF23" } selected="selected" { /if }>AF23</option>
     <option value="AF31"   { if $filter->filter_dscp == "AF31" } selected="selected" { /if }>AF31</option>
     <option value="AF32"   { if $filter->filter_dscp == "AF32" } selected="selected" { /if }>AF32</option>
     <option value="AF33"   { if $filter->filter_dscp == "AF33" } selected="selected" { /if }>AF33</option>
