@@ -523,7 +523,10 @@ class MASTERSHAPER_DB {
          $this->getVersion() < SCHEMA_VERSION) {
 
          $this->install_tables();
-         return true;
+
+         // if meta table has been created just now, we need to reread
+         // our database version number.
+         $this->schema_version = $this->getVersion();
       }
 
       $this->upgrade_schema();
