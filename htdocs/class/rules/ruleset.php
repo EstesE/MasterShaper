@@ -354,7 +354,7 @@ class Ruleset {
    {
       $string = "";
       foreach($this->getCompleteRuleset() as $tmp) {
-         foreach(split("\n", $tmp) as $line) {
+         foreach(preg_split("/\n/", $tmp) as $line) {
          $line = trim($line);
          if($line != "")
             $string.= "<font style='color: ". $this->getColor($line) .";'>". $line ."</font><br />\n";

@@ -547,9 +547,9 @@ class Ruleset_Interface {
                   }
                   else {
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host))
-                        list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $host);
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
                      else
-                        list($m1, $m2, $m3, $m4, $m5, $m6) = split("-", $host);
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
 
                      $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ."  0xffffffff at -8 flowid ". $params2 ."");
                   }
@@ -587,9 +587,9 @@ class Ruleset_Interface {
                   }
                   else {
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host))
-                        list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $host);
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
                      else
-                        list($m1, $m2, $m3, $m4, $m5, $m6) = split("-", $host);
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
 
                      $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params2 ."");
                   }
@@ -611,9 +611,9 @@ class Ruleset_Interface {
                   }
                   else {
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host))
-                        list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $src_host);
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $src_host);
                      else
-                        list($m1, $m2, $m3, $m4, $m5, $m6) = split("-", $src_host);
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $src_host);
                      $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ";
                   }
 
@@ -632,9 +632,9 @@ class Ruleset_Interface {
                      }
                      else {
                         if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $dst_host))
-                           list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $dst_host);
+                           list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $dst_host);
                         else
-                           list($m1, $m2, $m3, $m4, $m5, $m6) = split("-", $dst_host);
+                           list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $dst_host);
 
                         $this->addRule($string . "match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params2 ."");
                      }
@@ -752,7 +752,7 @@ class Ruleset_Interface {
             if($ms->getOption("filter") == "tc") {
 
                if(strstr($row->target_ip, "-") !== false) {
-                  list($host1, $host2) = split("-", $row->target_ip);
+                  list($host1, $host2) = preg_split("/-/", $row->target_ip);
                   $host1 = ip2long($host1);
                   $host2 = ip2long($host2);
 
@@ -770,7 +770,7 @@ class Ruleset_Interface {
          case 'MAC':
 
             $row->target_mac = str_replace("-", ":", $row->target_mac);
-            list($one, $two, $three, $four, $five, $six) = split(":", $row->target_mac);
+            list($one, $two, $three, $four, $five, $six) = preg_split("/:/", $row->target_mac);
             $row->target_mac = sprintf("%02s:%02s:%02s:%02s:%02s:%02s", $one, $two, $three, $four, $five, $six);
             array_push($targets, $row->target_mac);
             break;
@@ -1024,9 +1024,9 @@ class Ruleset_Interface {
                      foreach($tmp_array as $tmp_arr) {
 
                         if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host))
-                           list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $host);
+                           list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
                         else
-                           list($m1, $m2, $m3, $m4, $m5, $m6) = split("-", $host);
+                           list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
 
                         switch($pipe->pipe_direction) {
                            case UNIDIRECTIONAL:
@@ -1080,9 +1080,9 @@ class Ruleset_Interface {
                      foreach($tmp_array as $tmp_arr) {
 
                         if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host))
-                           list($m1, $m2, $m3, $m4, $m5, $m6) = split(":", $host);
+                           list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
                         else
-                           list($m1, $m2, $m3, $m4, $m5, $m6) = split("-", $host);
+                           list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
 
                         switch($pipe->pipe_direction) {
                            case UNIDIRECTIONAL:
@@ -1113,9 +1113,9 @@ class Ruleset_Interface {
                   }
                   else {
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host))
-                        list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = split(":", $src_host);
+                        list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = preg_split("/:/", $src_host);
                      else
-                        list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = split("-", $src_host);
+                        list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = preg_split("/-/", $src_host);
  
                      $tmp_str = "u32 [DIR1] [DIR2]";
                   }
@@ -1180,9 +1180,9 @@ class Ruleset_Interface {
                      else {
 
                         if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $dst_host))
-                           list($dm1, $dm2, $dm3, $dm4, $dm5, $dm6) = split(":", $dst_host);
+                           list($dm1, $dm2, $dm3, $dm4, $dm5, $dm6) = preg_split("/:/", $dst_host);
                         else
-                           list($dm1, $dm2, $dm3, $dm4, $dm5, $dm6) = split("-", $dst_host);
+                           list($dm1, $dm2, $dm3, $dm4, $dm5, $dm6) = preg_split("/-/", $dst_host);
 
                         foreach($tmp_array as $tmp_arr) {
 

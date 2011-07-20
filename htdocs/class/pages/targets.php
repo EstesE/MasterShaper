@@ -188,7 +188,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
       elseif($_POST['target_match'] == "IP" && $_POST['target_ip'] != "") {
          /* Is target_ip a ip range seperated by "-" */
          if(strstr($_POST['target_ip'], "-") !== false) {
-            $hosts = split("-", $_POST['target_ip']);
+            $hosts = preg_split("/-/", $_POST['target_ip']);
             foreach($hosts as $host) {
                $ipv4 = new Net_IPv4;
                if(!$ipv4->validateIP($host)) {

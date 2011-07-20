@@ -1002,7 +1002,7 @@ class MASTERSHAPER {
          return NULL;
 
       $string = str_replace(" ", "", $string);
-      $ports = split(",", $string);
+      $ports = preg_split("/,/", $string);
 
       $targets = Array();
 
@@ -1015,7 +1015,7 @@ class MASTERSHAPER {
             continue;
          }
 
-         list($start, $end) = split("-", $port);
+         list($start, $end) = preg_split("/-/", $port);
          // if the user try to fool us...
          if($end < $start) {
             $tmp = $end;
