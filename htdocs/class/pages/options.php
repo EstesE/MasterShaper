@@ -159,7 +159,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
 
                   if(($line != "") && (!preg_match("/^#/", $line))) {
 
-                     list($set, $parameters) = split(":", $line, 2);
+                     list($set, $parameters) = preg_split("/:/", $line, 2);
 
                      $object = unserialize(stripslashes($parameters));
 
@@ -261,7 +261,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
 			       ."'". $object->target_ip ."', '". $object->target_mac ."')");
 
             $id = $db->db_getid();
-	    $members = split('#', $object->target_members);
+	    $members = preg_split('/#/', $object->target_members);
 	    foreach($members as $member) {
 	       $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_target_groups (atg_group_idx, atg_target_idx) "
 				    ."VALUES ('". $id ."', '". $ms->getTargetByName($member) ."')");
@@ -316,12 +316,12 @@ class Page_Options extends MASTERSHAPER_PAGE {
 			       ."'". $object->filter_active ."')");
 
             $id = $db->db_getid();
-            $ports = split('#', $object->filter_ports);
+            $ports = preg_split('/#/', $object->filter_ports);
             foreach($ports as $port) {
                $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (afp_filter_idx, afp_port_idx) "
                                   ."VALUES ('". $id ."', '". $ms->getPortByName($port) ."')");
             }
-	    $l7protos = split('#', $object->l7_protocols);
+	    $l7protos = preg_split('/#/', $object->l7_protocols);
 	    foreach($l7protos as $l7proto) {
 	       $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (afl7_filter_idx, afl7_l7proto_idx) "
 	                          ."VALUES ('". $id ."', '". $ms->getL7ProtocolByName($l7proto) ."')");
@@ -345,7 +345,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
                                ."', '". $ms->getServiceLevelByName($object->sl_name) 
                                ."', '". $object->pipe_src_target ."', '". $object->pipe_dst_target ."', '". $object->pipe_direction ."', '". $object->pipe_active ."')");
             $id = $db->db_getid();
-            $filters = split('#', $object->filters);
+            $filters = preg_split('/#/', $object->filters);
             foreach($filters as $filter) {
                $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (apf_pipe_idx, apf_filter_idx) "
                                   ."VALUES ('". $id ."', '". $ms->getFilterByName($filter) ."')");

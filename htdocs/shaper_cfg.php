@@ -70,7 +70,7 @@ class MASTERSHAPER_CFG {
    /* split key=value pair */
    private function getParams($line)
    {
-      return split("=", $line);
+      return preg_split("/=/", $line);
    } // getParams()
 
 } // class MASTERSHAPER_CFG

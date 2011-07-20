@@ -512,11 +512,11 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    {  
       $data  = Array();
       $pairs = Array();
-      $pairs = split(',', $line);
+      $pairs = preg_split('/,/', $line);
 
       foreach($pairs as $pair) {
 
-         list($key, $value) = split('=', $pair);
+         list($key, $value) = preg_split('/=/', $pair);
          if(!preg_match("/". $limit_to ."/", $key))
             continue;
 

@@ -203,12 +203,12 @@ class Page_Ports extends MASTERSHAPER_PAGE {
       if(preg_match("/,/", $_POST['port_number']) || preg_match("/-/", $_POST['port_number'])) {
          $is_numeric = true;
          // split the port number string into an array
-         $port_numbers = split(",", $_POST['port_number']);
+         $port_numbers = preg_split("/,/", $_POST['port_number']);
          foreach($port_numbers as $port_number) {
             $port_number = trim($port_number);
             // if value contains a list, split the string
             if(preg_match("/-/", $port_number)) {
-               list($lower, $higher) = split("-", $port_number);
+               list($lower, $higher) = preg_split("/-/", $port_number);
                if(!is_numeric($lower) || $lower <= 0 || $lower >= 65536)
                   $is_numeric = false;
                if(!is_numeric($higher) || $higher <= 0 || $higher >= 65536)
