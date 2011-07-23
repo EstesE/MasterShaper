@@ -168,11 +168,6 @@ class MASTERSHAPER {
     */
    private function check_requirements()
    {
-      if(!function_exists("imagecreatefromjpeg")) {
-         print "PHP GD library extension is missing<br />\n";
-         $missing = true;
-      }
-
       if(!function_exists("mysql_connect")) {
          print "PHP MySQL extension is missing<br />\n";
          $missing = true;
