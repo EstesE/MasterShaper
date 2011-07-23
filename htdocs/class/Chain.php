@@ -50,6 +50,7 @@ class Chain extends MsObject {
             'chain_tc_id' => 'text',
             'chain_netpath_idx' => 'integer',
             'chain_host_idx' => 'integer',
+            'chain_guid' => 'text',
          ),
       ));
 

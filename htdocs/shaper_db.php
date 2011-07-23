@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '15');
+define('SCHEMA_VERSION', '16');
 
 /***************************************************************************
  *
@@ -592,6 +592,7 @@ class MASTERSHAPER_DB {
               `apc_sl_idx` int(11) NOT NULL,
               `apc_pipe_active` char(1) default NULL,
               `apc_pipe_pos` int(11) DEFAULT NULL,
+              `apc_guid` varchar(36) DEFAULT NULL,
               PRIMARY KEY  (`apc_idx`),
               KEY `apc_pipe_to_chain`  (`apc_pipe_idx`,`apc_chain_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
@@ -613,6 +614,7 @@ class MASTERSHAPER_DB {
               `chain_tc_id` varchar(16) default NULL,
               `chain_netpath_idx` int(11) default NULL,
               `chain_host_idx` int(11) default NULL,
+              `chain_guid` varchar(36) DEFAULT NULL,
               PRIMARY KEY  (`chain_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
@@ -842,6 +844,7 @@ class MASTERSHAPER_DB {
               `id_tc_id` varchar(255) default NULL,
               `id_color` varchar(7) default NULL,
               `id_host_idx` int(11) default NULL,
+              `id_guid` varchar(36) DEFAULT NULL,
               KEY `id_pipe_idx` (`id_pipe_idx`),
               KEY `id_chain_idx` (`id_chain_idx`),
               KEY `id_if` (`id_if`),
@@ -995,6 +998,8 @@ class MASTERSHAPER_DB {
 
    private function upgrade_schema()
    {
+      global $ms;
+
       if($this->schema_version < 2) {
 
          $this->db_query("
@@ -1324,6 +1329,107 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(15);
+
+      }
+
+      if($this->schema_version < 16) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."tc_ids
+            ADD
+               id_guid varchar(36) DEFAULT NULL
+            AFTER
+               id_host_idx
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+            ADD
+               apc_guid varchar(36) DEFAULT NULL
+            AFTER
+               apc_pipe_pos
+         ");
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."chains
+            ADD
+               chain_guid varchar(36) DEFAULT NULL
+            AFTER
+               chain_host_idx
+         ");
+
+         // generate GUIDs for Chains
+         $result = $this->db_query("
+            SELECT
+               chain_idx
+            FROM
+               ". MYSQL_PREFIX ."chains
+         ");
+
+         while($row = $result->fetchRow()) {
+
+            $guid = $ms->create_guid();
+
+            $this->db_query("
+               UPDATE
+                  ". MYSQL_PREFIX ."chains
+               SET
+                  chain_guid='". $guid ."'
+               WHERE
+                  chain_idx LIKE ". $row->chain_idx
+            );
+
+            $this->db_query("
+               UPDATE
+                  ". MYSQL_PREFIX ."tc_ids
+               SET
+                  id_guid='". $guid ."'
+               WHERE
+                  id_chain_idx LIKE ". $row->chain_idx ."
+               AND
+                  id_pipe_idx LIKE 0
+            ");
+         }
+
+         // generate GUIDs for Chains
+         $result = $this->db_query("
+            SELECT
+               apc_idx,
+               apc_pipe_idx,
+               apc_chain_idx
+            FROM
+               ". MYSQL_PREFIX ."assign_pipes_to_chains
+         ");
+
+         while($row = $result->fetchRow()) {
+
+            $guid = $ms->create_guid();
+
+            $this->db_query("
+               UPDATE
+                  ". MYSQL_PREFIX ."assign_pipes_to_chains
+               SET
+                  apc_guid='". $guid ."'
+               WHERE
+                  apc_idx LIKE ". $row->apc_idx
+            );
+
+            $this->db_query("
+               UPDATE
+                  ". MYSQL_PREFIX ."tc_ids
+               SET
+                  id_guid='". $guid ."'
+               WHERE
+                  id_chain_idx LIKE ". $row->apc_chain_idx ."
+               AND
+                  id_pipe_idx LIKE ". $row->apc_pipe_idx
+            );
+         }
+
+         $this->setVersion(16);
 
       }
 
