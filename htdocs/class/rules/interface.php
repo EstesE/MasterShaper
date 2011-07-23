@@ -868,8 +868,9 @@ class Ruleset_Interface {
      * @param Filter $filter
      * @param string $my_id
      * @param Pipe $pipe
+     * @param string $chain_direction
      */
-   private function addPipeFilter($parent, $option, $filter, $my_id, $pipe)
+   private function addPipeFilter($parent, $option, $filter, $my_id, $pipe, $chain_direction)
    {
       global $ms;
 
@@ -1659,7 +1660,8 @@ class Ruleset_Interface {
       /* get all active pipes for this chain */
       $sth = $db->db_prepare("
          SELECT
-            p.*,
+            p.pipe_idx,
+            p.pipe_active,
             apc.apc_sl_idx,
             apc.apc_pipe_active
          FROM
@@ -1676,15 +1678,18 @@ class Ruleset_Interface {
             apc.apc_pipe_pos ASC"
       );
 
-      $pipes = $db->db_execute($sth, array(
+      $active_pipes = $db->db_execute($sth, array(
          $chain_idx
       ));
 
-      while($pipe = $pipes->fetchRow()) {
+      while($active_pipe = $active_pipes->fetchRow()) {
 
          // if pipe has been locally (for this chain) disabled, we can skip it.
-         if($pipe->apc_pipe_active != 'Y')
+         if($active_pipe->apc_pipe_active != 'Y')
             continue;
+
+         // now load Pipe as object
+         $pipe = new Pipe($active_pipe->pipe_idx);
 
          $this->current_pipe+= 0x1;
 
@@ -1708,13 +1713,13 @@ class Ruleset_Interface {
 
          /* no filter selected */
          if($filters->numRows() <= 0) {
-            $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe);
+            $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe, $chain_direction);
             continue;
          }
 
          while($filter = $filters->fetchRow()) {
             $detail = new Filter($filter->apf_filter_idx);
-            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe);
+            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe, $chain_direction);
          }
       }
 
