@@ -515,6 +515,7 @@ class Ruleset_Interface {
                $params1->chain_dst_target = $tmp;
             }
 
+            // matching on source address, but not on destination
             if($params1->chain_src_target != 0 && $params1->chain_dst_target == 0) {
 
                $hosts = $this->getTargetHosts($params1->chain_src_target);
@@ -555,6 +556,7 @@ class Ruleset_Interface {
                   }
                }
             }
+            // matching on destination address, but not on source
             elseif($params1->chain_src_target == 0 && $params1->chain_dst_target != 0) {
 
                $hosts = $this->getTargetHosts($params1->chain_dst_target);
@@ -595,12 +597,15 @@ class Ruleset_Interface {
                   }
                }
             }
+            // matching on both, source and destination address
             elseif($params1->chain_src_target != 0 && $params1->chain_dst_target != 0) {
 
                $src_hosts = $this->getTargetHosts($params1->chain_src_target);
 
                foreach($src_hosts as $src_host) {
+
                   if(!$this->check_if_mac($src_host)) {
+
                      if($this->isGRE()) {
                         $hex_host = $this->convertIpToHex($src_host);
                         $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 ";
@@ -608,8 +613,10 @@ class Ruleset_Interface {
                      else {
                         $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $src_host ." ";
                      }
+
                   }
                   else {
+
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host))
                         list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $src_host);
                      else
@@ -624,10 +631,10 @@ class Ruleset_Interface {
                      if(!$this->check_if_mac($dst_host)) {
                         if($this->isGRE()) {
                            $hex_host = $this->convertIpToHex($dst_host);
-                           $this->addRule($string . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
+                           $string.= "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2;
                         }
                         else {
-                           $this->addRule($string . "match ip dst ". $dst_host ." flowid ". $params2);
+                           $string.= "match ip dst ". $dst_host ." flowid ". $params2;
                         }
                      }
                      else {
@@ -636,8 +643,31 @@ class Ruleset_Interface {
                         else
                            list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $dst_host);
 
-                        $this->addRule($string . "match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params2 ."");
+                        $string.= "match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params2;
                      }
+                  }
+
+                  // unidirectional or bidirectional matches
+                  switch($params1->chain_direction) {
+                     case UNIDIRECTIONAL:
+                        $this->addRule($string);
+                        break;
+                     case BIDIRECTIONAL:
+                        $this->addRule($string);
+                        if(!$this->isGRE()) {
+                           // now swap src and dst in the filter string
+                           $string = str_replace("src", "JUSTforAmoment", $string);
+                           $string = str_replace("dst", "src", $string);
+                           $string = str_replace("JUSTforAmoment", "dst", $string);
+                        }
+                        else {
+                           // now swap src and dst in the filter string
+                           $string = str_replace("at 36", "JUSTforAmoment", $string);
+                           $string = str_replace("at 40", "at 36", $string);
+                           $string = str_replace("JUSTforAmoment", "at 40", $string);
+                        }
+                        $this->addRule($string);
+                        break;
                   }
                }
             }
