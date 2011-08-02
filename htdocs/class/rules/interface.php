@@ -515,6 +515,7 @@ class Ruleset_Interface {
                $params1->chain_dst_target = $tmp;
             }
 
+            // matching on source address, but not on destination
             if($params1->chain_src_target != 0 && $params1->chain_dst_target == 0) {
 
                $hosts = $this->getTargetHosts($params1->chain_src_target);
@@ -525,22 +526,22 @@ class Ruleset_Interface {
                         $hex_host = $this->convertIpToHex($host);
                         switch($params1->chain_direction) {
                            case UNIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2);
                               break;
                            case BIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2 ."");
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2);
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
                               break;
                         }
                      }
                      else {
                         switch($params1->chain_direction) {
                            case UNIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2);
                               break;
                            case BIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2 ."");
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2);
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2);
                               break;
                         }
                      }
@@ -551,10 +552,11 @@ class Ruleset_Interface {
                      else
                         list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
 
-                     $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ."  0xffffffff at -8 flowid ". $params2 ."");
+                     $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ."  0xffffffff at -8 flowid ". $params2);
                   }
                }
             }
+            // matching on destination address, but not on source
             elseif($params1->chain_src_target == 0 && $params1->chain_dst_target != 0) {
 
                $hosts = $this->getTargetHosts($params1->chain_dst_target);
@@ -565,22 +567,22 @@ class Ruleset_Interface {
                         $hex_host = $this->convertIpToHex($host);
                         switch($params1->chain_direction) {
                            case UNIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
                               break;
                            case BIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2 ."");
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2);
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
                               break;
                         }
                      }
                      else {
                         switch($params1->chain_direction) {
                            case UNIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2);
                               break;
                            case BIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2 ."");
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2 ."");
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2);
+                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2);
                               break;
                         }
                      }
@@ -591,16 +593,20 @@ class Ruleset_Interface {
                      else
                         list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
 
-                     $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params2 ."");
+                     $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params2);
                   }
                }
             }
+            // matching on both, source and destination address
             elseif($params1->chain_src_target != 0 && $params1->chain_dst_target != 0) {
 
+print "hier";
                $src_hosts = $this->getTargetHosts($params1->chain_src_target);
 
                foreach($src_hosts as $src_host) {
+
                   if(!$this->check_if_mac($src_host)) {
+
                      if($this->isGRE()) {
                         $hex_host = $this->convertIpToHex($src_host);
                         $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 ";
@@ -608,8 +614,10 @@ class Ruleset_Interface {
                      else {
                         $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $src_host ." ";
                      }
+
                   }
                   else {
+
                      if(preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host))
                         list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $src_host);
                      else
@@ -619,15 +627,18 @@ class Ruleset_Interface {
 
                   $dst_hosts = $this->getTargetHosts($params1->chain_dst_target);
 
+                  $strings = Array();
                   foreach($dst_hosts as $dst_host) {
+
+                     $tmp_string = $string;
 
                      if(!$this->check_if_mac($dst_host)) {
                         if($this->isGRE()) {
                            $hex_host = $this->convertIpToHex($dst_host);
-                           $this->addRule($string . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
+                           $tmp_string.= "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2;
                         }
                         else {
-                           $this->addRule($string . "match ip dst ". $dst_host ." flowid ". $params2);
+                           $tmp_string.= "match ip dst ". $dst_host ." flowid ". $params2;
                         }
                      }
                      else {
@@ -636,7 +647,34 @@ class Ruleset_Interface {
                         else
                            list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $dst_host);
 
-                        $this->addRule($string . "match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params2 ."");
+                        $tmp_string.= "match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params2;
+                     }
+
+                     array_push($strings, $tmp_string);
+                  }
+
+                  foreach($strings as $string) {
+                     // unidirectional or bidirectional matches
+                     switch($params1->chain_direction) {
+                        case UNIDIRECTIONAL:
+                           $this->addRule($string);
+                           break;
+                        case BIDIRECTIONAL:
+                           $this->addRule($string);
+                           if(!$this->isGRE()) {
+                              // now swap src and dst in the filter string
+                              $string = str_replace("src", "JUSTforAmoment", $string);
+                              $string = str_replace("dst", "src", $string);
+                              $string = str_replace("JUSTforAmoment", "dst", $string);
+                           }
+                           else {
+                              // now swap src and dst in the filter string
+                              $string = str_replace("at 36", "JUSTforAmoment", $string);
+                              $string = str_replace("at 40", "at 36", $string);
+                              $string = str_replace("JUSTforAmoment", "at 40", $string);
+                           }
+                           $this->addRule($string);
+                           break;
                      }
                   }
                }
@@ -868,8 +906,9 @@ class Ruleset_Interface {
      * @param Filter $filter
      * @param string $my_id
      * @param Pipe $pipe
+     * @param string $chain_direction
      */
-   private function addPipeFilter($parent, $option, $filter, $my_id, $pipe)
+   private function addPipeFilter($parent, $option, $filter, $my_id, $pipe, $chain_direction)
    {
       global $ms;
 
@@ -1659,7 +1698,8 @@ class Ruleset_Interface {
       /* get all active pipes for this chain */
       $sth = $db->db_prepare("
          SELECT
-            p.*,
+            p.pipe_idx,
+            p.pipe_active,
             apc.apc_sl_idx,
             apc.apc_pipe_active
          FROM
@@ -1676,15 +1716,18 @@ class Ruleset_Interface {
             apc.apc_pipe_pos ASC"
       );
 
-      $pipes = $db->db_execute($sth, array(
+      $active_pipes = $db->db_execute($sth, array(
          $chain_idx
       ));
 
-      while($pipe = $pipes->fetchRow()) {
+      while($active_pipe = $active_pipes->fetchRow()) {
 
          // if pipe has been locally (for this chain) disabled, we can skip it.
-         if($pipe->apc_pipe_active != 'Y')
+         if($active_pipe->apc_pipe_active != 'Y')
             continue;
+
+         // now load Pipe as object
+         $pipe = new Pipe($active_pipe->pipe_idx);
 
          $this->current_pipe+= 0x1;
 
@@ -1708,13 +1751,13 @@ class Ruleset_Interface {
 
          /* no filter selected */
          if($filters->numRows() <= 0) {
-            $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe);
+            $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe, $chain_direction);
             continue;
          }
 
          while($filter = $filters->fetchRow()) {
             $detail = new Filter($filter->apf_filter_idx);
-            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe);
+            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe, $chain_direction);
          }
       }
 
