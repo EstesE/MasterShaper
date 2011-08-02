@@ -293,6 +293,8 @@ class Page_Targets extends MASTERSHAPER_PAGE {
 
       if(isset($params['idx']) && is_numeric($params['idx']))
          $idx = $params['idx'];
+      else
+         $idx = 0;
 
       switch($group) {
 
