@@ -600,7 +600,6 @@ class Ruleset_Interface {
             // matching on both, source and destination address
             elseif($params1->chain_src_target != 0 && $params1->chain_dst_target != 0) {
 
-print "hier";
                $src_hosts = $this->getTargetHosts($params1->chain_src_target);
 
                foreach($src_hosts as $src_host) {
@@ -1736,8 +1735,9 @@ print "hier";
 
          // check if pipes original service level has been overruled locally
          // for this chain. if so, we proceed with the local service level.
-         if(isset($pipe->apc_sl_idx) && !empty($pipe->apc_sl_idx))
-            $pipe->pipe_sl_idx = $pipe->apc_sl_idx;
+         if(isset($active_pipe->apc_sl_idx) && !empty($active_pipe->apc_sl_idx)) {
+            $pipe->pipe_sl_idx = $active_pipe->apc_sl_idx;
+         }
 
          $sl = $ms->get_service_level($pipe->pipe_sl_idx);
 
