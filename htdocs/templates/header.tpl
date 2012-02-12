@@ -8,7 +8,7 @@
   <link rel="shortcut icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
   <link rel="icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
   <!-- jQuery -->
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jquery-1.5.1.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jquery-1.7.1.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/plugins/jquery.color.js"></script>
   <!-- jqPlot -->
   <!--[if IE]><script language="javascript" type="text/javascript" src="{$web_path}/jqplot/excanvas.js"></script><![endif]-->
