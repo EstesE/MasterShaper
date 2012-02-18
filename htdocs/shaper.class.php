@@ -46,6 +46,7 @@ define('DEBUG', 1);
 class MASTERSHAPER {
 
    var $cfg;
+   var $headers;
 
    /**
     * class constructor
@@ -59,6 +60,7 @@ class MASTERSHAPER {
       $GLOBALS['ms'] = $this;
 
       $this->cfg = new MASTERSHAPER_CFG($this, "config.dat");
+      $this->headers = Array();
 
       /* Check necessary requirements */
       if(!$this->check_requirements()) {
@@ -1695,6 +1697,33 @@ class MASTERSHAPER {
       return $uuid;
 
    } // create_guid()
+
+   /**
+    * add a HTTP to be set to MasterShapers headers variable
+    *
+    * @return bool
+    */
+
+   public function set_header($key, $value)
+   {
+      $this->headers[$key] = $value;
+      return true;
+
+   } // set_header()
+
+   /**
+    * get a specific HTTP to be set by MasterShapers headers variable
+    *
+    * @return string
+    */
+   public function get_header($key)
+   {
+      if(!isset($this->headers[$key]))
+         return NULL;
+
+      return $this->headers[$key];
+
+   } // get_header()
 
 } // class MASTERSHAPER
 

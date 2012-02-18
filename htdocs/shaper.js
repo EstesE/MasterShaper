@@ -484,6 +484,12 @@ function obj_toggle_status(element)
 
 } // obj_toggle_status()
 
+function obj_toggle_checkbox(element)
+{
+   $(element).attr('checked', !$(element).attr('checked'));
+
+} // obj_toggle_checkbox
+
 function obj_alter_position(element)
 {
    if(!(obj_type = element.attr("type")) == undefined)

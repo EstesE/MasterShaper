@@ -73,10 +73,14 @@ class Page_Users extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $user = new User($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $user = new User;
+         $tmpl->assign('is_new', true);
+      }
 
       $tmpl->assign('user', $user);
       return $tmpl->fetch("users_edit.tpl");
@@ -88,7 +92,7 @@ class Page_Users extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -124,7 +128,11 @@ class Page_Users extends MASTERSHAPER_PAGE {
 
       if(!$user->save())
          return false;
-		  
+
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+         return true;
+
+      $ms->set_header('Location', $rewriter->get_page_url('Users List'));
       return true;
 
    } // store()

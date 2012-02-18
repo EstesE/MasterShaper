@@ -76,10 +76,14 @@ class Page_Filters extends MASTERSHAPER_PAGE {
 
       global $ms, $db, $tmpl, $page;
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $filter = new Filter($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $filter = new filter;
+         $tmpl->assign('is_new', true);
+      }
 
       /* get a list of pipes that use this filter */
       $sth = $db->db_prepare("
@@ -125,7 +129,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -178,15 +182,17 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          !$_POST['filter_time_day_sun'] &&
          !$_POST['filter_match_sip'] &&
          count($_POST['filter_l7_used']) <= 1) {
-         $ms­>throwError(_("This filter has nothing to do. Please select at least one match!"));
+         $ms->throwError(_("This filter has nothing to do. Please select at least one match!"));
       }
       /* Ports can only be used with TCP, UDP or IP protocol */
       if(isset($_POST['used']) && count($_POST['used']) > 1 &&
          (
+            !isset($_POST['filter_protocol_id']) ||
+            $_POST['filter_protocol_id'] == -1 || (
             $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 4 &&
             $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 17 &&
             $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6
-         )) {
+         ))) {
          $ms->throwError(_("Ports can only be used in combination with IP, TCP or UDP protocol!"));
       }
       /* TCP-flags can only be used with TCP protocol */
@@ -256,6 +262,10 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       if(!$filter->save())
          return false;
 
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+         return true;
+
+      $ms->set_header('Location', $rewriter->get_page_url('Filters List'));
       return true;
 
    } // store()

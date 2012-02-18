@@ -349,8 +349,7 @@
  </tr>
  <tr>
   <td style="text-align: center;"><a href="{$rewriter->get_page_url('Filters List')}" title="Back"><img src="{ $icon_arrow_left }" alt="arrow left icon" /></a></td>
-  <td><input type="submit" value="Save" /></td>
-  <td>Save settings.</td>
+  { include file=common_edit_save.tpl newobj=Filter }
  </tr>
 </table> 
 <p class="footnote">

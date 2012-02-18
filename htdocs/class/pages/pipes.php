@@ -88,10 +88,14 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       if($this->is_storing())
          $this->store();
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $pipe = new Pipe($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $pipe = new Pipe();
+         $tmpl->assign('is_new', true);
+      }
 
       /* get a list of chains that use this pipe */
       $sth = $db->db_prepare("
@@ -279,7 +283,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       if(isset($_POST['assign-pipe']) && $_POST['assign-pipe'] == 'true') {
          return $this->assign_pipe_to_chains();
@@ -312,6 +316,10 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       if(!$pipe->save())
          return false;
 
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+        return true;
+
+      $ms->set_header('Location', $rewriter->get_page_url('Pipes List'));
       return true;
 
    } // store()

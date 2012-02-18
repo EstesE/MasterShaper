@@ -32,6 +32,11 @@ class MASTERSHAPER_PAGE {
             break;
       }
 
+      if($ms->get_header('Location')) {
+         Header('Location: '. $ms->get_header('Location'));
+         return false;
+      }
+
       if(isset($content))
          $tmpl->assign('content', $content);
 

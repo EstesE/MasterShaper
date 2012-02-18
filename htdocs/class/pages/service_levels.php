@@ -76,10 +76,14 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
 
       global $ms, $db, $tmpl, $page;
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $sl = new Service_Level($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $sl = new Service_Level;
+         $tmpl->assign('is_new', true);
+      }
 
       $tmpl->assign('sl', $sl);
 
@@ -231,7 +235,7 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -320,6 +324,10 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
       if(!$sl->save())
          return false;
 
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+         return true;
+
+      $ms->set_header('Location', $rewriter->get_page_url('Service Levels List'));
       return true;
 
    } // store()

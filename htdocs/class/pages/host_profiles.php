@@ -80,10 +80,14 @@ class Page_Host_Profiles extends MASTERSHAPER_PAGE {
       $this->avail_chains = Array();
       $this->chains = Array();
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $hostprofile = new Host_Profile($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $hostprofile = new Host_Profile;
+         $tmpl->assign('is_new', true);
+      }
 
       $tmpl->assign('host', $hostprofile);
 
@@ -129,7 +133,7 @@ class Page_Host_Profiles extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -158,6 +162,10 @@ class Page_Host_Profiles extends MASTERSHAPER_PAGE {
       if(!$hostprofile->save())
          return false;
 
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+         return true;
+
+      $ms->set_header('Location', $rewriter->get_page_url('Host Profiles List'));
       return true;
 
    } // store()

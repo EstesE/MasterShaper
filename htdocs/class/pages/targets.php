@@ -81,10 +81,14 @@ class Page_Targets extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $target = new Target($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $target = new Target;
+         $tmpl->assign('is_new', true);
+      }
 
       /* get a list of objects that use this target */
       $sth = $db->db_prepare("
@@ -162,7 +166,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -234,6 +238,10 @@ class Page_Targets extends MASTERSHAPER_PAGE {
       if(!$target->save())
          return false;
 
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+         return true;
+
+      $ms->set_header('Location', $rewriter->get_page_url('Targets List'));
       return true;
 
    } // store()

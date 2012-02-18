@@ -103,10 +103,14 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $protocol = new Protocol($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $protocol = new Protocol;
+         $tmpl->assign('is_new', true);
+      }
 
       /* get a list of filters that use this protocol */
       $sth = $db->db_prepare("
@@ -174,7 +178,7 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -206,6 +210,10 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
       if(!$protocol->save())
          return false;
 
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+         return true;
+
+      $ms->set_header('Location', $rewriter->get_page_url('Protocols List'));
       return true;
 
    } // store()

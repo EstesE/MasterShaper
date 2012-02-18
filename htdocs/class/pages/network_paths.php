@@ -82,10 +82,14 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       $this->avail_chains = Array();
       $this->chains = Array();
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $np = new Network_Path($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $np = new Network_Path;
+         $tmpl->assign('is_new', true);
+      }
 
       $sth = $db->db_prepare("
          SELECT DISTINCT
@@ -170,7 +174,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -191,7 +195,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
          $ms->throwError(_("A network path with that name already exists!"));
       }
       if($_POST['netpath_if1'] == $_POST['netpath_if2']) {
-         $ms->throwError(_("A interface within a network path can not be used twice! Please select different interfaces"));
+         $ms->throwError(_("An interface within a network path can not be used twice! Please select different interfaces"));
       }
 
       if(!isset($_POST['netpath_if1_inside_gre']) || empty($_POST['netpath_if1_inside_gre']))
@@ -208,6 +212,10 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       if(!$np->save())
          return false;
 
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+         return true;
+
+      $ms->set_header('Location',  $rewriter->get_page_url('Network Paths List'));
       return true;
 
    } // store()

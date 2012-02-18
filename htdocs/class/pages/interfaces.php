@@ -78,10 +78,14 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0)
+      if($page->id != 0) {
          $if = new Network_Interface($page->id);
-      else
+         $tmpl->assign('is_new', false);
+      }
+      else {
          $if = new Network_Interface;
+         $tmpl->assign('is_new', true);
+      }
 
       /* get a list of network paths that use this interface */
       $sth = $db->db_prepare("
@@ -159,7 +163,7 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
     */
    public function store()
    {
-      global $ms, $db;
+      global $ms, $db, $rewriter;
 
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
@@ -196,6 +200,10 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
       if(!$if->save())
          return false;
 
+      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
+         return true;
+
+      $ms->set_header('Location', $rewriter->get_page_url('Interfaces List'));
       return true;
    
    } // store()
