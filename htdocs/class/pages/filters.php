@@ -422,7 +422,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          return;
       } 
 
-      global $db;
+      global $ms, $db;
 
       switch($params['mode']) {
          case 'unused':
@@ -452,7 +452,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
 
          case 'used':
 
-            $l7protos = $db->db_prepare("
+            $sth = $db->db_prepare("
                SELECT
                   l7proto_idx,
                   l7proto_name
@@ -470,6 +470,10 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                $params['filter_idx']
             ));
 
+            break;
+
+         default:
+            $ms->throwError('unknown mode');
             break;
       }
 

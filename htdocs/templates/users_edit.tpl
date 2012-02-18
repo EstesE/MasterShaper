@@ -76,18 +76,18 @@
    <table class="noborder">
     <tr>
      <td>
- <input type="checkbox" value="Y" name="user_manage_chains" { if $user->user_manage_chains == "Y" } checked="checked" { /if } />&nbsp;Manage Chains<br />
- <input type="checkbox" value="Y" name="user_manage_pipes" { if $user->user_manage_pipes == "Y" } checked="checked" { /if } />&nbsp;Manage Pipes<br />
- <input type="checkbox" value="Y" name="user_manage_filters" { if $user->user_manage_filters == "Y" } checked="checked" { /if } />&nbsp;Manage Filters<br />
- <input type="checkbox" value="Y" name="user_manage_ports" { if $user->user_manage_ports == "Y" } checked="checked" { /if } />&nbsp;Manage Ports<br />
- <input type="checkbox" value="Y" name="user_manage_protocols" { if $user->user_manage_protocols == "Y" } checked="checked" { /if } />&nbsp;Manage Protocols<br />
- <input type="checkbox" value="Y" name="user_manage_targets" { if $user->user_manage_targets == "Y" } checked="checked" { /if } />&nbsp;Manage Targets<br />
- <input type="checkbox" value="Y" name="user_manage_users" { if $user->user_manage_users == "Y" } checked="checked" { /if } />&nbsp;Manage Users<br />
- <input type="checkbox" value="Y" name="user_manage_options" { if $user->user_manage_options == "Y" } checked="checked" { /if } />&nbsp;Manage Options<br />
- <input type="checkbox" value="Y" name="user_manage_servicelevels" { if $user->user_manage_servicelevels == "Y" } checked="checked" { /if } />&nbsp;Manage Service Levels<br />
- <input type="checkbox" value="Y" name="user_load_rules" { if $user->user_load_rules == "Y" } checked="checked" { /if } />&nbsp;Load &amp; Unload Ruleset<br />
- <input type="checkbox" value="Y" name="user_show_rules" { if $user->user_show_rules == "Y" } checked="checked" { /if } />&nbsp;Show Ruleset &amp; Overview<br />
- <input type="checkbox" value="Y" name="user_show_monitor" { if $user->user_show_monitor == "Y" } checked="checked" { /if } />&nbsp;Show Monitor<br />
+      <input type="checkbox" value="Y" name="user_manage_chains" { if $user->user_manage_chains == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_chains]');">&nbsp;Manage Chains</label><br />
+      <input type="checkbox" value="Y" name="user_manage_pipes" { if $user->user_manage_pipes == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_pipes]');">&nbsp;Manage Pipes</label><br />
+      <input type="checkbox" value="Y" name="user_manage_filters" { if $user->user_manage_filters == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_filters]');">&nbsp;Manage Filters</label><br />
+      <input type="checkbox" value="Y" name="user_manage_ports" { if $user->user_manage_ports == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_ports]');">&nbsp;Manage Ports</label><br />
+      <input type="checkbox" value="Y" name="user_manage_protocols" { if $user->user_manage_protocols == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_protocols]');">&nbsp;Manage Protocols</label><br />
+      <input type="checkbox" value="Y" name="user_manage_targets" { if $user->user_manage_targets == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_targets]');">&nbsp;Manage Targets</label><br />
+      <input type="checkbox" value="Y" name="user_manage_users" { if $user->user_manage_users == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_users]');">&nbsp;Manage Users</label><br />
+      <input type="checkbox" value="Y" name="user_manage_options" { if $user->user_manage_options == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_options]');">&nbsp;Manage Options</label><br />
+      <input type="checkbox" value="Y" name="user_manage_servicelevels" { if $user->user_manage_servicelevels == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_manage_servicelevels]');">&nbsp;Manage Service Levels</label><br />
+      <input type="checkbox" value="Y" name="user_load_rules" { if $user->user_load_rules == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_load_rules]');">&nbsp;Load &amp; Unload Ruleset</label><br />
+      <input type="checkbox" value="Y" name="user_show_rules" { if $user->user_show_rules == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_show_rules]');">&nbsp;Show Ruleset &amp; Overview</label><br />
+      <input type="checkbox" value="Y" name="user_show_monitor" { if $user->user_show_monitor == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=user_show_monitor]');">&nbsp;Show Monitor</label><br />
 </td>
     </tr>
    </table>

@@ -6,9 +6,9 @@
  { chain_dialog_list }
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
-   <input type="checkbox" name="chains[]" value="{$chain_idx}" { if $chain_used } checked="checked" {/if} />
+   <input id="checkbox-{$chain_idx}" type="checkbox" name="chains[]" value="{$chain_idx}" { if $chain_used } checked="checked" {/if} />
   </td>
-  <td>
+  <td onclick="obj_toggle_checkbox('#checkbox-{$chain_idx}');">
    {$chain_name}&nbsp;{if $chain_active != 'Y'}(inactive){/if}
   </td>
  </tr>

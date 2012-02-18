@@ -54,7 +54,7 @@
    <select name="netpath_if1">
    { if_select_list if_idx=$np->netpath_if1 }
    </select>
-   &nbsp;<input type="checkbox" name="netpath_if1_inside_gre" value="Y" { if $np->netpath_if1_inside_gre == "Y" } checked="checked" { /if } />&nbsp;іnside GRE-tunnel
+   &nbsp;<input type="checkbox" name="netpath_if1_inside_gre" value="Y" { if $np->netpath_if1_inside_gre == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=netpath_if1_inside_gre]');">&nbsp;іnside GRE-tunnel</label>
   </td>
   <td>
    First interface of this network path.
@@ -69,7 +69,7 @@
    { if_select_list if_idx=$np->netpath_if2 }
     <option value="-1" { if $np->netpath_if2 == -1 } selected="selected" { /if }>--- not used ---</option>
    </select>
-   &nbsp;<input type="checkbox" name="netpath_if2_inside_gre" value="Y" { if $np->netpath_if2_inside_gre == "Y" } checked="checked" { /if } />&nbsp;іnside GRE-tunnel
+   &nbsp;<input type="checkbox" name="netpath_if2_inside_gre" value="Y" { if $np->netpath_if2_inside_gre == "Y" } checked="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=netpath_if2_inside_gre]');">&nbsp;іnside GRE-tunnel</label>
   </td>
   <td>
    Second interface of this network path.

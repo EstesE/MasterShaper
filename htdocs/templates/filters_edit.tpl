@@ -142,14 +142,14 @@
   <td>
    <table class="noborder">
     <tr>
-     <td><input type="checkbox" name="filter_tcpflag_syn" value="Y" { if $filter->filter_tcpflag_syn == "Y" } checked="checked" { /if } />SYN</td>
-     <td><input type="checkbox" name="filter_tcpflag_ack" value="Y" { if $filter->filter_tcpflag_ack == "Y" } checked="checked" { /if } />ACK</td>
-     <td><input type="checkbox" name="filter_tcpflag_fin" value="Y" { if $filter->filter_tcpflag_fin == "Y" }  checked="checked" { /if } />FIN</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_syn]')"><input type="checkbox" name="filter_tcpflag_syn" value="Y" { if $filter->filter_tcpflag_syn == "Y" } checked="checked" { /if } />SYN</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_ack]')"><input type="checkbox" name="filter_tcpflag_ack" value="Y" { if $filter->filter_tcpflag_ack == "Y" } checked="checked" { /if } />ACK</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_fin]')"><input type="checkbox" name="filter_tcpflag_fin" value="Y" { if $filter->filter_tcpflag_fin == "Y" }  checked="checked" { /if } />FIN</td>
     </tr>
     <tr>
-     <td><input type="checkbox" name="filter_tcpflag_rst" value="Y" { if $filter->filter_tcpflag_rst == "Y" }  checked="checked" { /if } />RST</td>
-     <td><input type="checkbox" name="filter_tcpflag_urg" value="Y" { if $filter->filter_tcpflag_urg == "Y" }  checked="checked" { /if } />URG</td>
-     <td><input type="checkbox" name="filter_tcpflag_psh" value="Y" { if $filter->filter_tcpflag_psh == "Y" }  checked="checked" { /if } />PSH</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_rst]')"><input type="checkbox" name="filter_tcpflag_rst" value="Y" { if $filter->filter_tcpflag_rst == "Y" }  checked="checked" { /if } />RST</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_urg]')"><input type="checkbox" name="filter_tcpflag_urg" value="Y" { if $filter->filter_tcpflag_urg == "Y" }  checked="checked" { /if } />URG</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_psh]')"><input type="checkbox" name="filter_tcpflag_psh" value="Y" { if $filter->filter_tcpflag_psh == "Y" }  checked="checked" { /if } />PSH</td>
     </tr>
    </table>
   </td>
@@ -180,19 +180,19 @@
   <td>
    <table class="noborder">
     <tr>
-     <td><input type="checkbox" name="filter_p2p_edk" value="Y" { if $filter->filter_p2p_edk == "Y" } checked="checked" { /if } />Edonkey</td>
-<td><input type="checkbox" name="filter_p2p_kazaa" value="Y" { if $filter->filter_p2p_kazaa == "Y" } checked="checked" { /if } />Kazaa</td>
-     <td><input type="checkbox" name="filter_p2p_dc" value="Y" { if $filter->filter_p2p_dc == "Y" } checked="checked" { /if } />Direct Connect (DC)</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_edk]')"><input type="checkbox" name="filter_p2p_edk" value="Y" { if $filter->filter_p2p_edk == "Y" } checked="checked" { /if } />Edonkey</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_kazaa]')"><input type="checkbox" name="filter_p2p_kazaa" value="Y" { if $filter->filter_p2p_kazaa == "Y" } checked="checked" { /if } />Kazaa</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_dc]')"><input type="checkbox" name="filter_p2p_dc" value="Y" { if $filter->filter_p2p_dc == "Y" } checked="checked" { /if } />Direct Connect (DC)</td>
     </tr>
     <tr>
-<td><input type="checkbox" name="filter_p2p_gnu" value="Y" { if $filter->filter_p2p_gnu == "Y" } checked="checked" { /if } />Gnutella</td>
-<td><input type="checkbox" name="filter_p2p_bit" value="Y" { if $filter->filter_p2p_bit == "Y" } checked="checked" { /if } />Bittorent</td>
-<td><input type="checkbox" name="filter_p2p_apple" value="Y" { if $filter->filter_p2p_apple == "Y" } checked="checked" { /if } />AppleJuice</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_gnu]')"><input type="checkbox" name="filter_p2p_gnu" value="Y" { if $filter->filter_p2p_gnu == "Y" } checked="checked" { /if } />Gnutella</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_bit]')"><input type="checkbox" name="filter_p2p_bit" value="Y" { if $filter->filter_p2p_bit == "Y" } checked="checked" { /if } />Bittorent</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_apple]')"><input type="checkbox" name="filter_p2p_apple" value="Y" { if $filter->filter_p2p_apple == "Y" } checked="checked" { /if } />AppleJuice</td>
     </tr>
     <tr>
-     <td><input type="checkbox" name="filter_p2p_soul" value="Y" { if $filter->filter_p2p_soul == "Y" } checked="checked" { /if } />SoulSeek</td>
-<td><input type="checkbox" name="filter_p2p_winmx" value="Y" { if $filter->filter_p2p_winmx == "Y" } checked="checked" { /if } />WinMX</td>
-     <td><input type="checkbox" name="filter_p2p_ares" value="Y" { if $filter->filter_p2p_ares == "Y" } checked="checked" { /if } />Ares</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_soul]')"><input type="checkbox" name="filter_p2p_soul" value="Y" { if $filter->filter_p2p_soul == "Y" } checked="checked" { /if } />SoulSeek</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_winmx]')"><input type="checkbox" name="filter_p2p_winmx" value="Y" { if $filter->filter_p2p_winmx == "Y" } checked="checked" { /if } />WinMX</td>
+     <td onclick="obj_toggle_checkbox('[name=filter_p2p_ares]')"><input type="checkbox" name="filter_p2p_ares" value="Y" { if $filter->filter_p2p_ares == "Y" } checked="checked" { /if } />Ares</td>
     </tr>
    </table>
   </td>
@@ -210,7 +210,7 @@
      <td>
       <select size="10" name="filter_l7_avail[]" multiple="multiple">
        <option value="">********* Unused *********</option>
-       { l7_select_list filter_idx=`$filter->filter_idx mode=unused` }
+       { l7_select_list filter_idx=$filter->filter_idx mode=unused }
       </select>
      </td>
      <td>&nbsp;</td>
@@ -222,7 +222,7 @@
      <td>
       <select size="10" name="filter_l7_used[]" multiple="multiple">
        <option value="">********* Used *********</option>
-       { l7_select_list filter_idx=`$filter->filter_idx mode=used` }
+       { l7_select_list filter_idx=$filter->filter_idx mode=used }
       </select>
      </td>
     </tr>
@@ -239,9 +239,7 @@
   <td>
    <table class="noborder">
     <tr>
-     <td colspan="2">
- <input type="checkbox" name="filter_time_use_range" value="Y" { if $filter->filter_time_use_range == "Y" } checked="checked" { /if } />Use time range:
-</td>
+     <td colspan="2" onclick="obj_toggle_checkbox('[name=filter_time_use_range]')"><input type="checkbox" name="filter_time_use_range" value="Y" { if $filter->filter_time_use_range == "Y" } checked="checked" { /if } />Use time range:</td>
     </tr>
     <tr>
      <td colspan="2">&nbsp;</td>
@@ -306,13 +304,13 @@
       Days:
      </td>
      <td>
-      <input type="checkbox" name="filter_time_day_mon" value="Y" { if $filter->filter_time_day_mon == "Y" } chkeced="checked" { /if } />Mon
-      <input type="checkbox" name="filter_time_day_tue" value="Y" { if $filter->filter_time_day_tue == "Y" } chkeced="checked" { /if } />Tue
-      <input type="checkbox" name="filter_time_day_wed" value="Y" { if $filter->filter_time_day_wed == "Y" } chkeced="checked" { /if } />Wed
-      <input type="checkbox" name="filter_time_day_thu" value="Y" { if $filter->filter_time_day_thu == "Y" } chkeced="checked" { /if } />Thu
-      <input type="checkbox" name="filter_time_day_fri" value="Y" { if $filter->filter_time_day_fri == "Y" } chkeced="checked" { /if } />Fri
-      <input type="checkbox" name="filter_time_day_sat" value="Y" { if $filter->filter_time_day_sat == "Y" } chkeced="checked" { /if } />Sat
-      <input type="checkbox" name="filter_time_day_sun" value="Y" { if $filter->filter_time_day_sun == "Y" } chkeced="checked" { /if } />Sun
+      <input type="checkbox" name="filter_time_day_mon" value="Y" { if $filter->filter_time_day_mon == "Y" } chkeced="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=filter_time_day_mon]')">Mon</label>
+      <input type="checkbox" name="filter_time_day_tue" value="Y" { if $filter->filter_time_day_tue == "Y" } chkeced="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=filter_time_day_tue]')">Tue</label>
+      <input type="checkbox" name="filter_time_day_wed" value="Y" { if $filter->filter_time_day_wed == "Y" } chkeced="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=filter_time_day_wed]')">Wed</label>
+      <input type="checkbox" name="filter_time_day_thu" value="Y" { if $filter->filter_time_day_thu == "Y" } chkeced="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=filter_time_day_thu]')">Thu</label>
+      <input type="checkbox" name="filter_time_day_fri" value="Y" { if $filter->filter_time_day_fri == "Y" } chkeced="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=filter_time_day_fri]')">Fri</label>
+      <input type="checkbox" name="filter_time_day_sat" value="Y" { if $filter->filter_time_day_sat == "Y" } chkeced="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=filter_time_day_sat]')">Sat</label>
+      <input type="checkbox" name="filter_time_day_sun" value="Y" { if $filter->filter_time_day_sun == "Y" } chkeced="checked" { /if } /><label onclick="obj_toggle_checkbox('[name=filter_time_day_sun]')">Sun</label>
 </td>
     </tr>
    </table>
@@ -325,9 +323,7 @@
   <td>
    FTP data:
   </td>
-  <td>
-   <input type="checkbox" name="filter_match_ftp_data" value="Y" { if $filter->filter_match_ftp_data == "Y" } checked="checked" { /if } />Match FTP data channel
-  </td>
+  <td onclick="obj_toggle_checkbox('[name=filter_match_ftp_data]')"><input type="checkbox" name="filter_match_ftp_data" value="Y" { if $filter->filter_match_ftp_data == "Y" } checked="checked" { /if } />Match FTP data channel</td>
   <td>
    A FTP file transfer needs two connections: command channel (21/tcp) and a data channel. If you use active FTP the port for data channel is 20/tcp. If you use passive FTP, the port of the data channel is not predictable and is choosen by the ftp server (high port). But with the help of the iptables kernel module ip_conntrack_ftp you get the data channel which belongs to the command channel! Don't forget to load the ip_conntrack_ftp module!
   </td>
@@ -336,9 +332,7 @@
   <td>
    SIP:
   </td>
-  <td>
-   <input type="checkbox" name="filter_match_sip" value="Y" { if $filter->filter_match_sip == "Y" } checked="checked" { /if } />Match SIP connections
-  </td>
+  <td onclick="obj_toggle_checkbox('[name=filter_match_sip]')"><input type="checkbox" name="filter_match_sip" value="Y" { if $filter->filter_match_sip == "Y" } checked="checked" { /if } />Match SIP connections</td>
   <td>
    This match allows you to match of dynamic RTP/RTCP data streams of sip sessions as well as SIP request/responses. Don't forget to load the ip_conntrack_sip module!
   </td>
