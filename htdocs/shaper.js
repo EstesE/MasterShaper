@@ -705,8 +705,6 @@ function load_menu()
    }
 
    $('.main_menu').buildMenu({
-      template:         'rpc.html',
-      additionalData:   'type=rpc&action=get-sub-menu',
       menuWidth:        200,
       openOnRight:      false,
       openOnClick:      true,

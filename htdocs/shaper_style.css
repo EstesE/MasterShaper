@@ -103,6 +103,9 @@ table.rootVoice tr td {
    padding-right:    10px;
    white-space:      nowrap;
 }
+.menu {
+   display:          none;
+}
 
 p.footnote {
 	font-family:      Verdana, Geneva, Arial, Helvetica, sans-serif;
