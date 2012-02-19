@@ -24,7 +24,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
  </tr>
  <tr>
   <td>
-   &nbsp;
+   &nbsp;<a href="javascript:#" title="Collapse all chains within network path" onclick="toggle_content('tr[np={$netpath->netpath_idx}]', '#togglenp{$netpath->netpath_idx}', '{$icon_menu_down}', '{$icon_menu_right}', 'img[np={$netpath->netpath_idx}]'); return false;"><img src="{$icon_menu_right}" id="togglenp{$netpath->netpath_idx}" state=hidden /></a>
    <img src="{ $icon_interfaces }" alt="network path icon" />&nbsp;<a href="{$rewriter->get_page_url('Network Path Edit', $netpath->netpath_idx)}" title="Modify network path { $netpath->netpath_name }">Network Path { $netpath->netpath_name }</a>
    <a class="move-down" type="netpath" idx="{ $netpath->netpath_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move netpath down" /></a>
    <a class="move-up" type="netpath" idx="{ $netpath->netpath_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move netpath up" /></a>
@@ -51,6 +51,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
 
     <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain->chain_idx}">
      <td colspan="2">
+      <a href="javascript:#" title="Collapse chain" onclick="toggle_content('#chain{$chain->chain_idx} ~ [chain={$chain->chain_idx}]', '#togglechn{$chain->chain_idx}', '{$icon_menu_down}', '{$icon_menu_right}'); return false;"><img src="{$icon_menu_right}" id="togglechn{$chain->chain_idx}" np={$netpath->netpath_idx} state=hidden /></a>
       <img src="{ $icon_chains }" alt="chain icon" />&nbsp;
       <a href="{$rewriter->get_page_url('Chain Edit', $chain->chain_idx)}" title="Modify chain { $chain->chain_name }">{ $chain->chain_name }</a>
      </td>
@@ -109,7 +110,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
   { if $chain->chain_sl_idx != 0 && $chain->chain_fallback_idx != 0 }
    { ov_pipe np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx }
     <input type="hidden" name="pipes[{ $pipe_counter }]" value="{ $pipe->pipe_idx }" />
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe->pipe_idx}">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe->pipe_idx}" chain={$chain->chain_idx} np={$netpath->netpath_idx} style="display: none;">
      <td style="text-align: center;">{ $counter }</td>
      <td>
       <img src="{ $icon_pipes }" alt="pipes icon" />&nbsp;
@@ -153,7 +154,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
      </td>
     </tr> 
     { ov_filter np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx pipe_idx=$pipe->pipe_idx }
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" chain={$chain->chain_idx} np={$netpath->netpath_idx} style="display: none;">
      <td>&nbsp;</td>
      <td colspan="7">
       <img src="{ $icon_treeend }" alt="tree" />

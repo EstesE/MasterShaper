@@ -756,6 +756,39 @@ function change_to(link, id)
 
 } // change_to()
 
+function toggle_content(element, imgobj, imgshow, imghide, imgobjoth)
+{
+   var state = $(imgobj).attr('state');
+
+   if(state != "hidden" && state != "shown") {
+      window.alert('toggle_content(): unknown state - ' + state);
+   }
+
+   if(state == "hidden") {
+      $(element).show('highlight', 500);
+      if(imgshow && imghide) {
+         $(imgobj).attr('state', 'shown');
+         $(imgobj).attr('src', imgshow);
+         if(imgobjoth) {
+            $(imgobjoth).attr('state', 'shown');
+            $(imgobjoth).attr('src', imgshow);
+         }
+      }
+   }
+   else {
+      $(element).hide('highlight', 500);
+      if(imgshow && imghide) {
+         $(imgobj).attr('state', 'hidden');
+         $(imgobj).attr('src', imghide);
+         if(imgobjoth) {
+            $(imgobjoth).attr('state', 'hidden');
+            $(imgobjoth).attr('src', imghide);
+         }
+      }
+   }
+
+} // toggle_content()
+
 $(document).ready(function() {
    $("table td a.delete").click(function(){
       obj_delete($(this));
