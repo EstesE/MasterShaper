@@ -254,6 +254,11 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $_POST['filter_time_stop_minute']));
       }
 
+      /* unset filter_ipt variable, it will not be stored */
+      if(isset($_POST['filter_ipt'])) {
+         unset($_POST['filter_ipt']);
+      }
+
       $filter_data = $ms->filter_form_data($_POST, 'filter_');
 
       if(!$filter->update($filter_data))
