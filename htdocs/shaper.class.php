@@ -1341,6 +1341,9 @@ class MASTERSHAPER {
     */
    public function _print($text)
    {
+      if(!isset($this->cfg->logging))
+         $this->cfg->logging = 'display';
+
       switch($this->cfg->logging) {
          default:
          case 'display':
