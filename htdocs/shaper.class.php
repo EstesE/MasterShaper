@@ -128,6 +128,14 @@ class MASTERSHAPER {
          $this->handle_page_request();
       }
 
+      if($this->is_cmdline()) {
+         if(isset($_SERVER['argv']) && $_SERVER['argv'][1] == 'load') {
+            $page->action = 'load';
+            include BASE_PATH ."/class/pages/ruleset.php";
+            die("Ruleset loaded");
+         }
+      }
+
       /* show login box, if not already logged in */
       if(!$this->is_logged_in()) {
 
@@ -1388,7 +1396,7 @@ class MASTERSHAPER {
     * otherwise false.
     * @return boolean
     */
-   private function is_cmdline()
+   public function is_cmdline()
    {
       if(isset($_ENV['SHELL']) && !empty($_ENV['SHELL']))
          return true;
