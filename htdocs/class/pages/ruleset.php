@@ -33,6 +33,7 @@ class Page_Ruleset extends MASTERSHAPER_PAGE {
     */
    public function __construct()
    {
+      $this->rights = 'user_manage_rules';
 
    } // __construct()
 

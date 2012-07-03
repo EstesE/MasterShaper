@@ -22,7 +22,8 @@ class Page {
       if(isset($page))
          $this->parse($page);
 
-      $this->uri = $_SERVER['REQUEST_URI'];
+      if(isset($_SERVER['REQUEST_URI']))
+         $this->uri = $_SERVER['REQUEST_URI'];
 
    } // __construct()
 

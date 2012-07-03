@@ -124,7 +124,7 @@ class MASTERSHAPER {
       $tmpl->assign('page', $page);
 
       /* page request handled by MS class itself */
-      if($page->includefile == "[internal]") {
+      if(isset($page->includefile) && $page->includefile == "[internal]") {
          $this->handle_page_request();
       }
 

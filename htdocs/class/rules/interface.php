@@ -926,17 +926,19 @@ class Ruleset_Interface {
 
             $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 1 [HOST_DEFS] ";
 
-            if($this->isGRE()) {
-               if($filter->filter_tos > 0)
-                  $string.= "match u8 ". sprintf("%02x", $filter->filter_tos) ." 0xff at 25 ";
-               if(!empty($filter->filter_dscp) && $filter->filter_dscp != -1)
-                  $string.= "match u8 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xfc at 25 ";
-            }
-            else {
-               if($filter->filter_tos > 0)
-                  $string.= "match ip tos ". $filter->filter_tos ." 0xff ";
-               if(!empty($filter->filter_dscp) && $filter->filter_dscp != -1)
-                  $string.= "match u8 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xfc at 1 ";
+            if(isset($filter)) {
+               if($this->isGRE()) {
+                  if($filter->filter_tos > 0)
+                     $string.= "match u8 ". sprintf("%02x", $filter->filter_tos) ." 0xff at 25 ";
+                  if(!empty($filter->filter_dscp) && $filter->filter_dscp != -1)
+                     $string.= "match u8 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xfc at 25 ";
+               }
+               else {
+                  if($filter->filter_tos > 0)
+                     $string.= "match ip tos ". $filter->filter_tos ." 0xff ";
+                  if(!empty($filter->filter_dscp) && $filter->filter_dscp != -1)
+                     $string.= "match u8 0x". $this->get_dscp_hex_value($filter->filter_dscp) ." 0xfc at 1 ";
+               }
             }
 
             /* filter matches a specific network protocol */
@@ -963,7 +965,7 @@ class Ruleset_Interface {
                         $cnt_ports = 0;
 
                         foreach($ports as $port) {
-                           $dst_ports = $ms->extractPorts($port[number]);
+                           $dst_ports = $ms->extractPorts($port['number']);
                            if($dst_ports == 0)
                               continue;
                            foreach($dst_ports as $dst_port) {

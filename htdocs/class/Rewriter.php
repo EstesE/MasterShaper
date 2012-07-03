@@ -17,8 +17,12 @@ class Rewriter {
    {
       $this->default_page = '/overview.html';
 
-      $parts = explode('?', $_SERVER['REQUEST_URI']);
-      $this->request = $parts[0];
+      if(isset($_SERVER['REQUEST_URI'])) {
+         $parts = explode('?', $_SERVER['REQUEST_URI']);
+         $this->request = $parts[0];
+      }
+      else
+         $this->request = "";
 
       if(defined('WEB_PATH'))
          $this->request = str_replace(WEB_PATH, '', $this->request);
