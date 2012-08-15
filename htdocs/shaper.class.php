@@ -1938,7 +1938,7 @@ class MASTERSHAPER {
 
       $this->set_task_state($task->task_idx, 'running');
 
-      $ms->_print("Running task '". $task->task_job ."' submitted at ". strftime("%Y-%m-%d %H:%M:%S", $task->task_submit_time));
+      $ms->_print("Running task '". $task->task_job ."' submitted at ". strftime("%Y-%m-%d %H:%M:%S", $task->task_submit_time) .".", NULL, 1);
 
       switch($task->task_job) {
          case 'RULES_LOAD':
@@ -1968,6 +1968,7 @@ class MASTERSHAPER {
       }
 
       $this->set_task_state($task->task_idx, 'done', $retval);
+      $this->_print(" Done. ". strftime("%Y-%m-%d %H:%M:%S", mktime()));
 
    } // task_handler()
 
