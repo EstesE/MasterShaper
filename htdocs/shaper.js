@@ -318,10 +318,10 @@ function set_graph_mode(to)
          alert('Failed to contact server! ' + textStatus);
       },
       success: function(data){
-         if(data == "ok\n") {
+         if(data == "ok") {
             return true;
          }
-         alert('Server returned: ' + data + data.length);
+         alert('Server returned: ' + data + ', length ' + data.length);
          return false;
       }
    });
@@ -349,23 +349,59 @@ function set_host_profile()
       url: "rpc.html",
       data: ({
          type      : 'rpc',
-         action    : 'host-profile',
+         action    : 'set-host-profile',
          hostprofile : hostprofile
       }),
       error: function(XMLHttpRequest, textStatus, errorThrown) {
          alert('Failed to contact server! ' + textStatus);
       },
       success: function(data){
-         if(data == "ok\n") {
+         if(data == "ok") {
             window.location.reload();
             return true;
          }
-         alert('Server returned: ' + data + data.length);
+         alert('Server returned: ' + data + ', length ' + data.length);
          return false;
       }
    });
 
 } // set_host_profile()
+
+function get_host_state()
+{
+   var selectbox = document.getElementsByName("active_host_profile")[0];
+
+   if(!selectbox) {
+      alert('Unable to locate element active_host_profile');
+      return false;
+   }
+
+   var hostprofile = selectbox.options[selectbox.selectedIndex].value;
+
+   if(!hostprofile) {
+      alert('Unable to get selected host_profile');
+      return false;
+   }
+
+   $.ajax({
+      type: "POST",
+      url: "rpc.html",
+      data: ({
+         type : 'rpc',
+         action : 'get-host-state',
+         idx: hostprofile
+      }),
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+         alert('Failed to contact server! ' + textStatus + ' ' + errorThrown);
+      },
+      success: function(data){
+         $('#readybusyico').attr('src', data);
+      }
+   });
+
+   setTimeout("get_host_state()", 2000);
+
+} // get_host_state()
 
 function obj_delete(element, target, idx)
 {
@@ -392,13 +428,13 @@ function obj_delete(element, target, idx)
          alert('Failed to contact server! ' + textStatus);
       },
       success: function(data){
-         if(data == "ok\n") {
+         if(data == "ok") {
             element.parent().parent().animate({ opacity: "hide" }, "fast");
             return;
          }
          // change row color back to white
          element.parent().parent().animate({backgroundColor: "#ffffff" }, "fast");
-         alert('Server returned: ' + data);
+         alert('Server returned: ' + data + ', length ' + data.length);
          return;
       }
    });
@@ -472,12 +508,12 @@ function obj_toggle_status(element)
          alert('Failed to contact server! ' + textStatus);
       },
       success: function(data){
-         if(data == "ok\n") {
+         if(data == "ok") {
             // toggle all parent's children
             $('#' + element.parent().attr("id") + ' > *').toggle();
             return true;
          }
-         alert('Server returned: ' + data + data.length);
+         alert('Server returned: ' + data + ', length ' + data.length);
          return false;
       }
    });
@@ -532,9 +568,9 @@ function obj_alter_position(element)
                   next.after(tableRow);
             }
          }
-         if(data == "ok\n")
+         if(data == "ok")
             return;
-         alert('Server returned: ' + data + ' ' + data.length);
+         alert('Server returned: ' + data + ', length ' + data.length);
       }
    });
 
@@ -659,6 +695,8 @@ function get_selected_chain()
 
    return currentSelect(showchain[0]);
 }
+
+
 
 /**
  * set focus to specified object
@@ -809,5 +847,6 @@ $(document).ready(function() {
       }
    );
    load_menu();
+   setTimeout("get_host_state()", 1000);
    //$.jqplot.config.enablePlugins = true;
 });

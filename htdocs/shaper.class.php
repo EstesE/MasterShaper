@@ -301,12 +301,12 @@ class MASTERSHAPER {
       global $page;
 
       if(!$this->is_logged_in()) {
-         print "You need to login first!";
+         print "You need to login first";
          return false;
       }
 
       if(!$this->is_valid_rpc_action()) {
-         print "Invalid RPC action!";
+         print "Invalid RPC action";
          return false;
       }
 
@@ -332,11 +332,14 @@ class MASTERSHAPER {
          case 'get-sub-menu':
             $this->rpc_get_sub_menu();
             break;
-         case 'host-profile':
+         case 'set-host-profile':
             $this->rpc_set_host_profile();
             break;
+         case 'get-host-state':
+            $this->rpc_get_host_state();
+            break;
          default:
-            print "Unknown action";
+            print "Unknown action\n";
             return false;
             break;
       }
@@ -1217,6 +1220,32 @@ class MASTERSHAPER {
    } // rpc_change_graph()
 
    /**
+    * return current host state (task queue)
+    *
+    * @return bool
+    */
+   private function rpc_get_host_state()
+   {
+      if(!isset($_POST['idx']) || !is_numeric($_POST['idx'])) {
+         print "invalid host profile";
+         return false;
+      }
+
+      if(!$this->is_valid_host_profile($_POST['idx'])) {
+         print "invalid host profile";
+         return false;
+      }
+
+      if($this->is_running_task($_POST['idx']))
+         print WEB_PATH .'/icons/busy.png';
+      else
+         print WEB_PATH .'/icons/ready.png';
+
+      return true;
+
+   } // rpc_get_host_state()
+
+   /**
     * check if requested graph mode is valid
     *
     * @param int $mode
@@ -1477,7 +1506,8 @@ class MASTERSHAPER {
          'graph-mode',
          'get-chains-list',
          'get-sub-menu',
-         'host-profile',
+         'get-host-profile',
+         'get-host-state',
       );
 
       if(in_array($page->action, $valid_actions))
@@ -1867,11 +1897,12 @@ class MASTERSHAPER {
 
    } // get_tasks()
 
-   public function is_running_task()
+   public function is_running_task($host_idx = NULL)
    {
       global $db;
 
-      $host_idx = $this->get_current_host_profile();
+      if(!isset($host_idx))
+         $host_idx = $this->get_current_host_profile();
 
       $sth = $db->db_prepare("
          SELECT
@@ -1984,7 +2015,9 @@ class MASTERSHAPER {
    } // is_valid_task()
 
    /**
-    * add a HTTP to be set to MasterShapers headers variable
+    * add a HTTP header to MasterShapers headers variable
+    * that gets included when the template engine prints
+    * out the document body.
     *
     * @return bool
     */

@@ -63,6 +63,7 @@
        <select name="active_host_profile" onchange="set_host_profile()">
         { host_profile_select_list }
        </select>
+       <img src="{ $icon_ready }" id="readybusyico" />
       { /if  }
      </td>
      <td style="width: 15px;">&nbsp;</td>

@@ -79,6 +79,8 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_pdf', WEB_PATH .'/icons/page_white_acrobat.gif');
       $this->assign('icon_menu_down', WEB_PATH .'/icons/bullet_arrow_down.png');
       $this->assign('icon_menu_right', WEB_PATH .'/icons/bullet_arrow_right.png');
+      $this->assign('icon_busy', WEB_PATH .'/icons/busy.png');
+      $this->assign('icon_ready', WEB_PATH .'/icons/ready.png');
       $this->assign('web_path', WEB_PATH);
 
       $this->register_function("start_table", array(&$this, "smarty_startTable"), false); 
