@@ -662,6 +662,8 @@ class MASTERSHAPER {
          $value
       ));
 
+      $db->db_sth_free($sth);
+
    } // setOption()
 
    /**
@@ -963,6 +965,8 @@ class MASTERSHAPER {
          $pipe_idx
       ));
 
+      $db->db_sth_free($sth);
+
       return $res;
 
    } // getFilters()
@@ -1007,6 +1011,8 @@ class MASTERSHAPER {
             'number' => $port->port_number
          ));
       }
+
+      $db->db_sth_free($sth);
 
       /* now look up the IANA port numbers for that ports */
       if(empty($numbers))
@@ -1099,6 +1105,8 @@ class MASTERSHAPER {
          $numbers.= $protocol->afl7_l7proto_idx .",";
       }
 
+      $db->db_sth_free($sth);
+
       if(empty($numbers))
          return NULL;
 
@@ -1116,6 +1124,7 @@ class MASTERSHAPER {
          $numbers
       ));
 
+      $db->db_sth_free($sth);
       return $list;
 
    } // getL7Protocols
@@ -1355,7 +1364,7 @@ class MASTERSHAPER {
     *
     * @param string $text
     */
-   public function _print($text, $override_output = NULL)
+   public function _print($text, $override_output = NULL, $no_newline = NULL)
    {
       if(!isset($this->cfg->logging))
          $this->cfg->logging = 'display';
@@ -1369,7 +1378,8 @@ class MASTERSHAPER {
             print $text;
             if(!$this->is_cmdline())
                print "<br />";
-            print "\n";
+            if(!isset($no_newline))
+               print "\n";
             break;
          case 'errorlog':
             error_log($text);
@@ -1598,6 +1608,7 @@ class MASTERSHAPER {
                   $chain
                ));
 
+               $db->db_sth_free($sth);
                $pos++;
             }
          }
@@ -1624,6 +1635,7 @@ class MASTERSHAPER {
             $this->get_current_host_profile(),
          ));
 
+         $db->db_sth_free($sth);
          $pos = 1;
 
          while($chain = $chains->fetchRow()) {
@@ -1648,6 +1660,7 @@ class MASTERSHAPER {
                $this->get_current_host_profile(),
             ));
 
+            $db->db_sth_free($sth);
             $pos++;
          }
       }
@@ -1671,6 +1684,7 @@ class MASTERSHAPER {
             $this->get_current_host_profile(),
          ));
 
+         $db->db_sth_free($sth);
          $pos = 1;
 
          while($np = $nps->fetchRow()) {
@@ -1692,6 +1706,7 @@ class MASTERSHAPER {
                $this->get_current_host_profile(),
             ));
 
+            $db->db_sth_free($sth);
             $pos++;
          }
       }

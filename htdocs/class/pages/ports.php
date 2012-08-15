@@ -68,6 +68,8 @@ class Page_Ports extends MASTERSHAPER_PAGE {
          $this->items_per_page
       ));
 
+      $db->db_sth_free($sth);
+
       $cnt_ports = $res_ports->numRows();
 	
       while($port = $res_ports->fetchrow()) {
@@ -129,6 +131,8 @@ class Page_Ports extends MASTERSHAPER_PAGE {
       $assigned_filters = $db->db_execute($sth, array(
          $page->id,
       ));
+
+      $db->db_sth_free($sth);
 
       if($assigned_filters->numRows() > 0) {
          $filter_use_port = array();

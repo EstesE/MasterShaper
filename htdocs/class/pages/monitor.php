@@ -265,6 +265,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          $ms->get_current_host_profile(),
       ));
 
+      $db->db_sth_free($sth);
+
       switch($_SESSION['mode']) {
          /* chain- & pipe-view */
          default:

@@ -147,6 +147,7 @@ class Network_Path extends MsObject {
             $ms->get_current_host_profile(),
          ));
 
+         $db->db_sth_free($sth);
          $chain_position++;
 
       }

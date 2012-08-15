@@ -121,6 +121,8 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
          $ms->get_current_host_profile(),
       ));
 
+      $db->db_sth_free($sth);
+
       if($assigned_chains->numRows() > 0) {
          $chain_use_pipes = array();
          while($chain = $assigned_chains->fetchRow()) {
@@ -228,6 +230,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             $params['pipe_idx']
          ));
 
+         $db->db_sth_free($sth);
       }
          
       while($filter = $unused_filters->fetchrow()) {
@@ -269,6 +272,8 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       $used_filters = $db->db_execute($sth, array(
          $params['pipe_idx']
       ));
+
+      $db->db_sth_free($sth);
 
       while($filter = $used_filters->fetchrow()) {
          $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
@@ -347,6 +352,8 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
          $page->id
       ));
 
+      $db->db_sth_free($sth);
+
       foreach($_POST['chains'] as $chain) {
 
          $sth = $db->db_prepare("
@@ -388,6 +395,8 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             $chain,
             $chain,
          ));
+
+         $db->db_sth_free($sth);
       }
 
       return true;

@@ -114,6 +114,8 @@ class Chain extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
+
       // nothing more to do for us?
       if(!isset($_POST['used']) || empty($_POST['used']))
          return true;
@@ -169,6 +171,7 @@ class Chain extends MsObject {
             $override_active,
          ));
 
+         $db->db_sth_free($sth);
          $pipe_position++;
 
       }
@@ -199,6 +202,7 @@ class Chain extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
       $ms->update_positions('chains', $this->chain_netpath_idx);
 
       return true;

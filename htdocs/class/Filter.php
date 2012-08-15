@@ -96,6 +96,8 @@ class Filter extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
+
       foreach($_POST['used'] as $use) {
 
          if(empty($use))
@@ -115,6 +117,8 @@ class Filter extends MsObject {
             $this->id,
             $use
          ));
+
+         $db->db_sth_free($sth);
       }
 
       /* is our work done? */
@@ -131,6 +135,8 @@ class Filter extends MsObject {
       $db->db_execute($sth, array(
          $this->id
       ));
+
+      $db->db_sth_free($sth);
 
       foreach($_POST['filter_l7_used'] as $use) {
 
@@ -151,6 +157,8 @@ class Filter extends MsObject {
             $this->id,
             $use
          ));
+
+         $db->db_sth_free($sth);
       }
 
       return true;
@@ -175,6 +183,7 @@ class Filter extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
       $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
@@ -186,6 +195,7 @@ class Filter extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
       $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_filters_to_pipes
@@ -197,6 +207,7 @@ class Filter extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
       return true;
       
    } // post_delete()

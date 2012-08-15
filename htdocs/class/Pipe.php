@@ -82,6 +82,8 @@ class Pipe extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
+
       foreach($_POST['used'] as $use) {
 
          if(empty($use))
@@ -101,6 +103,8 @@ class Pipe extends MsObject {
             $this->id,
             $use
          ));
+
+         $db->db_sth_free($sth);
       }
 
       return true;

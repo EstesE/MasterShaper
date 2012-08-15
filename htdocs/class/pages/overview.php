@@ -112,6 +112,8 @@ class Page_Overview extends MASTERSHAPER_PAGE {
             $ms->get_current_host_profile(),
          ));
 
+         $db->db_sth_free($sth);
+
          while($chain = $res_chains->fetchRow()) {
 
             $this->avail_chains[$network_path->netpath_idx][$this->cnt_chains] = $chain->chain_idx;
@@ -149,6 +151,8 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $chain->chain_idx
             ));
 
+            $db->db_sth_free($sth);
+
             while($pipe = $res_pipes->fetchRow()) {
 
                $this->avail_pipes[$network_path->netpath_idx][$chain->chain_idx][$this->cnt_pipes] = $pipe->pipe_idx;
@@ -176,6 +180,8 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $res_filters = $db->db_execute($sth, array(
                   $pipe->pipe_idx
                ));
+
+               $db->db_sth_free($sth);
 
                while($filter = $res_filters->fetchRow()) {
 
@@ -565,6 +571,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   $my_pos->parent_idx,
                   $ms->get_current_host_profile(),
                ));
+               $db->db_sth_free($sth);
                break;
 
             case 'pipe':
@@ -584,6 +591,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   $new_pos,
                   $my_pos->parent_idx
                ));
+               $db->db_sth_free($sth);
                break;
 
             case 'netpath':
@@ -603,6 +611,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   $new_pos,
                   $ms->get_current_host_profile(),
                ));
+               $db->db_sth_free($sth);
                break;
          }
       }
@@ -667,6 +676,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   $new_pos,
                   $ms->get_current_host_profile(),
                ));
+               $db->db_sth_free($sth);
                break;
          }
       }
@@ -696,8 +706,9 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $idx,
                $ms->get_current_host_profile(),
             ));
-
+            $db->db_sth_free($sth);
             break;
+
          case 'pipe':
             $sth = $db->db_prepare("
                UPDATE
@@ -712,7 +723,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $new_pos,
                $idx
             ));
-
+            $db->db_sth_free($sth);
             break;
       }
 
@@ -749,6 +760,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $ms->get_current_host_profile(),
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -774,6 +786,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $ms->get_current_host_profile(),
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -798,6 +811,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $ms->get_current_host_profile(),
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -822,6 +836,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $ms->get_current_host_profile(),
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -846,6 +861,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $ms->get_current_host_profile(),
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -870,6 +886,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $ms->get_current_host_profile(),
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -892,6 +909,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $k
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -913,6 +931,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $k
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -934,6 +953,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $k
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -955,6 +975,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $k
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 
@@ -976,6 +997,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $k
             ));
 
+            $db->db_sth_free($sth);
          }
       }
 

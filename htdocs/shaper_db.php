@@ -200,6 +200,26 @@ class MASTERSHAPER_DB {
    } // db_execute()
 
    /**
+    * MASTERSHAPER_DB release resources allocated for the specified prepared query
+    *
+    * This function will execute a previously prepared SQL query
+    *
+    * @param mixed $sth
+    */
+   public function db_sth_free($sth)
+   {
+      global $ms;
+
+      $result = $sth->free();
+
+      if(PEAR::isError($result))
+         $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
+
+      return $result;
+
+   } // db_sth_free()
+
+   /**
     * MASTERSHAPER_DB fetch ONE row
     *
     * This function will execute the given but only return the

@@ -107,6 +107,8 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
          $page->id,
       ));
 
+      $db->db_sth_free($sth);
+
       if($assigned_nps->numRows() > 0) {
          $np_use_if = array();
          while($np = $assigned_nps->fetchRow()) {

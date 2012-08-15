@@ -135,6 +135,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $page->id
       ));
 
+      $db->db_sth_free($sth);
       $cnt_pipes = 0;
 
       while($pipe = $pipes->fetchRow()) {
@@ -338,6 +339,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $ms->get_current_host_profile(),
       ));
 
+      $db->db_sth_free($sth);
       $cnt_chains = 0;
 
       while($chain = $res_chains->fetchRow()) {

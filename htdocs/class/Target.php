@@ -66,6 +66,8 @@ class Target extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
+
       foreach($_POST['used'] as $use) {
 
          if(empty($use))
@@ -85,6 +87,8 @@ class Target extends MsObject {
             $this->id,
             $use
          ));
+
+         $db->db_sth_free($sth);
       }
 
       return true;
@@ -106,6 +110,7 @@ class Target extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
       $sth = $db->db_prepare("
          DELETE FROM
             ". MYSQL_PREFIX ."assign_target_groups
@@ -117,6 +122,7 @@ class Target extends MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
       return true;
    
    } // post_delete()

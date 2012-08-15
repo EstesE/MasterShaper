@@ -113,6 +113,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
          $ms->get_current_host_profile(),
       ));
 
+      $db->db_sth_free($sth);
       $cnt_chains = 0;
 
       while($chain = $chains->fetchRow()) {

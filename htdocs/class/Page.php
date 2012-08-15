@@ -44,6 +44,8 @@ class Page {
          $page,
       ));
 
+      $db->db_sth_free($sth);
+
       if($res->numRows() <= 0)
          return false;
 

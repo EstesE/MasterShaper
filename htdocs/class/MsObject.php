@@ -64,6 +64,8 @@ class MsObject {
          $this->id,
       ));
 
+      $db->db_sth_free($sth);
+
       if($res->numRows() <= 0)
          $ms->throwError("No object with id ". $this->id);
 
@@ -124,6 +126,8 @@ class MsObject {
       $db->db_execute($sth, array(
          $this->id
       ));
+
+      $db->db_sth_free($sth);
 
       if(method_exists($this, 'post_delete'))
          $this->post_delete();
@@ -188,6 +192,8 @@ class MsObject {
 
       $db->db_execute($sth, $arr_values);
 
+      $db->db_sth_free($sth);
+
       if(!isset($this->id))
          $this->id = $db->db_getid();
 
@@ -232,6 +238,7 @@ class MsObject {
          $this->id
       ));
 
+      $db->db_sth_free($sth);
       return true;
 
    } // toggle_status()
@@ -289,6 +296,7 @@ class MsObject {
          $child_id
       ));
 
+      $db->db_sth_free($sth);
       return true;
 
    } // toggle_child_status()

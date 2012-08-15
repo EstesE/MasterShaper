@@ -106,6 +106,8 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          $page->id,
       ));
 
+      $db->db_sth_free($sth);
+
       if($assigned_pipes->numRows() > 0) {
          $pipe_use_filters = array();
          while($pipe = $assigned_pipes->fetchRow()) {
@@ -377,6 +379,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $ports = $db->db_execute($sth, array(
                $params['filter_idx']
             ));
+            $db->db_sth_free($sth);
             break;
 
          case 'used':
@@ -399,6 +402,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $ports = $db->db_execute($sth, array(
                $params['filter_idx']
             ));
+            $db->db_sth_free($sth);
             break;
 
          default:
@@ -453,6 +457,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                $params['filter_idx'],
                $params['filter_idx']
             ));
+            $db->db_sth_free($sth);
             break;
 
          case 'used':
@@ -474,7 +479,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $l7protos = $db->db_execute($sth, array(
                $params['filter_idx']
             ));
-
+            $db->db_sth_free($sth);
             break;
 
          default:

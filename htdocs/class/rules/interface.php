@@ -833,6 +833,8 @@ class Ruleset_Interface {
                   array_push($targets, $member);
                }
             }
+
+            $db->db_sth_free($sth);
             break;
 
       }
@@ -866,6 +868,8 @@ class Ruleset_Interface {
          $chain_tc_id
       ));
 
+      $db->db_sth_free($sth);
+
    } // setChainID()
 
    /* set the actually tc handle ID for a pipe */ 
@@ -893,6 +897,8 @@ class Ruleset_Interface {
          $this->getName(),
          $pipe_tc_id
       ));
+
+      $db->db_sth_free($sth);
 
    } // setPipeID()
 
@@ -1687,6 +1693,7 @@ class Ruleset_Interface {
          $ms->get_current_host_profile(),
       ));
 
+      $db->db_sth_free($sth);
       return $result;
 
    } // getChains()
@@ -1720,6 +1727,8 @@ class Ruleset_Interface {
       $active_pipes = $db->db_execute($sth, array(
          $chain_idx
       ));
+
+      $db->db_sth_free($sth);
 
       while($active_pipe = $active_pipes->fetchRow()) {
 

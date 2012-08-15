@@ -146,6 +146,8 @@ class Page_Targets extends MASTERSHAPER_PAGE {
          $page->id,
       ));
 
+      $db->db_sth_free($sth);
+
       if($assigned_obj->numRows() > 0) {
          $obj_use_target = array();
          while($obj = $assigned_obj->fetchRow()) {
@@ -327,6 +329,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
             $result = $db->db_execute($sth, array(
                $idx
             ));
+            $db->db_sth_free($sth);
             break;
 
          case 'used':
@@ -349,6 +352,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
             $result = $db->db_execute($sth, array(
                $idx
             ));
+            $db->db_sth_free($sth);
             break;
       }
 

@@ -173,6 +173,8 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
          $page->id,
       ));
 
+      $db->db_sth_free($sth);
+
       if($assigned_obj->numRows() > 0) {
          $obj_use_target = array();
          while($obj = $assigned_obj->fetchRow()) {

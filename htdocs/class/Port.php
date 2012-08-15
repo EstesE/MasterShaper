@@ -63,7 +63,8 @@ class Port extends MsObject {
       $db->db_execute($sth, array(
          $this->id
       ));
-   
+
+      $db->db_sth_free($sth);
       return true;
 
    } // post_delete()

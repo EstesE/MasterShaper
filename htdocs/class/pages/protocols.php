@@ -71,6 +71,8 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
          $this->items_per_page
       ));
 
+      $db->db_sth_free($sth);
+
       while($protocol = $res_protocols->fetchrow()) {
          $this->avail_protocols[] = $protocol->proto_idx;
       }
@@ -128,6 +130,8 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
       $assigned_filters = $db->db_execute($sth, array(
          $page->id,
       ));
+
+      $db->db_sth_free($sth);
 
       if($assigned_filters->numRows() > 0) {
          $filter_use_protocol = array();
