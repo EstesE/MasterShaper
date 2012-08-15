@@ -1024,7 +1024,7 @@ class MASTERSHAPER_DB {
               `task_run_time` int(11) NOT NULL default '0',
               `task_host_idx` int(11) default NULL,
               `task_state` varchar(1) default NULL,
-              PRIMARY KEY  (`task_idx`)
+              PRIMARY KEY  (`task_idx`),
               UNIQUE KEY `task_job` (`task_job`,`task_run_time`,`task_host_idx`,`task_state`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
