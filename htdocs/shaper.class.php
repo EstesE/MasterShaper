@@ -1240,6 +1240,14 @@ class MASTERSHAPER {
          return false;
       }
 
+      // has host updated its heartbeat recently
+      $hb = $this->get_host_heartbeat($_POST['idx']);
+
+      if(mktime() > ($hb + 60)) {
+         print WEB_PATH .'/icons/absent.png';
+         return false;
+      }
+
       if($this->is_running_task($_POST['idx']))
          print WEB_PATH .'/icons/busy.png';
       else
@@ -1779,6 +1787,42 @@ class MASTERSHAPER {
 
    } // get_current_host_profile()
 
+   public function update_host_heartbeat($host_idx)
+   {
+      global $db;
+
+      $db->db_query("
+         UPDATE
+            ". MYSQL_PREFIX ."host_profiles
+         SET
+            host_heartbeat=UNIX_TIMESTAMP()
+         WHERE
+            host_idx LIKE '". $host_idx ."'
+      ");
+
+   } // update_host_heartbeat()
+
+   public function get_host_heartbeat($host_idx)
+   {
+      global $db;
+
+      $result = $db->db_query("
+         SELECT
+            host_heartbeat
+         FROM
+            ". MYSQL_PREFIX ."host_profiles
+         WHERE
+            host_idx LIKE '". $host_idx ."'
+      ");
+
+      if($row = $result->fetchRow()) {
+         return $row->host_heartbeat;
+      }
+
+      return false;
+
+   } // get_host_heartbeat()
+
    /**
     * return global unique identifier
     *
@@ -1869,6 +1913,7 @@ class MASTERSHAPER {
       global $db, $ms;
 
       $host_idx = $this->get_current_host_profile();
+      $this->update_host_heartbeat($host_idx);
 
       if($this->is_running_task()) {
          $ms->_print("There is a running task");

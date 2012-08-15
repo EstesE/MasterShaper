@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '17');
+define('SCHEMA_VERSION', '18');
 
 /***************************************************************************
  *
@@ -922,6 +922,7 @@ class MASTERSHAPER_DB {
               `host_idx` int(11) NOT NULL auto_increment,
               `host_name` varchar(32) default NULL,
               `host_active` char(1) default NULL,
+              `host_heartbeat` int(11) default NULL,
               PRIMARY KEY  (`host_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
@@ -1486,6 +1487,20 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(17);
+      }
+
+      if($this->schema_version < 18) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."host_profiles
+            ADD
+               host_heartbeat int(11) default NULL
+            AFTER
+               host_active
+         ");
+
+         $this->setVersion(18);
       }
 
    } // upgrade_schema()

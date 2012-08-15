@@ -40,6 +40,7 @@ class Host_Profile extends MsObject {
             'host_idx' => 'integer',
             'host_name' => 'text',
             'host_active' => 'text',
+            'host_heartbeat' => 'timestamp',
          ),
       ));
 

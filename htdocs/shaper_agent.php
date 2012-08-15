@@ -25,7 +25,7 @@ require_once "shaper.class.php";
 
 $ms = new MASTERSHAPER;
 
-if(isset($_SERVER['argv'])) {
+if(isset($_SERVER['argv']) && isset($_SERVER['argv'][1])) {
    switch($_SERVER['argv'][1]) {
       case 'load': $ms->load(); break;
       case 'unload': $ms->unload(); break;
