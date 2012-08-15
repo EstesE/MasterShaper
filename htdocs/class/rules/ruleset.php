@@ -296,6 +296,8 @@ class Ruleset {
 
    private function doItLineByLine()
    {
+      global $ms;
+
       /* Delete current root qdiscs */
       $this->delActiveInterfaceQdiscs();
       $this->delIptablesRules();
@@ -303,24 +305,29 @@ class Ruleset {
       $ipt_lines = array();
 
       foreach($this->getCompleteRuleset() as $line) {
-         if(!preg_match("/^#/", $line)) {
-            if(strstr($line, TC_BIN) !== false) {
-            print $line."<br />\n";
-               if(($tc = $this->runProc("tc", $line)) !== true)
-                  print $tc."<br />\n";
-            }
-            if(strstr($line, IPT_BIN) !== false) 
-               array_push($ipt_lines, $line);
+
+         // output comments as they are
+         if(preg_match("/^#/", $line)) {
+            $ms->_print($line, 'display');
+            continue;
          }
-         else {
-            print $line."<br />\n";
+
+         if(strstr($line, TC_BIN) !== false) {
+            $ms->_print($line, 'display');
+            if(($tc = $this->runProc("tc", $line)) !== true)
+               $ms->_print($tc, 'display');
          }
+
+         // iptables output will follow later
+         if(strstr($line, IPT_BIN) !== false)
+            array_push($ipt_lines, $line);
       }
 
+      // output iptables commands
       foreach($ipt_lines as $line) {
-         print $line."<br />\n";
-         if(($tc = $this->runProc("iptables", $line)) !== true)
-            print $tc."<br />\n";
+         $ms->_print($line, 'display');
+         if(($ipt = $this->runProc("iptables", $line)) !== true)
+            $ms->_print($ipt, 'display');
       }
 
    } // doItLineByLine()
