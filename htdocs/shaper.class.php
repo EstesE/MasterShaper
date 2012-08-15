@@ -1510,7 +1510,7 @@ class MASTERSHAPER {
          'graph-mode',
          'get-chains-list',
          'get-sub-menu',
-         'get-host-profile',
+         'set-host-profile',
          'get-host-state',
       );
 
