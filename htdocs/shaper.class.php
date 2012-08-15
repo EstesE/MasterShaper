@@ -105,11 +105,9 @@ class MASTERSHAPER {
    /**
     * show - generate html output
     *
-    * this function can be called after the constructor has
-    * prepared everyhing. it will load the index.tpl smarty
-    * template. if necessary it will registere pre-selects
-    * (photo index, photo, tag search, date search) into
-    * users session.
+    * this function gets called after MASTERSHAPER constructor has
+    * done its preparations. it will load the index.tpl smarty
+    * template.
     */
    public function show()
    {
@@ -126,14 +124,6 @@ class MASTERSHAPER {
       /* page request handled by MS class itself */
       if(isset($page->includefile) && $page->includefile == "[internal]") {
          $this->handle_page_request();
-      }
-
-      if($this->is_cmdline()) {
-         if(isset($_SERVER['argv']) && $_SERVER['argv'][1] == 'load') {
-            $page->action = 'load';
-            include BASE_PATH ."/class/pages/ruleset.php";
-            die("Ruleset loaded");
-         }
       }
 
       /* show login box, if not already logged in */
@@ -172,6 +162,27 @@ class MASTERSHAPER {
       $tmpl->show("index.tpl");
 
    } // show()
+
+   /**
+    * load - load ruleset
+    *
+    * this function invokes the ruleset generator.
+    */
+   public function load()
+   {
+      if(!$this->is_cmdline()) {
+         die("This function must be called from command line!");
+      }
+
+      require_once "class/rules/ruleset.php";
+      require_once "class/rules/interface.php";
+
+      $ruleset = new Ruleset;
+      $retval = $ruleset->load($debug);
+
+      exit($retval);
+
+   } // load()
 
    /**
     * check if all requirements are met
