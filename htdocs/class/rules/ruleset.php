@@ -277,10 +277,6 @@ class Ruleset {
          }
       }
 
-      if(!$found_error) {
-         print _("Shaping enabled");
-      }
-
       unlink($temp_tc);
       if($ms->getOption("filter") == "ipt")
          unlink($temp_ipt);

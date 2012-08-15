@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '16');
+define('SCHEMA_VERSION', '17');
 
 /***************************************************************************
  *
@@ -127,7 +127,7 @@ class MASTERSHAPER_DB {
       /* for manipulating queries use exec instead of query. can save
        * some resource because nothing has to be allocated for results.
        */
-      if(preg_match('/^(update|insert|replace)i/', $query)) {
+      if(preg_match('/^(update|insert|replace|delete)i/', $query)) {
          $result = $this->db->exec($query);
       }
       else {
@@ -1014,6 +1014,21 @@ class MASTERSHAPER_DB {
          $this->setVersion(SCHEMA_VERSION);
       }
 
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'tasks')) {
+         $this->db_query("
+            CREATE TABLE `". MYSQL_PREFIX ."tasks` (
+              `task_idx` int(11) NOT NULL auto_increment,
+              `task_job` varchar(255) default NULL,
+              `task_submit_time` int(11) NOT NULL default '0',
+              `task_run_time` int(11) NOT NULL default '0',
+              `task_host_idx` int(11) default NULL,
+              `task_state` varchar(1) default NULL,
+              PRIMARY KEY  (`task_idx`)
+              UNIQUE KEY `task_job` (`task_job`,`task_run_time`,`task_host_idx`,`task_state`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+         ");
+      }
+
    } // install_schema()
 
    private function upgrade_schema()
@@ -1451,6 +1466,13 @@ class MASTERSHAPER_DB {
 
          $this->setVersion(16);
 
+      }
+
+      if($this->schema_version < 17) {
+
+         // install new tables
+         $this->install_tables();
+         $this->setVersion(17);
       }
 
    } // upgrade_schema()

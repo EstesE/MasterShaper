@@ -104,13 +104,12 @@ class Page_Ruleset extends MASTERSHAPER_PAGE {
          return 0;
       }
 
-      print _("Loading MasterShaper Ruleset");
-      print _("Please wait...");
+      if(!isset($debug))
+         $ms->add_task('RULES_LOAD');
+      else
+         $ms->add_task('RULES_LOAD_DEBUG');
 
-      $ruleset = new Ruleset;
-      $retval = $ruleset->load($debug);
-
-      return $retval;
+      return "Ruleset load task submitted to job queue.";
 
    } // load()
 
@@ -130,9 +129,9 @@ class Page_Ruleset extends MASTERSHAPER_PAGE {
 
       }
 
-      $ruleset = new Ruleset;
-      $ruleset->unload();
-      print "Unloading MasterShaper Ruleset";
+      $retval = $ms->add_task('RULES_UNLOAD');
+
+      return "Ruleset unload task submitted to job queue.";
       
    } // unload()
 

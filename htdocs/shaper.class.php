@@ -176,7 +176,7 @@ class MASTERSHAPER {
          die("This function must be called from command line!");
       }
 
-      if(isset($_SERVER['argv']) && $_SERVER['argv'][1] == 'debug')
+      if(isset($_SERVER['argv']) && $_SERVER['argv'][2] == 'debug')
          $debug = 1;
 
       require_once "class/rules/ruleset.php";
@@ -188,6 +188,29 @@ class MASTERSHAPER {
       exit($retval);
 
    } // load()
+
+   /**
+    * unload - unload ruleset
+    *
+    * this function clears all loaded rules.
+    */
+   public function unload()
+   {
+      $debug = 0;
+
+      if(!$this->is_cmdline()) {
+         die("This function must be called from command line!");
+      }
+
+      require_once "class/rules/ruleset.php";
+      require_once "class/rules/interface.php";
+
+      $ruleset = new Ruleset;
+      $retval = $ruleset->unload();
+
+      exit($retval);
+
+   } // unload()
 
    /**
     * check if all requirements are met
@@ -1743,12 +1766,228 @@ class MASTERSHAPER {
 
    } // create_guid()
 
+   public function add_task($job_cmd)
+   {
+      /* task_state's
+
+         N = new
+         R = running
+         F = finished
+         E = error/failed
+
+      */
+
+      global $db;
+
+      $host_idx = $this->get_current_host_profile();
+
+      if(!$this->is_valid_task($job_cmd))
+         $ms->throwError('Invalid task '. $job_cmd .' submitted');
+
+
+      /* if there is an RULES_UNLOAD request, we can remove
+         any pending RULES_LOAD(_DEBUG) task that is not yet
+         processed.
+      */
+      if($job_cmd == 'RULES_UNLOAD') {
+         $db->db_query("
+            DELETE FROM
+               ". MYSQL_PREFIX ."tasks
+            WHERE (
+               task_job LIKE 'RULES_LOAD'
+            OR
+               task_job LIKE 'RULES_LOAD_DEBUG'
+            ) AND (
+               task_host_idx LIKE '". $host_idx ."'
+            AND
+               task_state LIKE 'N'
+            )
+         ");
+      }
+
+      $sth = $db->db_prepare("
+         INSERT INTO ". MYSQL_PREFIX ."tasks (
+            task_job,
+            task_submit_time,
+            task_run_time,
+            task_host_idx,
+            task_state
+         ) VALUES (
+            ?,
+            ?,
+            ?,
+            ?,
+            'N'
+         ) ON DUPLICATE KEY UPDATE task_submit_time=UNIX_TIMESTAMP()
+      ");
+
+      $db->db_execute($sth, array(
+         $job_cmd,
+         mktime(),
+         -1,
+         $host_idx
+      ));
+
+   } // add_task()
+
+   public function get_tasks()
+   {
+      global $db, $ms;
+
+      $host_idx = $this->get_current_host_profile();
+
+      if($this->is_running_task()) {
+         $ms->_print("There is a running task");
+         return false;
+      }
+
+      $sth = $db->db_prepare("
+         SELECT
+            task_idx,
+            task_job,
+            task_submit_time,
+            task_run_time
+         FROM
+            ". MYSQL_PREFIX ."tasks
+         WHERE
+            task_state LIKE 'N'
+         AND
+            task_host_idx LIKE ?
+         ORDER BY
+            task_submit_time ASC
+      ");
+
+      $tasks = $db->db_execute($sth, array(
+         $host_idx
+      ));
+
+      while($task = $tasks->fetchRow()) {
+         $this->task_handler($task);
+      }
+
+   } // get_tasks()
+
+   public function is_running_task()
+   {
+      global $db;
+
+      $host_idx = $this->get_current_host_profile();
+
+      $sth = $db->db_prepare("
+         SELECT
+            task_idx
+         FROM
+            ". MYSQL_PREFIX ."tasks
+         WHERE
+            task_state LIKE 'R'
+         AND
+            task_host_idx LIKE ?
+         ORDER BY
+            task_submit_time ASC
+      ");
+
+      $tasks = $db->db_execute($sth, array(
+         $host_idx
+      ));
+
+      if($task = $tasks->fetchRow())
+         return true;
+
+      return false;
+
+   } // is_running_task()
+
+   private function task_handler($task)
+   {
+      global $ms;
+
+      $this->set_task_state($task->task_idx, 'running');
+
+      $ms->_print("Running task '". $task->task_job ."' submitted at ". strftime("%Y-%m-%d %H:%M:%S", $task->task_submit_time));
+
+      switch($task->task_job) {
+         case 'RULES_LOAD':
+            require_once "class/rules/ruleset.php";
+            require_once "class/rules/interface.php";
+            $ruleset = new Ruleset;
+            $retval = $ruleset->load(0);
+            unset($ruleset);
+            break;
+         case 'RULES_LOAD_DEBUG':
+            require_once "class/rules/ruleset.php";
+            require_once "class/rules/interface.php";
+            $ruleset = new Ruleset;
+            $retval = $ruleset->load(1);
+            unset($ruleset);
+            break;
+         case 'RULES_UNLOAD':
+            require_once "class/rules/ruleset.php";
+            require_once "class/rules/interface.php";
+            $ruleset = new Ruleset;
+            $retval = $ruleset->unload();
+            unset($ruleset);
+            break;
+         default:
+            $ms->throwError('Unknown task '. $task->task_job);
+            break;
+      }
+
+      $this->set_task_state($task->task_idx, 'done', $retval);
+
+   } // task_handler()
+
+   private function set_task_state($task_idx, $task_state, $retval = NULL)
+   {
+      global $db, $ms;
+
+      if(!in_array($task_state, array('running', 'done')))
+         $ms->throwError('Invalid task state '. $task_state);
+
+      if(!is_numeric($task_idx) || $task_idx < 0)
+         $ms->throwError('Invalid task index '. $task_idx);
+
+      if($task_state == 'running')
+         $task_state = 'R';
+      if($task_state == 'done' && $retval == 0)
+         $task_state = 'F';
+      if($task_state == 'done' && $retval != 0)
+         $task_state = 'E';
+
+      $sth = $db->db_prepare("
+         UPDATE
+            ". MYSQL_PREFIX ."tasks
+         SET
+            task_state = ?,
+            task_run_time = UNIX_TIMESTAMP()
+         WHERE
+            task_idx LIKE ?
+      ");
+
+      $db->db_execute($sth, array(
+         $task_state,
+         $task_idx
+      ));
+
+   } // set_task_state()
+
+   public function is_valid_task($job_cmd)
+   {
+      switch($job_cmd) {
+         case 'RULES_LOAD':
+         case 'RULES_LOAD_DEBUG':
+         case 'RULES_UNLOAD':
+            return true;
+      }
+
+      return false;
+
+   } // is_valid_task()
+
    /**
     * add a HTTP to be set to MasterShapers headers variable
     *
     * @return bool
     */
-
    public function set_header($key, $value)
    {
       $this->headers[$key] = $value;

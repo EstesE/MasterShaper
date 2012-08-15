@@ -24,6 +24,18 @@
 require_once "shaper.class.php";
 
 $ms = new MASTERSHAPER;
-$ms->load();
+
+if(isset($_SERVER['argv'])) {
+   switch($_SERVER['argv'][1]) {
+      case 'load': $ms->load(); break;
+      case 'unload': $ms->unload(); break;
+      default: die("unknown option\n");
+   }
+}
+
+while(1) {
+   $ms->get_tasks();
+   sleep(1);
+}
 
 ?>
