@@ -41,7 +41,7 @@ class Page_Ruleset extends MASTERSHAPER_PAGE {
    {
       global $tmpl, $page, $ms;
 
-      if($this->rights && !$ms->is_cmdline()) {
+      if(isset($this->rights) && !$ms->is_cmdline()) {
          /* If authentication is enabled, check permissions */
          if($ms->getOption("authentication") == "Y" && !$ms->checkPermissions($this->rights)) {
             $ms->throwError("<img src=\"". ICON_CHAINS ."\" alt=\"chain icon\" />&nbsp;". _("Manage Chains"), _("You do not have enough permissions to access this module!"));

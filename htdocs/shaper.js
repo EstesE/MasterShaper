@@ -372,7 +372,8 @@ function get_host_state()
    var selectbox = document.getElementsByName("active_host_profile")[0];
 
    if(!selectbox) {
-      alert('Unable to locate element active_host_profile');
+      // silently return...
+      setTimeout("get_host_state()", 2000);
       return false;
    }
 
@@ -392,7 +393,8 @@ function get_host_state()
          idx: hostprofile
       }),
       error: function(XMLHttpRequest, textStatus, errorThrown) {
-         alert('Failed to contact server! ' + textStatus + ' ' + errorThrown);
+         //for now we silently ignore errors here
+         //alert('Failed to contact server! ' + textStatus + ' ' + errorThrown);
       },
       success: function(data){
          $('#readybusyico').attr('src', data);
