@@ -31,7 +31,7 @@ fi
 
 case "$1" in
 
-   # Cleanup existing residues from previous rules
+   # Cleanup existing residues from previous loaded rules
    cleanup)
 
       # Remove the ms-postrouting entries from POSTROUTING chain
@@ -60,7 +60,7 @@ case "$1" in
          ${IPT_BIN} -t mangle -X ms-prerouting
       fi
 
-      # Get all available MasterShaper chains and removed them from ms-postrouting
+      # Get all available MasterShaper chains and remove them from ms-postrouting
       MS_CHAINS=`${IPT_BIN} -t mangle -L ms-postrouting -n 2>/dev/null | grep -i ^ms-chain | awk '{ print $1 }'`
 
       for PR_RULES in `${IPT_BIN} -t mangle -L ms-postrouting -v -n --line-numbers 2>/dev/null | grep -i ^ms-chain | awk '{ print $1 }' | sort -r `; do
