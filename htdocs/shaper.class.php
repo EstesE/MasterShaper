@@ -170,9 +170,14 @@ class MASTERSHAPER {
     */
    public function load()
    {
+      $debug = 0;
+
       if(!$this->is_cmdline()) {
          die("This function must be called from command line!");
       }
+
+      if(isset($_SERVER['argv']) && $_SERVER['argv'][1] == 'debug')
+         $debug = 1;
 
       require_once "class/rules/ruleset.php";
       require_once "class/rules/interface.php";
@@ -1350,10 +1355,13 @@ class MASTERSHAPER {
     *
     * @param string $text
     */
-   public function _print($text)
+   public function _print($text, $override_output = NULL)
    {
       if(!isset($this->cfg->logging))
          $this->cfg->logging = 'display';
+
+      if(isset($override_output))
+         $this->cfg->logging = $override_output;
 
       switch($this->cfg->logging) {
          default:
