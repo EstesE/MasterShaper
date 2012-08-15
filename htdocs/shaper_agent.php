@@ -29,7 +29,6 @@ if(isset($_SERVER['argv'])) {
    switch($_SERVER['argv'][1]) {
       case 'load': $ms->load(); break;
       case 'unload': $ms->unload(); break;
-      default: die("unknown option\n");
    }
 }
 
