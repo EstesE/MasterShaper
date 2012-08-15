@@ -40,6 +40,7 @@ require_once "class/Service_Level.php";
 require_once "class/Target.php";
 require_once "class/User.php";
 require_once "class/Host_Profile.php";
+require_once "class/Host_Task.php";
 
 define('DEBUG', 1);
 
@@ -495,6 +496,9 @@ class MASTERSHAPER {
             break;
          case 'hostprofile':
             $obj = new Host_Profile($id);
+            break;
+         case 'hosttask':
+            $obj = new Host_Task($id);
             break;
          case 'filter':
             $obj = new Filter($id);

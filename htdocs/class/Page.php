@@ -144,6 +144,7 @@ class Page {
          'pipes',
          'bandwidth',
          'rpc',
+         'tasklist',
       );
 
       if(in_array($action, $valid_actions))

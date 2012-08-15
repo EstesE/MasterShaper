@@ -23,6 +23,7 @@ class MASTERSHAPER_PAGE {
          case 'bandwidth':
          case 'options':
          case 'about':
+         case 'tasklist':
          case 'list':
             $content = $this->showList();
             break;

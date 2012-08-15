@@ -35,7 +35,8 @@
   <!-- header cell -->
   <div style="height: 10px;"></div>
   <div style="width: 100%; height: 70px;">
-  <img src="{$web_path}/images/ms_logo.png"></div>
+   <a href="{$web_path}"><img src="{$web_path}/images/ms_logo.png"></a>
+  </div>
   <!-- /header cell -->   
 
   <!-- page title -->
@@ -63,7 +64,8 @@
        <select name="active_host_profile" onchange="set_host_profile()">
         { host_profile_select_list }
        </select>
-       <img src="{ $icon_ready }" id="readybusyico" />
+       Agent:
+       <a href="{ $rewriter->get_page_url('Host Tasklist') }" title="Host Tasklist"><img src="{ $icon_ready }" id="readybusyico" /></a>
       { /if  }
      </td>
      <td style="width: 15px;">&nbsp;</td>
