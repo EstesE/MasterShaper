@@ -83,10 +83,10 @@ class MASTERSHAPER {
 
       /* alert if meta table is missing */
       if(!$db->db_check_table_exists(MYSQL_PREFIX ."meta"))
-         $this->throwError("You are missing table ". MYSQL_PREFIX ."meta! You may run install.php again.");
+         $this->throwError("You are missing table ". MYSQL_PREFIX ."meta! You may run <a href=\"". WEB_PATH ."/install.php\">install.php</a> again.");
 
       if($db->getVersion() < SCHEMA_VERSION)
-         $this->throwError("The local schema version is lower (". $db->getVersion() .") then the programs schema version (". SCHEMA_VERSION ."). You may run install.php again.");
+         $this->throwError("The local schema version is lower (". $db->getVersion() .") then the programs schema version (". SCHEMA_VERSION ."). You may run <a href=\"". WEB_PATH ."/install.php\">install.php</a> again.");
 
       require_once "shaper_tmpl.php";
       $GLOBALS['tmpl'] = new MASTERSHAPER_TMPL($this);
