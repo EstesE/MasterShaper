@@ -1862,7 +1862,6 @@ class MASTERSHAPER {
       if(!$this->is_valid_task($job_cmd))
          $ms->throwError('Invalid task '. $job_cmd .' submitted');
 
-
       /* if there is an RULES_UNLOAD request, we can remove
          any pending RULES_LOAD(_DEBUG) task that is not yet
          processed.
@@ -1906,6 +1905,8 @@ class MASTERSHAPER {
          $host_idx
       ));
 
+      $sth->free();
+
    } // add_task()
 
    public function get_tasks()
@@ -1940,6 +1941,8 @@ class MASTERSHAPER {
          $host_idx
       ));
 
+      $sth->free();
+
       while($task = $tasks->fetchRow()) {
          $this->task_handler($task);
       }
@@ -1969,6 +1972,8 @@ class MASTERSHAPER {
       $tasks = $db->db_execute($sth, array(
          $host_idx
       ));
+
+      $sth->free();
 
       if($task = $tasks->fetchRow())
          return true;
@@ -2048,6 +2053,8 @@ class MASTERSHAPER {
          $task_state,
          $task_idx
       ));
+
+      $sth->free();
 
    } // set_task_state()
 
