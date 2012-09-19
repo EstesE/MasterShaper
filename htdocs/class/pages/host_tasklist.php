@@ -52,7 +52,7 @@ class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
          WHERE
             task_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
-            task_submit_time ASC
+            task_submit_time DESC
       ");
 
       $cnt_tasks = 0;
