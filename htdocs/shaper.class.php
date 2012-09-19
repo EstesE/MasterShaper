@@ -1905,7 +1905,7 @@ class MASTERSHAPER {
          $host_idx
       ));
 
-      $sth->free();
+      $db->db_sth_free($sth);
 
    } // add_task()
 
@@ -1941,11 +1941,13 @@ class MASTERSHAPER {
          $host_idx
       ));
 
-      $sth->free();
+      $db->db_sth_free($sth);
 
       while($task = $tasks->fetchRow()) {
          $this->task_handler($task);
       }
+
+      $db->db_sth_free($tasks);
 
    } // get_tasks()
 
@@ -1973,11 +1975,14 @@ class MASTERSHAPER {
          $host_idx
       ));
 
-      $sth->free();
+      $db->db_sth_free($sth);
 
-      if($task = $tasks->fetchRow())
+      if($task = $tasks->fetchRow()) {
+         $db->db_sth_free($tasks);
          return true;
+      }
 
+      $db->db_sth_free($tasks);
       return false;
 
    } // is_running_task()
@@ -2054,7 +2059,7 @@ class MASTERSHAPER {
          $task_idx
       ));
 
-      $sth->free();
+      $db->db_sth_free($sth);
 
    } // set_task_state()
 
