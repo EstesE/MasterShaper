@@ -13,11 +13,11 @@
  </tr>
  { task_list }
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
-  <td>
+  <td { if $task_state == "finish" } style="text-decoration: line-through" { /if }>
    <img src="{ $icon_process }" alt="host icon" />
    { $task_idx }
   </td>
-  <td>
+  <td { if $task_state == "finish" } style="text-decoration: line-through" { /if }>
    <img src="{ $icon_process }" alt="host icon" />
    { $task_job }
   </td>
