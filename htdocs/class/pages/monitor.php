@@ -453,7 +453,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                      if($counter > 15)
                         continue;
                      if($_SESSION['graphmode'] == 2) {
-                        $name = $this->findname($tc_id, $_SESSION['showif']) . sprintf(" (%dkbit/s)", $bps);
+                        $name = $this->findname($tc_id, $_SESSION['showif']) . sprintf(" (%dkbps)", $bps);
                         array_push($this->total, $bps);
                      }
                      elseif($_SESSION['graphmode'] == 3) {
@@ -649,17 +649,17 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    {
       switch($scalemode) {
          case 'bit':
-            return 'bit/s';
+            return 'bps';
          case 'byte':
-            return 'byte/s';
+            return 'Bps';
          case 'kbit':
-            return 'kbit/s';
+            return 'kbps';
          case 'kbyte':
-            return 'kbyte/s';
+            return 'kBps';
          case 'mbit':
-            return 'mbit/s';
+            return 'Mbps';
          case 'mbyte':
-            return 'mbyte/s';
+            return 'MBps';
       }
 
    } // get_scale_mode()

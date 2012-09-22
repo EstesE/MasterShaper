@@ -42,18 +42,18 @@
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_in_rate" size="25" value="{ $sl->sl_htb_bw_in_rate }" />&nbsp;kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_in_rate" size="25" value="{ $sl->sl_htb_bw_in_rate }" />&nbsp;kbps</td>
   <td>Bandwidth rate. This is the guaranteed bandwidth.</td>
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth ceil:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_in_ceil" size="25" value="{ $sl->sl_htb_bw_in_ceil }" />&nbsp;kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_in_ceil" size="25" value="{ $sl->sl_htb_bw_in_ceil }" />&nbsp;kbps</td>
   <td>If the chain has bandwidth to spare, this is the maximum rate which can be lend to this service. The default value is the bandwidth rate which implies no borrowing from the chain.</td>
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth burst:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_in_burst" size="25" value="{ $sl->sl_htb_bw_in_burst }" />&nbsp;kbit/s</td>
-  <td>Amount of kbit/s that can be burst at ceil speed, in excess of the configured rate. Should be at least as high as the highest burst of all children. This is useful for interactive traffic.</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_in_burst" size="25" value="{ $sl->sl_htb_bw_in_burst }" />&nbsp;kbps</td>
+  <td>Amount of kbps that can be burst at ceil speed, in excess of the configured rate. Should be at least as high as the highest burst of all children. This is useful for interactive traffic.</td>
  </tr>
  <tr>
   <td colspan="3">
@@ -62,18 +62,18 @@
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_out_rate" size="25" value="{ $sl->sl_htb_bw_out_rate }" />&nbsp;kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_out_rate" size="25" value="{ $sl->sl_htb_bw_out_rate }" />&nbsp;kbps</td>
   <td>Bandwidth rate. This is the guaranteed bandwidth.</td>
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth ceil:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_out_ceil" size="25" value="{ $sl->sl_htb_bw_out_ceil }" />&nbsp;kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_out_ceil" size="25" value="{ $sl->sl_htb_bw_out_ceil }" />&nbsp;kbps</td>
   <td>If the chain has bandwidth to spare, this is the maximum rate which can be lend to this service. The default value is the bandwidth rate which implies no borrowing from the chain.</td>
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth burst:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_out_burst" size="25" value="{ $sl->sl_htb_bw_out_burst }" />&nbsp;kbit/s</td>
-  <td>Amount of kbit/s that can be burst at ceil speed, in excess of the configured rate. Should be at least as high as the highest burst of all children. This is useful for interactive traffic.</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_out_burst" size="25" value="{ $sl->sl_htb_bw_out_burst }" />&nbsp;kbps</td>
+  <td>Amount of kbps that can be burst at ceil speed, in excess of the configured rate. Should be at least as high as the highest burst of all children. This is useful for interactive traffic.</td>
  </tr>
  <tr>
   <td colspan="3">
@@ -112,13 +112,13 @@
  </tr>
  <tr>
   <td style="white-space: nowrap;">Rate:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_in_rate" size="25" value="{ $sl->sl_hfsc_in_rate }" />&nbsp;kbit/s</td>
-  <td>Guaranteed rate of bandwidth in kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_in_rate" size="25" value="{ $sl->sl_hfsc_in_rate }" />&nbsp;kbps</td>
+  <td>Guaranteed rate of bandwidth in kbps</td>
  </tr>
  <tr>
   <td style="white-space: nowrap;">ul-Rate:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_in_ulrate" size="25" value="{ $sl->sl_hfsc_in_ulrate }" />&nbsp;kbit/s</td>
-  <td>Maximum rate of bandwidth in kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_in_ulrate" size="25" value="{ $sl->sl_hfsc_in_ulrate }" />&nbsp;kbps</td>
+  <td>Maximum rate of bandwidth in kbps</td>
  </tr>
  <tr>
   <td colspan="3">
@@ -137,13 +137,13 @@
  </tr>
  <tr>
   <td style="white-space: nowrap;">Rate:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_out_rate" size="25" value="{ $sl->sl_hfsc_out_rate }" />&nbsp;kbit/s</td>
-  <td>Guaranteed rate of bandwidth in kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_out_rate" size="25" value="{ $sl->sl_hfsc_out_rate }" />&nbsp;kbps</td>
+  <td>Guaranteed rate of bandwidth in kbps</td>
  </tr>
  <tr>
   <td style="white-space: nowrap;">ul-Rate:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_out_ulrate" size="25" value="{ $sl->sl_hfsc_out_ulrate }" />&nbsp;kbit/s</td>
-  <td>Maximum rate of bandwidth in kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_out_ulrate" size="25" value="{ $sl->sl_hfsc_out_ulrate }" />&nbsp;kbps</td>
+  <td>Maximum rate of bandwidth in kbps</td>
  </tr>
  { elseif $classifier == "CBQ" }
  <tr>
@@ -163,7 +163,7 @@
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_cbq_in_rate" size="25" value="{ $sl->sl_cbq_in_rate }" />&nbsp;kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_cbq_in_rate" size="25" value="{ $sl->sl_cbq_in_rate }" />&nbsp;kbps</td>
   <td>Maximum rate a chain or pipe can send at.</td>
  </tr>
  <tr>
@@ -186,7 +186,7 @@
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_cbq_out_rate" size="25" value="{ $sl->sl_cbq_out_rate }" />&nbsp;kbit/s</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_cbq_out_rate" size="25" value="{ $sl->sl_cbq_out_rate }" />&nbsp;kbps</td>
   <td>Maximum rate a chain or pipe can send at.</td>
  </tr>
  <tr>

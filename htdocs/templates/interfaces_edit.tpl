@@ -54,7 +54,7 @@
    <input type="text" name="if_speed" size="30" value="{ $if->if_speed }" />
   </td>
   <td>
-   Specify the outbound bandwidth on this interface in bit/s (append K for kbit/s or M for Mbit/s).
+   Specify the outbound bandwidth on this interface in bps (append K for kbps or M for Mbps).
   </td>
  </tr>
  <tr>

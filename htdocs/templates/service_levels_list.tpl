@@ -24,10 +24,10 @@
    <img src="{ $icon_servicelevels }" alt="servicelevel icon" />
    { if $classifier == "HTB" }
     { if $sl_htb_bw_in_rate != "" }
-     In: { $sl_htb_bw_in_rate }kbit/s
+     In: { $sl_htb_bw_in_rate }kbps
     { /if }
     { if $sl_htb_bw_out_rate != "" }
-     Out: { $sl_htb_bw_out_rate }kbit/s
+     Out: { $sl_htb_bw_out_rate }kbps
     { /if }
     Prio: { $sl_htb_priority }
    { elseif $classifier == "HFSC" }
@@ -37,7 +37,7 @@
       { $sl_hfsc_in_dmax }ms,
      { /if }
      { if $sl_hfsc_in_rate != "" }
-      { $sl_hfsc_in_rate }kbit/s
+      { $sl_hfsc_in_rate }kbps
      { /if }
     { /if }
     { if $sl_hfsc_out_dmax != "" || $sl_hfsc_out_rate != "" }
@@ -46,12 +46,12 @@
       { $sl_hfsc_out_dmax }ms,
      { /if }
      { if $sl_hfsc_out_rate != "" }
-      { $sl_hfsc_out_rate }kbit/s
+      { $sl_hfsc_out_rate }kbps
      { /if }
     { /if }
    { elseif $classifier == "CBQ" }
-    In: { $sl_cbq_in_rate }kbit/s, Prio: { $sl_cbq_in_priority }, 
-    Out: { $sl_cbq_out_rate  }kbit/s, Prio: { $sl_cbq_out_priority }
+    In: { $sl_cbq_in_rate }kbps, Prio: { $sl_cbq_in_priority },
+    Out: { $sl_cbq_out_rate  }kbps, Prio: { $sl_cbq_out_priority }
    { elseif $classifier == "NETEM"} 
     NETEM
    { /if }

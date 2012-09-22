@@ -98,12 +98,12 @@
      <tr>
       <td>
        <select name="scalemode">
-        <option value="bit" { if $scalemode == "bit" } selected="selected" { /if } >bit/s</option>
-        <option value="byte" { if $scalemode == "byte" } selected="selected" { /if } >byte/s</option>
-        <option value="kbit" { if $scalemode == "kbit" } selected="selected" { /if } >kbit/s</option>
-        <option value="kbyte" { if $scalemode == "kbyte" } selected="selected" { /if } >kbyte/s</option>
-        <option value="mbit" { if $scalemode == "mbit" } selected="selected" { /if } >mbit/s</option>
-        <option value="mbyte" { if $scalemode == "mbyte" } selected="selected" { /if } >mbyte/s</option>
+        <option value="bit" { if $scalemode == "bit" } selected="selected" { /if } >bps</option>
+        <option value="byte" { if $scalemode == "byte" } selected="selected" { /if } >Bps</option>
+        <option value="kbit" { if $scalemode == "kbit" } selected="selected" { /if } >kbps</option>
+        <option value="kbyte" { if $scalemode == "kbyte" } selected="selected" { /if } >kBps</option>
+        <option value="mbit" { if $scalemode == "mbit" } selected="selected" { /if } >mbps</option>
+        <option value="mbyte" { if $scalemode == "mbyte" } selected="selected" { /if } >mBps</option>
        </select>
       </td>
      </tr>

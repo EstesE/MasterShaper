@@ -131,7 +131,7 @@ class Ruleset_Interface {
 
    } // isActive()
 
-   /* return interface speed in kbit/s
+   /* return interface speed in kbps
     *
     * @return int
     */
