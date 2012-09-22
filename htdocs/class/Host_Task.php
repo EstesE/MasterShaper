@@ -45,6 +45,16 @@ class Host_Task extends MsObject {
 
    } // __construct()
 
+   public function pre_delete()
+   {
+      global $db, $ms;
+
+      if($this->id == 1) {
+         $ms->throwError('You can not delete the default host profile!');
+      }
+
+   } // pre_delete()
+
 } // class Host_Task
 
 ?>

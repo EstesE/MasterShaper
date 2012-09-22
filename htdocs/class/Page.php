@@ -28,6 +28,9 @@ class Page {
       if(isset($_SERVER['REQUEST_URI']))
          $this->uri = $_SERVER['REQUEST_URI'];
 
+      if(isset($_SERVER['SCRIPT_URI']))
+         $this->self = $_SERVER['SCRIPT_URI'];
+
    } // __construct()
 
    public function parse($page)

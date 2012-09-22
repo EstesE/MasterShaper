@@ -4,6 +4,14 @@
   <td colspan="6">&nbsp;</td>
  </tr>
  <tr>
+  <td style="text-align: center;" colspan="6">
+   <a href="{ $page->self }?clear=finished" title="removes finished or failed tasks from list">Clear tasklist&nbsp;<img src="{ $icon_delete }" alt="delete icon" /></a>
+  </td>
+ </tr>
+ <tr>
+  <td colspan="6">&nbsp;</td>
+ </tr>
+ <tr>
   <td><img src="{ $icon_process }" alt="host icon" />&nbsp;<i>ID</i></td>
   <td><img src="{ $icon_process }" alt="host icon" />&nbsp;<i>Job</i></td>
   <td><img src="{ $icon_process }" alt="host icon" />&nbsp;<i>Submit Time</i></td>

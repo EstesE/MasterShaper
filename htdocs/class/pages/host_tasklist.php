@@ -44,6 +44,9 @@ class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
       $this->avail_tasks = Array();
       $this->tasks = Array();
 
+      if(isset($_GET['clear']) && $_GET['clear'] == 'finished')
+         $this->clear_finished_tasks();
+
       $res_tasks = $db->db_query("
          SELECT
             *
@@ -68,34 +71,6 @@ class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
       return $tmpl->fetch("tasklist.tpl");
    
    } // showList() 
-
-   /**
-    * interface for handling
-    */
-   /*public function showEdit()
-   {
-      if($this->is_storing())
-         $this->store();
-
-      global $db, $tmpl, $page;
-
-      $this->avail_chains = Array();
-      $this->chains = Array();
-
-      if($page->id != 0) {
-         $hostprofile = new Host_Profile($page->id);
-         $tmpl->assign('is_new', false);
-      }
-      else {
-         $hostprofile = new Host_Profile;
-         $tmpl->assign('is_new', true);
-      }
-
-      $tmpl->assign('host', $hostprofile);
-
-      return $tmpl->fetch("host_profiles_edit.tpl");
-
-   } // showEdit()*/
 
    /**
     * template function which will be called from the task listing template
@@ -139,48 +114,26 @@ class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
       return $content;
 
    } // smarty_task_list()
-   
+
    /**
-    * handle updates
+    * clear finish tasks
+    *
+    * this function removes all finished tasks from tasklist
     */
-   public function store()
+   private function clear_finished_tasks()
    {
-      global $ms, $db, $rewriter;
+      global $ms, $db;
 
-      isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
+      $db->db_query("
+         DELETE FROM
+            ". MYSQL_PREFIX ."tasks
+         WHERE
+            task_host_idx LIKE '". $ms->get_current_host_profile() ."'
+         AND
+            task_state LIKE 'F'
+      ");
 
-      /* load task profile */
-      if(isset($new))
-         $hostprofile = new Host_Profile;
-      else
-         $hostprofile = new Host_Profile($_POST['host_idx']);
-
-      if(!isset($_POST['host_name']) || $_POST['host_name'] == "") {
-         $ms->throwError(_("Please specify a host profile name!"));
-      }
-      if(isset($new) && $ms->check_object_exists('hostprofile', $_POST['host_name'])) {
-         $ms->throwError(_("A host profile with that name already exists!"));
-      }
-      if(!isset($new) && $hostprofile->host_name != $_POST['host_name'] &&
-         $ms->check_object_exists('hostprofile', $_POST['host_name'])) {
-         $ms->throwError(_("A host profile with that name already exists!"));
-      }
-
-      $hostprofile_data = $ms->filter_form_data($_POST, 'host_');
-
-      if(!$hostprofile->update($hostprofile_data))
-         return false;
-
-      if(!$hostprofile->save())
-         return false;
-
-      if(isset($_POST['add_another']) && $_POST['add_another'] == 'Y')
-         return true;
-
-      $ms->set_header('Location', $rewriter->get_page_url('Host Profiles List'));
-      return true;
-
-   } // store()
+   } // clear_finished_tasks()
 
 } // class Page_Host_Tasklist
 
