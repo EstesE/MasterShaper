@@ -1787,6 +1787,11 @@ class MASTERSHAPER {
 
    } // get_current_host_profile()
 
+   /**
+    * update host heartbeat indicator
+    *
+    * @param int $host_idx
+    */
    public function update_host_heartbeat($host_idx)
    {
       global $db;
@@ -1921,27 +1926,28 @@ class MASTERSHAPER {
          return false;
       }
 
-      $sth = $db->db_prepare("
-         SELECT
-            task_idx,
-            task_job,
-            task_submit_time,
-            task_run_time
-         FROM
-            ". MYSQL_PREFIX ."tasks
-         WHERE
-            task_state LIKE 'N'
-         AND
-            task_host_idx LIKE ?
-         ORDER BY
-            task_submit_time ASC
-      ");
+      if(!isset($this->sth_get_tasks)) {
 
-      $tasks = $db->db_execute($sth, array(
+         $this->sth_get_tasks = $db->db_prepare("
+            SELECT
+               task_idx,
+               task_job,
+               task_submit_time,
+               task_run_time
+            FROM
+               ". MYSQL_PREFIX ."tasks
+            WHERE
+               task_state LIKE 'N'
+            AND
+               task_host_idx LIKE ?
+            ORDER BY
+               task_submit_time ASC
+         ");
+      }
+
+      $tasks = $db->db_execute($this->sth_get_tasks, array(
          $host_idx
       ));
-
-      $db->db_sth_free($sth);
 
       while($task = $tasks->fetchRow()) {
          $this->task_handler($task);
@@ -1958,24 +1964,24 @@ class MASTERSHAPER {
       if(!isset($host_idx))
          $host_idx = $this->get_current_host_profile();
 
-      $sth = $db->db_prepare("
-         SELECT
-            task_idx
-         FROM
-            ". MYSQL_PREFIX ."tasks
-         WHERE
-            task_state LIKE 'R'
-         AND
-            task_host_idx LIKE ?
-         ORDER BY
-            task_submit_time ASC
-      ");
+      if(!isset($this->sth_is_running_task)) {
+         $this->sth_is_running_task = $db->db_prepare("
+            SELECT
+               task_idx
+            FROM
+               ". MYSQL_PREFIX ."tasks
+            WHERE
+               task_state LIKE 'R'
+            AND
+               task_host_idx LIKE ?
+            ORDER BY
+               task_submit_time ASC
+         ");
+      }
 
-      $tasks = $db->db_execute($sth, array(
+      $tasks = $db->db_execute($this->sth_is_running_task, array(
          $host_idx
       ));
-
-      $db->db_sth_free($sth);
 
       if($task = $tasks->fetchRow()) {
          $db->db_sth_free($tasks);
@@ -2044,22 +2050,23 @@ class MASTERSHAPER {
       if($task_state == 'done' && $retval != 0)
          $task_state = 'E';
 
-      $sth = $db->db_prepare("
-         UPDATE
-            ". MYSQL_PREFIX ."tasks
-         SET
-            task_state = ?,
-            task_run_time = UNIX_TIMESTAMP()
-         WHERE
-            task_idx LIKE ?
-      ");
+      if(!isset($this->sth_set_task_state)) {
 
-      $db->db_execute($sth, array(
+         $this->sth_set_task_state = $db->db_prepare("
+            UPDATE
+               ". MYSQL_PREFIX ."tasks
+            SET
+               task_state = ?,
+               task_run_time = UNIX_TIMESTAMP()
+            WHERE
+               task_idx LIKE ?
+         ");
+      }
+
+      $db->db_execute($this->sth_set_task_state, array(
          $task_state,
          $task_idx
       ));
-
-      $db->db_sth_free($sth);
 
    } // set_task_state()
 
