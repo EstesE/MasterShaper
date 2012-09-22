@@ -10,6 +10,7 @@ class MsObject {
    var $table_name;
    var $col_name;
    var $child_names;
+   var $ignore_child_on_clone;
    var $fields;
 
    public function __construct($id = null, $init_data)
@@ -34,6 +35,8 @@ class MsObject {
 
       if(array_key_exists('child_names', $init_data))
          $this->child_names = $init_data['child_names'];
+      if(array_key_exists('ignore_child_on_clone', $init_data))
+         $this->ignore_child_on_clone = $init_data['ignore_child_on_clone'];
 
       if(isset($id)) {
          $this->id = $id;
@@ -136,13 +139,140 @@ class MsObject {
 
    } // delete()
 
+   /**
+    * clone
+    */
+   public function create_clone($srcobj)
+   {
+      global $ms, $db;
+
+      if(!isset($srcobj->id))
+         return false;
+      if(!is_numeric($srcobj->id))
+         return false;
+      if(!isset($srcobj->fields))
+         return false;
+
+      if(method_exists($this, 'pre_clone'))
+         $this->pre_clone();
+
+      foreach(array_keys($srcobj->fields) as $field) {
+
+         // check for a matching key in clone's fields array
+         if(!in_array($field, array_keys($this->fields)))
+            continue;
+
+         $this->$field = $srcobj->$field;
+      }
+
+      $idx = $this->col_name.'_idx';
+      $guid = $this->col_name.'_guid';
+      $name = $this->col_name.'_name';
+
+      $this->id = NULL;
+      if(isset($this->$idx))
+         $this->$idx = NULL;
+      if(isset($this->$guid))
+         $this->$guid = $ms->create_guid();
+      if(isset($this->$name))
+         $this->$name = "Copy of ". $this->$name;
+
+      $this->save();
+
+      // if saving was successful, our new object should have an ID now
+      if(!isset($this->id) || empty($this->id))
+         $ms->throwError("error on saving clone. no ID was returned");
+
+      // now check for assigned childrens and duplicate those links too
+      if(isset($this->child_names) && !isset($this->ignore_child_on_clone)) {
+
+         // loop through all (known) childrens
+         foreach(array_keys($this->child_names) as $child) {
+
+            $prefix = $this->child_names[$child];
+
+            // initate an empty child object
+            if(!($child_obj = $ms->load_class($child))) {
+               $ms->throwError("unable to locate class for ". $child_obj);
+               return false;
+            }
+
+            // sadly an ugly hardcoded hack is required here as
+            // the target-idx field in assign_targets_to_targets
+            // is atg_group_idx not atg_target_idx.
+            if($this->table_name == "targets")
+               $this->col_name = "group";
+
+            $sth = $db->db_prepare("
+               SELECT
+                  *
+               FROM
+                  ". MYSQL_PREFIX ."assign_". $child_obj->table_name ."_to_". $this->table_name ."
+               WHERE
+                  ". $prefix ."_". $this->col_name ."_idx LIKE ?
+            ");
+
+            $result = $db->db_execute($sth, array(
+               $srcobj->id,
+            ));
+
+            while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+
+               $query = "
+                  INSERT INTO ". MYSQL_PREFIX ."assign_". $child_obj->table_name ."_to_". $this->table_name ." (
+               ";
+               $values = "";
+
+               foreach(array_keys($row) as $key) {
+
+                  $query.= $key .",";
+                  $values.= "?,";
+               }
+
+               $query = substr($query, 0, strlen($query)-1);
+               $values = substr($values, 0, strlen($values)-1);
+
+               $query = $query ."
+                  ) VALUES (
+                     $values
+                  )
+               ";
+
+               $row[$this->child_names[$child] .'_idx'] = 'NULL';
+               $row[$this->child_names[$child] .'_'.$this->col_name.'_idx'] = $this->id;
+               if(isset($row[$this->child_names[$child] .'_guid']))
+                  $row[$this->child_names[$child] .'_guid'] = $ms->create_guid();
+
+               //print_r($query);
+               //print_r($row);
+               if(!isset($child_sth))
+                  $child_sth = $db->db_prepare($query);
+
+               $db->db_execute($child_sth, array_values($row));
+            }
+
+            if(isset($child_sth))
+               $db->db_sth_free($child_sth);
+            $db->db_sth_free($sth);
+            $db->db_sth_free($result);
+
+         }
+      }
+
+      if(method_exists($this, 'post_clone'))
+         $this->post_clone();
+
+      return true;
+
+   } // create_clone()
+
    /* overloading PHP's __set() function */
    public function __set($name, $value)
    {
       global $ms;
 
       if(!isset($this->fields) || empty($this->fields))
-         $ms->throwError("Fields error not set for class ". get_class($this));
+         $ms->throwError("Fields array not set for class ". get_class($this));
 
       if(!array_key_exists($name, $this->fields) && $name != 'id')
          $ms->throwError("Unknown key in ". get_class($this) ."::__set(): ". $name);
@@ -156,7 +286,7 @@ class MsObject {
       global $ms, $db;
       
       if(!isset($this->fields) || empty($this->fields))
-         $ms->throwError('fields not probably initialized');
+         $ms->throwError("Fields array not set for class ". get_class($this));
 
       if(method_exists($this, 'pre_save'))
          $this->pre_save();
@@ -192,10 +322,10 @@ class MsObject {
 
       $db->db_execute($sth, $arr_values);
 
-      $db->db_sth_free($sth);
-
-      if(!isset($this->id))
+      if(!isset($this->id) || empty($this->id))
          $this->id = $db->db_getid();
+
+      $db->db_sth_free($sth);
 
       if(method_exists($this, 'post_save'))
          $this->post_save();

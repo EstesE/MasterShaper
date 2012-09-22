@@ -57,6 +57,7 @@
    { /if }
   </td>
   <td style="text-align: center;">
+   <a class="clone" id="servicelevel-{$sl_idx}" title="Clone"><img src="{ $icon_clone }" alt="clone icon" /></a>
    <a class="delete" id="servicelevel-{$sl_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
   </td>
  </tr>

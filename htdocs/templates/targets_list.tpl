@@ -28,6 +28,7 @@
    { $target_type }
   </td>
   <td style="text-align: center;">
+   <a class="clone" id="target-{$target_idx}" title="Clone"><img src="{ $icon_clone }" alt="clone icon" /></a>
    <a class="delete" id="target-{$target_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
   </td>
  </tr>

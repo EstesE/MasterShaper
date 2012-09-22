@@ -20,7 +20,8 @@
    <a href="{$rewriter->get_page_url('Host Profile Edit', $host_idx)}">{ $host_name }</a>
   </td>
   <td style="text-align: center;">
-   <a class="delete" id="hostprofile-{$host_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a class="clone" id="hostprofile-{$host_idx}" title="Clone"><img src="{ $icon_clone }" alt="clone icon" /></a>
+   <a class="delete" id="hostprofile-{$host_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    <div class="toggle" id="toggle-{$host_idx}" style="display: inline;">
     <a class="toggle-off" id="hostprofile-{$host_idx}" to="off" title="Disable host profile {$host_name}" { if $host_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
     <a class="toggle-on" id="hostprofile-{$host_idx}" to="on" title="Enable host profile {$host_name}" { if $host_active == 'Y' } style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>

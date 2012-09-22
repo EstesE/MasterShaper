@@ -263,7 +263,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
             $id = $db->db_getid();
 	    $members = preg_split('/#/', $object->target_members);
 	    foreach($members as $member) {
-	       $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_target_groups (atg_group_idx, atg_target_idx) "
+	       $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_targets_to_targets (atg_group_idx, atg_target_idx) "
 				    ."VALUES ('". $id ."', '". $ms->getTargetByName($member) ."')");
 	    }
             break;
@@ -376,7 +376,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
 
          $db->db_truncate_table(MYSQL_PREFIX ."assign_ports_to_filters");
          $db->db_truncate_table(MYSQL_PREFIX ."assign_filters_to_pipes");
-         $db->db_truncate_table(MYSQL_PREFIX ."assign_target_groups");
+         $db->db_truncate_table(MYSQL_PREFIX ."assign_targets_to_targets");
          $db->db_truncate_table(MYSQL_PREFIX ."chains");
          $db->db_truncate_table(MYSQL_PREFIX ."pipes");
          $db->db_truncate_table(MYSQL_PREFIX ."service_levels");

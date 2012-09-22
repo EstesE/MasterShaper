@@ -318,6 +318,9 @@ class MASTERSHAPER {
          case 'toggle':
             $this->rpc_toggle_object_status();
             break;
+         case 'clone':
+            $this->rpc_clone_object();
+            break;
          case 'alter-position':
             $this->rpc_alter_position();
             break;
@@ -463,6 +466,52 @@ class MASTERSHAPER {
       return false;
 
    } // rpc_toggle_object_status()
+
+   /**
+    * RPC handler - clone object
+    *
+    * @return bool
+    */
+   private function rpc_clone_object()
+   {
+      global $page;
+
+      if(!isset($_POST['id'])) {
+         print "id is missing!";
+         return false;
+      }
+
+      $id = $_POST['id'];
+
+      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
+         print "id in incorrect format!";
+         return false;
+      }
+
+      $request_object = $parts[1];
+      $id = $parts[2];
+
+      /* get existing object */
+      if(!($obj = $this->load_class($request_object, $id))) {
+         print "unable to locate class for ". $request_object;
+         return false;
+      }
+
+      /* initate new object */
+      if(!($newobj = $this->load_class($request_object, NULL))) {
+         print "unable to initate new object with class ". $request_object;
+         return false;
+      }
+
+      if($newobj->create_clone(&$obj)) {
+         print "ok";
+         return true;
+      }
+
+      print "unknown error";
+      return false;
+
+   } // rpc_clone_object()
 
    /**
     * Generic class load function
@@ -1513,6 +1562,7 @@ class MASTERSHAPER {
       $valid_actions = Array(
          'delete',
          'toggle',
+         'clone',
          'alter-position',
          'graph-data',
          'graph-mode',

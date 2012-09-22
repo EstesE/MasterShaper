@@ -33,6 +33,9 @@ class Target extends MsObject {
       parent::__construct($id, Array(
          'table_name' => 'targets',
          'col_name' => 'target',
+         'child_names' => Array(
+            'target' => 'atg',
+         ),
          'fields' => Array(
             'target_idx' => 'integer',
             'target_name' => 'text',
@@ -57,7 +60,7 @@ class Target extends MsObject {
 
       $sth = $db->db_prepare("
          DELETE FROM
-            ". MYSQL_PREFIX ."assign_target_groups
+            ". MYSQL_PREFIX ."assign_targets_to_targets
          WHERE
             atg_group_idx LIKE ?
       ");
@@ -68,13 +71,16 @@ class Target extends MsObject {
 
       $db->db_sth_free($sth);
 
+      if(!isset($_POST['used']) || empty($_POST['used']))
+         return true;
+
       foreach($_POST['used'] as $use) {
 
          if(empty($use))
             continue;
 
          $sth = $db->db_prepare("
-            INSERT INTO ". MYSQL_PREFIX ."assign_target_groups (
+            INSERT INTO ". MYSQL_PREFIX ."assign_targets_to_targets (
                atg_group_idx,
                atg_target_idx
             ) VALUES (
@@ -101,7 +107,7 @@ class Target extends MsObject {
 
       $sth = $db->db_prepare("
          DELETE FROM
-            ". MYSQL_PREFIX ."assign_target_groups
+            ". MYSQL_PREFIX ."assign_targets_to_targets
          WHERE
             atg_group_idx LIKE ?
       ");
@@ -113,7 +119,7 @@ class Target extends MsObject {
       $db->db_sth_free($sth);
       $sth = $db->db_prepare("
          DELETE FROM
-            ". MYSQL_PREFIX ."assign_target_groups
+            ". MYSQL_PREFIX ."assign_targets_to_targets
          WHERE
             atg_target_idx LIKE ?
       ");

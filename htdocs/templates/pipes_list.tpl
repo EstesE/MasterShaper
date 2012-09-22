@@ -29,6 +29,7 @@
    { /foreach }
   </td>
   <td style="text-align: center;">
+   <a class="clone" id="pipe-{$pipe_idx}" title="Clone"><img src="{ $icon_clone }" alt="clone icon" /></a>
    <a class="delete" id="pipe-{$pipe_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    <div class="toggle" id="toggle-{$pipe_idx}" style="display: inline;">
     <a class="toggle-off" id="pipe-{$pipe_idx}" to="off" title="Disable pipe { $pipe_name }" { if $pipe_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>

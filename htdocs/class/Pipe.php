@@ -33,6 +33,9 @@ class Pipe extends MsObject {
       parent::__construct($id, Array(
          'table_name' => 'pipes',
          'col_name' => 'pipe',
+         'child_names' => Array(
+            'filter' => 'apf',
+         ),
          'fields' => Array(
             'pipe_idx' => 'integer',
             'pipe_name' => 'text',
@@ -83,6 +86,9 @@ class Pipe extends MsObject {
       ));
 
       $db->db_sth_free($sth);
+
+      if(!isset($_POST['used']) || empty($_POST['used']))
+         return true;
 
       foreach($_POST['used'] as $use) {
 

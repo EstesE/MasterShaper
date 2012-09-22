@@ -818,7 +818,7 @@ class Ruleset_Interface {
                SELECT
                   atg_target_idx
                FROM
-                  ". MYSQL_PREFIX ."assign_target_groups
+                  ". MYSQL_PREFIX ."assign_targets_to_targets
                WHERE
                   atg_group_idx LIKE ?
             ");

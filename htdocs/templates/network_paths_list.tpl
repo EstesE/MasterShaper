@@ -28,7 +28,8 @@
    <a href="{ $rewriter->get_page_url('Interface Edit', $netpath_if2_idx) }" title="Edit interface { $netpath_if2_name }"><img src="{ $icon_interfaces }" alt="interface icon" />&nbsp;{ $netpath_if2_name }</a> { if $netpath_if2_inside_gre == 'Y' }(inside GRE){ /if }
   </td>
   <td style="text-align: center;">
-   <a class="delete" id="networkpath-{$netpath_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a class="clone" id="networkpath-{$netpath_idx}" title="Clone"><img src="{ $icon_clone }" alt="clone icon" /></a>
+   <a class="delete" id="networkpath-{$netpath_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    <div class="toggle" id="toggle-{$netpath_idx}" style="display: inline;">
     <a class="toggle-off" id="networkpath-{$netpath_idx}" to="off" title="Disable network path {$netpath_name}" { if $netpath_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
     <a class="toggle-on" id="networkpath-{$netpath_idx}" to="on" title="Enable network path {$netpath_name}" { if $netpath_active == 'Y' } style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>

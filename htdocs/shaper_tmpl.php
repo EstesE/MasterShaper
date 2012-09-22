@@ -48,6 +48,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_servicelevels', WEB_PATH .'/icons/flag_yellow.gif');
       $this->assign('icon_filters', WEB_PATH .'/icons/flag_green.gif');
       $this->assign('icon_targets', WEB_PATH .'/icons/flag_purple.gif');
+      $this->assign('icon_clone', WEB_PATH .'/icons/clone.png');
       $this->assign('icon_delete', WEB_PATH .'/icons/delete.png');
       $this->assign('icon_active', WEB_PATH .'/icons/active.gif');
       $this->assign('icon_inactive', WEB_PATH .'/icons/inactive.gif');

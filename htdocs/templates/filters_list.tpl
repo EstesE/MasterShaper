@@ -20,7 +20,8 @@
    <a href="{$rewriter->get_page_url('Filter Edit', $filter_idx)}">{ $filter_name }</a>
   </td>
   <td style="text-align: center;">
-   <a class="delete" id="filter-{$filter_idx}" title="Delete"><img src="{ $icon_delete }" alt="filter icon" /></a>
+   <a class="clone" id="filter-{$filter_idx}" title="Clone"><img src="{ $icon_clone }" alt="clone icon" /></a>
+   <a class="delete" id="filter-{$filter_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    <div class="toggle" id="toggle-{$filter_idx}" style="display: inline;">
     <a class="toggle-off" id="filter-{$filter_idx}" to="off" title="Disable filter { $filter_name }" { if $filter_active == 'N' } style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
     <a class="toggle-on" id="filter-{$filter_idx}" to="on" title="Enable filter { $filter_name }" { if $filter_active == 'Y' } style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>

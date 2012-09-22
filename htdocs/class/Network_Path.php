@@ -36,6 +36,7 @@ class Network_Path extends MsObject {
          'child_names' => Array(
             'chain' => 'chain',
          ),
+         'ignore_child_on_clone' => 'yes',
          'fields' => Array(
             'netpath_idx' => 'integer',
             'netpath_name' => 'text',

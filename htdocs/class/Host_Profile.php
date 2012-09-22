@@ -33,9 +33,6 @@ class Host_Profile extends MsObject {
       parent::__construct($id, Array(
          'table_name' => 'host_profiles',
          'col_name' => 'host',
-         'child_names' => Array(
-            'chain' => 'chain',
-         ),
          'fields' => Array(
             'host_idx' => 'integer',
             'host_name' => 'text',

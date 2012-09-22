@@ -151,7 +151,7 @@ class MASTERSHAPER_EXPORT {
          $members = $this->db->db_query("
             SELECT t.target_name
             FROM ". MYSQL_PREFIX ."targets t
-            INNER JOIN ". MYSQL_PREFIX ."assign_target_groups atg
+            INNER JOIN ". MYSQL_PREFIX ."assign_targets_to_targets atg
                ON atg.atg_group_idx='". $row['target_idx'] ."'
             AND
                atg.atg_target_idx=t.target_idx");

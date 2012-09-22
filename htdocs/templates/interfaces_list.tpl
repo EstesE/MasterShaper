@@ -32,7 +32,8 @@
    { /if }
   </td>
   <td style="text-align: center;">
-   <a class="delete" id="interface-{$if_idx}"><img src="{ $icon_delete }" alt="delete icon" /></a>
+   <a class="clone" id="interface-{$if_idx}" title="Clone"><img src="{ $icon_clone }" alt="clone icon" /></a>
+   <a class="delete" id="interface-{$if_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
    <div class="toggle" id="toggle-{$if_idx}" style="display: inline;">
     <a class="toggle-off" id="interface-{$if_idx}" to="off" title="Disable interface {$if_name}" { if $if_active == 'N'} style="display: none;" { /if }><img src="{ $icon_active }" alt="active icon" /></a>
     <a class="toggle-on" id="interface-{$if_idx}" to="on" title="Enable interface {$if_name}" { if $if_active == 'Y'} style="display: none;" { /if }><img src="{ $icon_inactive }" alt="inactive icon" /></a>

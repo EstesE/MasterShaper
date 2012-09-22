@@ -443,6 +443,44 @@ function obj_delete(element, target, idx)
 
 } // obj_delete()
 
+function obj_clone(element, target, idx)
+{
+   var clone_id = element.attr("id");
+
+   if(clone_id == undefined || clone_id == "") {
+      alert('no attribute "id" found!');
+      return;
+   }
+
+   $.ajax({
+      type: "POST",
+      url: "rpc.html",
+      data: ({
+         type : 'rpc',
+         action : 'clone',
+         id : clone_id
+      }),
+      beforeSend: function() {
+         // change row color to red
+         element.parent().parent().animate({backgroundColor: "#fbc7c7" }, "fast");
+      },
+      error: function(XMLHttpRequest, textStatus, errorThrown) {
+         alert('Failed to contact server! ' + textStatus);
+      },
+      success: function(data){
+         if(data == "ok") {
+            window.location.reload();
+            return;
+         }
+         // change row color back to white
+         element.parent().parent().animate({backgroundColor: "#ffffff" }, "fast");
+         alert('Server returned: ' + data + ', length ' + data.length);
+         return;
+      }
+   });
+
+} // obj_clone()
+
 function currentRadio(obj)
 {
    for(cnt = 0; cnt < obj.length; cnt++) {
@@ -830,6 +868,9 @@ function toggle_content(element, imgobj, imgshow, imghide, imgobjoth)
 $(document).ready(function() {
    $("table td a.delete").click(function(){
       obj_delete($(this));
+   });
+   $("table td a.clone").click(function(){
+      obj_clone($(this));
    });
    $("table td div a.toggle-off, table td div a.toggle-on").click(function(){
       obj_toggle_status($(this));

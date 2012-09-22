@@ -46,6 +46,7 @@
   <td>{ if $port->port_desc != "" } { $port->port_desc } { else } &nbsp; { /if }</td>
   <td>{ if $port->port_number != ""} { $port->port_number} { else} &nbsp; { /if} </td>
   <td style="text-align: center;">
+   <a class="clone" id="port-{$port->port_idx}" title="Clone"><img src="{ $icon_clone }" alt="clone icon" /></a>
    <a class="delete" id="port-{$port->port_idx}" title="Delete"><img src="{ $icon_delete }" alt="delete icon" /></a>
   </td>
  </tr>

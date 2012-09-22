@@ -99,7 +99,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
                t.target_name as name
             FROM
                ". MYSQL_PREFIX ."targets t
-            INNER JOIN ". MYSQL_PREFIX ."assign_target_groups atg
+            INNER JOIN ". MYSQL_PREFIX ."assign_targets_to_targets atg
                ON t.target_idx=atg.atg_group_idx
             WHERE
                atg.atg_target_idx LIKE ?
@@ -316,7 +316,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
                FROM
                   ". MYSQL_PREFIX ."targets t
                LEFT JOIN
-                  ". MYSQL_PREFIX ."assign_target_groups atg
+                  ". MYSQL_PREFIX ."assign_targets_to_targets atg
                ON
                   t.target_idx=atg.atg_target_idx
                WHERE
@@ -339,7 +339,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
                   t.target_idx,
                   t.target_name
                FROM
-                  ". MYSQL_PREFIX ."assign_target_groups atg
+                  ". MYSQL_PREFIX ."assign_targets_to_targets atg
                LEFT JOIN
                   ". MYSQL_PREFIX ."targets t
                ON

@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '18');
+define('SCHEMA_VERSION', '19');
 
 /***************************************************************************
  *
@@ -593,9 +593,9 @@ class MASTERSHAPER_DB {
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
       }
-      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_target_groups')) {
+      if(!$this->db_check_table_exists(MYSQL_PREFIX . 'assign_targets_to_targets')) {
          $this->db_query("
-            CREATE TABLE `". MYSQL_PREFIX ."assign_target_groups` (
+            CREATE TABLE `". MYSQL_PREFIX ."assign_targets_to_targets` (
               `atg_idx` int(11) NOT NULL auto_increment,
               `atg_group_idx` int(11) NOT NULL,
               `atg_target_idx` int(11) NOT NULL,
@@ -1501,6 +1501,18 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(18);
+      }
+
+      if($this->schema_version < 19) {
+
+         $this->db_query("
+            RENAME TABLE
+               ". MYSQL_PREFIX ."assign_target_groups
+            TO
+               ". MYSQL_PREFIX ."assign_targets_to_targets
+         ");
+
+         $this->setVersion(19);
       }
 
    } // upgrade_schema()

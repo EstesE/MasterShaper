@@ -33,6 +33,9 @@ class Filter extends MsObject {
       parent::__construct($id, Array(
          'table_name' => 'filters',
          'col_name' => 'filter',
+         'child_names' => Array(
+            'port' => 'afp',
+         ),
          'fields' => Array(
             'filter_idx' => 'integer',
             'filter_name' => 'text',
@@ -98,67 +101,70 @@ class Filter extends MsObject {
 
       $db->db_sth_free($sth);
 
-      foreach($_POST['used'] as $use) {
+      if(isset($_POST['used']) && !empty($_POST['used'])) {
 
-         if(empty($use))
-            continue;
+         foreach($_POST['used'] as $use) {
 
-         $sth = $db->db_prepare("
-            INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (
-               afp_filter_idx,
-               afp_port_idx
-            ) VALUES (
-               ?,
-               ?
-            )
-         ");
+            if(empty($use))
+               continue;
 
-         $db->db_execute($sth, array(
-            $this->id,
-            $use
-         ));
+            $sth = $db->db_prepare("
+               INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (
+                  afp_filter_idx,
+                  afp_port_idx
+               ) VALUES (
+                  ?,
+                  ?
+               )
+            ");
 
-         $db->db_sth_free($sth);
+            $db->db_execute($sth, array(
+               $this->id,
+               $use
+            ));
+
+            $db->db_sth_free($sth);
+         }
       }
 
       /* is our work done? */
-      if(!isset($_POST['filter_l7_used']) || empty($_POST['filter_l7_used']))
-         return true;
-
-      $sth = $db->db_prepare("
-         DELETE FROM
-            ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
-         WHERE
-            afl7_filter_idx LIKE ?
-      ");
-
-      $db->db_execute($sth, array(
-         $this->id
-      ));
-
-      $db->db_sth_free($sth);
-
-      foreach($_POST['filter_l7_used'] as $use) {
-
-         if(empty($use))
-            continue;
+      if(isset($_POST['filter_l7_used']) && !empty($_POST['filter_l7_used'])) {
 
          $sth = $db->db_prepare("
-            INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (
-               afl7_filter_idx,
-               afl7_l7proto_idx
-            ) VALUES (
-               ?,
-               ?
-            )
+            DELETE FROM
+               ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
+            WHERE
+               afl7_filter_idx LIKE ?
          ");
 
          $db->db_execute($sth, array(
-            $this->id,
-            $use
+            $this->id
          ));
 
          $db->db_sth_free($sth);
+
+         foreach($_POST['filter_l7_used'] as $use) {
+
+            if(empty($use))
+               continue;
+
+            $sth = $db->db_prepare("
+               INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (
+                  afl7_filter_idx,
+                  afl7_l7proto_idx
+               ) VALUES (
+                  ?,
+                  ?
+               )
+            ");
+
+            $db->db_execute($sth, array(
+               $this->id,
+               $use
+            ));
+
+            $db->db_sth_free($sth);
+         }
       }
 
       return true;
