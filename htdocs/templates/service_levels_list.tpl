@@ -27,7 +27,7 @@
      In: { $sl_htb_bw_in_rate }kbit/s
     { /if }
     { if $sl_htb_bw_out_rate != "" }
-     Out: { $sl_htb_bw_out_rate }/kbit/s
+     Out: { $sl_htb_bw_out_rate }kbit/s
     { /if }
     Prio: { $sl_htb_priority }
    { elseif $classifier == "HFSC" }
