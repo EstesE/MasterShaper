@@ -636,7 +636,8 @@ function obj_assign_pipe_to_chains(element)
          url: 'rpc.html',
          data: ({
             type : 'rpc',
-            action : 'get-chains-list',
+            action : 'get-content',
+            content : 'chains-list',
             idx: pipe_idx
          }),
          dataType: 'json',

@@ -333,8 +333,8 @@ class MASTERSHAPER {
          case 'graph-mode':
             $this->rpc_graph_mode();
             break;
-         case 'get-chains-list':
-            $this->rpc_get_chains_list();
+         case 'get-content':
+            $this->rpc_get_content();
             break;
          case 'get-sub-menu':
             $this->rpc_get_sub_menu();
@@ -589,13 +589,28 @@ class MASTERSHAPER {
     * return a list of chains used by floating-dialog
     * to assign pipes to chains.
     */
-   public function rpc_get_chains_list()
+   public function rpc_get_content()
    {
-      require_once "class/pages/chains.php";
-      $obj = new Page_Chains;
-      print $obj->get_chains_list();
+      global $ms;
 
-   } // rpc_get_chains_list()
+      $valid_content = Array(
+         'chains-list',
+      );
+
+      if(!in_array($_POST['content'], $valid_content)) {
+         $ms->throwError('unknown content requested: '. $_POST['content']);
+         return false;
+      }
+
+      switch($_POST['content']) {
+         case 'chains-list':
+            require_once "class/pages/chains.php";
+            $obj = new Page_Chains;
+            print $obj->get_chains_list();
+            break;
+      }
+
+   } // rpc_get_content()
 
    /**
     * RPC handler
@@ -1575,7 +1590,7 @@ class MASTERSHAPER {
          'alter-position',
          'graph-data',
          'graph-mode',
-         'get-chains-list',
+         'get-content',
          'get-sub-menu',
          'set-host-profile',
          'get-host-state',
