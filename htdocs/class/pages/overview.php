@@ -201,6 +201,9 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $this->cnt_network_paths++;
       }
 
+      if(isset($_GET['mode']) && $_GET['mode'] == 'edit')
+         $tmpl->assign('edit_mode', true);
+
       $tmpl->assign('cnt_network_paths', $this->cnt_network_paths);
       $tmpl->register_block("ov_netpath", array(&$this, "smarty_ov_netpath"));
       $tmpl->register_block("ov_chain", array(&$this, "smarty_ov_chain"));

@@ -98,6 +98,7 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->register_function("service_level_select_list", array(&$this, "smarty_service_level_select_list"), false);
       $this->register_function("network_path_select_list", array(&$this, "smarty_network_path_select_list"), false);
       $this->register_function("host_profile_select_list", array(&$this, "smarty_host_profile_select_list"), false);
+      $this->register_function("get_item_name", array(&$this, "smarty_get_item_name"), false);
 
    } // __construct()
 
@@ -350,6 +351,73 @@ class MASTERSHAPER_TMPL extends Smarty {
       return $string;
 
    } // smarty_host_profile_select_list()
+
+   public function smarty_get_item_name($params, &$smarty)
+   {
+      global $ms, $db;
+
+      if(!array_key_exists('idx', $params)) {
+         $this->trigger_error("smarty_get_item_name: missing 'idx' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+      if(!array_key_exists('type', $params)) {
+         $this->trigger_error("smarty_get_item_name: missing 'type' parameter", E_USER_WARNING);
+         $repeat = false;
+         return;
+      }
+
+      switch($params['type']) {
+
+         case 'sl':
+            $table = 'service_levels';
+            $column_prefix = 'sl';
+            $zero = 'Ignore QoS';
+            break;
+
+         case 'fallsl':
+            $table = 'service_levels';
+            $column_prefix = 'sl';
+            $zero = 'No Fallback';
+            break;
+
+         case 'target':
+            $table = 'targets';
+            $column_prefix = 'target';
+            $zero = 'any';
+            break;
+
+         case 'direction':
+
+            switch($params['idx']) {
+               case 1: return "--&gt;";
+               case 2: return "&lt;-&gt;";
+            }
+            break;
+
+      }
+
+      // if idx is zero, return immediately
+      if($params['idx'] == 0)
+         return $zero;
+
+      $result = $db->db_query("
+         SELECT
+            ". $column_prefix ."_name
+         FROM
+            ". MYSQL_PREFIX . $table ."
+         WHERE
+            ". $column_prefix ."_idx LIKE '". $params['idx'] ."'
+      ");
+
+      if($row = $result->fetch(PDO::FETCH_NUM)) {
+         $db->db_sth_free($result);
+         return $row[0];
+      }
+
+      return $string;
+
+   } // smarty_get_item_name()
 
 } // class MASTERSHAPER_TMPL
 
