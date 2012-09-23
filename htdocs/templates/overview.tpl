@@ -4,18 +4,7 @@
 {start_table icon=$icon_home alt="home icon" title="MasterShaper Ruleset Overview" }
 <div>
 { if $cnt_network_paths == 0 }
-<div style="padding-left: 20px; padding-top: 20px;">
-There is no active <img src="{$icon_interfaces}" title="network path icon" />&nbsp;<a href="{$rewriter->get_page_url('Network Paths List')}" title="List Network Paths">Network Path</a> in this configuration!<br />
-<br />
-If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a href="{$rewriter->get_page_url('Others About')}" title="About MasterShaper">MasterShaper</a> for the first time then:<br />
-<ul>1. Define <img src="{$icon_interfaces}" alt="interface icon" />&nbsp;<a href="{$rewriter->get_page_url('Interfaces List')}" title="List Interfaces">Interfaces</a></ul>
-<ul>2. Declare a <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{$rewriter->get_page_url('Network Paths List')}" title="List Network Paths">Network Path</a></ul>
-<ul>3. Define some <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{$rewriter->get_page_url('Service Levels List')}" title="List Service Levels">Service Levels</a></ul>
-<ul>4. Create a <img src="{$icon_filters}" alt="filter icon" />&nbsp;<a href="{$rewriter->get_page_url('Filters List')}" title="List Filters">Filter</a></ul>
-<ul>5. Create a <img src="{$icon_pipes}" alt="pipe icon" />&nbsp;<a href="{$rewriter->get_page_url('Pipes List')}" title="List Pipes">Pipe</a> and assign <img src="{$icon_filters}" alt="filter icon" />&nbsp;<a href="{$rewriter->get_page_url('Filters List')}" title="List Filters">Filter</a> to it</ul>
-<ul>6. Create a <img src="{$icon_chains}" alt="chain icon" />&nbsp;<a href="{$rewriter->get_page_url('Chains List')}" title="List Chains">Chain</a>, assign <img src="{$icon_pipes}" alt="pipe icon" />&nbsp;<a href="{$rewriter->get_page_url('Pipes List')}" title="List Pipes">Pipes</a> to it and attach it to a <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{$rewriter->get_page_url('Network Paths List')}" title="List Network Paths">Network Path</a></ul>
-<ul>7. Go and <img src="{$icon_rules_load}" alt="rules icon" />&nbsp;<a href="{$rewriter->get_page_url('Rules Load')}" title="Load Ruleset">load</a> your ruleset!</ul>
-</div>
+ { include file="welcome.tpl" }
 { /if }
 { ov_netpath }
 <table style="width: 100%;" id="netpath{$netpath->netpath_idx}">
@@ -60,7 +49,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
        <option value="0">--- Ignore QoS ---</option>
        { service_level_select_list details=no sl_idx=$chain->chain_sl_idx }
       </select>
-     </td> 
+     </td>
 
     { if $chain_has_sl }
      <td style="text-align: center;">
@@ -102,7 +91,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
       <a class="move-down" type="chain" idx="{ $chain->chain_idx }"><img src="{ $icon_chains_arrow_down }" alt="Move chain down" /></a>
       <a class="move-up" type="chain" idx="{ $chain->chain_idx }"><img src="{ $icon_chains_arrow_up }" alt="Move chain up" /></a>
      </td>
-    </tr> 
+    </tr>
 
   <!-- pipes are only available if the chain DOES NOT ignore
        QoS or DOES NOT use fallback service level
@@ -152,7 +141,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
       <a class="move-down" type="pipe" idx="{ $pipe->pipe_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
       <a class="move-up" type="pipe" idx="{ $pipe->pipe_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
      </td>
-    </tr> 
+    </tr>
     { ov_filter np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx pipe_idx=$pipe->pipe_idx }
     <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" chain={$chain->chain_idx} np={$netpath->netpath_idx} style="display: none;">
      <td>&nbsp;</td>
@@ -162,7 +151,7 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
       <a href="{$rewriter->get_page_url('Filter Edit', $filter->filter_idx)}" title="Modify filter { $filter->filter_name }">{ $filter->filter_name }</a>
      </td>
      <td>&nbsp;</td>
-    </tr> 
+    </tr>
     {/ov_filter}
    {/ov_pipe}
   {/if}
@@ -172,10 +161,12 @@ If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a 
    </table>
   </td>
  </tr>
+{ if $cnt_network_paths > 0 }
  <tr>
   <td>
    { include file=savebutton.tpl }
   </td>
  </tr>
+{ /if }
 </table>
 </form>
