@@ -1506,10 +1506,18 @@ class MASTERSHAPER_DB {
       if($this->schema_version < 19) {
 
          $this->db_query("
-            RENAME TABLE
+            INSERT INTO
+               ". MYSQL_PREFIX ."assign_targets_to_targets
+            SELECT
+               *
+            FROM
+               ". MYSQL_PREFIX ."assign_target_groups;
+         ");
+
+         $this->db_query("
+            DROP TABLE
                ". MYSQL_PREFIX ."assign_target_groups
             TO
-               ". MYSQL_PREFIX ."assign_targets_to_targets
          ");
 
          $this->setVersion(19);
