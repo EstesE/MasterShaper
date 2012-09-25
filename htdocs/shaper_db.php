@@ -1515,9 +1515,7 @@ class MASTERSHAPER_DB {
          ");
 
          $this->db_query("
-            DROP TABLE
-               ". MYSQL_PREFIX ."assign_target_groups
-            TO
+            DROP TABLE ". MYSQL_PREFIX ."assign_target_groups
          ");
 
          $this->setVersion(19);
