@@ -130,11 +130,16 @@ class MASTERSHAPER_DB {
        * some resource because nothing has to be allocated for results.
        */
       if(preg_match('/^(update|insert|replace|delete)/i', $query)) {
+
          $result = $this->db->exec($query);
+
+         if(PEAR::isError($result))
+            $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
+
+         return true;
       }
-      else {
-         $result = $this->db->query($query);
-      }
+
+      $result = $this->db->query($query);
 
       if(PEAR::isError($result))
          $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
