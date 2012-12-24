@@ -55,7 +55,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
    
       $cnt_filters = 0;
 
-      while($filter = $res_filters->fetchrow()) {
+      while($filter = $res_filters->fetch()) {
          $this->avail_filters[$cnt_filters] = $filter->filter_idx;
          $this->filters[$filter->filter_idx] = $filter;
          $cnt_filters++;
@@ -102,19 +102,19 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             p.pipe_name ASC
       ");
 
-      $assigned_pipes = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id,
       ));
 
-      $db->db_sth_free($sth);
-
-      if($assigned_pipes->numRows() > 0) {
+      if($sth->rowCount() > 0) {
          $pipe_use_filters = array();
-         while($pipe = $assigned_pipes->fetchRow()) {
+         while($pipe = $sth->fetch()) {
             $pipe_use_filters[$pipe->pipe_idx] = $pipe->pipe_name;
          }
          $tmpl->assign('pipe_use_filters', $pipe_use_filters);
       }
+
+      $db->db_sth_free($sth);
 
       $tmpl->assign('filter', $filter);
       $tmpl->assign('filter_mode', $ms->getOption("filter"));
@@ -329,7 +329,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             proto_name ASC
       ");
       
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->proto_idx ."\"";
          if($row->proto_idx == $params['proto_idx'])
              $string.= "selected=\"selected\"";
@@ -376,10 +376,9 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                   port_name ASC
             ");
 
-            $ports = $db->db_execute($sth, array(
+            $db->db_execute($sth, array(
                $params['filter_idx']
             ));
-            $db->db_sth_free($sth);
             break;
 
          case 'used':
@@ -399,10 +398,9 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                ORDER BY p.port_name ASC
             ");
 
-            $ports = $db->db_execute($sth, array(
+            $db->db_execute($sth, array(
                $params['filter_idx']
             ));
-            $db->db_sth_free($sth);
             break;
 
          default:
@@ -410,9 +408,11 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             break;
       }
 
-      while($port = $ports->fetchRow()) {
+      while($port = $sth->fetch()) {
          $string.= "<option value=\"". $port->port_idx ."\">". $port->port_name ." (". $port->port_number .")</option>\n";
       }
+
+      $db->db_sth_free($sth);
 
       return $string;
 
@@ -457,7 +457,6 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                $params['filter_idx'],
                $params['filter_idx']
             ));
-            $db->db_sth_free($sth);
             break;
 
          case 'used':
@@ -479,7 +478,6 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $l7protos = $db->db_execute($sth, array(
                $params['filter_idx']
             ));
-            $db->db_sth_free($sth);
             break;
 
          default:
@@ -487,9 +485,11 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             break;
       }
 
-      while($l7proto = $l7protos->fetchRow()) { 
+      while($l7proto = $sth->fetch()) { 
          $string.= "<option value=\"" . $l7proto->l7proto_idx ."\">". $l7proto->l7proto_name ."</option>\n";
       }
+
+      $db->db_sth_free($sth);
 
       return $string;
 

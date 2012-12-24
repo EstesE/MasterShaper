@@ -24,9 +24,6 @@ define('SCHEMA_VERSION', '19');
  *
  ***************************************************************************/
 
-/* from pear "MDB2" package. use "pear install MDB2" if you don't have this! */
-// require_once('MDB2.php');
-
 class MASTERSHAPER_DB {
 
    private $db;
@@ -67,7 +64,7 @@ class MASTERSHAPER_DB {
    /**
     * MASTERSHAPER_DB database connect
     *
-    * This function will connect to the database via MDB2
+    * This function will connect to the database via PDO
     */
    private function db_connect()
    {
@@ -86,11 +83,15 @@ class MASTERSHAPER_DB {
          $ms->throwError("Missing MySQL configuration");
       }
 
-      $dsn = "mysql://". MYSQL_USER .":". MYSQL_PASS ."@". MYSQL_HOST ."/". MYSQL_DB;
-      $this->db = MDB2::connect($dsn, $options);
+      $dsn = "mysql:dbname=". MYSQL_DB .";host=". MYSQL_HOST;
 
-      if(PEAR::isError($this->db)) {
-         $ms->throwError("Unable to connect to database: ". $this->db->getMessage() .' - '. $this->db->getUserInfo());
+      try {
+         $this->db = new PDO($dsn, MYSQL_USER, MYSQL_PASS);
+         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+         $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+      }
+      catch (PDOException $e) {
+         $ms->throwError("Unable to connect to database: ". $e->getMessage());
          $this->setConnStatus(false);
       }
 
@@ -105,24 +106,22 @@ class MASTERSHAPER_DB {
     */
    private function db_disconnect()
    {
-      $this->db->disconnect();
+      $this->db = NULL;
 
    } // db_disconnect()
 
    /**
     * MASTERSHAPER_DB database query
     *
-    * This function will execute a SQL query and return the result as
-    * object.
+    * data manipulating queries will return the number of affected rows
+    * if no PDO error occurs. Otherwise that one will be returned.
     */
-   public function db_query($query = "", $mode = MDB2_FETCHMODE_OBJECT)
+   public function db_query($query = "", $mode = PDO::FETCH_OBJ)
    {
       global $ms;
 
       if(!$this->getConnStatus())
          $ms->throwError("Can't execute query - we are not connected!");
-
-      $this->db->setFetchMode($mode);
 
       $query = trim($query);
 
@@ -131,18 +130,19 @@ class MASTERSHAPER_DB {
        */
       if(preg_match('/^(update|insert|replace|delete)/i', $query)) {
 
-         $result = $this->db->exec($query);
-
-         if(PEAR::isError($result))
-            $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
-
-         return true;
+         try {
+            $result = $this->db->exec($query);
+         }
+         catch (PDOException $e) {
+            $ms->throwError("Unable to execute query: ". $e->getMessage());
+         }
+         return $result;
       }
 
       $result = $this->db->query($query);
 
       if(PEAR::isError($result))
-         $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
+         $ms->throwError("Unable to query database: ". $e->getMessage());
 
       return $result;
 
@@ -165,18 +165,12 @@ class MASTERSHAPER_DB {
 
       $this->db->prepare($query);
 
-      /* for manipulating queries use exec instead of query. can save
-       * some resource because nothing has to be allocated for results.
-       */
-      if(preg_match('/^(update|insert|delete)i/', $query)) {
-         $sth = $this->db->prepare($query, MDB2_PREPARE_MANIP);
+      try {
+         $sth = $this->db->prepare($query);
       }
-      else {
-         $sth = $this->db->prepare($query, MDB2_PREPARE_RESULT);
+      catch (PDOException $e) {
+         $ms->throwError("Unable to prepare statement: ". $e->getMessage());
       }
-
-      if(PEAR::isError($sth))
-         $ms->throwError($sth->getMessage() .' - '. $sth->getUserInfo());
 
       return $sth;
 
@@ -190,17 +184,28 @@ class MASTERSHAPER_DB {
     * @param mixed $sth
     * @param mixed $data
     */
-   public function db_execute($sth, $data)
+   public function db_execute($sth, $data = array())
    {
       global $ms;
 
       if(!$this->getConnStatus())
          $ms->throwError("Can't prepare query - we are not connected!");
 
-      $result = $sth->execute($data);
+      if(!is_object($sth))
+         return false;
 
-      if(PEAR::isError($result))
-         $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
+      if(get_class($sth) != "PDOStatement")
+         return false;
+
+      try {
+         if(!empty($data))
+            $result = $sth->execute($data);
+         else
+            $result = $sth->execute();
+      }
+      catch(PDOException $e) {
+         $ms->throwError("Unable to execute statement: ". $e->getMessage());
+      }
 
       return $result;
 
@@ -217,12 +222,20 @@ class MASTERSHAPER_DB {
    {
       global $ms;
 
-      $result = $sth->free();
+      if(!is_object($sth))
+         return false;
 
-      if(PEAR::isError($result))
-         $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
+      if(get_class($sth) != "PDOStatement")
+         return false;
 
-      return $result;
+      try {
+         $sth->closeCursor();
+      }
+      catch (Exception $e) {
+         $sth = NULL;
+      }
+
+      return true;
 
    } // db_sth_free()
 
@@ -232,45 +245,32 @@ class MASTERSHAPER_DB {
     * This function will execute the given but only return the
     * first result.
     */
-   public function db_fetchSingleRow($query = "", $mode = MDB2_FETCHMODE_OBJECT)
+   public function db_fetchSingleRow($query = "", $mode = PDO::FETCH_OBJ)
    {
       global $ms;
 
       if(!$this->getConnStatus())
          $ms->throwError("Can't fetch row - we are not connected!");
 
-      $row = $this->db->queryRow($query, array(), $mode);
+      try {
+         $result = $this->db->query($query);
+      }
+      catch (PDOException $e) {
+         $ms->throwError("Unable to query database: ". $e->getMessage());
+      }
 
-      if(PEAR::isError($row))
-         $ms->throwError($row->getMessage() .' - '. $row->getUserInfo());
+      try {
+         $row = $result->fetch();
+      }
+      catch (PDOException $e) {
+         $ms->throwError("Unable to query database: ". $e->getMessage());
+      }
+
+      $result->closeCursor();
 
       return $row;
       
    } // db_fetchSingleRow()
-
-   /**
-    * MASTERSHAPER_DB number of affected rows
-    *
-    * This functions returns the number of affected rows but the
-    * given SQL query.
-    */
-   public function db_getNumRows($query = "")
-   {
-      global $ms;
-
-      if(!$this->getConnStatus())
-         $ms->throwError("Can't fetch row - we are not connected!");
-
-      /* Execute query */
-      $result = $this->db_query($query);
-
-      /* Errors? */
-      if(PEAR::isError($result)) 
-         $ms->throwError($result->getMessage() .' - '. $result->getUserInfo());
-
-      return $result->numRows();
-
-   } // db_getNumRows()
 
    /**
     * MASTERSHAPER_DB get primary key
@@ -285,8 +285,15 @@ class MASTERSHAPER_DB {
       if(!$this->getConnStatus())
          $ms->throwError("Can't fetch row - we are not connected!");
 
+      try {
+         $lastid = $this->db->lastInsertId();
+      }
+      catch (PDOException $e) {
+         $ms->throwError("unable to detect last inserted row ID!");
+      }
+
       /* Get the last primary key ID from execute query */
-      return mysql_insert_id($this->db->connection);
+      return $lastid;
       
    } // db_getid()
 
@@ -308,7 +315,7 @@ class MASTERSHAPER_DB {
       $result = $this->db_query("SHOW TABLES");
       $tables_in = "Tables_in_". MYSQL_DB;
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          if($row->$tables_in == $table_name)
             return true;
       }
@@ -386,8 +393,8 @@ class MASTERSHAPER_DB {
       if(!$this->getConnStatus())
          $ms->throwError("Can't check table - we are not connected!");
 
-      $result = $this->db_query("DESC ". $table_name, MDB2_FETCHMODE_ORDERED);
-      while($row = $result->fetchRow()) {
+      $result = $this->db_query("DESC ". $table_name, PDO::FETCH_NUM);
+      while($row = $result->fetch()) {
          if(in_array($column, $row))
             return 1;
       }
@@ -408,9 +415,9 @@ class MASTERSHAPER_DB {
       if(!$this->getConnStatus())
          $ms->throwError("Can't check table - we are not connected!");
 
-      $result = $this->db_query("DESC ". $table_name, MDB2_FETCHMODE_ORDERED);
+      $result = $this->db_query("DESC ". $table_name, PDO::FETCH_NUM);
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          if(in_array("KEY `". $index_name ."`", $row))
             return 1;
       }
@@ -1413,7 +1420,7 @@ class MASTERSHAPER_DB {
                ". MYSQL_PREFIX ."chains
          ");
 
-         while($row = $result->fetchRow()) {
+         while($row = $result->fetch()) {
 
             $guid = $ms->create_guid();
 
@@ -1448,7 +1455,7 @@ class MASTERSHAPER_DB {
                ". MYSQL_PREFIX ."assign_pipes_to_chains
          ");
 
-         while($row = $result->fetchRow()) {
+         while($row = $result->fetch()) {
 
             $guid = $ms->create_guid();
 
@@ -1533,7 +1540,7 @@ class MASTERSHAPER_DB {
    /**
     * quoting function
     *
-    * uses MDB2 own quote function to _secure_ an object
+    * uses PDOs own quote function to _secure_ an object
     *
     * @param string $obj
     * @return $string
@@ -1541,9 +1548,9 @@ class MASTERSHAPER_DB {
    public function quote($obj)
    {
       if(is_numeric($obj))
-         return $this->db->quote($obj, 'int');
+         return $this->db->quote($obj, PDO::PARAM_INT);
       if(is_string($obj))
-         return $this->db->quote($obj, 'text');
+         return $this->db->quote($obj, PDO::PARAM_STR);
 
       return $this->db->quote($obj);
 

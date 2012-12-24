@@ -140,7 +140,10 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       global $ms;
 
       $interfaces = $ms->getActiveInterfaces();
-      $if = $interfaces->fetchRow();
+
+      if(($if = $interfaces->fetch()) === false)
+         return false;
+
       return $if->if_name;
 
    } // getFirstInterface()
@@ -173,7 +176,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             chain_position ASC
       ");
 
-      while($chain = $chains->fetchRow()) {
+      while($chain = $chains->fetch()) {
          $string.= "<option value=\"". $chain->chain_idx ."\">". $chain->chain_name ."</option>\n";
       }
 
@@ -193,7 +196,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       $interfaces = $ms->getActiveInterfaces();
       $if_select = "";
 
-      while($interface = $interfaces->fetchRow()) {
+      while($interface = $interfaces->fetch()) {
 
          $if_select.= "<option value=\"". $interface->if_name ."\"";
 	 
@@ -259,13 +262,11 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             stat_time ASC
       ");
 
-      $data = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $time_past,
          $time_now,
          $ms->get_current_host_profile(),
       ));
-
-      $db->db_sth_free($sth);
 
       switch($_SESSION['mode']) {
          /* chain- & pipe-view */
@@ -279,7 +280,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             break;
       }
 
-      while($row = $data->fetchRow()) {
+      while($row = $sth->fetch()) {
          
          if(!($stat = $this->extract_tc_stat($row->stat_data, $tc_match)))
             continue;
@@ -294,6 +295,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             $bigdata[$row->stat_time][$tc_id] = $stat[$tc_id];
          }
       }
+
+      $db->db_sth_free($sth);
 
       /* $bigdata now contains data like
        *
@@ -316,7 +319,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
       /* If we have no data here, maybe the tc_collector is not running. Stop. */
       if(!isset($bigdata)) {
-         return _("tc_collector.pl is inactive!");
+         return json_encode(array('error' => 'tc_collector.pl is inactive!'));
       }
 	
       /* prepare graph arrays and fill up with data */
@@ -470,7 +473,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             }
 
             if(!$this->total) {
-               return _("No chain data available!\nMake sure tc_collector.pl is active and ruleset is loaded.");
+               return json_encode(array('error' => 'No chain data available!\nMake sure tc_collector.pl is active and ruleset is loaded.'));
             }
             break;
 	 

@@ -59,22 +59,20 @@ class Page_Ports extends MASTERSHAPER_PAGE {
             ". MYSQL_PREFIX ."ports
          ORDER BY
             port_name ASC
-         LIMIT
-            ?, ?
+         LIMIT ?,?
       ");
 
-      $res_ports = $db->db_execute($sth, array(
-         $limit,
-         $this->items_per_page
-      ));
+      $sth->bindParam(1, $limit, PDO::PARAM_INT);
+      $sth->bindParam(2, $this->items_per_page, PDO::PARAM_INT);
+      $db->db_execute($sth);
 
-      $db->db_sth_free($sth);
-
-      $cnt_ports = $res_ports->numRows();
+      $cnt_ports = $sth->rowCount();
 	
-      while($port = $res_ports->fetchrow()) {
+      while($port = $sth->fetch()) {
          $this->avail_ports[] = $port->port_idx;
       }
+
+      $db->db_sth_free($sth);
 
       $pager_params = Array(
          'mode' => 'Sliding',
@@ -128,19 +126,19 @@ class Page_Ports extends MASTERSHAPER_PAGE {
             f.filter_name ASC
       ");
 
-      $assigned_filters = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id,
       ));
 
-      $db->db_sth_free($sth);
-
-      if($assigned_filters->numRows() > 0) {
+      if($sth->rowCount() > 0) {
          $filter_use_port = array();
-         while($filter = $assigned_filters->fetchRow()) {
+         while($filter = $sth->fetch()) {
             $filter_use_port[$filter->filter_idx] = $filter->filter_name;
          }
          $tmpl->assign('filter_use_port', $filter_use_port);
       }
+
+      $db->db_sth_free($sth);
 
       $tmpl->assign('port', $port);
 

@@ -55,7 +55,7 @@ class Page_Host_Profiles extends MASTERSHAPER_PAGE {
 
       $cnt_hosts = 0;
 	
-      while($hostprofile = $res_hosts->fetchrow()) {
+      while($hostprofile = $res_hosts->fetch()) {
          $this->avail_hosts[$cnt_hosts] = $hostprofile->host_idx;
          $this->hosts[$hostprofile->host_idx] = $hostprofile;
          $cnt_hosts++;

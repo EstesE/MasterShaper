@@ -73,7 +73,7 @@ class MASTERSHAPER_EXPORT {
       // Settings
       $settings = $this->addRootChild('settings');
       $result = $this->db->db_query("SELECT * FROM ". MYSQL_PREFIX ."settings");
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          $this->addValue($settings, $row->setting_key, $row->setting_value);
       }
 
@@ -84,7 +84,7 @@ class MASTERSHAPER_EXPORT {
             FROM ". MYSQL_PREFIX ."users
       ");
 
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
          $user = $this->addSubChild('user', $users);
          $keys = array_keys($row);
          foreach($keys as $key) {
@@ -100,7 +100,7 @@ class MASTERSHAPER_EXPORT {
          WHERE proto_user_defined='Y'
       ");
 
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
          $proto = $this->addSubChild('protocol', $protocols);
          $keys = array_keys($row);
          foreach($keys as $key) {
@@ -116,7 +116,7 @@ class MASTERSHAPER_EXPORT {
          WHERE port_user_defined='Y'
       ");
 
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
          $port = $this->addSubChild('port', $ports);
          $keys = array_keys($row);
          foreach($keys as $key) {
@@ -131,7 +131,7 @@ class MASTERSHAPER_EXPORT {
       ");
 
       $servicelevels = $this->addRootChild('servicelevels');
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
          $servicelevel = $this->addSubChild('servicelevel', $servicelevels);
          $keys = array_keys($row);
          foreach($keys as $key) {
@@ -147,7 +147,7 @@ class MASTERSHAPER_EXPORT {
          ORDER BY target_match DESC
       ");
 
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
          $members = $this->db->db_query("
             SELECT t.target_name
             FROM ". MYSQL_PREFIX ."targets t
@@ -156,7 +156,7 @@ class MASTERSHAPER_EXPORT {
             AND
                atg.atg_target_idx=t.target_idx");
 
-         if($member = $members->fetchAll(MDB2_FETCHMODE_ORDERED)) {
+         if($member = $members->fetchAll(PDO::FETCH_NUM)) {
             $row['target_members'] = implode('#', $member[0]);
          }
 
@@ -175,7 +175,7 @@ class MASTERSHAPER_EXPORT {
          ORDER BY l7proto_name ASC
       ");
 
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
          $l7proto = $this->addSubChild('l7protocol', $l7protocols);
          $keys = array_keys($row);
          foreach($keys as $key) {
@@ -191,7 +191,7 @@ class MASTERSHAPER_EXPORT {
          ORDER BY filter_name ASC
       ");
 
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
 
          $row['filter_protocol_id'] = $this->parent->getProtocolNameById($row['filter_protocol_id']);
 
@@ -236,7 +236,7 @@ class MASTERSHAPER_EXPORT {
          ORDER BY chain_name
       ");
 
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
 
          $row['sl_name']  = $this->parent->getServiceLevelName($row['chain_sl_idx']);
          $row['fb_name']  = $this->parent->getServiceLevelName($row['chain_fallback_idx']);
@@ -266,7 +266,7 @@ class MASTERSHAPER_EXPORT {
             pipe_name ASC
       ");
 
-      while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
 
          $filters = $this->db->db_query("
             SELECT f.filter_name

@@ -155,6 +155,9 @@ class MASTERSHAPER {
       if(!file_exists($fqpn))
          $this->throwError("Page not found. Unable to include ". $fqpn);
 
+      if(!is_file($fqpn))
+         $this->throwError("No file found at ". $fqpn);
+
       if(!is_readable($fqpn))
          $this->throwError("Unable to read ". $fqpn);
 
@@ -224,18 +227,6 @@ class MASTERSHAPER {
       }
 
       ini_set('track_errors', 1);
-      @include_once 'MDB2.php';
-      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-         print "PEAR MDB2 package is missing<br />\n";
-         $missing = true;
-         unset($php_errormsg);
-      }
-      @include_once 'MDB2/Driver/mysql.php';
-      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-         print "PEAR MDB2 MySQL driver is missing<br />\n";
-         $missing = true;
-         unset($php_errormsg);
-      }
       @include_once 'Net/IPv4.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
          print "PEAR Net_IPv4 package is missing<br />\n";
@@ -255,6 +246,12 @@ class MASTERSHAPER {
          unset($php_errormsg);
       }
       ini_restore('track_errors');
+
+      // check for PDO MySQL support
+      if((array_search("mysql", PDO::getAvailableDrivers())) === false) {
+         print "PDO MySQL support not available<br />\n";
+         $missing = true;
+      }
 
       if(!defined('BASE_PATH')) {
          define('BASE_PATH', getcwd());
@@ -1009,7 +1006,7 @@ class MASTERSHAPER {
     *
     * @param int $pipe_idx
     * @param bool $with_name
-    * @return MDB2_Result
+    * @return array
     */
    public function getFilters($pipe_idx, $with_name = false)
    {
@@ -1040,9 +1037,11 @@ class MASTERSHAPER {
 
       $sth = $db->db_prepare($query);
 
-      $res = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $pipe_idx
       ));
+
+      $res = $sth->fetchAll();
 
       $db->db_sth_free($sth);
 
@@ -1064,34 +1063,36 @@ class MASTERSHAPER {
       $numbers = "";
 
       /* first get all the port id's for that filter */
-      $sth = $db->db_prepare("
-         SELECT
-            p.port_name as port_name,
-            p.port_number as port_number
-         FROM
-            ". MYSQL_PREFIX ."assign_ports_to_filters afp
-         INNER JOIN
-            ". MYSQL_PREFIX ."ports p
-         ON
-            afp.afp_port_idx=p.port_idx
-         WHERE
-            afp_filter_idx LIKE ?
-      ");
+      if(!isset($this->sth_get_ports)) {
+         $this->sth_get_ports = $db->db_prepare("
+            SELECT
+               p.port_name as port_name,
+               p.port_number as port_number
+            FROM
+               ". MYSQL_PREFIX ."assign_ports_to_filters afp
+            INNER JOIN
+               ". MYSQL_PREFIX ."ports p
+            ON
+               afp.afp_port_idx=p.port_idx
+            WHERE
+               afp_filter_idx LIKE ?
+         ");
+      }
 
-      $ports = $db->db_execute($sth, array(
+      $db->db_execute($this->sth_get_ports, array(
          $filter_idx
       ));
 
       $numbers = Array();
 
-      while($port = $ports->fetchRow()) {
+      while($port = $this->sth_get_ports->fetch()) {
          array_push($numbers, array(
             'name' => $port->port_name,
             'number' => $port->port_number
          ));
       }
 
-      $db->db_sth_free($sth);
+      $db->db_sth_free($this->sth_get_ports);
 
       /* now look up the IANA port numbers for that ports */
       if(empty($numbers))
@@ -1167,24 +1168,26 @@ class MASTERSHAPER {
       $list = NULL;
       $numbers = "";
 
-      $sth = $db->db_prepare("
-         SELECT
-            afl7_l7proto_idx
-         FROM
-            ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
-         WHERE
-            afl7_filter_idx LIKE ?
-      ");
+      if(!isset($this->sth_get_l7_protocols)) {
+         $this->sth_get_l7_protocols = $db->db_prepare("
+            SELECT
+               afl7_l7proto_idx
+            FROM
+               ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
+            WHERE
+               afl7_filter_idx LIKE ?
+         ");
+      }
 
-      $protocols = $db->db_execute($sth, array(
+      $db->db_execute($this->sth_get_l7_protocols, array(
          $filter_idx
       ));
 
-      while($protocol = $protocols->fetchRow()) {
+      while($protocol = $protocols->fetch()) {
          $numbers.= $protocol->afl7_l7proto_idx .",";
       }
 
-      $db->db_sth_free($sth);
+      $db->db_sth_free($this->sth_get_l7_protocols);
 
       if(empty($numbers))
          return NULL;
@@ -1349,7 +1352,7 @@ class MASTERSHAPER {
    {
       $interfaces = $this->getActiveInterfaces();
 
-      while($interface = $interfaces->fetchRow()) {
+      while($interface = $interfaces->fetch()) {
          if($if === $interface->if_name)
             return true;
       }
@@ -1704,7 +1707,7 @@ class MASTERSHAPER {
             // update all pipes position assign to this chain
             $pos = 1;
 
-            while($pipe = $pipes->fetchRow()) {
+            while($pipe = $pipes->fetch()) {
 
                $sth = $db->db_prepare("
                   UPDATE
@@ -1745,17 +1748,16 @@ class MASTERSHAPER {
                chain_position ASC
          ");
 
-         $chains = $db->db_execute($sth, array(
+         $db->db_execute($sth, array(
             $ms_objects,
             $this->get_current_host_profile(),
          ));
 
-         $db->db_sth_free($sth);
          $pos = 1;
 
-         while($chain = $chains->fetchRow()) {
+         while($chain = $sth->fetch()) {
 
-            $sth = $db->db_prepare("
+            $sth_update = $db->db_prepare("
                UPDATE
                   ". MYSQL_PREFIX ."chains
                SET
@@ -1768,16 +1770,18 @@ class MASTERSHAPER {
                  chain_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->db_execute($sth_update, array(
                $pos,
                $chain->chain_idx,
                $ms_objects,
                $this->get_current_host_profile(),
             ));
 
-            $db->db_sth_free($sth);
+            $db->db_sth_free($sth_update);
             $pos++;
          }
+
+         $db->db_sth_free($sth);
       }
 
       if($obj_type == "networkpaths") {
@@ -1795,16 +1799,15 @@ class MASTERSHAPER {
                netpath_position ASC
          ");
 
-         $nps = $db->db_execute($sth, array(
+         $db->db_execute($sth, array(
             $this->get_current_host_profile(),
          ));
 
-         $db->db_sth_free($sth);
          $pos = 1;
 
-         while($np = $nps->fetchRow()) {
+         while($np = $nps->fetch()) {
 
-            $sth = $db->db_prepare("
+            $sth_update = $db->db_prepare("
                UPDATE
                   ". MYSQL_PREFIX ."network_paths
                SET
@@ -1815,15 +1818,17 @@ class MASTERSHAPER {
                   netpath_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->db_execute($sth_update, array(
                $pos,
                $np->netpath_idx,
                $this->get_current_host_profile(),
             ));
 
-            $db->db_sth_free($sth);
+            $db->db_sth_free($sth_update);
             $pos++;
          }
+
+         $db->db_sth_free($sth);
       }
 
    } // update_positions()
@@ -1846,14 +1851,22 @@ class MASTERSHAPER {
    {
       global $db;
 
-      $db->db_query("
-         UPDATE
-            ". MYSQL_PREFIX ."host_profiles
-         SET
-            host_heartbeat=UNIX_TIMESTAMP()
-         WHERE
-            host_idx LIKE '". $host_idx ."'
-      ");
+      if(!isset($this->sth_update_host_heartbeat)) {
+         $this->sth_update_host_heartbeat = $db->db_prepare("
+            UPDATE
+               ". MYSQL_PREFIX ."host_profiles
+            SET
+               host_heartbeat=UNIX_TIMESTAMP()
+            WHERE
+               host_idx LIKE ?
+         ");
+      }
+
+      $db->db_execute($this->sth_update_host_heartbeat, array(
+         $host_idx
+      ));
+
+      $db->db_sth_free($this->sth_update_host_heartbeat);
 
    } // update_host_heartbeat()
 
@@ -1870,7 +1883,7 @@ class MASTERSHAPER {
             host_idx LIKE '". $host_idx ."'
       ");
 
-      if($row = $result->fetchRow()) {
+      if($row = $result->fetch()) {
          return $row->host_heartbeat;
       }
 
@@ -1995,15 +2008,16 @@ class MASTERSHAPER {
          ");
       }
 
-      $tasks = $db->db_execute($this->sth_get_tasks, array(
+      $db->db_execute($this->sth_get_tasks, array(
          $host_idx
       ));
 
-      while($task = $tasks->fetchRow()) {
+      while($task = $this->sth_get_tasks->fetch()) {
          $this->task_handler($task);
       }
 
-      $db->db_sth_free($tasks);
+      $db->db_sth_free($this->sth_get_tasks);
+      unset($tasks);
 
    } // get_tasks()
 
@@ -2029,16 +2043,16 @@ class MASTERSHAPER {
          ");
       }
 
-      $tasks = $db->db_execute($this->sth_is_running_task, array(
+      $db->db_execute($this->sth_is_running_task, array(
          $host_idx
       ));
 
-      if($task = $tasks->fetchRow()) {
-         $db->db_sth_free($tasks);
+      if($task = $this->sth_is_running_task->fetch()) {
+         $db->db_sth_free($this->sth_is_running_task);
          return true;
       }
 
-      $db->db_sth_free($tasks);
+      $db->db_sth_free($this->sth_is_running_task);
       return false;
 
    } // is_running_task()

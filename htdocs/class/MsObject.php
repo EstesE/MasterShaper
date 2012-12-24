@@ -63,17 +63,21 @@ class MsObject {
             ". $this->col_name ."_idx LIKE ?
       ", array('integer'));
 
-      $res = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $this->id,
       ));
 
-      $db->db_sth_free($sth);
-
-      if($res->numRows() <= 0)
+      if($sth->rowCount() <= 0) {
+         $db->db_sth_free($sth);
          $ms->throwError("No object with id ". $this->id);
+      }
 
-      if(!$row = $res->fetchRow(MDB2_FETCHMODE_ASSOC))
+      if(!$row = $sth->fetch(PDO::FETCH_ASSOC)) {
+         $db->db_sth_free($sth);
          $ms->throwError("Unable to fetch SQL result for object id ". $this->id);
+      }
+
+      $db->db_sth_free($sth);
 
       foreach($row as $key => $value)
          $this->$key = $value;
@@ -212,11 +216,11 @@ class MsObject {
                   ". $prefix ."_". $this->col_name ."_idx LIKE ?
             ");
 
-            $result = $db->db_execute($sth, array(
+            $db->db_execute($sth, array(
                $srcobj->id,
             ));
 
-            while($row = $result->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+            while($row = $sth->fetch(PDO::FETCH_ASSOC)) {
 
                $query = "
                   INSERT INTO ". MYSQL_PREFIX ."assign_". $child_obj->table_name ."_to_". $this->table_name ." (

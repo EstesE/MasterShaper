@@ -27,6 +27,10 @@ class Page_Overview extends MASTERSHAPER_PAGE {
    private $parent;
    private $tmpl;
 
+   private $sth_chains;
+   private $sth_pipes;
+   private $sth_filters;
+
    /**
     * Page_Overview constructor
     *
@@ -80,7 +84,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
             netpath_position ASC
       ");
 
-      while($network_path = $res_network_paths->fetchRow()) {
+      while($network_path = $res_network_paths->fetch()) {
    
          $this->cnt_chains = 0;
          $this->avail_chains[$network_path->netpath_idx] = Array();
@@ -92,7 +96,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $this->network_paths[$network_path->netpath_idx] = $network_path;
 
          /* get a list of chains for the current netpath */
-         $sth = $db->db_prepare("
+         $this->sth_chains = $db->db_prepare("
             SELECT
                *
             FROM
@@ -107,14 +111,12 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                chain_position ASC
          ");
 
-         $res_chains = $db->db_execute($sth, array(
+         $db->db_execute($this->sth_chains, array(
             $network_path->netpath_idx,
             $ms->get_current_host_profile(),
          ));
 
-         $db->db_sth_free($sth);
-
-         while($chain = $res_chains->fetchRow()) {
+         while($chain = $this->sth_chains->fetch()) {
 
             $this->avail_chains[$network_path->netpath_idx][$this->cnt_chains] = $chain->chain_idx;
             $this->chains[$network_path->netpath_idx][$chain->chain_idx] = $chain;
@@ -130,7 +132,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                continue;
             }
     
-            $sth = $db->db_prepare("
+            $this->sth_pipes = $db->db_prepare("
                SELECT
                   *
                FROM
@@ -147,13 +149,11 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                   apc.apc_pipe_pos ASC
             ");
 
-            $res_pipes = $db->db_execute($sth, array(
+            $db->db_execute($this->sth_pipes, array(
                $chain->chain_idx
             ));
 
-            $db->db_sth_free($sth);
-
-            while($pipe = $res_pipes->fetchRow()) {
+            while($pipe = $this->sth_pipes->fetch()) {
 
                $this->avail_pipes[$network_path->netpath_idx][$chain->chain_idx][$this->cnt_pipes] = $pipe->pipe_idx;
                $this->pipes[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = $pipe;
@@ -162,7 +162,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                $this->avail_filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
                $this->filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
 
-               $sth = $db->db_prepare("
+               $this->sth_filters = $db->db_prepare("
                   SELECT
                      a.filter_idx as filter_idx,
                      a.filter_name as filter_name
@@ -177,23 +177,27 @@ class Page_Overview extends MASTERSHAPER_PAGE {
                      a.filter_active='Y'
                ");
 
-               $res_filters = $db->db_execute($sth, array(
+               $db->db_execute($this->sth_filters, array(
                   $pipe->pipe_idx
                ));
 
-               $db->db_sth_free($sth);
-
-               while($filter = $res_filters->fetchRow()) {
+               while($filter = $this->sth_filters->fetch()) {
 
                   $this->avail_filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx][$this->cnt_filters] = $filter->filter_idx;
                   $this->filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx][$filter->filter_idx] = $filter;
 
                   $this->cnt_filters++;
                }
+
+               $db->db_sth_free($this->sth_filters);
                $this->cnt_pipes++;
             }
+
+            $db->db_sth_free($this->sth_pipes);
             $this->cnt_chains++;
          }
+
+         $db->db_sth_free($this->sth_chains);
          $this->cnt_network_paths++;
       }
 

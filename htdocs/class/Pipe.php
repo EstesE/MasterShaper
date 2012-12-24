@@ -151,7 +151,7 @@ class Pipe extends MsObject {
       ");
 
       $chains = Array();
-      while($chain = $result->fetchRow()) {
+      while($chain = $result->fetch()) {
          array_push($chains, $chain->chain_idx);
       }
 

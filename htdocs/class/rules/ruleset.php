@@ -142,7 +142,7 @@ class Ruleset {
 
       $netpaths = $this->getActiveNetpaths(); 
 
-      while($netpath = $netpaths->fetchRow()) {
+      while($netpath = $netpaths->fetch()) {
 
          $have_if2 = true;
          $do_nothing = false;
@@ -429,7 +429,7 @@ class Ruleset {
       global $ms;
 
       $result = $ms->getActiveInterfaces();
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          $this->delQdisc($row->if_name);
       }
 

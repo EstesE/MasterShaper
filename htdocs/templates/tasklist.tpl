@@ -1,7 +1,7 @@
 {start_table icon=$icon_process alt="host profile icon" title="Manage Tasks" }
 <table style="width: 100%;" class="withborder"> 
  <tr>
-  <td colspan="2">&nbsp;</td>
+  <td colspan="6">&nbsp;</td>
  </tr>
  <tr>
   <td><img src="{ $icon_process }" alt="host icon" />&nbsp;<i>ID</i></td>

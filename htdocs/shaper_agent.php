@@ -32,8 +32,11 @@ if(isset($_SERVER['argv']) && isset($_SERVER['argv'][1])) {
    }
 }
 
+gc_enable();
 while(1) {
+   print memory_get_usage() ."\n";
    $ms->get_tasks();
+   gc_collect_cycles();
    sleep(1);
 }
 

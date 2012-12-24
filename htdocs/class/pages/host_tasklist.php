@@ -57,7 +57,7 @@ class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
 
       $cnt_tasks = 0;
 	
-      while($task = $res_tasks->fetchrow()) {
+      while($task = $res_tasks->fetch()) {
          $this->avail_tasks[$cnt_tasks] = $task->task_idx;
          $this->tasks[$task->task_idx] = $task;
          $cnt_tasks++;

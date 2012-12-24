@@ -50,24 +50,29 @@ class Rewriter {
             page_name LIKE ?
       ");
 
-      $res = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page_name,
       ));
 
-      $db->db_sth_free($sth);
-
-      if($res->numRows() <= 0)
+      if($sth->rowCount() <= 0) {
+         $db->db_sth_free($sth);
          return false;
+      }
 
-      if(!$row = $res->fetchRow())
+      if(($row = $sth->fetch()) === false) {
+         $db->db_sth_free($sth);
          return false;
+      }
 
-      if(!isset($row->page_uri))
+      if(!isset($row->page_uri)) {
+         $db->db_sth_free($sth);
          return false;
+      }
 
       if(isset($id) && !empty($id))
          $row->page_uri = str_replace("[id]", (int) $id, $row->page_uri);
 
+      $db->db_sth_free($sth);
       return WEB_PATH ."/". $row->page_uri;
 
    } // get_page_url()

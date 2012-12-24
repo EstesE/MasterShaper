@@ -57,7 +57,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
 
       $cnt_netpaths = 0;
 	
-      while($np = $res_netpaths->fetchrow()) {
+      while($np = $res_netpaths->fetch()) {
          $this->avail_netpaths[$cnt_netpaths] = $np->netpath_idx;
          $this->netpaths[$np->netpath_idx] = $np;
          $cnt_netpaths++;
@@ -108,7 +108,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
             chain_position ASC
       ");
 
-      $chains = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id,
          $ms->get_current_host_profile(),
       ));
@@ -116,7 +116,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       $db->db_sth_free($sth);
       $cnt_chains = 0;
 
-      while($chain = $chains->fetchRow()) {
+      while($chain = $sth->fetch()) {
          $this->avail_chains[$cnt_chains] = $chain->chain_idx;
          $this->chains[$chain->chain_idx] = $chain;
          $cnt_chains++;
@@ -245,7 +245,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
             if_name ASC
       ");
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->if_idx ."\"";
          if($params['if_idx'] == $row->if_idx)
             $string.= " selected=\"selected\"";

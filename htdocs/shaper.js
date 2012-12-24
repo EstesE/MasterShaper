@@ -130,6 +130,7 @@ function draw_jqplot()
          alert('Failed to contact server! ' + textStatus + ' ' + errorThrown);
       },
       success: function(data){
+         //window.alert(data);
          $.drawIt(data);
       }
    });
@@ -137,7 +138,10 @@ function draw_jqplot()
    $.drawIt = function(data) {
 
       if(data == undefined)
-         return "Something went wrong when fetching values from server!";
+         window.alert("Something went wrong when fetching values from server!");
+
+      if(data.error != undefined)
+         window.alert(data.error);
 
       var time_end    = data.time_end;
       var interface   = data.interface;

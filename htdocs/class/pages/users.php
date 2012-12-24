@@ -52,7 +52,7 @@ class Page_Users extends MASTERSHAPER_PAGE {
             user_name ASC
       ");
 	
-      while($user = $res_users->fetchrow()) {
+      while($user = $res_users->fetch()) {
          $this->avail_users[$cnt_users] = $user->user_idx;
          $this->users[$user->user_idx] = $user;
          $cnt_users++;

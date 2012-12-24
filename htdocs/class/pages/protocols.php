@@ -66,16 +66,15 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
             ?, ?
       ");
 
-      $res_protocols = $db->db_execute($sth, array(
-         $limit,
-         $this->items_per_page
-      ));
+      $sth->bindParam(1, $limit, PDO::PARAM_INT);
+      $sth->bindParam(2, $this->items_per_page, PDO::PARAM_INT);
+      $db->db_execute($sth);
 
-      $db->db_sth_free($sth);
-
-      while($protocol = $res_protocols->fetchrow()) {
+      while($protocol = $sth->fetch()) {
          $this->avail_protocols[] = $protocol->proto_idx;
       }
+
+      $db->db_sth_free($sth);
 
       $pager_params = Array(
          'mode' => 'Sliding',
@@ -127,15 +126,15 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
             f.filter_name ASC
       ");
 
-      $assigned_filters = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id,
       ));
 
       $db->db_sth_free($sth);
 
-      if($assigned_filters->numRows() > 0) {
+      if($sth->rowCount() > 0) {
          $filter_use_protocol = array();
-         while($filter = $assigned_filters->fetchRow()) {
+         while($filter = $sth->fetch()) {
             $filter_use_protocol[$filter->filter_idx] = $filter->filter_name;
          }
          $tmpl->assign('filter_use_protocol', $filter_use_protocol);

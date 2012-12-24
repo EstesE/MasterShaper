@@ -174,7 +174,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             ". MYSQL_PREFIX ."chains
       ");
 
-      while($row = $result->fetchrow()) {
+      while($row = $result->fetch()) {
          $string.= "<option value='". $row->chain_idx ."'";
          if($row->chain_idx == $params['chain_idx']) {
             $string.= " selected=\"selected\"";
@@ -203,7 +203,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             ". MYSQL_PREFIX ."pipes
       ");
 
-      while($row = $result->fetchrow()) {
+      while($row = $result->fetch()) {
          $string.= "<option value='". $row->pipe_idx ."'";
          if($row->pipe_idx == $params['pipe_idx']) {
             $string.= " selected=\"selected\"";
@@ -235,7 +235,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             target_name
       ");
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->target_idx ."\" ";
          if($row->target_idx == $params['target_idx']) {
             $string.= " selected=\"selected\"";
@@ -264,7 +264,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             sl_name ASC
       ");
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
 
          $string.= "<option value=\"". $row->sl_idx ."\"";
 
@@ -314,7 +314,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             netpath_name ASC
       ");
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->netpath_idx ."\"";
          if($row->netpath_idx == $params['np_idx']) {
             $string.= " selected=\"selected\"";
@@ -339,7 +339,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             host_name ASC
       ");
 
-      while($row = $result->fetchRow()) {
+      while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->host_idx ."\"";
          if($row->host_idx == $ms->get_current_host_profile()) {
             $string.= " selected=\"selected\"";

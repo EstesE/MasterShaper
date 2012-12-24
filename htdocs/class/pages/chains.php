@@ -67,7 +67,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
 
       $cnt_chains = 0;
 
-      while($chain = $res_chains->fetchRow()) {
+      while($chain = $res_chains->fetch()) {
          $this->avail_chains[$cnt_chains] = $chain->chain_idx;
          $this->chains[$chain->chain_idx] = $chain;
          $cnt_chains++;
@@ -131,19 +131,19 @@ class Page_Chains extends MASTERSHAPER_PAGE {
             apc_pipe_pos ASC
       ");
 
-      $pipes = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id
       ));
 
-      $db->db_sth_free($sth);
       $cnt_pipes = 0;
 
-      while($pipe = $pipes->fetchRow()) {
+      while($pipe = $sth->fetch()) {
          $this->avail_pipes[$cnt_pipes] = $pipe->pipe_idx;
          $this->pipes[$pipe->pipe_idx] = $pipe;
          $cnt_pipes++;
       }
 
+      $db->db_sth_free($sth);
       $tmpl->assign('chain', $chain);
 
       $tmpl->register_block("pipe_list", array(&$this, "smarty_pipe_list"), false);
@@ -334,20 +334,20 @@ class Page_Chains extends MASTERSHAPER_PAGE {
             c.chain_name ASC
       ");
 
-      $res_chains = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $id,
          $ms->get_current_host_profile(),
       ));
 
-      $db->db_sth_free($sth);
       $cnt_chains = 0;
 
-      while($chain = $res_chains->fetchRow()) {
+      while($chain = $sth->fetch()) {
          $this->avail_chains[$cnt_chains] = $chain->chain_idx;
          $this->chains[$chain->chain_idx] = $chain;
          $cnt_chains++;
       }
 
+      $db->db_sth_free($sth);
       $tmpl->register_block("chain_dialog_list", array(&$this, "smarty_chain_dialog_list"));
       $tmpl->assign('pipe_idx', $id);
 

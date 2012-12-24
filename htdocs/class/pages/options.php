@@ -56,7 +56,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
 
       $cnt_sl = 0;
 
-      while($sl = $res_sl->fetchrow()) {
+      while($sl = $res_sl->fetch()) {
          $this->avail_service_levels[$cnt_sl] = $sl->sl_idx;
          $this->service_levels[$sl->sl_idx] = $sl;
          $cnt_sl++;
@@ -480,7 +480,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
 	    if(count($protocols) > 0) {
 
 	       $result = $db->db_query("SELECT l7proto_idx, l7proto_name FROM ". MYSQL_PREFIX ."l7_protocols");
-	       while($row = $result->fetchRow()) {
+	       while($row = $result->fetch()) {
 
 		  if(!in_array($row->l7proto_name, $protocols)) {
 

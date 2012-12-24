@@ -55,7 +55,7 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
 
       $cnt_sl = 0; 
 
-      while($sl = $res_sl->fetchrow()) {
+      while($sl = $res_sl->fetch()) {
          $this->avail_service_levels[$cnt_sl] = $sl->sl_idx;
          $this->service_levels[$sl->sl_idx] = $sl;
          $cnt_sl++;
@@ -166,23 +166,22 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
          )
       ");
 
-      $assigned_obj = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id,
          $page->id,
          $page->id,
          $page->id,
       ));
 
-      $db->db_sth_free($sth);
-
-      if($assigned_obj->numRows() > 0) {
+      if($sth->rowCount() > 0) {
          $obj_use_target = array();
-         while($obj = $assigned_obj->fetchRow()) {
+         while($obj = $sth->fetch()) {
             array_push($obj_use_target, $obj);
          }
          $tmpl->assign('obj_use_target', $obj_use_target);
       }
 
+      $db->db_sth_free($sth);
 
       return $tmpl->fetch("service_levels_edit.tpl");
 

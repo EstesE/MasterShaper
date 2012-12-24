@@ -60,7 +60,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
 
       $cnt_targets = 0;
 
-      while($target = $res_targets->fetchrow()) {
+      while($target = $res_targets->fetch()) {
          $this->avail_targets[$cnt_targets] = $target->target_idx;
          $this->targets[$target->target_idx] = $target;
          $cnt_targets++;
@@ -138,7 +138,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
          )
       ");
 
-      $assigned_obj = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id,
          $page->id,
          $page->id,
@@ -146,15 +146,15 @@ class Page_Targets extends MASTERSHAPER_PAGE {
          $page->id,
       ));
 
-      $db->db_sth_free($sth);
-
-      if($assigned_obj->numRows() > 0) {
+      if($sth->rowCount() > 0) {
          $obj_use_target = array();
-         while($obj = $assigned_obj->fetchRow()) {
+         while($obj = $sth->fetch()) {
             array_push($obj_use_target, $obj);
          }
          $tmpl->assign('obj_use_target', $obj_use_target);
       }
+
+      $db->db_sth_free($sth);
 
       $tmpl->assign('target', $target);
 
@@ -326,10 +326,9 @@ class Page_Targets extends MASTERSHAPER_PAGE {
                ORDER BY
                   t.target_name ASC
             ");
-            $result = $db->db_execute($sth, array(
+            $db->db_execute($sth, array(
                $idx
             ));
-            $db->db_sth_free($sth);
             break;
 
          case 'used':
@@ -349,17 +348,17 @@ class Page_Targets extends MASTERSHAPER_PAGE {
                ORDER BY
                   t.target_name ASC
             ");
-            $result = $db->db_execute($sth, array(
+            $db->db_execute($sth, array(
                $idx
             ));
-            $db->db_sth_free($sth);
             break;
       }
 
-      while($row = $result->fetchRow()) {
+      while($row = $sth->fetch()) {
          $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
       }
 
+      $db->db_sth_free($sth);
       return $string;
 
    } // smarty_target_select_list()

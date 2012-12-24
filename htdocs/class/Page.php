@@ -8,6 +8,7 @@
 class Page {
 
    static private $instance;
+   private $sth_page;
 
    static function instance($page = null)
    {
@@ -19,6 +20,8 @@ class Page {
 
    private function __construct($page = null)
    {
+      global $db;
+
       if(isset($page))
          $this->parse($page);
 
@@ -31,29 +34,39 @@ class Page {
    {
       global $ms, $db, $rewriter;
 
-      $sth = $db->db_prepare("
-         SELECT
-            *
-         FROM
-            ". MYSQL_PREFIX ."pages
-         WHERE
-            ? REGEXP page_uri_pattern
-      ");
+      if(!isset($this->sth_page)) {
 
-      $res = $db->db_execute($sth, array(
+         $this->sth_page = $db->db_prepare("
+            SELECT
+               *
+            FROM
+               ". MYSQL_PREFIX ."pages
+            WHERE
+               ? REGEXP page_uri_pattern
+         ");
+
+      }
+
+      $db->db_execute($this->sth_page, array(
          $page,
       ));
 
-      $db->db_sth_free($sth);
-
-      if($res->numRows() <= 0)
+      if($this->sth_page->rowCount() <= 0) {
+         $db->db_sth_free($this->sth_page);
          return false;
+      }
 
-      if(!$row = $res->fetchRow())
+      if(($row = $this->sth_page->fetch()) === false) {
+         $db->db_sth_free($this->sth_page);
          return false;
+      }
 
-      if(!isset($row->page_includefile))
+      if(!isset($row->page_includefile)) {
+         $db->db_sth_free($this->sth_page);
          return false;
+      }
+
+      $db->db_sth_free($this->sth_page);
 
       $this->name = $row->page_name;
       $this->uri  = $row->page_uri;

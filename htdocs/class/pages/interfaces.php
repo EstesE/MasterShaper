@@ -57,7 +57,7 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
    
       $cnt_interfaces = 0;
 	
-      while($if = $res_interfaces->fetchrow()) {
+      while($if = $res_interfaces->fetch()) {
          $this->avail_interfaces[$cnt_interfaces] = $if->if_idx;
          $this->interfaces[$if->if_idx] = $if;
          $cnt_interfaces++;
@@ -102,21 +102,20 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
             np.netpath_name ASC
       ");
 
-      $assigned_nps = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id,
          $page->id,
       ));
 
-      $db->db_sth_free($sth);
-
-      if($assigned_nps->numRows() > 0) {
+      if($sth->rowCount() > 0) {
          $np_use_if = array();
-         while($np = $assigned_nps->fetchRow()) {
+         while($np = $sth->fetch()) {
             $np_use_if[$np->netpath_idx] = $np->netpath_name;
          }
          $tmpl->assign('np_use_if', $np_use_if);
       }
 
+      $db->db_sth_free($sth);
 
       $tmpl->assign('if', $if);
       return $tmpl->fetch("interfaces_edit.tpl");

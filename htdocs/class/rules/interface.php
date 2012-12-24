@@ -823,11 +823,11 @@ class Ruleset_Interface {
                   atg_group_idx LIKE ?
             ");
 
-            $result = $db->db_execute($sth, array(
+            $db->db_execute($sth, array(
                $target_idx
             ));
 
-            while($target = $result->fetchRow()) {
+            while($target = $sth->fetch()) {
                $members = $this->getTargetHosts($target->atg_target_idx);
                foreach($members as $member) {
                   array_push($targets, $member);
@@ -1363,7 +1363,7 @@ class Ruleset_Interface {
                $l7_cnt = 0;
                $l7_protos = array();
 
-               while($l7proto = $l7protocols->fetchRow()) {
+               while($l7proto = $l7protocols->fetch()) {
                   array_push($l7_protos, $l7proto->l7proto_name);
                   $l7_cnt++;
                }
@@ -1609,7 +1609,7 @@ class Ruleset_Interface {
       $this->addRuleComment("Rules for interface ". $this->getName());
       $chains = $this->getChains($netpath_idx);
 
-      while($chain = $chains->fetchRow()) {
+      while($chain = $chains->fetch()) {
 
          // prepare class identifiers for the now to-be-handled chain
          $this->current_chain += 1;
@@ -1688,13 +1688,12 @@ class Ruleset_Interface {
             chain_position ASC
       ");
 
-      $result = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $netpath_idx,
          $ms->get_current_host_profile(),
       ));
 
-      $db->db_sth_free($sth);
-      return $result;
+      return $sth;
 
    } // getChains()
 
@@ -1724,13 +1723,11 @@ class Ruleset_Interface {
             apc.apc_pipe_pos ASC"
       );
 
-      $active_pipes = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $chain_idx
       ));
 
-      $db->db_sth_free($sth);
-
-      while($active_pipe = $active_pipes->fetchRow()) {
+      while($active_pipe = $sth->fetch()) {
 
          // if pipe has been locally (for this chain) disabled, we can skip it.
          if($active_pipe->apc_pipe_active != 'Y')
@@ -1761,16 +1758,18 @@ class Ruleset_Interface {
          $filters = $ms->getFilters($pipe->pipe_idx);
 
          /* no filter selected */
-         if($filters->numRows() <= 0) {
+         if(count($filters) <= 0) {
             $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe, $chain_direction);
             continue;
          }
 
-         while($filter = $filters->fetchRow()) {
+         foreach($filters as $filter) {
             $detail = new Filter($filter->apf_filter_idx);
             $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe, $chain_direction);
          }
       }
+
+      $db->db_sth_free($sth);
 
    } // buildPipes()
 

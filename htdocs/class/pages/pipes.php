@@ -67,7 +67,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
 
       $cnt_pipes = 0;
 
-      while($pipe = $res_pipes->fetchRow()) {
+      while($pipe = $res_pipes->fetch()) {
          $this->avail_pipes[$cnt_pipes] = $pipe->pipe_idx;
          $this->pipes[$pipe->pipe_idx] = $pipe;
          $cnt_pipes++;
@@ -116,20 +116,20 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             c.chain_name ASC
       ");
 
-      $assigned_chains = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $page->id,
          $ms->get_current_host_profile(),
       ));
 
-      $db->db_sth_free($sth);
-
-      if($assigned_chains->numRows() > 0) {
+      if($sth->rowCount() > 0) {
          $chain_use_pipes = array();
-         while($chain = $assigned_chains->fetchRow()) {
+         while($chain = $sth->fetch()) {
             $chain_use_pipes[$chain->chain_idx] = $chain->chain_name;
          }
          $tmpl->assign('chain_use_pipes', $chain_use_pipes);
       }
+
+      $db->db_sth_free($sth);
 
       $tmpl->assign('pipe', $pipe);
 
@@ -159,9 +159,9 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
 
          $filters = $ms->getFilters($pipe->pipe_idx, true);
 
-         if($filters->numRows() > 0) {
+         if(count($filters) > 0) {
             $pipe_use_filters = array();
-            while($filter = $filters->fetchRow()) {
+            foreach($filters as $filter) {
                $pipe_use_filters[$filter->apf_filter_idx] = $filter->filter_name;
             }
             $tmpl->assign('pipe_use_filters', $pipe_use_filters);
@@ -197,7 +197,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       global $db;
 
       if(!isset($params['pipe_idx'])) {
-         $unused_filters = $db->db_query("
+         $sth = $db->db_query("
             SELECT
                filter_idx, filter_name
             FROM
@@ -226,16 +226,17 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
                apf.apf_pipe_idx IS NULL
          ");
 
-         $unused_filters = $db->db_execute($sth, array(
+         $db->db_execute($sth, array(
             $params['pipe_idx']
          ));
 
-         $db->db_sth_free($sth);
       }
          
-      while($filter = $unused_filters->fetchrow()) {
+      while($filter = $sth->fetch()) {
          $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
       }
+
+      $db->db_sth_free($sth);
 
       return $string;
 
@@ -269,15 +270,15 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             apf.apf_filter_idx=f.filter_idx
       ");
          
-      $used_filters = $db->db_execute($sth, array(
+      $db->db_execute($sth, array(
          $params['pipe_idx']
       ));
 
-      $db->db_sth_free($sth);
-
-      while($filter = $used_filters->fetchrow()) {
+      while($filter = $sth->fetch()) {
          $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
       }
+
+      $db->db_sth_free($sth);
 
       return $string;
 
