@@ -245,6 +245,12 @@ class MASTERSHAPER {
          $missing = true;
          unset($php_errormsg);
       }
+      @include_once 'System/Daemon.php';
+      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
+         print "PEAR System_Daemon package is missing<br />\n";
+         $missing = true;
+         unset($php_errormsg);
+      }
       ini_restore('track_errors');
 
       // check for PDO MySQL support

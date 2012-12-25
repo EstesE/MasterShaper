@@ -32,12 +32,43 @@ if(isset($_SERVER['argv']) && isset($_SERVER['argv'][1])) {
    }
 }
 
+// lookup user/group names to their  IDs
+if(($user_info = posix_getpwnam(RUNAS_USER)) === false) {
+   $ms->throwError("Failed to lookup user ". RUNAS_USER);
+}
+if(($group_info = posix_getgrnam(RUNAS_GROUP)) == false) {
+   $ms->throwError("Failed to lookup group ". RUNAS_GROUP);
+}
+
+// Setup
+$options = array(
+    'appName' => 'shaper_agent',
+    'appDir' => dirname(__FILE__),
+    'logLocation' => '/tmp/shaper_agent.log',
+    //'appPidLocation' => '/tmp/shaper_agent/shaper_agent.pid',
+    'appRunAsGID' => $user_info['uid'],
+    'appRunAsUID' => $group_info['gid'],
+    'logVerbosity' => 7,
+);
+
+// disconnect parent processes database connection
+global $db;
+unset($db);
+
+System_Daemon::setOptions($options);
+System_Daemon::start();
+
+// reconnect spawned child to database
+$GLOBALS['db'] = new MASTERSHAPER_DB(&$ms);
+
+// enable gargabe collector
 gc_enable();
-while(1) {
-   print memory_get_usage() ."\n";
+
+while(!System_Daemon::isDying()) {
    $ms->get_tasks();
    gc_collect_cycles();
-   sleep(1);
+   // sleep a second
+   System_Daemon::iterate(1);
 }
 
 ?>
