@@ -58,17 +58,27 @@ unset($db);
 System_Daemon::setOptions($options);
 System_Daemon::start();
 
-// reconnect spawned child to database
-$GLOBALS['db'] = new MASTERSHAPER_DB(&$ms);
-
 // enable gargabe collector
 gc_enable();
 
-while(!System_Daemon::isDying()) {
-   $ms->get_tasks();
-   gc_collect_cycles();
+// spawn task manager
+$taskmgr_pid = $ms->init_task_manager();
+// spawn statistics collector
+$collect_pid = $ms->init_stats_collector();
+
+// wait for any kill signal
+while(1) {
+
+   if(System_Daemon::isDying()) {
+      pcntl_wait($taskmgr_pid);
+      pcntl_wait($collect_pid);
+      exit(0);
+   }
+
    // sleep a second
    System_Daemon::iterate(1);
 }
+
+unset($db);
 
 ?>

@@ -62,6 +62,7 @@ class MASTERSHAPER {
 
       $this->cfg = new MASTERSHAPER_CFG($this, "config.dat");
       $this->headers = Array();
+      $this->verbosity_level = MSLOG_WARN;
 
       /* Check necessary requirements */
       if(!$this->check_requirements()) {
@@ -1522,7 +1523,7 @@ class MASTERSHAPER {
             error_log($text);
             break;
          case 'logfile':
-            error_log($text, 3, $his->cfg->log_file);
+            error_log($text, 3, $this->cfg->log_file);
             break;
       }
 
@@ -2000,13 +2001,13 @@ class MASTERSHAPER {
 
    public function get_tasks()
    {
-      global $db, $ms;
+      global $db;
 
       $host_idx = $this->get_current_host_profile();
       $this->update_host_heartbeat($host_idx);
 
       if($this->is_running_task()) {
-         $ms->_print("There is a running task");
+         $this->_print("There is a running task", MSLOG_WARN);
          return false;
       }
 
@@ -2080,11 +2081,9 @@ class MASTERSHAPER {
 
    private function task_handler($task)
    {
-      global $ms;
-
       $this->set_task_state($task->task_idx, 'running');
 
-      $ms->_print("Running task '". $task->task_job ."' submitted at ". strftime("%Y-%m-%d %H:%M:%S", $task->task_submit_time) .".", NULL, 1);
+      $this->_print("Running task '". $task->task_job ."' submitted at ". strftime("%Y-%m-%d %H:%M:%S", $task->task_submit_time) .".", MSLOG_WARN, NULL, 1);
 
       switch($task->task_job) {
          case 'RULES_LOAD':
@@ -2109,24 +2108,24 @@ class MASTERSHAPER {
             unset($ruleset);
             break;
          default:
-            $ms->throwError('Unknown task '. $task->task_job);
+            $this->throwError('Unknown task '. $task->task_job);
             break;
       }
 
       $this->set_task_state($task->task_idx, 'done', $retval);
-      $this->_print(" Done. ". strftime("%Y-%m-%d %H:%M:%S", mktime()));
+      $this->_print(" Done. ". strftime("%Y-%m-%d %H:%M:%S", mktime()), MSLOG_WARN);
 
    } // task_handler()
 
    private function set_task_state($task_idx, $task_state, $retval = NULL)
    {
-      global $db, $ms;
+      global $db;
 
       if(!in_array($task_state, array('running', 'done')))
-         $ms->throwError('Invalid task state '. $task_state);
+         $this->throwError('Invalid task state '. $task_state);
 
       if(!is_numeric($task_idx) || $task_idx < 0)
-         $ms->throwError('Invalid task index '. $task_idx);
+         $this->throwError('Invalid task index '. $task_idx);
 
       if($task_state == 'running')
          $task_state = 'R';
@@ -2195,6 +2194,287 @@ class MASTERSHAPER {
       return $this->headers[$key];
 
    } // get_header()
+
+   public function collect_stats()
+   {
+      global $db;
+
+      $sec_counter = 0;
+      $bandwidth   = array();
+      $counter     = array();
+      $last_bytes  = array();
+      $counter     = array();
+
+      while(!System_Daemon::isDying()) {
+
+         $sec_counter++;
+
+         // get active interfaces
+         $interfaces = $this->getActiveInterfaces();
+
+         // get current time
+         $now        = mktime();
+
+         foreach($interfaces as $interface) {
+
+            $tc_if = $interface->if_name;
+
+            # get the current stats from tc
+            $lines = $this->run_proc(TC_BIN ." -s class show dev ". $tc_if);
+
+            # analyze the lines
+            foreach($lines as $line) {
+
+               # if the line doesn't contain anything we are looking for...
+               if(empty($line) || !preg_match('/(^class|^Sent)/', $line))
+                  continue;
+
+               # we calculate for the next class
+               if($class_id == 0) {
+
+                  # extract class id from the line string
+                  $class_id = $this->extract_class_id($line);
+
+                  if(empty($class_id)) {
+                     continue;
+                  }
+
+                  $this->_print("Fetching data interface: ". $tc_if .", class: ". $class_id);
+
+                  # we already counting this class?
+                  if(!isset($counter[$tc_if ."_". $class_id])) {
+                     $counter[$tc_if ."_". $class_id] = 0;
+                     $last_bytes[$tc_if ."_". $class_id] = 0;
+                  }
+               }
+               else {
+
+                  # extract current bytes from the line string
+                  $current_bytes = $this->extract_bytes($line);
+
+                  if($current_bytes == -1)
+                     continue;
+
+                  $this->_print("Bytes for interface: ". $tc_if .", class: ". $class_id .", ". $current_bytes ." bytes");
+
+                  if($current_bytes > 0) {
+
+                     if(isset($last_bytes[$tc_if ."_". $class_id]) &&
+                        $last_bytes[$tc_if ."_". $class_id] == 0) {
+
+                        # calculate the bandwidth from the last second
+                        $current_bw = $current_bytes - $last_bytes[$tc_if ."_". $class_id];
+
+                  # store the current bytes
+                  $last_bytes[$tc_if ."_". $class_id] = $current_bytes;
+                  # add it to the bandwidth summary
+                  $bandwidth[$tc_if ."_". $class_id]+=$current_bw;
+                  # increment the counter
+                  $counter[$tc_if ."_". $class_id]+=1;
+
+                  # this class has been calculated, make all ready for the next one
+                  $class_id = 0;
+
+               }
+            }
+         }
+
+         if($sec_counter <= 10) {
+            sleep(1);
+            next;
+         }
+
+         // skip if no data is available
+
+         $tcs = array_keys($bandwidth);
+         $data = "";
+
+         $this->_print("Storing tc statistic now.");
+
+         foreach($tcs as $tc) {
+
+            list($tc_if, $class_id) = split('_', $tc);
+
+            # calculate the average bandwidth
+            if($counter[$tc_if ."_". $class_id] > 0) {
+               $aver_bw = $bandwidth[$tc_if ."_". $class_id]/($counter[$tc_if ."_". $class_id]);
+            } else {
+               $aver_bw = 0;
+            }
+
+            # bytes to bits
+            $aver_bw = round($aver_bw*8);
+
+            $this->_print("Interface: ". $tc_if .", class: ". $class_id .", transferred: ". $aver_bw, MSLOG_INFO);
+
+            $data.= $tc_if ."_". $class_id ."=". $aver_bw .",";
+
+            # this class has been calculated, make all ready for the next one
+            unset($counter[$tc_if ."_". $class_id]);
+            unset($bandwidth[$tc_if ."_". $class_id]);
+         }
+
+         if(!empty($data)) {
+            $data = substr($data, 0, strlen($data)-1);
+
+            # $this->_print($data);
+            $sth = $db->db_prepare("
+               INSERT INTO ". MYSQL_PREFIX ."stats (
+                  stat_data,
+                  stat_time,
+                  stat_host_idx
+               ) VALUES (
+                  ?,
+                  ?,
+                  ?
+               )
+            ");
+
+            $sth->execute(array(
+               $data,
+               $now,
+               $this->get_current_host_profile(),
+            ));
+
+            $db->db_sth_free($sth);
+
+            $this->_print("Statistics stored in MySQL database.");
+         }
+         else {
+            $this->_print("No data available for statistics. tc rules loaded?");
+         }
+
+         # delete old samples
+         $db->db_query("
+            DELETE FROM
+               ". MYSQL_PREFIX ."stats
+            WHERE
+               stat_host_idx LIKE ". $this->get_current_host_profile() ."
+            AND
+               stat_time < ". ($now-300) ."
+         ");
+
+         # reset helper vars
+         $bandwidth = array();
+         $sec_counter = 0;
+
+         System_Daemon::iterate(1);
+
+      }
+
+   } // collect_stats()
+
+   private function run_proc($cmd = "", $ignore_err = null)
+   {
+      $retval = array();
+      $error = "";
+
+      $desc = array(
+         0 => array('pipe','r'), /* STDIN */
+         1 => array('pipe','w'), /* STDOUT */
+         2 => array('pipe','w'), /* STDERR */
+      );
+
+      $process = proc_open($cmd, $desc, &$pipes);
+
+      if(is_resource($process)) {
+
+         $stdin = $pipes[0];
+         $stdout = $pipes[1];
+         $stderr = $pipes[2];
+
+         while(!feof($stdout)) {
+            array_push($retval, trim(fgets($stdout)));
+         }
+         /*while(!feof($stderr)) {
+            $error.= trim(fgets($stderr));
+         }*/
+
+         fclose($pipes[0]);
+         fclose($pipes[1]);
+         fclose($pipes[2]);
+
+         $exit_code = proc_close($process);
+
+      }
+
+      /*if(is_null($ignore_err)) {
+         if(!empty($error) || $retval != "OK")
+            throw new Exception($error);
+      }*/
+
+      return $retval;
+
+   } // run_proc()
+
+   private function extract_class_id($line)
+   {
+
+      if(!preg_match('/class/', $line))
+         return false;
+
+      $temp_array = array();
+      $temp_array = split(' ', $line);
+      return $temp_array[2];
+
+   } // extract_class_id()
+
+   private function extract_bytes($line)
+   {
+
+      if(!preg_match('/Sent/', $line))
+         return -1;
+
+      $temp_array = array();
+      $temp_array = split(' ', $line);
+      return $temp_array[1];
+
+   } // extract_bytes()
+
+   public function init_task_manager()
+   {
+      $pid = pcntl_fork();
+
+      if($pid == -1) {
+         $this->throwError("Unable to create child process for task-manager");
+         die;
+      }
+
+      if($pid)
+         return $pid;
+
+      //setproctitle("shaper_agent.php - tasks");
+
+      // reconnect spawned child to database
+      $GLOBALS['db'] = new MASTERSHAPER_DB(&$this);
+
+      while(!System_Daemon::isDying()) {
+         $this->get_tasks();
+         gc_collect_cycles();
+         // sleep a second
+         System_Daemon::iterate(1);
+      }
+
+   } // init_task_manager()
+
+   public function init_stats_collector()
+   {
+      $pid = pcntl_fork();
+
+      if($pid == -1)
+         $this->throwError("Unable to create child process for stats-collector");
+
+      if($pid)
+         return $pid;
+
+      //setproctitle("shaper_agent.php - stats");
+
+      // reconnect spawned child to database
+      $GLOBALS['db'] = new MASTERSHAPER_DB(&$this);
+
+      //$this->collect_stats();
+
+   } // init_stats_collector()
 
 } // class MASTERSHAPER
 

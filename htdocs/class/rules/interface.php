@@ -846,16 +846,18 @@ class Ruleset_Interface {
    /* set the actually tc handle ID for a chain */
    private function setChainID($chain_idx, $chain_tc_id)
    {
-      global $db;
+      global $ms, $db;
 
       $sth = $db->db_prepare("
          INSERT INTO ". MYSQL_PREFIX ."tc_ids (
             id_pipe_idx,
             id_chain_idx,
             id_if,
-            id_tc_id
+            id_tc_id,
+            id_host_idx
          ) VALUES (
             '0',
+            ?,
             ?,
             ?,
             ?
@@ -865,7 +867,8 @@ class Ruleset_Interface {
       $db->db_execute($sth, array(
          $chain_idx,
          $this->getName(),
-         $chain_tc_id
+         $chain_tc_id,
+         $ms->get_current_host_profile(),
       ));
 
       $db->db_sth_free($sth);
@@ -875,15 +878,17 @@ class Ruleset_Interface {
    /* set the actually tc handle ID for a pipe */ 
    private function setPipeID($pipe_idx, $chain_tc_id, $pipe_tc_id)
    {
-      global $db;
+      global $ms, $db;
 
       $sth = $db->db_prepare("
          INSERT INTO ". MYSQL_PREFIX ."tc_ids (
             id_pipe_idx,
             id_chain_idx,
             id_if,
-            id_tc_id
+            id_tc_id,
+            id_host_idx
          ) VALUES (
+            ?,
             ?,
             ?,
             ?,
@@ -895,7 +900,8 @@ class Ruleset_Interface {
          $pipe_idx,
          $chain_tc_id,
          $this->getName(),
-         $pipe_tc_id
+         $pipe_tc_id,
+         $ms->get_current_host_profile(),
       ));
 
       $db->db_sth_free($sth);

@@ -260,16 +260,14 @@ class MASTERSHAPER_DB {
       }
 
       try {
-         $row = $result->fetch();
+         $row = $result->fetch($mode);
       }
       catch (PDOException $e) {
          $ms->throwError("Unable to query database: ". $e->getMessage());
       }
 
-      $result->closeCursor();
-
       return $row;
-      
+
    } // db_fetchSingleRow()
 
    /**

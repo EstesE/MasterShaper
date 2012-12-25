@@ -281,7 +281,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       }
 
       while($row = $sth->fetch()) {
-         
+
          if(!($stat = $this->extract_tc_stat($row->stat_data, $tc_match)))
             continue;
 
@@ -424,14 +424,15 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                case 1:
                   $counter = 0;
                   foreach($tc_ids as $tc_id) {
-                     if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*00/", $tc_id))
+
+                     if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/^1:(.*)00/", $tc_id))
                         continue;
 
                      /* if chain's bandwidth usage is zero, ignore it */
                      if($plot_array[$tc_id] <= 0)
                         continue;
 
-                     /* do not return more then 15 chains */
+                     /* do not return more than 15 chains */
                      if($counter > 15)
                         continue;
 
@@ -448,6 +449,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                case 3:
                   $counter = 0;
                   foreach($tc_ids as $tc_id) {
+                     // is not a chain and not fallback
                      if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*00/", $tc_id))
                         continue;
                      $bps = round(array_sum($plot_array[$tc_id])/count($plot_array[$tc_id]), 0);
@@ -472,9 +474,6 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                   break;
             }
 
-            if(!$this->total) {
-               return json_encode(array('error' => 'No chain data available!\nMake sure tc_collector.pl is active and ruleset is loaded.'));
-            }
             break;
 	 
          case "bandwidth":
@@ -545,7 +544,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          return "Fallback";
       }
 
-      $tc_id = $db->db_fetchSingleRow("
+      //$tc_id = $db->db_fetchSingleRow("
+      error_log(print_r("
          SELECT
             id_pipe_idx,
             id_chain_idx
@@ -557,7 +557,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             id_if='". $interface ."'
          AND
             id_host_idx LIKE '". $ms->get_current_host_profile() ."'
-      ");
+      ",true));
 
       if(!$tc_id)
          return "n/a";
@@ -626,7 +626,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    {
       global $ms, $db;
 
-      if($db->db_fetchSingleRow("
+      $row = $db->db_fetchSingleRow("
          SELECT
             id_tc_id
          FROM
@@ -638,11 +638,11 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          AND
             id_pipe_idx LIKE 0
          AND
-            id_host_idx LIKE '". $ms->get_current_host_profile() ."'")) {
+            id_host_idx LIKE '". $ms->get_current_host_profile() ."'");
 
+
+      if($row);
          return true;
-
-      }
 
       return false;
 

@@ -165,9 +165,7 @@ function draw_jqplot()
       }
 
       // enable for some debugging output
-      //document.getElementById("debug").innerHTML = 'Debug: ' + data.data;
-      //document.getElementById("debug").innerHTML = 'Debug: ' + data.names;
-      //document.getElementById("debug").innerHTML = 'Debug: ' + data.colors;
+      document.getElementById("debug").innerHTML = 'Debug: ' + data.data + '<br />' + data.names + '<br />' + data.colors;
 
       var plot_obj  = parse_json(data.data);
       var plot_arr  = new Array();
