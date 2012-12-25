@@ -44,11 +44,11 @@ if(($group_info = posix_getgrnam(RUNAS_GROUP)) == false) {
 $options = array(
     'appName' => 'shaper_agent',
     'appDir' => dirname(__FILE__),
-    'logLocation' => '/tmp/shaper_agent.log',
-    //'appPidLocation' => '/tmp/shaper_agent/shaper_agent.pid',
     'appRunAsGID' => $user_info['uid'],
     'appRunAsUID' => $group_info['gid'],
-    'logVerbosity' => 7,
+    //'logLocation' => '/tmp/shaper_agent.log',
+    //'appPidLocation' => '/tmp/shaper_agent/shaper_agent.pid',
+    //'logVerbosity' => 7,
 );
 
 // disconnect parent processes database connection
