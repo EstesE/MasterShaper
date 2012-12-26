@@ -304,14 +304,14 @@ class Ruleset {
 
          // output comments as they are
          if(preg_match("/^#/", $line)) {
-            $ms->_print($line, 'display');
+            $ms->_print($line, MSLOG_DEBUG, 'display');
             continue;
          }
 
          if(strstr($line, TC_BIN) !== false) {
-            $ms->_print($line, 'display');
+            $ms->_print($line, MSLOG_DEBUG, 'display');
             if(($tc = $this->runProc("tc", $line)) !== true)
-               $ms->_print($tc, 'display');
+               $ms->_print($tc, MSLOG_DEBUG, 'display');
          }
 
          // iptables output will follow later
@@ -321,9 +321,9 @@ class Ruleset {
 
       // output iptables commands
       foreach($ipt_lines as $line) {
-         $ms->_print($line, 'display');
+         $ms->_print($line, MSLOG_DEBUG, 'display');
          if(($ipt = $this->runProc("iptables", $line)) !== true)
-            $ms->_print($ipt, 'display');
+            $ms->_print($ipt, MSLOG_DEBUG, 'display');
       }
 
    } // doItLineByLine()

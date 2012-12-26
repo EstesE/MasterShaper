@@ -42,7 +42,9 @@ require_once "class/User.php";
 require_once "class/Host_Profile.php";
 require_once "class/Host_Task.php";
 
-define('DEBUG', 1);
+define(MSLOG_WARN,  1);
+define(MSLOG_INFO,  2);
+define(MSLOG_DEBUG, 3);
 
 class MASTERSHAPER {
 
@@ -77,7 +79,7 @@ class MASTERSHAPER {
 
       if($mode == 'install') {
          if($db->install_schema()) {
-            $this->_print("Successfully installed database tables");
+            $this->_print("Successfully installed database tables", MSLOG_INFO);
             exit(0);
          }
          $this->throwError("Failed installing database tables");
@@ -261,7 +263,7 @@ class MASTERSHAPER {
       }
 
       if(!defined('BASE_PATH')) {
-         define('BASE_PATH', getcwd());
+         define(BASE_PATH, getcwd());
       }
 
       if(isset($missing))
@@ -1488,7 +1490,7 @@ class MASTERSHAPER {
          }
          catch(MASTERSHAPER_EXCEPTION $e) {
             print "<br /><br />\n";
-            $this->_print($e);
+            $this->_print($e, MSLOG_INFO);
             die;
          }
       }
@@ -1502,15 +1504,21 @@ class MASTERSHAPER {
     *
     * @param string $text
     */
-   public function _print($text, $override_output = NULL, $no_newline = NULL)
+   public function _print($text, $loglevel, $override_output = NULL, $no_newline = NULL)
    {
+      if(isset($this->cfg->logging))
+         $logtype = $this->cfg->logging;
+
       if(!isset($this->cfg->logging))
-         $this->cfg->logging = 'display';
+         $logtype = 'display';
 
       if(isset($override_output))
-         $this->cfg->logging = $override_output;
+         $logtype = $override_output;
 
-      switch($this->cfg->logging) {
+      if($this->get_verbosity() < $loglevel)
+         return true;
+
+      switch($logtype) {
          default:
          case 'display':
             print $text;
@@ -1527,7 +1535,9 @@ class MASTERSHAPER {
             break;
       }
 
-   } // _error()
+      return $true;
+
+   } // _print()
 
    private function handle_page_request()
    {
@@ -2229,7 +2239,7 @@ class MASTERSHAPER {
                if(empty($line) || !preg_match('/(^class|^Sent)/', $line))
                   continue;
 
-               # we calculate for the next class
+               # Shall we extract a new class­id?
                if($class_id == 0) {
 
                   # extract class id from the line string
@@ -2239,7 +2249,7 @@ class MASTERSHAPER {
                      continue;
                   }
 
-                  $this->_print("Fetching data interface: ". $tc_if .", class: ". $class_id);
+                  $this->_print("Fetching data interface: ". $tc_if .", class: ". $class_id, MSLOG_INFO);
 
                   # we already counting this class?
                   if(!isset($counter[$tc_if ."_". $class_id])) {
@@ -2252,18 +2262,25 @@ class MASTERSHAPER {
                   # extract current bytes from the line string
                   $current_bytes = $this->extract_bytes($line);
 
-                  if($current_bytes == -1)
+                  # if no data available or class hasn't exhaust any bytes, we can skip to the next
+                  if($current_bytes <= 0) {
+                     $this->_print("No traffic for interface: ". $tc_if .", class: ". $class_id .", ". $current_bytes ." bytes", MSLOG_DEBUG);
+                     $class_id = 0;
                      continue;
+                  }
 
-                  $this->_print("Bytes for interface: ". $tc_if .", class: ". $class_id .", ". $current_bytes ." bytes");
+                  $this->_print("Bytes for interface: ". $tc_if .", class: ". $class_id .", ". $current_bytes ." bytes", MSLOG_DEBUG);
 
-                  if($current_bytes > 0) {
+                  if(isset($last_bytes[$tc_if ."_". $class_id]) &&
+                     $last_bytes[$tc_if ."_". $class_id] == 0) {
 
-                     if(isset($last_bytes[$tc_if ."_". $class_id]) &&
-                        $last_bytes[$tc_if ."_". $class_id] == 0) {
+                     # calculate the bandwidth from the last second
+                     $current_bw = $current_bytes - $last_bytes[$tc_if ."_". $class_id];
 
-                        # calculate the bandwidth from the last second
-                        $current_bw = $current_bytes - $last_bytes[$tc_if ."_". $class_id];
+                  }
+                  else {
+                     $current_bw = 0;
+                  }
 
                   # store the current bytes
                   $last_bytes[$tc_if ."_". $class_id] = $current_bytes;
@@ -2272,16 +2289,16 @@ class MASTERSHAPER {
                   # increment the counter
                   $counter[$tc_if ."_". $class_id]+=1;
 
-                  # this class has been calculated, make all ready for the next one
                   $class_id = 0;
 
                }
             }
          }
 
+         // we are storing our values in database only every tenth second.
          if($sec_counter <= 10) {
-            sleep(1);
-            next;
+            System_Daemon::iterate(1);
+            continue;
          }
 
          // skip if no data is available
@@ -2289,7 +2306,7 @@ class MASTERSHAPER {
          $tcs = array_keys($bandwidth);
          $data = "";
 
-         $this->_print("Storing tc statistic now.");
+         $this->_print("Storing tc statistic now.", MSLOG_DEBUG);
 
          foreach($tcs as $tc) {
 
@@ -2315,6 +2332,7 @@ class MASTERSHAPER {
          }
 
          if(!empty($data)) {
+
             $data = substr($data, 0, strlen($data)-1);
 
             # $this->_print($data);
@@ -2338,10 +2356,10 @@ class MASTERSHAPER {
 
             $db->db_sth_free($sth);
 
-            $this->_print("Statistics stored in MySQL database.");
+            $this->_print("Statistics stored in MySQL database.", MSLOG_DEBUG);
          }
          else {
-            $this->_print("No data available for statistics. tc rules loaded?");
+            $this->_print("No data available for statistics. tc rules loaded?", MSLOG_INFO);
          }
 
          # delete old samples
@@ -2472,9 +2490,24 @@ class MASTERSHAPER {
       // reconnect spawned child to database
       $GLOBALS['db'] = new MASTERSHAPER_DB(&$this);
 
-      //$this->collect_stats();
+      $this->collect_stats();
 
    } // init_stats_collector()
+
+   public function set_verbosity($level)
+   {
+      if(!in_array($level, array(0 => MSLOG_INFO, 1 => MSLOG_WARN, 2 => MSLOG_DEBUG)))
+         $this->throwError("Unknown verbosity level ". $level);
+
+      $this->verbosity_level = $level;
+
+   } // set_verbosity()
+
+   public function get_verbosity()
+   {
+      return $this->verbosity_level;
+
+   } // get_verbosity()
 
 } // class MASTERSHAPER
 
