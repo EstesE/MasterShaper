@@ -1,35 +1,48 @@
 #!/bin/sh
 
+### BEGIN INIT INFO
+# Provides:          mastershaper
+# Required-Start:    mountkernfs ifupdown $local_fs
+# Required-Stop:     ifupdown $local_fs
+# Default-Start:     S
+# Default-Stop:      0 6
+# Short-Description: load/unload QoS rules and collects statistics
+### END INIT INFO
+
 # Startup script for MasterShaper
-# Andreas Unterkircher, unki@netshadow.at
+#    http://www.mastershaper.org
 
 PATH_TO_MS="/var/www/shaper"
 TC_COLLECTOR="./tc_collector.pl -d"
-INIT_MS="php index.php"
+AGENT="php shaper_agent.php"
 
 cd ${PATH_TO_MS}
 
 # See how we were called.
 case "$1" in
-     start)
-         echo -n "Starting MasterShaper: "
-	 ${INIT_MS} load
-	 echo -n "Shaper "
-         ${TC_COLLECTOR}
-	 echo "tc_collector.pl"
-         ;;
-      stop)
-         echo -n "Stopping Mastershaper: "
-	 killall tc_collector.pl
-         echo -n "tc_collector.pl "
-	 ${INIT_MS} unload
-	 echo "Shaper"
-         ;;
-      restart)
-         $0 stop
-         $0 start
-         ;;
-      *)
+   start)
+      echo -n "Starting MasterShaper: "
+      ${AGENT} load
+      echo -n "Shaper "
+      ${TC_COLLECTOR}
+      echo -n "tc_collector.pl "
+      ${AGENT}
+      echo -n "shaper_agent "
+      ;;
+   stop)
+      echo -n "Stopping Mastershaper: "
+      pkill -f "php shaper_agent.php"
+      echo -n "shaper_agent "
+      killall tc_collector.pl
+      echo -n "tc_collector.pl "
+      ${AGENT} unload
+      echo "Shaper"
+      ;;
+   restart)
+      $0 stop
+      $0 start
+      ;;
+   *)
       echo "Usage: $0 {start|stop|restart}"
       exit 1
 esac
