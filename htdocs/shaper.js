@@ -165,7 +165,7 @@ function draw_jqplot()
       }
 
       // enable for some debugging output
-      document.getElementById("debug").innerHTML = 'Debug: ' + data.data + '<br />' + data.names + '<br />' + data.colors;
+      // document.getElementById("debug").innerHTML = 'Debug: ' + data.data + '<br />' + data.names + '<br />' + data.colors;
 
       var plot_obj  = parse_json(data.data);
       var plot_arr  = new Array();
@@ -197,6 +197,7 @@ function draw_jqplot()
 
       if(plot_arr == undefined || plot_arr.length < 1) {
          document.getElementById("jqp_monitor").innerHTML = 'No data to display';
+         return;
       }
 
       /* accumulated lines */
@@ -226,12 +227,14 @@ function draw_jqplot()
          seriesRenderer          = $.jqplot.BarRenderer;
          seriesRendererOptions   = { barPadding: 8, barMargin: 20 };
          xaxis_opts = {};
+         plot_values = plot_arr;
       }
       /* pie */
       if(graphmode == 3) {
          seriesRenderer          = $.jqplot.PieRenderer;
-         seriesRendererOptions   = { sliceMargin:8 };
+         seriesRendererOptions   = { sliceMargin:0, showDataLabels: true, dataLabels: 'label' };
          xaxis_opts = {};
+         plot_values = [plot_arr];
       }
 
       // clear view
@@ -240,8 +243,8 @@ function draw_jqplot()
 
       //if(jqp == undefined) {
 
-         // new plot
-         jqp = $.jqplot('jqp_monitor', plot_values, {
+      // new plot
+      jqp = $.jqplot('jqp_monitor', plot_values, {
          /* title */
          title:                     title,
          /* axes styling */
@@ -251,7 +254,6 @@ function draw_jqplot()
                label:               ylabel,
                autoscale:           true,
                min:                 0,
-               angel:               90,
                enableFontSupport:   true
             },
             xaxis:                  xaxis_opts
@@ -280,8 +282,7 @@ function draw_jqplot()
          }
        }
       );
-      /*}
-      else {
+      /* replot
          jqp.series[0].data = seriesStack;
          jqp.series[0].color = colors_arr;
          jqp.replot({ resetAxes: true });
@@ -885,6 +886,7 @@ $(document).ready(function() {
       }
    );
    load_menu();
-   setTimeout("get_host_state()", 1000);
+   // immediately update our host state
+   setTimeout("get_host_state()", 250);
    //$.jqplot.config.enablePlugins = true;
 });

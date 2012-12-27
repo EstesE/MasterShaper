@@ -333,7 +333,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             continue;
 
          // ignore empty data
-         if(!is_array($bigdata[$timestamp]))
+         if(!is_array($bigdata[$timestamp]) || empty($bigdata[$timestamp]))
             continue;
 
          $tc_ids = array_keys($bigdata[$timestamp]);
@@ -341,17 +341,29 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          // loop through all found tc-id's
          foreach($tc_ids as $tc_id) {
 
-            // new tc-id? create an array for it
+            // new tc-id? prepare arrays for it
             if(!isset($plot_array[$tc_id]))
                $plot_array[$tc_id] = array();
             if(!isset($time_array[$tc_id]))
                $time_array[$tc_id] = array();
 
-            $bw = $this->convert_to_bandwidth($bigdata[$timestamp][$tc_id]);
+            // first data found we do not consider
+            if(!isset($last_bw[$tc_id])) {
+               $last_bw[$tc_id] = $bigdata[$timestamp][$tc_id];
+               continue;
+            }
+
+            // store difference between previously and currently transfered data
+            if(isset($last_bw[$tc_id]))
+               $bw = $bigdata[$timestamp][$tc_id] - $last_bw[$tc_id];
+
+            $bw = $this->convert_to_bandwidth($bw);
 
             array_push($plot_array[$tc_id], $bw);
             /* jqPlot wants timestamp in milliseconds, so we are multipling with 1000 */
             array_push($time_array[$tc_id], array(($timestamp*1000), $bw));
+
+            $last_bw[$tc_id] = $bigdata[$timestamp][$tc_id];
          }
       }
 
@@ -380,7 +392,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                         continue;
 
                      array_push($this->colors, $this->get_color());
-                     array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
+                     array_push($this->names, $this->findName($tc_id, $_SESSION['showif']));
                      array_push($this->total, $time_array[$tc_id]);
                   }
                   /* sort so the most bandwidth consuming is on first place */
@@ -404,13 +416,18 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                         continue;
 
                      if($_SESSION['graphmode'] == 3)
-                        $name = $this->findname($tc_id, $_SESSION['showif']) ." (%d". $this->get_scale_mode($_SESSION['scalemode']) .")";
+                        $name = $this->findName($tc_id, $_SESSION['showif']) ." (". $bps ." ". $this->get_scale_mode($_SESSION['scalemode']) .")";
                      else 
-                        $name = $this->findname($tc_id, $_SESSION['showif']);
+                        $name = $this->findName($tc_id, $_SESSION['showif']);
 
                      array_push($this->colors, $this->get_color());
                      array_push($this->names, $name);
-                     array_push($this->total, $bps);
+
+                     if($_SESSION['graphmode'] == 2)
+                        array_push($this->total, array($bps));
+
+                     if($_SESSION['graphmode'] == 3)
+                        array_push($this->total, array($name, $bps));
                   }
 
                   /* sort so the most bandwidth consuming is on first place */
@@ -425,12 +442,14 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
              * Drawing chains
              */
             switch($_SESSION['graphmode']) {
+               /* lines with filled areas */
                case 0:
+               /* lines */
                case 1:
                   $counter = 0;
                   foreach($tc_ids as $tc_id) {
 
-                     if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/^1:(.*)00/", $tc_id))
+                     if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*00/", $tc_id))
                         continue;
 
                      /* if chain's bandwidth usage is zero, ignore it */
@@ -442,7 +461,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                         continue;
 
                      array_push($this->colors, $this->get_color());
-                     array_push($this->names, $this->findname($tc_id, $_SESSION['showif']));
+                     array_push($this->names, $this->findName($tc_id, $_SESSION['showif']));
                      array_push($this->total, $time_array[$tc_id]);
                      $counter++;
                   }
@@ -450,33 +469,41 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                   array_multisort($this->total, SORT_DESC | SORT_NUMERIC, $this->names, $this->colors);
                   break;
 
+               /* bars */
                case 2:
+               /* pies */
                case 3:
-                  $counter = 0;
+
                   foreach($tc_ids as $tc_id) {
+
                      // is not a chain and not fallback
                      if(!$this->isChain($tc_id, $_SESSION['showif']) || preg_match("/1:.*00/", $tc_id))
                         continue;
+
                      $bps = round(array_sum($plot_array[$tc_id])/count($plot_array[$tc_id]), 0);
+
                      if($bps <= 0 || preg_match("/1:.*00/", $tc_id))
                         continue;
-                     if($counter > 15)
-                        continue;
-                     if($_SESSION['graphmode'] == 2) {
-                        $name = $this->findname($tc_id, $_SESSION['showif']) . sprintf(" (%dkbps)", $bps);
-                        array_push($this->total, $bps);
-                     }
-                     elseif($_SESSION['graphmode'] == 3) {
-                        $name = $this->findname($tc_id, $_SESSION['showif']);
-                        array_push($this->total, array($name, $bps));
-                     }
 
-                     $counter++;
+                     if($_SESSION['graphmode'] == 3)
+                        $name = $this->findName($tc_id, $_SESSION['showif']) ." (". $bps ." ". $this->get_scale_mode($_SESSION['scalemode']) .")";
+                     else
+                        $name = $this->findName($tc_id, $_SESSION['showif']);
+
+                     array_push($this->colors, $this->get_color());
+                     array_push($this->names, $name);
+
+                     if($_SESSION['graphmode'] == 2)
+                        array_push($this->total, array($bps));
+
+                     if($_SESSION['graphmode'] == 3)
+                        array_push($this->total, array($name, $bps));
                   }
+
                   /* sort so the most bandwidth consuming is on first place */
-                  array_multisort($this->total, SORT_DESC | SORT_NUMERIC);
-                  $this->total = array($this->total);
+                  array_multisort($this->total, SORT_DESC | SORT_NUMERIC, $this->names, $this->colors);
                   break;
+
             }
 
             break;
@@ -549,8 +576,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          return "Fallback";
       }
 
-      //$tc_id = $db->db_fetchSingleRow("
-      error_log(print_r("
+      $tc_id = $db->db_fetchSingleRow("
          SELECT
             id_pipe_idx,
             id_chain_idx
@@ -562,12 +588,13 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             id_if='". $interface ."'
          AND
             id_host_idx LIKE '". $ms->get_current_host_profile() ."'
-      ",true));
+      ",true);
 
       if(!$tc_id)
          return "n/a";
 
-      if(isset($tc_id->id_pipe_idx) and $tc_id->id_pipe_idx != 0) {
+      // for Pipes, id_pipe_idx must be set
+      if(isset($tc_id->id_pipe_idx) and $tc_id->id_pipe_idx > 0) {
 
          $pipe = $db->db_fetchSingleRow("
             SELECT
@@ -577,10 +604,13 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             WHERE
                pipe_idx='". $tc_id->id_pipe_idx ."'
          ");
+
          return $pipe->pipe_name;
       }
 
-      if(isset($tc_id->id_chain_idx) and $tc_id->id_chain_idx != 0) {
+      // for Chains, id_chain_idx must be set
+      if(isset($tc_id->id_chain_idx) and $tc_id->id_chain_idx > 0) {
+
          $chain = $db->db_fetchSingleRow("
             SELECT
                chain_name
@@ -591,6 +621,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             AND
                chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ");
+
          return $chain->chain_name;
       }
 
@@ -603,7 +634,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    {
       global $ms, $db;
 
-      if($db->db_fetchSingleRow("
+      $row = $db->db_fetchSingleRow("
          SELECT
             id_tc_id
          FROM
@@ -618,11 +649,12 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             id_tc_id LIKE '". $tc_id ."'
          AND
             id_host_idx LIKE '". $ms->get_current_host_profile() ."'
-      ")) {
-         return true;
-      }
+      ");
 
-      return false;
+      if(!isset($row->id_tc_id))
+         return false;
+
+      return true;
 
    } // isPipe() 
 
@@ -643,13 +675,13 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
          AND
             id_pipe_idx LIKE 0
          AND
-            id_host_idx LIKE '". $ms->get_current_host_profile() ."'");
+            id_host_idx LIKE '". $ms->get_current_host_profile() ."'
+      ");
 
+      if(!isset($row->id_tc_id))
+         return false;
 
-      if($row);
-         return true;
-
-      return false;
+      return true;
 
    } // isChain()
 

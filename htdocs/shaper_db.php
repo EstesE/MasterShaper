@@ -123,6 +123,9 @@ class MASTERSHAPER_DB {
       if(!$this->getConnStatus())
          $ms->throwError("Can't execute query - we are not connected!");
 
+      if(empty($query))
+         return false;
+
       $query = trim($query);
 
       /* for manipulating queries use exec instead of query. can save
@@ -252,12 +255,13 @@ class MASTERSHAPER_DB {
       if(!$this->getConnStatus())
          $ms->throwError("Can't fetch row - we are not connected!");
 
-      try {
-         $result = $this->db->query($query);
-      }
-      catch (PDOException $e) {
-         $ms->throwError("Unable to query database: ". $e->getMessage());
-      }
+      if(empty($query))
+         return false;
+
+      $result = $this->db_query($query);
+
+      if($result->rowCount() == 0)
+         return false;
 
       try {
          $row = $result->fetch($mode);

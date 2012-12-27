@@ -2249,7 +2249,7 @@ class MASTERSHAPER {
                      continue;
                   }
 
-                  $this->_print("Fetching data interface: ". $tc_if .", class: ". $class_id, MSLOG_INFO);
+                  $this->_print("Fetching data interface: ". $tc_if .", class: ". $class_id, MSLOG_DEBUG);
 
                   # we already counting this class?
                   if(!isset($counter[$tc_if ."_". $class_id])) {
