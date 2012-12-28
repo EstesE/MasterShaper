@@ -321,6 +321,7 @@ function set_graph_mode(to)
       },
       success: function(data){
          if(data == "ok") {
+            image_update();
             return true;
          }
          alert('Server returned: ' + data + ', length ' + data.length);
