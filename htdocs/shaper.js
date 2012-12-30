@@ -273,12 +273,11 @@ function draw_jqplot()
          },
          stackSeries:               seriesStack,
          series:                    names_arr,
-         seriesColors:              colors_arr
-         /*legend:{
+         seriesColors:              colors_arr,
+         legend:{
             show:       true,
-            location:   'ne',
-            xoffset:    -70
-         }*/
+            placement:  'outsideGrid'
+         }
        }
       );
       /*}
@@ -287,14 +286,6 @@ function draw_jqplot()
          jqp.series[0].color = colors_arr;
          jqp.replot({ resetAxes: true });
       }*/
-
-      var legend = document.getElementById('jqp_legend');
-
-      legend.innerHTML = '';
-
-      for(var arrkey in names_arr) {
-         legend.innerHTML+= "<br /><font color='" + colors_arr[arrkey] + "'>" + names_arr[arrkey].label + "</font>";
-      }
    }
 
 } // draw_jqplot()

@@ -365,7 +365,9 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
             switch($_SESSION['graphmode']) {
 
+               /* lines with filled areas */
                case 0:
+               /* lines */
                case 1:
 
                   foreach($tc_ids as $tc_id) {
@@ -385,7 +387,9 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                   array_multisort($this->total, SORT_DESC | SORT_NUMERIC, $this->names, $this->colors);
                   break;
 
+               /* bars */
                case 2:
+               /* pies */
                case 3:
 
                   foreach($tc_ids as $tc_id) {
@@ -408,6 +412,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                      array_push($this->names, $name);
                      array_push($this->total, $bps);
                   }
+
                   /* sort so the most bandwidth consuming is on first place */
                   array_multisort($this->total, SORT_DESC | SORT_NUMERIC, $this->names, $this->colors);
                   break;

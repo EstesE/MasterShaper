@@ -14,9 +14,6 @@
     <div id="jqp_monitor"></div>
     <div id="debug"></div>
    </td>
-   <td style="height: 350px" rowspan="10">
-     <div id="jqp_legend"></div>
-   </td>
   </tr>
   <tr>
    <td>&nbsp;</td>
