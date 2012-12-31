@@ -13,7 +13,6 @@
 #    http://www.mastershaper.org
 
 PATH_TO_MS="/var/www/shaper"
-TC_COLLECTOR="./tc_collector.pl -d"
 AGENT="php shaper_agent.php"
 
 cd ${PATH_TO_MS}
@@ -24,8 +23,6 @@ case "$1" in
       echo -n "Starting MasterShaper: "
       ${AGENT} load
       echo -n "Shaper "
-      ${TC_COLLECTOR}
-      echo -n "tc_collector.pl "
       ${AGENT}
       echo -n "shaper_agent "
       ;;
@@ -33,8 +30,6 @@ case "$1" in
       echo -n "Stopping Mastershaper: "
       pkill -f "php shaper_agent.php"
       echo -n "shaper_agent "
-      killall tc_collector.pl
-      echo -n "tc_collector.pl "
       ${AGENT} unload
       echo "Shaper"
       ;;
