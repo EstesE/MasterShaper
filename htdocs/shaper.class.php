@@ -42,9 +42,9 @@ require_once "class/User.php";
 require_once "class/Host_Profile.php";
 require_once "class/Host_Task.php";
 
-define(MSLOG_WARN,  1);
-define(MSLOG_INFO,  2);
-define(MSLOG_DEBUG, 3);
+define('MSLOG_WARN',  1);
+define('MSLOG_INFO',  2);
+define('MSLOG_DEBUG', 3);
 
 class MASTERSHAPER {
 
@@ -1319,7 +1319,7 @@ class MASTERSHAPER {
       // has host updated its heartbeat recently
       $hb = $this->get_host_heartbeat($_POST['idx']);
 
-      if(mktime() > ($hb + 60)) {
+      if(time() > ($hb + 60)) {
          print WEB_PATH .'/icons/absent.png';
          return false;
       }
@@ -1504,7 +1504,7 @@ class MASTERSHAPER {
     *
     * @param string $text
     */
-   public function _print($text, $loglevel, $override_output = NULL, $no_newline = NULL)
+   public function _print($text, $loglevel = MSLOG_INFO, $override_output = NULL, $no_newline = NULL)
    {
       if(isset($this->cfg->logging))
          $logtype = $this->cfg->logging;
@@ -1535,7 +1535,7 @@ class MASTERSHAPER {
             break;
       }
 
-      return $true;
+      return true;
 
    } // _print()
 
@@ -2000,7 +2000,7 @@ class MASTERSHAPER {
 
       $db->db_execute($sth, array(
          $job_cmd,
-         mktime(),
+         time(),
          -1,
          $host_idx
       ));
@@ -2123,7 +2123,7 @@ class MASTERSHAPER {
       }
 
       $this->set_task_state($task->task_idx, 'done', $retval);
-      $this->_print(" Done. ". strftime("%Y-%m-%d %H:%M:%S", mktime()), MSLOG_WARN);
+      $this->_print(" Done. ". strftime("%Y-%m-%d %H:%M:%S", time()), MSLOG_WARN);
 
    } // task_handler()
 
@@ -2210,6 +2210,7 @@ class MASTERSHAPER {
       global $db;
 
       $sec_counter = 0;
+      $class_id    = 0;
       $bandwidth   = array();
       $counter     = array();
       $last_bytes  = array();
@@ -2222,9 +2223,6 @@ class MASTERSHAPER {
          // get active interfaces
          $interfaces = $this->getActiveInterfaces();
 
-         // get current time
-         $now        = mktime();
-
          foreach($interfaces as $interface) {
 
             $tc_if = $interface->if_name;
@@ -2232,129 +2230,156 @@ class MASTERSHAPER {
             # get the current stats from tc
             $lines = $this->run_proc(TC_BIN ." -s class show dev ". $tc_if);
 
-            # analyze the lines
+            # just example lines
+            #class htb 1:eefd parent 1:eefe leaf eefd: prio 5 rate 256000bit ceil 1024Kbit burst 1600b cburst 1599b
+            # Sent 263524 bytes 825 pkt (dropped 0, overlimits 0 requeues 0)
+            #class htb 1:eefc parent 1:eefe leaf eefc: prio 2 rate 1000bit ceil 97280Kbit burst 1600b cburst 1580b
+            # Sent 6419843 bytes 35270 pkt (dropped 0, overlimits 0 requeues 0)
+
+            // analyze the lines
             foreach($lines as $line) {
 
-               # if the line doesn't contain anything we are looking for...
-               if(empty($line) || !preg_match('/(^class|^Sent)/', $line))
+               // if the line doesn't contain anything we are looking for we skip it
+               if(empty($line) || !preg_match('/(^class htb|^Sent)/', $line))
                   continue;
 
-               # Shall we extract a new class­id?
+               // Do we currently handle a specific class_id?
                if($class_id == 0) {
 
-                  # extract class id from the line string
+                  // extract class id from string
                   $class_id = $this->extract_class_id($line);
 
+                  // if we have no valid class_id
                   if(empty($class_id)) {
+                     $this->_print("No classid found in ". $line, MSLOG_DEBUG);
                      continue;
                   }
+
+                  $arkey = $tc_if ."_". $class_id;
 
                   $this->_print("Fetching data interface: ". $tc_if .", class: ". $class_id, MSLOG_DEBUG);
 
                   # we already counting this class?
-                  if(!isset($counter[$tc_if ."_". $class_id])) {
-                     $counter[$tc_if ."_". $class_id] = 0;
-                     $last_bytes[$tc_if ."_". $class_id] = 0;
-                  }
+                  if(!isset($counter[$arkey]))
+                     $counter[$arkey] = 0;
+                  if(!isset($bandwidth[$arkey]))
+                     $bandwidth[$arkey] = 0;
                }
+               // we must have a "Sent" line here
                else {
 
-                  # extract current bytes from the line string
+                  // extract currently transfered bytes from string
                   $current_bytes = $this->extract_bytes($line);
 
-                  # if no data available or class hasn't exhaust any bytes, we can skip to the next
-                  if($current_bytes <= 0) {
+                  // we have not located a counter, skip no next class_id
+                  if($current_bytes < 0) {
+                     $this->_print("No traffic found in ". $line, MSLOG_DEBUG);
+                     $class_id = 0;
+                     continue;
+                  }
+
+                  // if counter is zero, we can skip this class_id
+                  if($current_bytes == 0) {
                      $this->_print("No traffic for interface: ". $tc_if .", class: ". $class_id .", ". $current_bytes ." bytes", MSLOG_DEBUG);
                      $class_id = 0;
                      continue;
                   }
 
-                  $this->_print("Bytes for interface: ". $tc_if .", class: ". $class_id .", ". $current_bytes ." bytes", MSLOG_DEBUG);
+                  $arkey = $tc_if ."_". $class_id;
 
-                  if(isset($last_bytes[$tc_if ."_". $class_id]) &&
-                     $last_bytes[$tc_if ."_". $class_id] == 0) {
+                  // have we recorded this class_id already before
+                  if(isset($last_bytes[$arkey])) {
 
-                     # calculate the bandwidth from the last second
-                     $current_bw = $current_bytes - $last_bytes[$tc_if ."_". $class_id];
+                     // calculate the bandwidth for this run
+                     $current_bw = $current_bytes - $last_bytes[$arkey];
 
                   }
                   else {
                      $current_bw = 0;
                   }
 
-                  # store the current bytes
-                  $last_bytes[$tc_if ."_". $class_id] = $current_bytes;
-                  # add it to the bandwidth summary
-                  $bandwidth[$tc_if ."_". $class_id]+=$current_bw;
-                  # increment the counter
-                  $counter[$tc_if ."_". $class_id]+=1;
+                  // store the currently transfered bytes for the next run
+                  $last_bytes[$arkey] = $current_bytes;
+                  // add bandwidth to summary array
+                  $bandwidth[$arkey]+=$current_bw;
+                  // increment the counter for this class_id
+                  $counter[$arkey]+=1;
 
+                  // prepare for the next class_id to fetch
                   $class_id = 0;
-
                }
             }
          }
 
-         // we are storing our values in database only every tenth second.
-         if($sec_counter <= 10) {
+         // we record tenth samples before we record to database
+         if($sec_counter < 10) {
             System_Daemon::iterate(1);
             continue;
          }
 
-         // skip if no data is available
-
          $tcs = array_keys($bandwidth);
          $data = "";
 
+         $this->_print("TRY: ". count($tcs) ."\n", MSLOG_DEBUG);
          $this->_print("Storing tc statistic now.", MSLOG_DEBUG);
 
          foreach($tcs as $tc) {
 
-            list($tc_if, $class_id) = split('_', $tc);
+            list($tc_if, $class_id) = preg_split('/_/', $tc);
 
-            # calculate the average bandwidth
-            if($counter[$tc_if ."_". $class_id] > 0) {
-               $aver_bw = $bandwidth[$tc_if ."_". $class_id]/($counter[$tc_if ."_". $class_id]);
+            // calculate the average bandwidth based on our recorded samples
+            if($counter[$tc] > 0) {
+               $aver_bw = $bandwidth[$tc]/($counter[$tc]);
             } else {
                $aver_bw = 0;
             }
 
-            # bytes to bits
+            // bytes to bits
             $aver_bw = round($aver_bw*8);
 
-            $this->_print("Interface: ". $tc_if .", class: ". $class_id .", transferred: ". $aver_bw, MSLOG_INFO);
+            $this->_print("Recording Interface: ". $tc_if .", class: ". $class_id .", transferred: ". $aver_bw ." ". $counter[$tc], MSLOG_INFO);
 
-            $data.= $tc_if ."_". $class_id ."=". $aver_bw .",";
+            $data.= $tc ."=". $aver_bw .",";
 
-            # this class has been calculated, make all ready for the next one
-            unset($counter[$tc_if ."_". $class_id]);
-            unset($bandwidth[$tc_if ."_". $class_id]);
+            // this class has been calculated, become ready for the next one
+            unset($counter[$tc]);
+            unset($bandwidth[$tc]);
+            unset($last_bytes[$tc]);
          }
+
+         // get current time
+         $now = time();
 
          if(!empty($data)) {
 
             $data = substr($data, 0, strlen($data)-1);
 
-            # $this->_print($data);
-            $sth = $db->db_prepare("
-               INSERT INTO ". MYSQL_PREFIX ."stats (
-                  stat_data,
-                  stat_time,
-                  stat_host_idx
-               ) VALUES (
-                  ?,
-                  ?,
-                  ?
-               )
-            ");
+            if(!isset($this->sth_collect_stats)) {
+               $this->sth_collect_stats = $db->db_prepare("
+                  INSERT INTO ". MYSQL_PREFIX ."stats (
+                     stat_time,
+                     stat_data,
+                     stat_host_idx
+                  ) VALUES (
+                     ?,
+                     ?,
+                     ?
+                  )
+               ");
+            }
 
-            $sth->execute(array(
-               $data,
-               $now,
-               $this->get_current_host_profile(),
-            ));
+            try {
+               $this->sth_collect_stats->execute(array(
+                  $now,
+                  $data,
+                  $this->get_current_host_profile(),
+               ));
+            }
+            catch (PDOException $e) {
+               $this->_print("Exception: ". $e->getMessage(), MSLOG_WARN);
+            }
 
-            $db->db_sth_free($sth);
+            $db->db_sth_free($this->sth_collect_stats);
 
             $this->_print("Statistics stored in MySQL database.", MSLOG_DEBUG);
          }
@@ -2373,7 +2398,6 @@ class MASTERSHAPER {
          ");
 
          # reset helper vars
-         $bandwidth = array();
          $sec_counter = 0;
 
          System_Daemon::iterate(1);
@@ -2428,11 +2452,11 @@ class MASTERSHAPER {
    private function extract_class_id($line)
    {
 
-      if(!preg_match('/class/', $line))
+      if(!preg_match('/class htb/', $line))
          return false;
 
       $temp_array = array();
-      $temp_array = split(' ', $line);
+      $temp_array = preg_split('/\s/', $line);
       return $temp_array[2];
 
    } // extract_class_id()
@@ -2444,7 +2468,7 @@ class MASTERSHAPER {
          return -1;
 
       $temp_array = array();
-      $temp_array = split(' ', $line);
+      $temp_array = preg_split('/\s/', $line);
       return $temp_array[1];
 
    } // extract_bytes()

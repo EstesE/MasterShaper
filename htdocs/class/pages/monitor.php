@@ -244,7 +244,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
       /* time settings */
       $time_now  = mktime();
-      $time_past = mktime() - 120;
+      $time_past = mktime() - 180;
 
       $sth = $db->db_prepare("
          SELECT
@@ -356,6 +356,9 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             // store difference between previously and currently transfered data
             if(isset($last_bw[$tc_id]))
                $bw = $bigdata[$timestamp][$tc_id] - $last_bw[$tc_id];
+
+            if($bw < 0)
+               $bw = 0;
 
             $bw = $this->convert_to_bandwidth($bw);
 
@@ -706,6 +709,9 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
    private function convert_to_bandwidth($bw)
    {
+      if($bw == 0)
+         return 0;
+
       // it is what we have already...
       if($_SESSION['scalemode'] == 'bit')
          return round($bw, 1);
