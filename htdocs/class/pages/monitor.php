@@ -427,7 +427,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
                      array_push($this->names, $name);
 
                      if($_SESSION['graphmode'] == 2)
-                        array_push($this->total, array($bps));
+                        array_push($this->total, $bps);
 
                      if($_SESSION['graphmode'] == 3)
                         array_push($this->total, array($name, $bps));

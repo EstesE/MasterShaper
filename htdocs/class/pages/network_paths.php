@@ -113,7 +113,6 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
          $ms->get_current_host_profile(),
       ));
 
-      $db->db_sth_free($sth);
       $cnt_chains = 0;
 
       while($chain = $sth->fetch()) {
@@ -121,6 +120,8 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
          $this->chains[$chain->chain_idx] = $chain;
          $cnt_chains++;
       }
+
+      $db->db_sth_free($sth);
 
       $tmpl->assign('np', $np);
       $tmpl->register_function("if_select_list", array(&$this, "smarty_if_select_list"), false);

@@ -8,8 +8,6 @@
    <br />
 	<hr />
 	<br />
-	<b>Andreas Unterkircher</b>
-	<br />
 	<i><b>Licensed under GPL2</b></i><br />
 	(<a href="http://www.gnu.org/copyleft/gpl.html">http://www.gnu.org/copyleft/gpl.html</a>)<br />
 	<br />
