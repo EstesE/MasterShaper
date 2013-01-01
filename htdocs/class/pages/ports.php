@@ -187,8 +187,10 @@ class Page_Ports extends MASTERSHAPER_PAGE {
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
       /* load port */
-      if(isset($new))
+      if(isset($new)) {
          $port = new Port;
+         $port->port_user_defined = 'Y';
+      }
       else
          $port = new Port($_POST['port_idx']);
 
