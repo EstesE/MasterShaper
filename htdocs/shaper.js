@@ -149,7 +149,7 @@ function draw_jqplot()
       var graphmode   = data.graphmode;
 
       if(data.names)
-         var names_obj= parse_json(data.names);
+         var names_obj = parse_json(data.names);
       if(data.colors)
          var colors_obj = parse_json(data.colors);
 
@@ -170,6 +170,7 @@ function draw_jqplot()
       var plot_obj  = parse_json(data.data);
       var plot_arr  = new Array();
       var names_arr = new Array();
+      var names_ary = new Array();
       /* a default color is a must, otherwise jqplot refuses to work */
       var colors_arr = new Array('#4444aa');
 
@@ -187,6 +188,7 @@ function draw_jqplot()
          names_arr[j] = {
             label: names_obj[i]
          };
+         names_ary[j] = names_obj[i];
          j++;
       }
       j = 0;
@@ -203,18 +205,19 @@ function draw_jqplot()
       /* accumulated lines */
       if(graphmode == 0) {
          seriesStack = true;
+         seriesPointLabels       = {};
          xaxis_opts = {
             autoscale:           true,
             label:               'Time',
             renderer:            $.jqplot.DateAxisRenderer,
-            tickOptions:         {formatString:'%H:%M:%S'},
-            tickInterval:        '10 seconds'
+            tickOptions:         {formatString:'%H:%M:%S'}
          }
          plot_values = plot_arr;
       }
       /* simple lines */
       if(graphmode == 1) {
          seriesFill = false;
+         seriesPointLabels       = {};
          xaxis_opts = {
             autoscale:           true,
             label:               'Time',
@@ -225,17 +228,24 @@ function draw_jqplot()
       /* bars */
       if(graphmode == 2) {
          seriesRenderer          = $.jqplot.BarRenderer;
-         seriesRendererOptions   = { barPadding: 8, barMargin: 20 };
-         xaxis_opts = {};
-         plot_values = plot_arr;
+         seriesRendererOptions   = { barPadding: 8, barMargin: 20, varyBarColor: true };
+         seriesPointLabels       = { show: true, location: 'n', edgeTolerance: -15 };
+         xaxis_opts = {
+            renderer:            $.jqplot.CategoryAxisRenderer,
+            ticks:               names_ary
+         };
+         plot_values = [plot_arr];
       }
       /* pie */
       if(graphmode == 3) {
          seriesRenderer          = $.jqplot.PieRenderer;
          seriesRendererOptions   = { sliceMargin:0, showDataLabels: true, dataLabels: 'label' };
+         seriesPointLabels       = {};
          xaxis_opts = {};
          plot_values = [plot_arr];
       }
+      // enable for some debugging output
+      // document.getElementById("debug").innerHTML = 'Debug: ' + plot_values + '<br />' + names_ary + '<br />' + colors_arr;
 
       // clear view
       //$('#jqp_monitor').empty();
@@ -262,10 +272,11 @@ function draw_jqplot()
             fill:                   seriesFill,
             showMarker:             true,
             renderer:               seriesRenderer,
-            rendererOptions:        seriesRendererOptions
+            rendererOptions:        seriesRendererOptions,
+            pointLabels:            seriesPointLabels
          },
          cursor:{
-            show:                   false,
+            show:                   true,
             showVerticalLine:       true,
             showHorizontalLine:     false,
             showTooltip:            true,
@@ -277,8 +288,8 @@ function draw_jqplot()
          series:                    names_arr,
          seriesColors:              colors_arr,
          legend:{
-            show:       true,
-            placement:  'outsideGrid'
+            show:                   true,
+            placement:              'outsideGrid'
          }
        }
       );
@@ -313,7 +324,9 @@ function set_graph_mode(to)
       },
       success: function(data){
          if(data == "ok") {
+            clearTimeout(autoload);
             image_update();
+            autoload = setTimeout("image_autoload()", 10000);
             return true;
          }
          alert('Server returned: ' + data + ', length ' + data.length);
