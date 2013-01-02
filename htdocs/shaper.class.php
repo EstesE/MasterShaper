@@ -348,6 +348,10 @@ class MASTERSHAPER {
          case 'get-host-state':
             $this->rpc_get_host_state();
             break;
+         case 'idle':
+            // just do nothing, for debugging
+            print "ok";
+            break;
          default:
             print "Unknown action\n";
             return false;
@@ -1605,6 +1609,7 @@ class MASTERSHAPER {
          'get-sub-menu',
          'set-host-profile',
          'get-host-state',
+         'idle',
       );
 
       if(in_array($page->action, $valid_actions))
