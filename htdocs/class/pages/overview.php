@@ -393,6 +393,15 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
    } // smart_ov_filter()
 
+   /**
+    * alter position
+    *
+    * gather objects current position
+    * move all other objects away
+    * set objects new position
+    *
+    * @return string
+    */
    public function alter_position()
    {
       global $ms, $db;
@@ -422,7 +431,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
             break;
 
          default:
-            return "Unkown object-type";
+            return "Unknown object-type";
             break;
 
       }
@@ -440,84 +449,88 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          case 'chain':
             $query = "
                SELECT
-                  ". $obj_col ."_position as position,
-                  ". $obj_parent ." as parent_idx,
+                  chain_position as position,
+                  chain_netpath_idx as parent_idx,
                   (
                      /* get colums max position */
                      SELECT
-                        MAX(". $obj_col ."_position)
+                        MAX(chain_position)
                      FROM
-                        ". MYSQL_PREFIX . $obj_table ."
+                        ". MYSQL_PREFIX ."chains
                      WHERE
                         /* but only for our parents objects */
-                        ". $obj_parent ." = (
+                        chain_netpath_idx = (
                         SELECT
-                           ". $obj_parent ."
+                           chain_netpath_idx
                         FROM
-                           ". MYSQL_PREFIX . $obj_table ."
+                           ". MYSQL_PREFIX ."chains
                         WHERE
-                           ". $obj_col ."_idx LIKE '". $idx ."'
+                           chain_idx LIKE '". $idx ."'
                         AND
-                           ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
+                           chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
                      )
                      AND
-                        ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
+                        chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
                   ) as max
                FROM
-                  ". MYSQL_PREFIX . $obj_table ."
+                  ". MYSQL_PREFIX ."chains
                WHERE
-                  ". $obj_col ."_idx='". $idx ."'
+                  chain_idx='". $idx ."'
                AND
-                  ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
+                  chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
             ";
             break;
          case 'pipe':
             $query = "
                SELECT
-                  ". $obj_col ."_position as position,
-                  ". $obj_parent ." as parent_idx,
+                  apc.apc_idx as idx,
+                  apc.apc_pipe_pos as position,
+                  apc.apc_chain_idx parent_idx,
                   (
                      /* get colums max position */
                      SELECT
-                        MAX(". $obj_col ."_position)
+                        MAX(apc_pipe_pos)
                      FROM
-                        ". MYSQL_PREFIX . $obj_table ."
+                        ". MYSQL_PREFIX . "assign_pipes_to_chains
                      WHERE
-                        /* but only for our parents objects */
-                        ". $obj_parent ." = (
-                        SELECT
-                           ". $obj_parent ."
-                        FROM
-                           ". MYSQL_PREFIX . $obj_table ."
-                        WHERE
-                           ". $obj_col ."_idx='". $idx ."'
-                     )
+                        apc_chain_idx LIKE (
+                           SELECT
+                              apc_chain_idx
+                           FROM
+                              ". MYSQL_PREFIX . "assign_pipes_to_chains
+                           WHERE
+                              apc_idx LIKE '". $idx ."'
+                        )
                   ) as max
                FROM
-                  ". MYSQL_PREFIX . $obj_table ."
+                  ". MYSQL_PREFIX . "pipes p
+               INNER JOIN
+                  ". MYSQL_PREFIX . "assign_pipes_to_chains apc
+               ON
+                  p.pipe_idx=apc.apc_pipe_idx
                WHERE
-                  ". $obj_col ."_idx='". $idx ."'
+                  apc.apc_idx='". $idx ."'
             ";
             break;
          case 'netpath':
             $query = "
                SELECT
-                  ". $obj_col ."_position as position,
+                  netpath_position as position,
                   (
                      /* get colums max position */
                      SELECT
-                        MAX(". $obj_col ."_position)
+                        MAX(netpath_position)
                      FROM
-                        ". MYSQL_PREFIX . $obj_table ."
+                        ". MYSQL_PREFIX ."network_paths
                      WHERE
-                        ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
+                        netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
                   ) as max
                FROM
-                  ". MYSQL_PREFIX .  $obj_table ."
+                  ". MYSQL_PREFIX ."network_paths
                WHERE
-                  ". $obj_col ."_idx='". $idx ."'
+                  netpath_idx='". $idx ."'
                AND
-                  ". $obj_col ."_host_idx LIKE '". $ms->get_current_host_profile() ."'
+                  netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
             ";
             break;
       }
@@ -529,47 +542,49 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
       if($_POST['to'] == 'up') {
          /* if we are not at the top most position */
-         if($my_pos->position != 1)
+         if($my_pos->position > 1)
             $new_pos = $my_pos->position - 1;
          else
             $new_pos = -1;
       }
       elseif($_POST['to'] == 'down') {
          /* if we are not at the bottom most position */
-         if($my_pos->position != $my_pos->max)
+         if($my_pos->position < $my_pos->max)
             $new_pos = $my_pos->position + 1;
          else
             $new_pos = -2;
       }
       else
+         /* we make no change */
          $new_pos = $my_pos->position;
+
+      //return $new_pos ." ". $my_pos->position ." ". $my_pos->max;
 
       /* if no position will be changed, return */
       if($new_pos == $my_pos->position)
          return "ok";
 
-      //return $new_pos ." ". $my_pos->position ." ". $my_pos->max;
-
       /* new position can not be below null */
       if($new_pos == 0)
          $new_pos = 1;
 
-      /* just moving ... */
+      /* moving if new position is greater than 0 */
       if($new_pos > 0) {
-         /* move all other objects away */
+
+         /* swap position with current position holder */
          switch($_POST['move_obj']) {
             case 'chain':
                $sth = $db->db_prepare("
                   UPDATE
-                     ". MYSQL_PREFIX . $obj_table ."
+                     ". MYSQL_PREFIX ."chains
                   SET
-                     ". $obj_col ."_position=?
+                     chain_position=?
                   WHERE
-                     ". $obj_col ."_position LIKE ?
+                     chain_position LIKE ?
                   AND
-                     ". $obj_parent ." LIKE ?
+                     chain_netpath_idx LIKE ?
                   AND
-                     ". $obj_col ."_host_idx LIKE ?
+                     chain_host_idx LIKE ?
                ");
 
                $db->db_execute($sth, array(
@@ -584,13 +599,13 @@ class Page_Overview extends MASTERSHAPER_PAGE {
             case 'pipe':
                $sth = $db->db_prepare("
                   UPDATE
-                     ". MYSQL_PREFIX . $obj_table ."
+                     ". MYSQL_PREFIX ."assign_pipes_to_chains
                   SET
-                     ". $obj_col ."_position=?
+                     apc_pipe_pos=?
                   WHERE
-                     ". $obj_col ."_position LIKE ?
+                     apc_pipe_pos LIKE ?
                   AND
-                     ". $obj_parent ." LIKE ?
+                     apc_chain_idx LIKE ?
                ");
 
                $db->db_execute($sth, array(
@@ -604,13 +619,13 @@ class Page_Overview extends MASTERSHAPER_PAGE {
             case 'netpath':
                $sth = $db->db_prepare("
                   UPDATE
-                     ". MYSQL_PREFIX . $obj_table ."
+                     ". MYSQL_PREFIX ."network_paths
                   SET
-                     ". $obj_col ."_position=?
+                     netpath_position=?
                   WHERE
-                     ". $obj_col ."_position LIKE ?
+                     netpath_position LIKE ?
                   AND
-                     ". $obj_col ."_host_idx LIKE ?
+                     netpath_host_idx LIKE ?
                ");
 
                $db->db_execute($sth, array(
@@ -633,57 +648,39 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          switch($_POST['move_obj']) {
 
             case 'chain':
-               $sth = $db->db_execute("
+               $db->db_query("
                   UPDATE
-                     ". MYSQL_PREFIX . $obj_table ."
+                     ". MYSQL_PREFIX ."chains
                   SET
-                     ". $obj_col ."_position = ?
+                     chain_position = chain_position". $dir ."
                   WHERE
-                     ". $obj_parent ." LIKE ?
+                     chain_netpath_idx LIKE '". $my_pos->parent_idx ."'
                   AND
-                     ". $obj_col ."_host_idx LIKE ?
+                     chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
                ");
-               $db->db_execute($sth, array(
-                  $obj_col ."_position" . $dir,
-                  $my_pos->parent_idx,
-                  $ms->get_current_host_profile(),
-               ));
                break;
 
-
             case 'pipe':
-               $sth = $db->db_execute("
+               $db->db_query("
                   UPDATE
-                     ". MYSQL_PREFIX . $obj_table ."
+                     ". MYSQL_PREFIX ."assign_pipes_to_chains
                   SET
-                     ". $obj_col ."_position = ?
+                     apc_pipe_pos = apc_pipe_pos". $dir ."
                   WHERE
-                     ". $obj_parent ." LIKE ?
+                     apc_chain_idx LIKE '". $my_pos->parent_idx ."'
                ");
-               $db->db_execute($sth, array(
-                  $obj_col ."_position" . $dir,
-                  $my_pos->parent_idx
-               ));
                break;
 
             case 'netpath':
 
                $sth = $db->db_prepare("
                   UPDATE
-                     ". MYSQL_PREFIX . $obj_table ."
+                     ". MYSQL_PREFIX ."network_paths
                   SET
-                     ". $obj_col ."_position = ?
+                     netpath_position = netpath_position". $dir ."
                   WHERE
-                     ". $obj_col ."_position LIKE ?
-                  AND
-                     ". $obj_col ."_host_idx LIKE ?
+                     netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
                ");
-               $db->db_execute($sth, array(
-                  $obj_col ."_position" . $dir,
-                  $new_pos,
-                  $ms->get_current_host_profile(),
-               ));
-               $db->db_sth_free($sth);
                break;
          }
       }
@@ -693,19 +690,19 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       if($new_pos == -2)
          $new_pos = 1;
 
-      /* set objects new position */
+      /* finally set objects new position */
       switch($_POST['move_obj']) {
+
          case 'chain':
-         case 'netpath':
             $sth = $db->db_prepare("
                UPDATE
-                  ". MYSQL_PREFIX . $obj_table ."
+                  ". MYSQL_PREFIX ."chains
                SET
-                  ". $obj_col ."_position=?
+                  chain_position = ?
                WHERE
-                  ". $obj_col ."_idx LIKE ?
+                  chain_idx LIKE ?
                AND
-                  ". $obj_col ."_host_idx LIKE ?
+                  chain_host_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
@@ -719,19 +716,40 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          case 'pipe':
             $sth = $db->db_prepare("
                UPDATE
-                  ". MYSQL_PREFIX . $obj_table ."
+                  ". MYSQL_PREFIX ."assign_pipes_to_chains
                SET
-                  ". $obj_col ."_position=?
+                  apc_pipe_pos = ?
                WHERE
-                  ". $obj_col ."_idx LIKE ?
+                  apc_idx LIKE ?
             ");
 
             $db->db_execute($sth, array(
                $new_pos,
-               $idx
+               $my_pos->idx
             ));
             $db->db_sth_free($sth);
             break;
+
+         case 'netpath':
+            $sth = $db->db_prepare("
+               UPDATE
+                  ". MYSQL_PREFIX ."network_paths
+               SET
+                  netpath_position = ?
+               WHERE
+                  netpath_idx LIKE ?
+               AND
+                  netpath_host_idx LIKE ?
+            ");
+
+            $db->db_execute($sth, array(
+               $new_pos,
+               $idx,
+               $ms->get_current_host_profile(),
+            ));
+            $db->db_sth_free($sth);
+            break;
+
       }
 
       return "ok";

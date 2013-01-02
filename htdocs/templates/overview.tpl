@@ -11,7 +11,7 @@
  { include file="welcome.tpl" }
 { /if }
 { ov_netpath }
-<table style="width: 100%;" id="netpath{$netpath->netpath_idx}">
+<table style="width: 100%;" type="netpath" id="netpath{$netpath->netpath_idx}">
  <tr>
   <td style="height: 15px;" />
  </tr>
@@ -63,7 +63,7 @@
 
  { ov_chain np_idx=$netpath->netpath_idx }
 
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain->chain_idx}">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain->chain_idx}" type="chain">
      <td colspan="2">
       <a href="javascript:#" title="Collapse chain" onclick="toggle_content('#chain{$chain->chain_idx} ~ [chain={$chain->chain_idx}]', '#togglechn{$chain->chain_idx}', '{$icon_menu_down}', '{$icon_menu_right}'); return false;"><img src="{$icon_menu_right}" id="togglechn{$chain->chain_idx}" np={$netpath->netpath_idx} state=hidden /></a>
       <img src="{ $icon_chains }" alt="chain icon" />&nbsp;
@@ -146,7 +146,7 @@
   { if $chain->chain_sl_idx != 0 && $chain->chain_fallback_idx != 0 }
    { ov_pipe np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx }
     <input type="hidden" name="pipes[{ $pipe_counter }]" value="{ $pipe->pipe_idx }" />
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe->pipe_idx}" chain={$chain->chain_idx} np={$netpath->netpath_idx} style="display: none;">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe->apc_idx}" chain={$chain->chain_idx} np={$netpath->netpath_idx} type="pipe" style="display: none;">
      <td style="text-align: center;">{ $counter }</td>
      <td>
       <img src="{ $icon_pipes }" alt="pipes icon" />&nbsp;
@@ -202,12 +202,12 @@
       </select>
      </td> *}
      <td style="text-align: center;">
-      <a class="move-down" type="pipe" idx="{ $pipe->pipe_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
-      <a class="move-up" type="pipe" idx="{ $pipe->pipe_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
+      <a class="move-down" type="pipe" idx="{ $pipe->apc_idx }"><img src="{ $icon_pipes_arrow_down }" alt="Move pipe down" /></a>
+      <a class="move-up" type="pipe" idx="{ $pipe->apc_idx }"><img src="{ $icon_pipes_arrow_up }" alt="Move pipe up" /></a>
      </td>
     </tr>
     { ov_filter np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx pipe_idx=$pipe->pipe_idx }
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" chain={$chain->chain_idx} np={$netpath->netpath_idx} style="display: none;">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" chain={$chain->chain_idx} np={$netpath->netpath_idx} pipe="{ $pipe->apc_idx }" type="filter" style="display: none;">
      <td>&nbsp;</td>
      <td colspan="7">
       <img src="{ $icon_treeend }" alt="tree" />
@@ -220,6 +220,10 @@
    {/ov_pipe}
   {/if}
  {/ov_chain}
+   </table>
+  </td>
+ </tr>
+</table>
 {/ov_netpath}
 </div>
    </table>

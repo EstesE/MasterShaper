@@ -596,43 +596,196 @@ function obj_alter_position(element)
          action   : 'alter-position',
          move_obj : obj_type,
          id       : obj_idx,
-         to       : obj_to,
-         parent   : obj_parent
+         to       : obj_to
       }),
       error: function(XMLHttpRequest, textStatus, errorThrown) {
          alert('Failed to contact server! ' + textStatus);
       },
       success: function(data){
+
          if(data != "ok") {
             alert('Server returned: ' + data + ', length ' + data.length);
             return;
          }
-         tableRow = $('#' + obj_type + obj_idx);
-         if(obj_to == 'up') {
-            /* the first tableRow is the second child */
-            if(tableRow.is(":nth-child(2)")) {
-               if($children = tableRow.parent().children())
-                  $($children[$children.length-1]).after(tableRow);
-            }
-            else {
-               if(prev = tableRow.prev())
-                  prev.before(tableRow);
-            }
+
+         // moving chains
+         if(obj_type == 'chain') {
+            tableRow = $('tr#' + obj_type + obj_idx);
+            return obj_alter_position_chain(tableRow, obj_idx, obj_to);
          }
-         if(obj_to == 'down') {
-            if(tableRow.is(":last-child")) {
-               if($children = tableRow.parent().children())
-                  $($children[1]).before(tableRow);
-            }
-            else {
-               if(next = tableRow.next())
-                  next.after(tableRow);
-            }
+         else if (obj_type == 'pipe') {
+            tableRow = $('tr#' + obj_type + obj_idx);
+            return obj_alter_position_pipe(tableRow, obj_idx, obj_to);
+         }
+         else if (obj_type == 'netpath') {
+            tableRow = $('table#' + obj_type + obj_idx);
+            return obj_alter_position_netpath(tableRow, obj_idx, obj_to);
          }
       }
    });
 
-} // alter_position()
+} // obj_alter_position()
+
+function obj_alter_position_chain(tableRow, obj_idx, obj_to)
+{
+   // get our childrens (pipes and filters)
+   tableChld = $('tr[type=pipe][chain='+ obj_idx +'], tr[type=filter][chain='+ obj_idx +']');
+
+   // if element has childs, detach them from DOM temporary
+   if(tableChld)
+      tableChld.detach();
+
+   /**
+    * move object up
+    */
+   if(obj_to == 'up') {
+
+      /* if object is on the first position */
+      if(tableRow.parent().children("tr[type=chain]").index(tableRow) == 0) {
+
+         /* append after last object */
+         tableRow.parent().children(":last-child").after(tableRow);
+      }
+      /* for any other object */
+      else {
+
+         /* get objects new position (current position - 1) */
+         newpos = tableRow.parent().children("tr[type=chain]").index(tableRow) - 1;
+
+         /* move object before (current) object at our new position (so we will be newpos) */
+         tableRow.parent().children("tr[type=chain]").eq(newpos).before(tableRow);
+      }
+   }
+
+   /**
+    * move object down
+    */
+   if(obj_to == 'down') {
+
+      /* if object is on the last position */
+      if(tableRow.parent().children("tr[type=chain]").length-1 == tableRow.parent().children("tr[type=chain]").index(tableRow)) {
+
+         /* insert before first object */
+         tableRow.parent().children(":first-child").before(tableRow);
+      }
+      /* if object is two before end */
+      else if(tableRow.parent().children("tr[type=chain]").length-2 == tableRow.parent().children("tr[type=chain]").index(tableRow)) {
+
+         /* append after last object */
+         tableRow.parent().children(":last-child").after(tableRow);
+      }
+      /* for any other object */
+      else {
+
+         /* get objects new position (current position + 2) */
+         newpos = tableRow.parent().children("tr[type=chain]").index(tableRow) + 2;
+
+         /* by selecting two objects ahead we can insert our object right between those two */
+         tableRow.parent().children("tr[type=chain]").eq(newpos).before(tableRow);
+         /* so we do not have to take care if the next object would be expanded/collapsed */
+      }
+   }
+
+   // insert all childrens after new objects position
+   if(tableChld)
+      tableChld.insertAfter(tableRow);
+
+   return true;
+
+} // obj_alter_position_chain()
+
+function obj_alter_position_pipe(tableRow, obj_idx, obj_to)
+{
+   // get our childrens (filters)
+   tableChld = $('tr[type=filter][pipe='+ obj_idx +']');
+
+   if((chain_id = tableRow.attr('chain')) == undefined) {
+      window.alert("unable to locate chain_id");
+      return false;
+   }
+
+   pipes = $('tr[type=pipe][chain='+ chain_id +']');
+
+   // if element has childs, detach them from DOM temporary
+   if(tableChld)
+      tableChld.detach();
+
+   if(obj_to == 'up') {
+
+      /* if on the first position */
+      if(pipes.first().is(tableRow)) {
+
+         // append after last object
+         pipes.last().after(tableRow);
+      }
+      else {
+
+         newpos = pipes.index(tableRow)-1;
+         pipes.eq(newpos).before(tableRow);
+      }
+   }
+   if(obj_to == 'down') {
+
+      if(pipes.last().is(tableRow)) {
+
+         // insert before first object
+         pipes.first().before(tableRow);
+      }
+      else if (pipes.eq(-2).is(tableRow)) {
+
+         // insert before first object
+         pipes.last().after(tableRow);
+      }
+      else {
+
+         newpos = pipes.index(tableRow)+2;
+         pipes.eq(newpos).before(tableRow);
+      }
+   }
+
+   // insert all childrens after new objects position
+   if(tableChld)
+      tableChld.insertAfter(tableRow);
+
+   return true;
+
+} // obj_alter_position_pipe()
+
+function obj_alter_position_netpath(tableRow, obj_idx, obj_to)
+{
+   netpaths = $('table[type=netpath]');
+
+   if(obj_to == 'up') {
+
+      /* if on the first position */
+      if(netpaths.first().is(tableRow)) {
+
+         // append after last object
+         netpaths.last().after(tableRow);
+      }
+      else {
+
+         newpos = netpaths.index(tableRow)-1;
+         netpaths.eq(newpos).before(tableRow);
+      }
+   }
+   if(obj_to == 'down') {
+
+      if(netpaths.last().is(tableRow)) {
+
+         // insert before first object
+         netpaths.first().before(tableRow);
+      }
+      else {
+
+         newpos = netpaths.index(tableRow)+1;
+         netpaths.eq(newpos).after(tableRow);
+      }
+   }
+
+   return true;
+
+} // obj_alter_position_netpath()
 
 function obj_assign_pipe_to_chains(element)
 {
