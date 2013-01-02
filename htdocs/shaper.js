@@ -585,15 +585,28 @@ function obj_alter_position(element)
       obj_to = "up";
    if(element.attr("class") == "move-down")
       obj_to = "down";
+   if(element.attr("parent"))
+      obj_parent = element.attr("parent");
 
    $.ajax({
       type: "POST",
       url: "rpc.html",
-      data: ({type : 'rpc', action : 'alter-position', move_obj : obj_type, id : obj_idx, to : obj_to }),
+      data: ({
+         type     : 'rpc',
+         action   : 'alter-position',
+         move_obj : obj_type,
+         id       : obj_idx,
+         to       : obj_to,
+         parent   : obj_parent
+      }),
       error: function(XMLHttpRequest, textStatus, errorThrown) {
          alert('Failed to contact server! ' + textStatus);
       },
       success: function(data){
+         if(data != "ok") {
+            alert('Server returned: ' + data + ', length ' + data.length);
+            return;
+         }
          tableRow = $('#' + obj_type + obj_idx);
          if(obj_to == 'up') {
             /* the first tableRow is the second child */
@@ -616,9 +629,6 @@ function obj_alter_position(element)
                   next.after(tableRow);
             }
          }
-         if(data == "ok")
-            return;
-         alert('Server returned: ' + data + ', length ' + data.length);
       }
    });
 
