@@ -95,7 +95,7 @@ class Chain extends MsObject {
 
    public function post_save()
    {
-      global $db;
+      global $ms, $db;
 
       if(!isset($_POST['pipe_sl_idx']) || empty($_POST['pipe_sl_idx']))
          return true;
@@ -153,8 +153,10 @@ class Chain extends MsObject {
                apc_chain_idx,
                apc_sl_idx,
                apc_pipe_pos,
-               apc_pipe_active
+               apc_pipe_active,
+               apc_guid
             ) VALUES (
+               ?,
                ?,
                ?,
                ?,
@@ -169,6 +171,7 @@ class Chain extends MsObject {
             $override_sl,
             $pipe_position,
             $override_active,
+            $ms->create_guid(),
          ));
 
          $db->db_sth_free($sth);
