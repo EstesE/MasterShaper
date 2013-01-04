@@ -288,9 +288,9 @@ class MASTERSHAPER_TMPL extends Smarty {
                   break;
             }
          }
-      }
 
-      $string.= "</option>\n";
+         $string.= "</option>\n";
+      }
 
       return $string;
 

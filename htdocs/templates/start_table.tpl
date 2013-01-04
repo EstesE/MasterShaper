@@ -5,6 +5,7 @@
      <td style="width: 5px;"></td>
      <td class="tabletitle">
       <img src="{ $icon }" alt="{ $alt }" />&nbsp;{ $title }
+     </td>
     </tr>
    </table>
   </div>

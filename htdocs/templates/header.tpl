@@ -36,7 +36,7 @@
   <!-- header cell -->
   <div style="height: 10px;"></div>
   <div style="width: 100%; height: 70px;">
-   <a href="{$web_path}"><img src="{$web_path}/images/ms_logo.png"></a>
+   <a href="{$web_path}"><img src="{$web_path}/images/ms_logo.png" /></a>
   </div>
   <!-- /header cell -->   
 
