@@ -64,6 +64,10 @@ class Network_Path extends MsObject {
    {
       global $ms, $db;
 
+      /* no prework if chain already exists */
+      if(isset($this->id))
+         return true;
+
       $max_pos = $db->db_fetchSingleRow("
          SELECT
             MAX(netpath_position) as pos

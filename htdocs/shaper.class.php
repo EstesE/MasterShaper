@@ -1842,7 +1842,7 @@ class MASTERSHAPER {
 
          $pos = 1;
 
-         while($np = $nps->fetch()) {
+         while($np = $sth->fetch()) {
 
             $sth_update = $db->db_prepare("
                UPDATE
