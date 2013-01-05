@@ -63,7 +63,7 @@
     </select>
    </td>
    <td>
-    This specifies the default qdisc for pipes. It's generally not a good idea to mix between different qdiscs. However, MasterShaper supports to specify different qdiscs for pipes.");
+    This specifies the default qdisc for pipes. It's generally not a good idea to mix between different qdiscs. However, MasterShaper supports to specify different qdiscs for pipes.
    </td>
   </tr>
   {if $qdisc == "ESFQ"}
