@@ -80,11 +80,11 @@ class Ruleset_Interface {
     * the interface has been already initialized or not.
     *
     * @param bool new status
-    */ 
-   private function setStatus($status) 
+    */
+   private function setStatus($status)
    {
-      if($status == true or $status == false) 
-         $this->initialized = $status;      
+      if($status == true or $status == false)
+         $this->initialized = $status;
 
    } // setStatus()
 
@@ -96,7 +96,7 @@ class Ruleset_Interface {
     *
     * @return bool
     */
-   public function getStatus() 
+   public function getStatus()
    {
       return $this->initialized;
 
@@ -296,7 +296,7 @@ class Ruleset_Interface {
                         $string.= "ceil ". $sl->sl_htb_bw_in_ceil ."Kbit ";
                      if($sl->sl_htb_bw_in_burst != "" && $sl->sl_htb_bw_in_burst > 0)
                         $string.= "burst ". $sl->sl_htb_bw_in_burst ."Kbit ";
-                     if($sl->sl_htb_priority > 0) 
+                     if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
                   }	
                   else {
@@ -327,11 +327,11 @@ class Ruleset_Interface {
                   */
                   $string.= " quantum 1532";
                   break;
-				      
+
                case 'HFSC':
 
                   $string.= " hfsc sc ";
-                  if(isset($sl->sl_hfsc_in_umax) && $sl->sl_hfsc_in_umax != "" && $sl->sl_hfsc_in_umax > 0) 
+                  if(isset($sl->sl_hfsc_in_umax) && $sl->sl_hfsc_in_umax != "" && $sl->sl_hfsc_in_umax > 0)
                      $string.= " umax ". $sl->sl_hfsc_in_umax ."b ";
                   if(isset($sl->sl_hfsc_in_dmax) && $sl->sl_hfsc_in_dmax != "" && $sl->sl_hfsc_in_dmax > 0)
                      $string.= " dmax ". $sl->sl_hfsc_in_dmax ."ms ";
@@ -342,7 +342,7 @@ class Ruleset_Interface {
 
                   $string.= " rt ";
 
-                  if(isset($sl->sl_hfsc_in_umax) && $sl->sl_hfsc_in_umax != "" && $sl->sl_hfsc_in_umax > 0) 
+                  if(isset($sl->sl_hfsc_in_umax) && $sl->sl_hfsc_in_umax != "" && $sl->sl_hfsc_in_umax > 0)
                      $string.= " umax ". $sl->sl_hfsc_in_umax ."b ";
                   if(isset($sl->sl_hfsc_in_dmax) && $sl->sl_hfsc_in_dmax != "" && $sl->sl_hfsc_in_dmax > 0)
                      $string.= " dmax ". $sl->sl_hfsc_in_dmax ."ms ";
@@ -377,7 +377,7 @@ class Ruleset_Interface {
                         $string.= "ceil ". $sl->sl_htb_bw_out_ceil ."Kbit ";
                      if($sl->sl_htb_bw_out_burst != "" && $sl->sl_htb_bw_out_burst > 0)
                         $string.= "burst ". $sl->sl_htb_bw_out_burst ."Kbit ";
-                     if($sl->sl_htb_priority > 0) 
+                     if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
                   }	
                   else {
@@ -400,7 +400,7 @@ class Ruleset_Interface {
 
                   $string.= " hfsc sc ";
 
-                  if(isset($sl->sl_hfsc_out_umax) && $sl->sl_hfsc_out_umax != "" && $sl->sl_hfsc_out_umax > 0) 
+                  if(isset($sl->sl_hfsc_out_umax) && $sl->sl_hfsc_out_umax != "" && $sl->sl_hfsc_out_umax > 0)
                      $string.= " umax ". $sl->sl_hfsc_out_umax ."b ";
                   if(isset($sl->sl_hfsc_out_dmax) && $sl->sl_hfsc_out_dmax != "" && $sl->sl_hfsc_out_dmax > 0)
                      $string.= " dmax ". $sl->sl_hfsc_out_dmax ."ms ";
@@ -409,7 +409,7 @@ class Ruleset_Interface {
                   if(isset($sl->sl_hfsc_out_ulrate) && $sl->sl_hfsc_out_ulrate != "" && $sl->sl_hfsc_out_ulrate > 0)
                      $string.= " ul rate ". $sl->sl_hfsc_out_ulrate ."Kbit";
                   $string.= " rt ";
-                  if(isset($sl->sl_hfsc_out_umax) && $sl->sl_hfsc_out_umax != "" && $sl->sl_hfsc_out_umax > 0) 
+                  if(isset($sl->sl_hfsc_out_umax) && $sl->sl_hfsc_out_umax != "" && $sl->sl_hfsc_out_umax > 0)
                      $string.= " umax ". $sl->sl_hfsc_out_umax ."b ";
                   if(isset($sl->sl_hfsc_out_dmax) && $sl->sl_hfsc_out_dmax != "" && $sl->sl_hfsc_out_dmax > 0)
                      $string.= " dmax ". $sl->sl_hfsc_out_dmax ."ms ";
@@ -505,7 +505,7 @@ class Ruleset_Interface {
       global $ms;
 
       switch($ms->getOption("filter")) {
-	 
+
          default:
          case 'tc':
 
@@ -682,9 +682,9 @@ class Ruleset_Interface {
 
          case 'ipt':
 
-            if($ms->getOption("msmode") == "router") 
+            if($ms->getOption("msmode") == "router")
                $string = IPT_BIN ." -t mangle -A ms-forward -o ". $this->getName();
-            elseif($ms->getOption("msmode") == "bridge") 
+            elseif($ms->getOption("msmode") == "bridge")
                $string = IPT_BIN ." -t mangle -A ms-forward -m physdev --physdev-in ". $params5;
 
             if($chain_direction == "out") {
@@ -784,7 +784,7 @@ class Ruleset_Interface {
          case 'IP':
 
             /* for tc-filter we need to need to resolve a IP range
-               iptables will use the IPRANGE match for this            
+               iptables will use the IPRANGE match for this
             */
             if($ms->getOption("filter") == "tc") {
 
@@ -793,13 +793,13 @@ class Ruleset_Interface {
                   $host1 = ip2long($host1);
                   $host2 = ip2long($host2);
 
-                  for($i = $host1; $i <= $host2; $i++) 
+                  for($i = $host1; $i <= $host2; $i++)
                      array_push($targets, long2ip($i));
                }
-               else 
+               else
                   array_push($targets, $row->target_ip);
             }
-            else 
+            else
                array_push($targets, $row->target_ip);
 
             break;
@@ -875,7 +875,7 @@ class Ruleset_Interface {
 
    } // setChainID()
 
-   /* set the actually tc handle ID for a pipe */ 
+   /* set the actually tc handle ID for a pipe */
    private function setPipeID($pipe_idx, $chain_tc_id, $pipe_tc_id)
    {
       global $ms, $db;
@@ -1070,8 +1070,8 @@ class Ruleset_Interface {
                                  break;
                            }
                         }
-                     }  
-                  }		 
+                     }
+                  }
                   else {
                      foreach($tmp_array as $tmp_arr) {
 
@@ -1146,7 +1146,7 @@ class Ruleset_Interface {
                               break;
                         }
                      }
-                  }  
+                  }
                }
             }
             elseif($pipe->pipe_src_target != 0 && $pipe->pipe_dst_target != 0) {
@@ -1168,7 +1168,7 @@ class Ruleset_Interface {
                         list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = preg_split("/:/", $src_host);
                      else
                         list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = preg_split("/-/", $src_host);
- 
+
                      $tmp_str = "u32 [DIR1] [DIR2]";
                   }
 
@@ -1270,7 +1270,7 @@ class Ruleset_Interface {
                   $this->addRule(str_replace("[HOST_DEFS]", "u32", $tmp_arr) ." flowid ". $my_id);
 
             }
-	    
+
             break;
 
          case 'ipt':
@@ -1282,7 +1282,7 @@ class Ruleset_Interface {
             $proto_ary = Array();
 
 	         // Construct a string with all used ipt matches
- 
+
             /* If this filter should match on ftp data connections add the rules here */
             if($filter->filter_match_ftp_data == "Y") {
                $this->addRule(IPT_BIN ." -t mangle -A ms-chain-". $this->getName() ."-". $parent ." --match conntrack --ctproto tcp --ctstate RELATED,ESTABLISHED --match helper --helper ftp -j CLASSIFY --set-class ". $my_id);
@@ -1296,11 +1296,11 @@ class Ruleset_Interface {
 
             }
 
-            // filter matches on protocols 
+            // filter matches on protocols
             if($filter->filter_protocol_id >= 0) {
 
                switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
-		  
+
                   /* IP */
                   case 4:
                      array_push($proto_ary, " -p 6");
@@ -1334,7 +1334,7 @@ class Ruleset_Interface {
 
                }
 
-               // Get all the used ports for IP, TCP or UDP 
+               // Get all the used ports for IP, TCP or UDP
                switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
 
                   case 4:  // IP
@@ -1343,11 +1343,11 @@ class Ruleset_Interface {
                      $all_ports = array();
                      $cnt_ports = 0;
 
-                     // Which ports are selected for this filter 
+                     // Which ports are selected for this filter
                      if($ports = $ms->getPorts($filter->filter_idx)) {
 
                         foreach($ports as $port) {
-                           // If this port is definied as range or list get all the single ports 
+                           // If this port is definied as range or list get all the single ports
                            $dst_ports = $ms->extractPorts($port['number']);
                            if($dst_ports != 0) {
                               foreach($dst_ports as $dst_port) {
@@ -1363,9 +1363,9 @@ class Ruleset_Interface {
             else
                array_push($proto_ary, "");
 
-            // Layer7 protocol matching 
+            // Layer7 protocol matching
             if($l7protocols = $ms->getL7Protocols($filter->filter_idx)) {
-		  
+
                $l7_cnt = 0;
                $l7_protos = array();
 
@@ -1375,7 +1375,7 @@ class Ruleset_Interface {
                }
             }
 
-            // TOS flags matching 
+            // TOS flags matching
             if($filter->filter_tos > 0)
                $match_str.= " -m tos --tos ". $filter->filter_tos;
 
@@ -1383,11 +1383,11 @@ class Ruleset_Interface {
             if($filter->filter_dscp != -1)
                $match_str.= " -m dscp --dscp-class ". $filter->filter_dscp;
 
-            // packet length matching 
+            // packet length matching
             if($filter->filter_packet_length > 0)
                $match_str.= " -m length --length ". $filter->filter_packet_length;
 
-            // time range matching 
+            // time range matching
             if($filter->filter_time_use_range == "Y") {
                $start = strftime("%Y:%m:%d:%H:%M:00", $filter->filter_time_start);
                $stop = strftime("%Y:%m:%d:%H:%M:00", $filter->filter_time_stop);
@@ -1414,7 +1414,7 @@ class Ruleset_Interface {
                   $match_str.= " -m time --days ". substr($str_days, 0, strlen($str_days)-1);
             }
 
-            // IPP2P matching 
+            // IPP2P matching
             if($filter->filter_p2p_edk == "Y")
                $str_p2p.= "--edk ";
             if($filter->filter_p2p_kazaa == "Y")
@@ -1438,60 +1438,64 @@ class Ruleset_Interface {
                $match_str.= " -m ipp2p ". substr($str_p2p, 0, strlen($str_p2p)-1);
 
             // End of match string
-	 
+
             /* All port matches will be matched with the iptables multiport */
             /* (advantage is that src&dst matches can be done with a simple */
             /* --port */
 
-            switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
+            /* filter matches a specific network protocol */
+            if(isset($filter) && !empty($filter) && $filter->filter_protocol_id >= 0) {
 
-               /* TCP, UDP or IP */
-               case 4:
-               case 6:
-               case 17:
-		  
-                  if($cnt_ports > 0) {
-                     switch($pipe->pipe_direction) {
-                        /* 1 = incoming, 3 = both */
-                        case UNIDIRECTIONAL:
-                           $match_str.= " -m multiport --dport ";
-                           break;
-                        case BIDIRECTIONAL:
-                           $match_str.= " -m multiport --port ";
-                           break;
-                     }
+               switch($ms->getProtocolNumberById($filter->filter_protocol_id)) {
 
-                     $j = 0;
-                     for($i = 0; $i <= $cnt_ports; $i++) {
-                        if($j == 0)
-                           $tmp_ports = "";
+                  /* TCP, UDP or IP */
+                  case 4:
+                  case 6:
+                  case 17:
 
-                        if(isset($all_ports[$i]))
-                           $tmp_ports.= $all_ports[$i] .",";
-
-                        // with one multiport match iptables can max. match 14 single ports 
-                        if($j == 14 || $i == $cnt_ports-1) {
-                           $tmp_str = $match_str . substr($tmp_ports, 0, strlen($tmp_ports)-1); 
-                           array_push($match_ary, $tmp_str);
-                           $j = 0;
+                     if($cnt_ports > 0) {
+                        switch($pipe->pipe_direction) {
+                           /* 1 = incoming, 3 = both */
+                           case UNIDIRECTIONAL:
+                              $match_str.= " -m multiport --dport ";
+                              break;
+                           case BIDIRECTIONAL:
+                              $match_str.= " -m multiport --port ";
+                              break;
                         }
-                        else 
-                           $j++;
-                     }
-                  }
-                  break;
 
-               default:
+                        $j = 0;
+                        for($i = 0; $i <= $cnt_ports; $i++) {
+                           if($j == 0)
+                              $tmp_ports = "";
 
-                  // is there any l7 filter protocol we have to attach to the filter? 
-                  if(isset($l7_cnt) && $l7_cnt > 0) {
-                     foreach($l7_protos as $l7_proto) {
-                        array_push($match_ary, $match_str ." -m layer7 --l7proto ". $l7_proto);
+                           if(isset($all_ports[$i]))
+                              $tmp_ports.= $all_ports[$i] .",";
+
+                           // with one multiport match iptables can max. match 14 single ports
+                           if($j == 14 || $i == $cnt_ports-1) {
+                              $tmp_str = $match_str . substr($tmp_ports, 0, strlen($tmp_ports)-1);
+                              array_push($match_ary, $tmp_str);
+                              $j = 0;
+                           }
+                           else
+                              $j++;
+                        }
                      }
-                  }
-                  else 
-                     array_push($match_ary, $match_str); 
-                  break;
+                     break;
+
+                  default:
+
+                     // is there any l7 filter protocol we have to attach to the filter?
+                     if(isset($l7_cnt) && $l7_cnt > 0) {
+                        foreach($l7_protos as $l7_proto) {
+                           array_push($match_ary, $match_str ." -m layer7 --l7proto ". $l7_proto);
+                        }
+                     }
+                     else
+                        array_push($match_ary, $match_str);
+                     break;
+               }
             }
 
             foreach($match_ary as $match_str) {
@@ -1640,7 +1644,7 @@ class Ruleset_Interface {
             $filter_flow_target = "1:1";
          else*/
          $filter_flow_target = "1:". $this->get_current_chain() . $this->get_current_filter();
-		   
+
          /* setup the filter definition to match traffic which should go into this chain */
          if($chain->chain_src_target != 0 || $chain->chain_dst_target != 0) {
             $this->addHostFilter("1:1", "host", $chain, $filter_flow_target, $direction);
@@ -1779,7 +1783,7 @@ class Ruleset_Interface {
 
    } // buildPipes()
 
-   private function iptInitRulesIf() 
+   private function iptInitRulesIf()
    {
       global $ms;
 
@@ -1812,7 +1816,7 @@ class Ruleset_Interface {
       $this->addRootQdisc("1:");
 
       /* Initial iptables rules */
-      if($ms->getOption("filter") == "ipt") 
+      if($ms->getOption("filter") == "ipt")
          $this->iptInitRulesIf();
 
       $this->addInitClass("1:", "1:1");
@@ -1924,7 +1928,7 @@ class Ruleset_Interface {
       return sprintf("%02x", 0xff - $this->current_pipe);
 
    } // get_current_pipe()
- 
+
    /* get current class ID in hex format
     *
     * @return string

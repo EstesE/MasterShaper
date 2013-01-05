@@ -1175,7 +1175,7 @@ class MASTERSHAPER {
       // we are running 64 kernel, so we have to shift
       // first 8 chars from left.
 
-      $tmp =  dechex((float) crc32($string1 . str_replace(":", "", $string2))* -1);
+      $tmp = dechex((float) crc32($string1 . str_replace(":", "", $string2))* -1);
       if(strlen($tmp)>8)
          $tmp = substr($tmp,8);
 
@@ -1211,7 +1211,7 @@ class MASTERSHAPER {
          $filter_idx
       ));
 
-      while($protocol = $protocols->fetch()) {
+      while($protocol = $this->sth_get_l7_protocols->fetch()) {
          $numbers.= $protocol->afl7_l7proto_idx .",";
       }
 
@@ -1487,16 +1487,21 @@ class MASTERSHAPER {
     */
    public function throwError($string)
    {
-      if(!defined('DB_NOERROR'))  {
-         print "<br /><br />". $string ."<br /><br />\n";
-         try {
-            throw new MASTERSHAPER_EXCEPTION;
-         }
-         catch(MASTERSHAPER_EXCEPTION $e) {
-            print "<br /><br />\n";
-            $this->_print($e, MSLOG_INFO);
-            die;
-         }
+      if(defined('DB_NOERROR')) {
+         $this->last_error = $string;
+         return;
+      }
+
+      print "<br /><br />". $string ."<br /><br />\n";
+
+      try {
+         throw new MASTERSHAPER_EXCEPTION;
+         printf("here");
+      }
+      catch(MASTERSHAPER_EXCEPTION $e) {
+         print "<br /><br />\n";
+         $this->_print($e, MSLOG_WARN);
+         die;
       }
 
       $this->last_error = $string;
