@@ -946,7 +946,8 @@ class MASTERSHAPER_DB {
             INSERT INTO ". MYSQL_PREFIX ."host_profiles VALUES (
                NULL,
                'Default Host',
-               'Y'
+               'Y',
+               0
             )");
       }
 
