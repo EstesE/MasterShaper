@@ -1015,7 +1015,7 @@ class MASTERSHAPER_DB {
             (51, 'RPC Call', 'rpc.html', 'rpc.html', '[internal]'),
             (52, 'Host Profiles List', 'host-profiles/list.html', '^/host-profiles/list.html$', 'host_profiles.php'),
             (53, 'Host Profile New', 'host-profiles/new.html', '^/host-profiles/new.html$', 'host_profiles.php'),
-            (54, 'Host Profile Edit', 'host-profiles/edit-[id].html', '^/host-profiles/edit-([0-9]+).html$', 'host_profiles.php')
+            (54, 'Host Profile Edit', 'host-profiles/edit-[id].html', '^/host-profiles/edit-([0-9]+).html$', 'host_profiles.php'),
             (55, 'Host Tasklist', 'tasklist.html', '^/tasklist.html$', 'host_tasklist.php')
          ");
       }
