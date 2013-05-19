@@ -12,4 +12,6 @@
   <sudo_bin>/usr/bin/sudo</sudo_bin>
   <temp_path>/tmp</temp_path>
   <host_profile>Default Host</host_profile>
+  <runas_user>www-data</runas_user>
+  <runas_group>www-data</runas_group>
 </config>

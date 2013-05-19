@@ -62,9 +62,9 @@ class MASTERSHAPER {
    {
       $GLOBALS['ms'] = $this;
 
-      $this->cfg = new MASTERSHAPER_CFG($this, "config.dat");
       $this->headers = Array();
       $this->verbosity_level = MSLOG_WARN;
+      $this->cfg = new MASTERSHAPER_CFG($this, "config.dat");
 
       /* Check necessary requirements */
       if(!$this->check_requirements()) {
