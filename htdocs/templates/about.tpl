@@ -1,4 +1,4 @@
-{start_table icon=$icon_about alt="about icon" title="MasterShaper $version" }
+{start_table icon=$icon_about alt="about icon" title="MasterShaper $version"}
 <table style="width: 100%; text-align: center;">
  <tr>
   <td>

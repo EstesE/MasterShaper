@@ -58,7 +58,7 @@ class Page_Users extends MASTERSHAPER_PAGE {
          $cnt_users++;
       }
 
-      $tmpl->register_block("user_list", array(&$this, "smarty_user_list"));
+      $tmpl->registerPlugin("block", "user_list", array(&$this, "smarty_user_list"));
       return $tmpl->fetch("users_list.tpl"); 
 
    } // showList()
@@ -73,13 +73,14 @@ class Page_Users extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $user = new User($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $user = new User;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       $tmpl->assign('user', $user);
@@ -142,9 +143,7 @@ class Page_Users extends MASTERSHAPER_PAGE {
     */
    public function smarty_user_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $smarty->get_template_vars('smarty.IB.user_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.user_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -154,12 +153,12 @@ class Page_Users extends MASTERSHAPER_PAGE {
          $user_idx = $this->avail_users[$index];
          $user =  $this->users[$user_idx];
 
-         $tmpl->assign('user_idx', $user_idx);
-         $tmpl->assign('user_name', $user->user_name);
-         $tmpl->assign('user_active', $user->user_active);
+         $smarty->assign('user_idx', $user_idx);
+         $smarty->assign('user_name', $user->user_name);
+         $smarty->assign('user_active', $user->user_active);
 
          $index++;
-         $tmpl->assign('smarty.IB.user_list.index', $index);
+         $smarty->assign('smarty.IB.user_list.index', $index);
          $repeat = true;
       }
       else {

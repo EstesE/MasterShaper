@@ -33,4 +33,4 @@
   </tr>
  </table>
 </form>
-{ page_end focus_to='user_name' }
+{page_end focus_to='user_name'}

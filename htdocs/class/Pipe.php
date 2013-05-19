@@ -51,8 +51,10 @@ class Pipe extends MsObject {
 
       /* it seems a new pipe gets created, preset some values */
       if(!isset($id) || empty($id)) {
-         $this->pipe_active = 'Y';
-         $this->pipe_direction = 2;
+         parent::init_fields(Array(
+            'pipe_active' => 'Y',
+            'pipe_direction' => 2,
+         ));
       }
 
    } // __construct()

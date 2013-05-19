@@ -61,7 +61,7 @@ class Page_Host_Profiles extends MASTERSHAPER_PAGE {
          $cnt_hosts++;
       }
 
-      $tmpl->register_block("host_list", array(&$this, "smarty_host_list"));
+      $tmpl->registerPlugin("block", "host_list", array(&$this, "smarty_host_list"));
 
       return $tmpl->fetch("host_profiles_list.tpl");
    
@@ -80,13 +80,14 @@ class Page_Host_Profiles extends MASTERSHAPER_PAGE {
       $this->avail_chains = Array();
       $this->chains = Array();
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $hostprofile = new Host_Profile($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $hostprofile = new Host_Profile;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       $tmpl->assign('host', $hostprofile);
@@ -100,9 +101,9 @@ class Page_Host_Profiles extends MASTERSHAPER_PAGE {
     */
    public function smarty_host_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl, $ms;
+      global $ms;
 
-      $index = $smarty->get_template_vars('smarty.IB.host_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.host_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -112,12 +113,12 @@ class Page_Host_Profiles extends MASTERSHAPER_PAGE {
         $host_idx = $this->avail_hosts[$index];
         $host =  $this->hosts[$host_idx];
 
-         $tmpl->assign('host_idx', $host_idx);
-         $tmpl->assign('host_name', $host->host_name);
-         $tmpl->assign('host_active', $host->host_active);
+         $smarty->assign('host_idx', $host_idx);
+         $smarty->assign('host_name', $host->host_name);
+         $smarty->assign('host_active', $host->host_active);
 
          $index++;
-         $tmpl->assign('smarty.IB.host_list.index', $index);
+         $smarty->assign('smarty.IB.host_list.index', $index);
          $repeat = true;
       }
       else {

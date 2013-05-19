@@ -46,7 +46,9 @@ class Target extends MsObject {
       ));
 
       if(!isset($id) || empty($id)) {
-         $this->target_match = 'IP';
+         parent::init_fields(Array(
+            'target_match' => 'IP',
+         ));
       }
 
    } // __construct()

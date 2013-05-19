@@ -56,9 +56,11 @@ class Chain extends MsObject {
 
       /* it seems a new chain gets created, preset some values */
       if(!isset($id) || empty($id)) {
-         $this->chain_active       = 'Y';
-         $this->chain_fallback_idx = -1;
-         $this->chain_direction    = 2;
+         parent::init_fields(Array(
+            'chain_active' => 'Y',
+            'chain_fallback_idx' => -1,
+            'chain_direction' => 2,
+         ));
       }
 
    } // __construct()

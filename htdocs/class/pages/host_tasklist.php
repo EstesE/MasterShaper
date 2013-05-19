@@ -66,7 +66,7 @@ class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
          $cnt_tasks++;
       }
 
-      $tmpl->register_block("task_list", array(&$this, "smarty_task_list"));
+      $tmpl->registerPlugin("block", "task_list", array(&$this, "smarty_task_list"));
 
       return $tmpl->fetch("tasklist.tpl");
    
@@ -77,9 +77,9 @@ class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
     */
    public function smarty_task_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl, $ms;
+      global $ms;
 
-      $index = $smarty->get_template_vars('smarty.IB.task_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.task_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -89,22 +89,22 @@ class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
         $task_idx = $this->avail_tasks[$index];
         $task =  $this->tasks[$task_idx];
 
-         $tmpl->assign('task_idx', $task_idx);
-         $tmpl->assign('task_job', $task->task_job);
-         $tmpl->assign('task_submit_time', strftime("%Y-%m-%d %H:%M:%S", $task->task_submit_time));
+         $smarty->assign('task_idx', $task_idx);
+         $smarty->assign('task_job', $task->task_job);
+         $smarty->assign('task_submit_time', strftime("%Y-%m-%d %H:%M:%S", $task->task_submit_time));
          if($task->task_run_time == -1)
-            $tmpl->assign('task_run_time', 'asap');
+            $smarty->assign('task_run_time', 'asap');
          else
-            $tmpl->assign('task_run_time', strftime("%Y-%m-%d %H:%M:%S", $task->task_run_time));
+            $smarty->assign('task_run_time', strftime("%Y-%m-%d %H:%M:%S", $task->task_run_time));
          switch($task->task_state) {
-            case 'N': $tmpl->assign('task_state', 'new'); break;
-            case 'R': $tmpl->assign('task_state', 'running'); break;
-            case 'F': $tmpl->assign('task_state', 'finish'); break;
-            case 'E': $tmpl->assign('task_state', 'error'); break;
-            default:  $tmpl->assign('task_state', 'unknown'); break;
+            case 'N': $smarty->assign('task_state', 'new'); break;
+            case 'R': $smarty->assign('task_state', 'running'); break;
+            case 'F': $smarty->assign('task_state', 'finish'); break;
+            case 'E': $smarty->assign('task_state', 'error'); break;
+            default:  $smarty->assign('task_state', 'unknown'); break;
          }
          $index++;
-         $tmpl->assign('smarty.IB.task_list.index', $index);
+         $smarty->assign('smarty.IB.task_list.index', $index);
          $repeat = true;
       }
       else {

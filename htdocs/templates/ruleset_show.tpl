@@ -9,5 +9,4 @@
    </table>
   </div>
   <div style="background-color: #aaaaaa; height: 2px;"></div>
-  { ruleset_output }
-
+  {ruleset_output}

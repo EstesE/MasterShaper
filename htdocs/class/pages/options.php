@@ -76,7 +76,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
       $tmpl->assign('msmode', $ms->getOption("msmode"));
       $tmpl->assign('authentication', $ms->getOption("authentication"));
 
-      $tmpl->register_block("service_level_list", array(&$this, "smarty_opt_sl_list"));
+      $tmpl->registerPlugin("block", "service_level_list", array(&$this, "smarty_opt_sl_list"));
       return $tmpl->fetch("options.tpl");
 
    } // show()
@@ -405,6 +405,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
    {
       $object = addslashes(serialize($object));
       $this->string.= $option .":". $object ."\n";
+
    } // Add()
 
    public function updateL7Protocols()
@@ -554,9 +555,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
     */
    public function smarty_opt_sl_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $smarty->get_template_vars('smarty.IB.sl_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.sl_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -566,11 +565,11 @@ class Page_Options extends MASTERSHAPER_PAGE {
          $sl_idx = $this->avail_service_levels[$index];
          $sl =  $this->service_levels[$sl_idx];
 
-         $tmpl->assign('sl_idx', $sl_idx);
-         $tmpl->assign('sl_name', $sl->sl_name);
+         $smarty->assign('sl_idx', $sl_idx);
+         $smarty->assign('sl_name', $sl->sl_name);
 
          $index++;
-         $tmpl->assign('smarty.IB.sl_list.index', $index);
+         $smarty->assign('smarty.IB.sl_list.index', $index);
          $repeat = true;
       }
       else {

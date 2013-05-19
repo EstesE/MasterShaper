@@ -79,7 +79,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       if(!isset($_SESSION['scalemode']))
          $_SESSION['scalemode'] = "kbit";
 
-      $image_loc.= "?uniqid=". mktime();
+      $image_loc = "?uniqid=". mktime();
    
       $tmpl->assign('monitor', $_SESSION['mode']);
       $tmpl->assign('view', $view);
@@ -89,8 +89,8 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
       if(isset($_SESSION['scalemode']))
          $tmpl->assign('scalemode', $_SESSION['scalemode']);
 
-      $tmpl->register_function("interface_select_list", array(&$this, "smarty_interface_select_list"), false);
-      $tmpl->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
+      $tmpl->registerPlugin("function", "monitor_interface_select_list", array(&$this, "smarty_monitor_interface_select_list"), false);
+      $tmpl->registerPlugin("function", "monitor_chain_select_list", array(&$this, "smarty_monitor_chain_select_list"), false);
 
       return $tmpl->fetch("monitor.tpl");
 
@@ -153,7 +153,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
     *
     * @return string
     */
-   public function smarty_chain_select_list($params, &$smarty)
+   public function smarty_monitor_chain_select_list($params, &$smarty)
    {
       global $ms, $db;
 
@@ -176,20 +176,21 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
             chain_position ASC
       ");
 
+      $string = "";
       while($chain = $chains->fetch()) {
          $string.= "<option value=\"". $chain->chain_idx ."\">". $chain->chain_name ."</option>\n";
       }
 
       return $string;
 
-   } // smarty_chain_select_list
+   } // smarty_monitor_chain_select_list
 
    /**
     * smarty function to generate a HTML select list of interfaces
     *
     * @return string
     */
-   public function smarty_interface_select_list($params, &$smarty)
+   public function smarty_monitor_interface_select_list($params, &$smarty)
    {
       global $ms;
 
@@ -209,7 +210,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
       return $if_select;
 
-   } // smarty_interface_select_list()
+   } // smarty_monitor_interface_select_list()
 
    /**
     * prepare the values-array for jqPlog
@@ -317,9 +318,9 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
        *   )
        */
 
-      /* If we have no data here, maybe the tc_collector is not running. Stop. */
+      /* If we have no data here, maybe shaper_agent.php is not running. Stop. */
       if(!isset($bigdata)) {
-         return json_encode(array('error' => 'tc_collector.pl is inactive!'));
+         return json_encode(array('error' => 'shaper_agent.php is inactive!'));
       }
 	
       /* prepare graph arrays and fill up with data */
@@ -543,7 +544,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
    } // get_jqplot_values()
 
    /**
-    * splitup tc_collector string that is stored in the database
+    * splitup shaper_agent.php string that is stored in the database
     *
     * @return array
     */

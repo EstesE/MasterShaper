@@ -53,7 +53,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       if($ms->getOption("authentication") == "Y" &&
          !$ms->checkPermissions("user_show_rules")) {
 
-         $ms->throwError("<img src=\"". ICON_HOME ."\" alt=\"home icon\" />&nbsp;". _("MasterShaper Ruleset Overview"), _("You do not have enough permissions to access this module!"));
+         $ms->throwError("You do not have enough permissions to access this module!");
          return 0;
       }
 
@@ -205,10 +205,10 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $tmpl->assign('edit_mode', true);
 
       $tmpl->assign('cnt_network_paths', $this->cnt_network_paths);
-      $tmpl->register_block("ov_netpath", array(&$this, "smarty_ov_netpath"));
-      $tmpl->register_block("ov_chain", array(&$this, "smarty_ov_chain"));
-      $tmpl->register_block("ov_pipe", array(&$this, "smarty_ov_pipe"));
-      $tmpl->register_block("ov_filter", array(&$this, "smarty_ov_filter"));
+      $tmpl->registerPlugin("block", "ov_netpath", array(&$this, "smarty_ov_netpath"));
+      $tmpl->registerPlugin("block", "ov_chain", array(&$this, "smarty_ov_chain"));
+      $tmpl->registerPlugin("block", "ov_pipe", array(&$this, "smarty_ov_pipe"));
+      $tmpl->registerPlugin("block", "ov_filter", array(&$this, "smarty_ov_filter"));
 
       return $tmpl->fetch("overview.tpl");
 
@@ -216,9 +216,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
    public function smarty_ov_netpath($params, $content, &$smarty, &$repeat)
    {
-      global $db, $tmpl;
-
-      $index = $tmpl->get_template_vars('smarty.IB.ov_netpath.index');
+      $index = $smarty->getTemplateVars('smarty.IB.ov_netpath.index');
       if(!$index) {
          $index = 0;
       }
@@ -227,10 +225,10 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
          $np_idx = $this->avail_network_paths[$index];
          $np =  $this->network_paths[$np_idx];
-         $tmpl->assign('netpath', $np);
+         $smarty->assign('netpath', $np);
 
          $index++;
-         $tmpl->assign('smarty.IB.ov_netpath.index', $index);
+         $smarty->assign('smarty.IB.ov_netpath.index', $index);
          $repeat = true;
       }
       else {
@@ -242,17 +240,17 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
    public function smarty_ov_chain($params, $content, &$smarty, &$repeat)
    {
-      global $db, $tmpl;
+      global $ms;
 
       if(!array_key_exists('np_idx', $params)) {
-         $tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+         $ms->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
       
       $np_idx = $params['np_idx'];
 
-      $index = $tmpl->get_template_vars('smarty.IB.ov_chain.index-'. $np_idx);
+      $index = $smarty->getTemplateVars('smarty.IB.ov_chain.index-'. $np_idx);
       if(!$index) {
          $index = 0;
       }
@@ -262,15 +260,15 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $chain_idx = $this->avail_chains[$np_idx][$index];
          $chain =  $this->chains[$np_idx][$chain_idx];
 
-         $tmpl->assign('chain', $chain);
+         $smarty->assign('chain', $chain);
 
          if($chain->chain_sl_idx != 0)
-            $tmpl->assign('chain_has_sl', true);
+            $smarty->assign('chain_has_sl', true);
          else
-            $tmpl->assign('chain_has_sl', false);
+            $smarty->assign('chain_has_sl', false);
 
          $index++;
-         $tmpl->assign('smarty.IB.ov_chain.index-'. $np_idx, $index);
+         $smarty->assign('smarty.IB.ov_chain.index-'. $np_idx, $index);
 
          $repeat = true;
       }
@@ -284,15 +282,15 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
    public function smarty_ov_pipe($params, $content, &$smarty, &$repeat)
    {
-      global $db, $tmpl, $ms;
+      global $db, $ms;
 
       if(!array_key_exists('np_idx', $params)) {
-         $tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+         $ms->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
       if(!array_key_exists('chain_idx', $params)) {
-         $tmpl->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
+         $ms->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
@@ -300,7 +298,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       $np_idx = $params['np_idx'];
       $chain_idx = $params['chain_idx'];
 
-      $index = $tmpl->get_template_vars('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx);
+      $index = $smarty->getTemplateVars('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx);
       if(!$index) {
          $index = 0;
       }
@@ -325,14 +323,14 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          if(isset($ovrd_sl->apc_sl_idx) && !empty($ovrd_sl->apc_sl_idx))
             $pipe->pipe_sl_idx = $ovrd_sl->apc_sl_idx;
 
-         $tmpl->assign('pipe', $pipe);
-         $tmpl->assign('pipe_sl_name', $ms->getServiceLevelName($pipe->pipe_sl_idx));
-         $tmpl->assign('apc_idx', $pipe->apc_idx);
-         $tmpl->assign('apc_sl_idx', $pipe->apc_sl_idx);
-         $tmpl->assign('counter', $index+1);
+         $smarty->assign('pipe', $pipe);
+         $smarty->assign('pipe_sl_name', $ms->getServiceLevelName($pipe->pipe_sl_idx));
+         $smarty->assign('apc_idx', $pipe->apc_idx);
+         $smarty->assign('apc_sl_idx', $pipe->apc_sl_idx);
+         $smarty->assign('counter', $index+1);
 
          $index++;
-         $tmpl->assign('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx, $index);
+         $smarty->assign('smarty.IB.ov_pipe.index-'. $np_idx ."-". $chain_idx, $index);
 
          $repeat = true;
       }
@@ -346,20 +344,20 @@ class Page_Overview extends MASTERSHAPER_PAGE {
 
    public function smarty_ov_filter($params, $content, &$smarty, &$repeat)
    {
-      global $db, $tmpl;
+      global $db;
 
       if(!array_key_exists('np_idx', $params)) {
-         $tmpl->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+         $ms->trigger_error("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
       if(!array_key_exists('chain_idx', $params)) {
-         $tmpl->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
+         $ms->trigger_error("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
       if(!array_key_exists('pipe_idx', $params)) {
-         $tmpl->trigger_error("ov_netpath: missing 'pipe_idx' parameter", E_USER_WARNING);
+         $ms->trigger_error("ov_netpath: missing 'pipe_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
       }
@@ -368,7 +366,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
       $chain_idx = $params['chain_idx'];
       $pipe_idx = $params['pipe_idx'];
 
-      $index = $tmpl->get_template_vars('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx);
+      $index = $smarty->getTemplateVars('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx);
       if(!$index) {
          $index = 0;
       }
@@ -378,10 +376,10 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $filter_idx = $this->avail_filters[$np_idx][$chain_idx][$pipe_idx][$index];
          $filter = $this->filters[$np_idx][$chain_idx][$pipe_idx][$filter_idx];
 
-         $tmpl->assign('filter', $filter);
+         $smarty->assign('filter', $filter);
 
          $index++;
-         $tmpl->assign('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx, $index);
+         $smarty->assign('smarty.IB.ov_filter.index-'. $np_idx ."-". $chain_idx ."-". $pipe_idx, $index);
 
          $repeat = true;
       }

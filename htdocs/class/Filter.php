@@ -76,7 +76,10 @@ class Filter extends MsObject {
 
       /* it seems a new filter gets created, preset some values */
       if(!isset($id) || empty($id)) {
-         $this->filter_active = 'Y';
+         parent::init_fields(Array(
+            'filter_active' => 'Y',
+            'filter_protocol_id' => NULL,
+         ));
       }
 
    } // __construct()

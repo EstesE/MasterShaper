@@ -63,7 +63,7 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
          $cnt_interfaces++;
       }
 
-      $tmpl->register_block("interface_list", array(&$this, "smarty_interface_list"));
+      $tmpl->registerPlugin("block", "interface_list", array(&$this, "smarty_interface_list"));
       return $tmpl->fetch("interfaces_list.tpl");
 
    } // showList()
@@ -78,13 +78,14 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $if = new Network_Interface($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $if = new Network_Interface;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       /* get a list of network paths that use this interface */
@@ -127,28 +128,28 @@ class Page_Interfaces extends MASTERSHAPER_PAGE {
     */
    public function smarty_interface_list($params, $content, &$smarty, &$repeat)
    {
-      global $ms, $tmpl;
+      global $ms;
 
-      $index = $smarty->get_template_vars('smarty.IB.if_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.if_list.index');
       if(!$index) {
          $index = 0;
       }
 
       if($index < count($this->avail_interfaces)) {
 
-        $if_idx = $this->avail_interfaces[$index];
-        $if =  $this->interfaces[$if_idx];
+         $if_idx = $this->avail_interfaces[$index];
+         $if =  $this->interfaces[$if_idx];
 
-         $tmpl->assign('if_idx', $if_idx);
-         $tmpl->assign('if_name', $if->if_name);
-         $tmpl->assign('if_speed', $if->if_speed);
-         $tmpl->assign('if_fallback_idx', $if->if_fallback_idx);
+         $smarty->assign('if_idx', $if_idx);
+         $smarty->assign('if_name', $if->if_name);
+         $smarty->assign('if_speed', $if->if_speed);
+         $smarty->assign('if_fallback_idx', $if->if_fallback_idx);
          if($if->if_fallback_idx != 0)
-            $tmpl->assign('if_fallback_name', $ms->getServiceLevelName($if->if_fallback_idx));
-         $tmpl->assign('if_active', $if->if_active);
+            $smarty->assign('if_fallback_name', $ms->getServiceLevelName($if->if_fallback_idx));
+         $smarty->assign('if_active', $if->if_active);
 
          $index++;
-         $tmpl->assign('smarty.IB.if_list.index', $index);
+         $smarty->assign('smarty.IB.if_list.index', $index);
          $repeat = true;
       }
       else {

@@ -84,7 +84,7 @@ class Page_Ruleset extends MASTERSHAPER_PAGE {
 
       }
 
-      $tmpl->register_function("ruleset_output", array(&$this, "smarty_ruleset_output"), false);
+      $tmpl->registerPlugin("function", "ruleset_output", array(&$this, "smarty_ruleset_output"), false);
       return $tmpl->fetch("ruleset_show.tpl");
 
    } // show

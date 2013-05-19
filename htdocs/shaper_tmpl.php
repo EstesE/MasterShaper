@@ -27,7 +27,8 @@ class MASTERSHAPER_TMPL extends Smarty {
    {
       global $ms;
 
-      $this->Smarty();
+      parent::__construct();
+
       $this->template_dir = BASE_PATH .'/templates';
       $this->compile_dir  = BASE_PATH .'/templates_c';
       $this->config_dir   = BASE_PATH .'/smarty_config';
@@ -85,20 +86,20 @@ class MASTERSHAPER_TMPL extends Smarty {
       $this->assign('icon_process', WEB_PATH .'/icons/task.png');
       $this->assign('web_path', WEB_PATH);
 
-      $this->register_function("start_table", array(&$this, "smarty_startTable"), false); 
-      $this->register_function("page_end", array(&$this, "smarty_page_end"), false); 
-      $this->register_function("year_select", array(&$this, "smarty_year_select"), false); 
-      $this->register_function("month_select", array(&$this, "smarty_month_select"), false); 
-      $this->register_function("day_select", array(&$this, "smarty_day_select"), false); 
-      $this->register_function("hour_select", array(&$this, "smarty_hour_select"), false); 
-      $this->register_function("minute_select", array(&$this, "smarty_minute_select"), false); 
-      $this->register_function("chain_select_list", array(&$this, "smarty_chain_select_list"), false);
-      $this->register_function("pipe_select_list", array(&$this, "smarty_pipe_select_list"), false);
-      $this->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
-      $this->register_function("service_level_select_list", array(&$this, "smarty_service_level_select_list"), false);
-      $this->register_function("network_path_select_list", array(&$this, "smarty_network_path_select_list"), false);
-      $this->register_function("host_profile_select_list", array(&$this, "smarty_host_profile_select_list"), false);
-      $this->register_function("get_item_name", array(&$this, "smarty_get_item_name"), false);
+      $this->registerPlugin("function", "start_table", array(&$this, "smarty_startTable"), false);
+      $this->registerPlugin("function", "page_end", array(&$this, "smarty_page_end"), false);
+      $this->registerPlugin("function", "year_select", array(&$this, "smarty_year_select"), false);
+      $this->registerPlugin("function", "month_select", array(&$this, "smarty_month_select"), false);
+      $this->registerPlugin("function", "day_select", array(&$this, "smarty_day_select"), false);
+      $this->registerPlugin("function", "hour_select", array(&$this, "smarty_hour_select"), false);
+      $this->registerPlugin("function", "minute_select", array(&$this, "smarty_minute_select"), false);
+      $this->registerPlugin("function", "chain_select_list", array(&$this, "smarty_chain_select_list"), false);
+      $this->registerPlugin("function", "pipe_select_list", array(&$this, "smarty_pipe_select_list"), false);
+      $this->registerPlugin("function", "target_select_list", array(&$this, "smarty_target_select_list"), false);
+      $this->registerPlugin("function", "service_level_select_list", array(&$this, "smarty_service_level_select_list"), false);
+      $this->registerPlugin("function", "network_path_select_list", array(&$this, "smarty_network_path_select_list"), false);
+      $this->registerPlugin("function", "host_profile_select_list", array(&$this, "smarty_host_profile_select_list"), false);
+      $this->registerPlugin("function", "get_item_name", array(&$this, "smarty_get_item_name"), false);
 
    } // __construct()
 
@@ -109,53 +110,53 @@ class MASTERSHAPER_TMPL extends Smarty {
    } // show()
 
    public function smarty_startTable($params, &$smarty)
-   {  
+   {
       $this->assign('title', $params['title']);
       $this->assign('icon', $params['icon']);
       $this->assign('alt', $params['alt']);
       $this->show('start_table.tpl');
 
-   } // smarty_function_startTable() 
+   } // smarty_function_startTable()
 
    public function smarty_page_end($params, &$smarty)
-   {  
+   {
       if(isset($params['focus_to'])) {
          $this->assign('focus_to', $params['focus_to']);
       }
 
       $this->show('page_end.tpl');
 
-   } // smarty_function_startTable() 
+   } // smarty_function_startTable()
 
 
    public function smarty_year_select($params, &$smarty)
    {
       global $ms;
-      print $ms->getYearList($params['current']); 
+      print $ms->getYearList($params['current']);
    } // smarty_year_select()
 
    public function smarty_month_select($params, &$smarty)
    {
       global $ms;
-      print $ms->getMonthList($params['current']); 
+      print $ms->getMonthList($params['current']);
    } // smarty_month_select()
 
    public function smarty_day_select($params, &$smarty)
    {
       global $ms;
-      print $ms->getDayList($params['current']); 
+      print $ms->getDayList($params['current']);
    } // smarty_day_select()
 
    public function smarty_hour_select($params, &$smarty)
    {
       global $ms;
-      print $ms->getHourList($params['current']); 
+      print $ms->getHourList($params['current']);
    } // smarty_hour_select()
 
    public function smarty_minute_select($params, &$smarty)
    {
       global $ms;
-      print $ms->getMinuteList($params['current']); 
+      print $ms->getMinuteList($params['current']);
    } // smarty_minute_select()
 
    public function smarty_chain_select_list($params, &$smarty)
@@ -175,6 +176,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             ". MYSQL_PREFIX ."chains
       ");
 
+      $string = "";
       while($row = $result->fetch()) {
          $string.= "<option value='". $row->chain_idx ."'";
          if($row->chain_idx == $params['chain_idx']) {
@@ -204,6 +206,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             ". MYSQL_PREFIX ."pipes
       ");
 
+      $string = "";
       while($row = $result->fetch()) {
          $string.= "<option value='". $row->pipe_idx ."'";
          if($row->pipe_idx == $params['pipe_idx']) {
@@ -236,6 +239,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             target_name
       ");
 
+      $string = "";
       while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->target_idx ."\" ";
          if($row->target_idx == $params['target_idx']) {
@@ -265,6 +269,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             sl_name ASC
       ");
 
+      $string = "";
       while($row = $result->fetch()) {
 
          $string.= "<option value=\"". $row->sl_idx ."\"";
@@ -315,6 +320,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             netpath_name ASC
       ");
 
+      $string = "";
       while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->netpath_idx ."\"";
          if($row->netpath_idx == $params['np_idx']) {
@@ -340,6 +346,7 @@ class MASTERSHAPER_TMPL extends Smarty {
             host_name ASC
       ");
 
+      $string = "";
       while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->host_idx ."\"";
          if($row->host_idx == $ms->get_current_host_profile()) {

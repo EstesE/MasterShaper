@@ -89,7 +89,7 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
       $pager = & Pager::factory($pager_params);
       $tmpl->assign('pager', $pager);
 
-      $tmpl->register_block("protocol_list", array(&$this, "smarty_protocol_list"));
+      $tmpl->registerPlugin("block", "protocol_list", array(&$this, "smarty_protocol_list"));
       return $tmpl->fetch("protocols_list.tpl");
 
    } // showList()
@@ -104,13 +104,14 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $protocol = new Protocol($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $protocol = new Protocol;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       /* get a list of filters that use this protocol */
@@ -130,8 +131,6 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
          $page->id,
       ));
 
-      $db->db_sth_free($sth);
-
       if($sth->rowCount() > 0) {
          $filter_use_protocol = array();
          while($filter = $sth->fetch()) {
@@ -139,6 +138,8 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
          }
          $tmpl->assign('filter_use_protocol', $filter_use_protocol);
       }
+
+      $db->db_sth_free($sth);
 
       $tmpl->assign('protocol', $protocol);
       return $tmpl->fetch("protocols_edit.tpl");
@@ -150,9 +151,7 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
     */
    public function smarty_protocol_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $smarty->get_template_vars('smarty.IB.protocol_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.protocol_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -162,10 +161,10 @@ class Page_Protocols extends MASTERSHAPER_PAGE {
          $proto_idx = $this->avail_protocols[$index];
 
          $protocol = new Protocol($proto_idx);
-         $tmpl->assign('protocol', $protocol);
+         $smarty->assign('protocol', $protocol);
 
          $index++;
-         $tmpl->assign('smarty.IB.protocol_list.index', $index);
+         $smarty->assign('smarty.IB.protocol_list.index', $index);
          $repeat = true;
       }
       else {

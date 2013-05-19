@@ -52,7 +52,9 @@ class Network_Path extends MsObject {
       ));
 
       if(!isset($id) || empty($id)) {
-         $this->netpath_active = 'Y';
+         parent::init_fields(Array(
+            'netpath_active' => 'Y'
+         ));
       }
 
    } // __construct()

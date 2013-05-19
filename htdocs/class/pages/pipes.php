@@ -73,11 +73,11 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
          $cnt_pipes++;
       }
 
-      $tmpl->register_block("pipe_list", array(&$this, "smarty_pipe_list"));
+      $tmpl->registerPlugin("block", "pipe_list", array(&$this, "smarty_pipe_list"));
       return $tmpl->fetch("pipes_list.tpl");
 
    } // showList()
-   
+
    /**
     * pipe for handling
     */
@@ -88,13 +88,14 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       if($this->is_storing())
          $this->store();
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $pipe = new Pipe($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $pipe = new Pipe();
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       /* get a list of chains that use this pipe */
@@ -133,8 +134,8 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
 
       $tmpl->assign('pipe', $pipe);
 
-      $tmpl->register_function("unused_filters_select_list", array(&$this, "smarty_unused_filters_select_list"), false);
-      $tmpl->register_function("used_filters_select_list", array(&$this, "smarty_used_filters_select_list"), false);
+      $tmpl->registerPlugin("function", "unused_filters_select_list", array(&$this, "smarty_unused_filters_select_list"), false);
+      $tmpl->registerPlugin("function", "used_filters_select_list", array(&$this, "smarty_used_filters_select_list"), false);
 
       return $tmpl->fetch("pipes_edit.tpl");
 
@@ -145,9 +146,9 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
     */
    public function smarty_pipe_list($params, $content, &$smarty, &$repeat)
    {
-      global $ms, $db, $tmpl;
+      global $ms;
 
-      $index = $smarty->get_template_vars('smarty.IB.pipe_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.pipe_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -164,18 +165,17 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
             foreach($filters as $filter) {
                $pipe_use_filters[$filter->apf_filter_idx] = $filter->filter_name;
             }
-            $tmpl->assign('pipe_use_filters', $pipe_use_filters);
+            $smarty->assign('pipe_use_filters', $pipe_use_filters);
          }
          else
-            $tmpl->assign('pipe_use_filters', '*none*');
-      
-         $tmpl->assign('pipe_idx', $pipe_idx);
-         $tmpl->assign('pipe_name', $pipe->pipe_name);
-         $tmpl->assign('pipe_active', $pipe->pipe_active);
-         $tmpl->assign('chain_name', $pipe->chain_name);
+            $smarty->assign('pipe_use_filters', '*none*');
+
+         $smarty->assign('pipe_idx', $pipe_idx);
+         $smarty->assign('pipe_name', $pipe->pipe_name);
+         $smarty->assign('pipe_active', $pipe->pipe_active);
 
          $index++;
-         $tmpl->assign('smarty.IB.pipe_list.index', $index);
+         $smarty->assign('smarty.IB.pipe_list.index', $index);
          $repeat = true;
       }
       else {
@@ -231,7 +231,8 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
          ));
 
       }
-         
+
+      $string = "";
       while($filter = $sth->fetch()) {
          $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
       }
@@ -269,11 +270,12 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
          ON
             apf.apf_filter_idx=f.filter_idx
       ");
-         
+
       $db->db_execute($sth, array(
          $params['pipe_idx']
       ));
 
+      $string = "";
       while($filter = $sth->fetch()) {
          $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
       }

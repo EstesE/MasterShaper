@@ -41,9 +41,6 @@ class Page_Targets extends MASTERSHAPER_PAGE {
    {
       global $db, $tmpl;
 
-      if(!isset($this->parent->screen))
-         $this->parent->screen = 0;
-
       $this->avail_targets = Array();
       $this->targets = Array();
 
@@ -66,7 +63,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
          $cnt_targets++;
       }
 
-      $tmpl->register_block("target_list", array(&$this, "smarty_target_list"));
+      $tmpl->registerPlugin("block", "target_list", array(&$this, "smarty_target_list"));
       return $tmpl->fetch("targets_list.tpl");
 
    } // showList()
@@ -81,13 +78,14 @@ class Page_Targets extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $target = new Target($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $target = new Target;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       /* get a list of objects that use this target */
@@ -158,7 +156,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
 
       $tmpl->assign('target', $target);
 
-      $tmpl->register_function("target_select_list", array(&$this, "smarty_target_select_list"), false);
+      $tmpl->registerPlugin("function", "target_group_select_list", array(&$this, "smarty_target_group_select_list"), false);
       return $tmpl->fetch("targets_edit.tpl");
 
    } // showEdit()
@@ -253,9 +251,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
     */
    public function smarty_target_list($params, $content, &$smarty, &$repeat) 
    {
-      global $tmpl;
-
-      $index = $smarty->get_template_vars('smarty.IB.target_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.target_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -265,16 +261,16 @@ class Page_Targets extends MASTERSHAPER_PAGE {
         $target_idx = $this->avail_targets[$index];
         $target =  $this->targets[$target_idx];
          
-         $tmpl->assign('target_idx', $target_idx);
-         $tmpl->assign('target_name', $target->target_name);
+         $smarty->assign('target_idx', $target_idx);
+         $smarty->assign('target_name', $target->target_name);
          switch($target->target_match) {
-            case 'IP':    $tmpl->assign('target_type', _("IP match")); break;
-            case 'MAC':   $tmpl->assign('target_type', _("MAC match")); break;
-            case 'GROUP': $tmpl->assign('target_type', _("Target Group")); break;
+            case 'IP':    $smarty->assign('target_type', _("IP match")); break;
+            case 'MAC':   $smarty->assign('target_type', _("MAC match")); break;
+            case 'GROUP': $smarty->assign('target_type', _("Target Group")); break;
          }
 
          $index++;
-         $tmpl->assign('smarty.IB.target_list.index', $index);
+         $smarty->assign('smarty.IB.target_list.index', $index);
          $repeat = true;
       }
       else {
@@ -288,7 +284,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
    /**
     * return select-list of available or used targets assigned to a target-group
     */
-   public function smarty_target_select_list($params, &$smarty)
+   public function smarty_target_group_select_list($params, &$smarty)
    {
       if(!array_key_exists('group', $params)) {
          $tmpl->trigger_error("getSLList: missing 'group' parameter", E_USER_WARNING);
@@ -354,6 +350,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
             break;
       }
 
+      $string = "";
       while($row = $sth->fetch()) {
          $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
       }
@@ -361,7 +358,7 @@ class Page_Targets extends MASTERSHAPER_PAGE {
       $db->db_sth_free($sth);
       return $string;
 
-   } // smarty_target_select_list()
+   } // smarty_target_group_select_list()
 
 } // class Page_Targets
 

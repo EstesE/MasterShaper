@@ -45,8 +45,10 @@ class Network_Interface extends MsObject {
       ));
 
       if(!isset($id) || empty($id)) {
-         $this->if_active = 'Y';
-         $this->if_fallback_idx = 0;
+         parent::init_fields(Array(
+            'if_active' => 'Y',
+            'if_fallback_idx' => 0,
+         ));
       }
 
    } // __construct()

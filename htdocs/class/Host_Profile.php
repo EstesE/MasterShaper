@@ -42,7 +42,9 @@ class Host_Profile extends MsObject {
       ));
 
       if(!isset($id) || empty($id)) {
-         $this->host_active = 'Y';
+         parent::init_fields(Array(
+            'host_active' => 'Y',
+         ));
       }
 
    } // __construct()

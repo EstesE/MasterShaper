@@ -242,9 +242,9 @@ class MASTERSHAPER {
          $missing = true;
          unset($php_errormsg);
       }
-      @include_once 'smarty/libs/Smarty.class.php';
+      @include_once 'smarty3/Smarty.class.php';
       if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-         print "Smarty template engine is missing<br />\n";
+         print "Smarty3 template engine is missing<br />\n";
          $missing = true;
          unset($php_errormsg);
       }
@@ -294,7 +294,7 @@ class MASTERSHAPER {
          return true;
       }
 
-      return false; 
+      return false;
 
    } // is_logged_in()
 
@@ -425,7 +425,8 @@ class MASTERSHAPER {
 
       $id = $_POST['id'];
       $to = $_POST['to'];
-      $parent = $_POST['parent'];
+      if(isset($_POST['parent']))
+         $parent = $_POST['parent'];
 
       if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
          print "[id] in incorrect format!";
@@ -435,9 +436,7 @@ class MASTERSHAPER {
       $request_object = $parts[1];
       $id = $parts[2];
 
-      /* if no parent has been specified, we can go one toggling
-       * objects status.
-       */
+      // if no parent has been specified, we can go on toggling objects status.
       if(empty($parent)) {
 
          if(!($obj = $this->load_class($request_object, $id))) {
@@ -740,9 +739,19 @@ class MASTERSHAPER {
          return $result->setting_value;
       }
 
+      /* return default options if not set yet */
+      if($object == "filter")
+         return "HTB";
+
+      if($object == "msmode")
+         return "router";
+
+      if($object == "authentication")
+         return "Y";
+
       return "unknown";
 
-   } // getOption() 
+   } // getOption()
 
    /**
     * set value of requested setting
@@ -783,10 +792,10 @@ class MASTERSHAPER {
          WHERE user_idx='". $_SESSION['user_idx'] ."'
       ");
 
-      if($user->$permission == "Y")
+      if(isset($user) && isset($user->$permission) && $user->$permission == "Y")
          return true;
 
-      return false; 
+      return false;
 
    } // checkPermissions()
 
@@ -804,8 +813,8 @@ class MASTERSHAPER {
          case 5: return _("Lowest");  break;
       }
    } // getPriorityName()
- 
-   /** 
+
+   /**
     * this function validates the provided bandwidth
     * and will return true if correctly specified
     */
@@ -835,7 +844,7 @@ class MASTERSHAPER {
 
       return $if->if_name;
 
-   } // getInterfaceName() 
+   } // getInterfaceName()
 
    public function getYearList($current = "")
    {
@@ -957,7 +966,7 @@ class MASTERSHAPER {
 
    } // getKbit
 
-   /** 
+   /**
     * get service level information
     *
     * this function will return all details of the requested
@@ -981,7 +990,7 @@ class MASTERSHAPER {
 
    } // getServiceLevel()
 
-   /** 
+   /**
     * get service level name
     *
     * this function will return the name of the requested
@@ -996,7 +1005,7 @@ class MASTERSHAPER {
 
    } // getServiceLevelName()
 
-   /** 
+   /**
     * get target name
     *
     * this function will return the name of the requested
@@ -1011,7 +1020,7 @@ class MASTERSHAPER {
 
    } // getTargetName()
 
-   /** 
+   /**
     * get chain name
     *
     * this function will return the name of the requested
@@ -1246,7 +1255,7 @@ class MASTERSHAPER {
    {
       $obj = new MASTERSHAPER_MONITOR($this);
       $obj->show($mode);
-   
+
    } // monitor()
 
    /**
@@ -1259,7 +1268,7 @@ class MASTERSHAPER {
       require_once "class/pages/monitor.php";
       $obj = new Page_Monitor;
       print $obj->get_jqplot_values();
- 
+
    } // rpc_graph_data()
 
    /**

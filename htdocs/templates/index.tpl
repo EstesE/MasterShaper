@@ -1,5 +1,5 @@
 {include file="header.tpl"}
   <!-- main -->
-  <div id="content">{$content}</div>
+  {if isset($content)}<div id="content">{$content}</div>{/if}
   <!-- /main -->
 {include file="footer.tpl"}

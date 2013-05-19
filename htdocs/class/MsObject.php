@@ -270,6 +270,29 @@ class MsObject {
 
    } // create_clone()
 
+   /**
+    * init fields
+    */
+   public function init_fields($override)
+   {
+      global $ms, $db;
+
+      if(!isset($this->fields) || !is_array($this->fields))
+         return;
+
+      foreach(array_keys($this->fields) as $field) {
+
+         // check for a matching key in clone's fields array
+         if(in_array($field, array_keys($override))) {
+            $this->$field = $override[$field];
+            continue;
+         }
+
+         $this->$field = NULL;
+      }
+
+   } // init_fields()
+
    /* overloading PHP's __set() function */
    public function __set($name, $value)
    {

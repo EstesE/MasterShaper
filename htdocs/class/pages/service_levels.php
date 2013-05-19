@@ -61,7 +61,7 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
          $cnt_sl++;
       }
 
-      $tmpl->register_block("service_level_list", array(&$this, "smarty_sl_list"));
+      $tmpl->registerPlugin("block", "service_level_list", array(&$this, "smarty_sl_list"));
       return $tmpl->fetch("service_levels_list.tpl");
 
    } // showList() 
@@ -76,13 +76,14 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
 
       global $ms, $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $sl = new Service_Level($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $sl = new Service_Level;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       $tmpl->assign('sl', $sl);
@@ -173,13 +174,13 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
          $page->id,
       ));
 
+      $obj_used = array();
       if($sth->rowCount() > 0) {
-         $obj_use_target = array();
          while($obj = $sth->fetch()) {
-            array_push($obj_use_target, $obj);
+            array_push($obj_used, $obj);
          }
-         $tmpl->assign('obj_use_target', $obj_use_target);
       }
+      $tmpl->assign('obj_used', $obj_used);
 
       $db->db_sth_free($sth);
 
@@ -192,9 +193,9 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
     */
    public function smarty_sl_list($params, $content, &$smarty, &$repeat)
    {
-      global $ms, $tmpl;
+      global $ms;
 
-      $index = $smarty->get_template_vars('smarty.IB.sl_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.sl_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -204,23 +205,23 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
          $sl_idx = $this->avail_service_levels[$index];
          $sl =  $this->service_levels[$sl_idx];
 
-         $tmpl->assign('classifier', $ms->getOption("classifier"));
-         $tmpl->assign('sl_idx', $sl_idx);
-         $tmpl->assign('sl_name', $sl->sl_name);
-         $tmpl->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
-         $tmpl->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
-         $tmpl->assign('sl_htb_priority', $ms->getPriorityName($sl->sl_htb_priority));
-         $tmpl->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
-         $tmpl->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
-         $tmpl->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
-         $tmpl->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
-         $tmpl->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
-         $tmpl->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
-         $tmpl->assign('sl_cbq_in_priority', $ms->getPriorityName($sl->sl_cbq_in_priority));
-         $tmpl->assign('sl_cbq_out_priority', $ms->getPriorityName($sl->sl_cbq_out_priority));
+         $smarty->assign('classifier', $ms->getOption("classifier"));
+         $smarty->assign('sl_idx', $sl_idx);
+         $smarty->assign('sl_name', $sl->sl_name);
+         $smarty->assign('sl_htb_bw_in_rate', $sl->sl_htb_bw_in_rate);
+         $smarty->assign('sl_htb_bw_out_rate', $sl->sl_htb_bw_out_rate);
+         $smarty->assign('sl_htb_priority', $ms->getPriorityName($sl->sl_htb_priority));
+         $smarty->assign('sl_hfsc_in_dmax', $sl->sl_hfsc_in_dmax);
+         $smarty->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
+         $smarty->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
+         $smarty->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
+         $smarty->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
+         $smarty->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
+         $smarty->assign('sl_cbq_in_priority', $ms->getPriorityName($sl->sl_cbq_in_priority));
+         $smarty->assign('sl_cbq_out_priority', $ms->getPriorityName($sl->sl_cbq_out_priority));
 
          $index++;
-         $tmpl->assign('smarty.IB.sl_list.index', $index);
+         $smarty->assign('smarty.IB.sl_list.index', $index);
          $repeat = true;
       }
       else {
@@ -259,6 +260,9 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
       }
 
       $is_numeric = 1;
+
+      if(!isset($_POST['classifiermode']) || !in_array($_POST['classifiermode'], Array('HTB', 'HFSC', 'CBQ')))
+         $_POST['classifiermode'] = 'HTB';
 
       switch($_POST['classifiermode']) {
          case 'HTB':

@@ -52,7 +52,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          ORDER BY
             filter_name ASC
       ");
-   
+
       $cnt_filters = 0;
 
       while($filter = $res_filters->fetch()) {
@@ -61,12 +61,12 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          $cnt_filters++;
       }
 
-      $tmpl->register_block("filter_list", array(&$this, "smarty_filter_list"));
+      $tmpl->registerPlugin("block", "filter_list", array(&$this, "smarty_filter_list"));
       return $tmpl->fetch("filters_list.tpl");
 
    } // showList()
 
-   /** 
+   /**
     * filter for handling
     */
    public function showEdit()
@@ -76,13 +76,14 @@ class Page_Filters extends MASTERSHAPER_PAGE {
 
       global $ms, $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $filter = new Filter($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $filter = new filter;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       /* get a list of pipes that use this filter */
@@ -119,9 +120,9 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       $tmpl->assign('filter', $filter);
       $tmpl->assign('filter_mode', $ms->getOption("filter"));
 
-      $tmpl->register_function("protocol_select_list", array(&$this, "smarty_protocol_select_list"), false);
-      $tmpl->register_function("port_select_list", array(&$this, "smarty_port_select_list"), false);
-      $tmpl->register_function("l7_select_list", array(&$this, "smarty_l7_select_list"), false);
+      $tmpl->registerPlugin("function", "protocol_select_list", array(&$this, "smarty_protocol_select_list"), false);
+      $tmpl->registerPlugin("function", "port_select_list", array(&$this, "smarty_port_select_list"), false);
+      $tmpl->registerPlugin("function", "l7_select_list", array(&$this, "smarty_l7_select_list"), false);
       return $tmpl->fetch("filters_edit.tpl");
 
    } // showEdit()
@@ -214,7 +215,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $_POST['filter_p2p_edk'] ||
             $_POST['filter_p2p_kazaa'] ||
             $_POST['filter_p2p_dc'] ||
-            $_POST['filter_p2p_gnu'] || 
+            $_POST['filter_p2p_gnu'] ||
             $_POST['filter_p2p_bit'] ||
             $_POST['filter_p2p_apple'] ||
             $_POST['filter_p2p_soul'] ||
@@ -222,7 +223,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             $_POST['filter_p2p_ares']
          ) &&
          (
-            count($_POST['used']) > 1 || 
+            count($_POST['used']) > 1 ||
             (
                (
                   $ms->getProtocolNumberById(
@@ -242,11 +243,11 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       }
 
       if(isset($_POST['filter_ipt'])) {
-         $_POST['filter_time_start'] = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00", 
+         $_POST['filter_time_start'] = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00",
             $_POST['filter_time_start_year'],
             $_POST['filter_time_start_month'],
             $_POST['filter_time_start_day'],
-            $_POST['filter_time_start_hour'], 
+            $_POST['filter_time_start_hour'],
             $_POST['filter_time_start_minute']));
          $_POST['filter_time_stop'] = strtotime(sprintf("%04d-%02d-%02d %02d:%02d:00",
             $_POST['filter_time_stop_year'],
@@ -282,9 +283,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
     */
    public function smarty_filter_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $smarty->get_template_vars('smarty.IB.filter_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.filter_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -294,12 +293,12 @@ class Page_Filters extends MASTERSHAPER_PAGE {
         $filter_idx = $this->avail_filters[$index];
         $filter =  $this->filters[$filter_idx];
 
-         $tmpl->assign('filter_idx', $filter_idx);
-         $tmpl->assign('filter_name', $filter->filter_name);
-         $tmpl->assign('filter_active', $filter->filter_active);
+         $smarty->assign('filter_idx', $filter_idx);
+         $smarty->assign('filter_name', $filter->filter_name);
+         $smarty->assign('filter_active', $filter->filter_active);
 
          $index++;
-         $tmpl->assign('smarty.IB.filter_list.index', $index);
+         $smarty->assign('smarty.IB.filter_list.index', $index);
          $repeat = true;
       }
       else {
@@ -316,7 +315,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          $tmpl->trigger_error("getSLList: missing 'proto_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
-      } 
+      }
 
       global $db;
 
@@ -328,14 +327,15 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          ORDER BY
             proto_name ASC
       ");
-      
+
+      $string = "";
       while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->proto_idx ."\"";
          if($row->proto_idx == $params['proto_idx'])
              $string.= "selected=\"selected\"";
          $string.= ">". $row->proto_name ."</option>\n";
       }
-   
+
       return $string;
 
    } // smarty_protocol_select_list()
@@ -346,12 +346,12 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          $tmpl->trigger_error("getSLList: missing 'filter_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
-      } 
+      }
       if(!array_key_exists('mode', $params)) {
          $tmpl->trigger_error("getSLList: missing 'mode' parameter", E_USER_WARNING);
          $repeat = false;
          return;
-      } 
+      }
 
       global $ms, $db;
 
@@ -408,6 +408,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             break;
       }
 
+      $string = "";
       while($port = $sth->fetch()) {
          $string.= "<option value=\"". $port->port_idx ."\">". $port->port_name ." (". $port->port_number .")</option>\n";
       }
@@ -424,12 +425,12 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          $tmpl->trigger_error("getSLList: missing 'filter_idx' parameter", E_USER_WARNING);
          $repeat = false;
          return;
-      } 
+      }
       if(!array_key_exists('mode', $params)) {
          $tmpl->trigger_error("getSLList: missing 'mode' parameter", E_USER_WARNING);
          $repeat = false;
          return;
-      } 
+      }
 
       global $ms, $db;
 
@@ -451,7 +452,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                   ISNULL(afl7_filter_idx)
                ORDER BY
                   l7proto_name ASC
-            ");              
+            ");
 
             $l7protos = $db->db_execute($sth, array(
                $params['filter_idx'],
@@ -473,7 +474,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
                   afl7_filter_idx LIKE ?
                ORDER BY
                   l7proto_name ASC
-            "); 
+            ");
 
             $l7protos = $db->db_execute($sth, array(
                $params['filter_idx']
@@ -485,7 +486,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
             break;
       }
 
-      while($l7proto = $sth->fetch()) { 
+      while($l7proto = $sth->fetch()) {
          $string.= "<option value=\"" . $l7proto->l7proto_idx ."\">". $l7proto->l7proto_name ."</option>\n";
       }
 
@@ -494,7 +495,7 @@ class Page_Filters extends MASTERSHAPER_PAGE {
       return $string;
 
    } // smarty_l7_select_list()
-   
+
 } // class Page_Filters
 
 $obj = new Page_Filters;

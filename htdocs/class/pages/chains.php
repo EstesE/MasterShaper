@@ -73,7 +73,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $cnt_chains++;
       }
 
-      $tmpl->register_block("chain_list", array(&$this, "smarty_chain_list"));
+      $tmpl->registerPlugin("block", "chain_list", array(&$this, "smarty_chain_list"));
 
       return $tmpl->fetch("chains_list.tpl");
 
@@ -92,13 +92,14 @@ class Page_Chains extends MASTERSHAPER_PAGE {
       $this->avail_pipes = Array();
       $this->pipes = Array();
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $chain = new Chain($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $chain = new Chain;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       $sth = $db->db_prepare("
@@ -146,7 +147,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
       $db->db_sth_free($sth);
       $tmpl->assign('chain', $chain);
 
-      $tmpl->register_block("pipe_list", array(&$this, "smarty_pipe_list"), false);
+      $tmpl->registerPlugin("block", "pipe_list", array(&$this, "smarty_pipe_list"), false);
 
       return $tmpl->fetch("chains_edit.tpl");
 
@@ -157,9 +158,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
     */
    public function smarty_chain_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $tmpl->get_template_vars('smarty.IB.chain_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.chain_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -169,26 +168,26 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $chain_idx = $this->avail_chains[$index];
          $chain =  $this->chains[$chain_idx];
 
-         $tmpl->assign('chain_idx', $chain_idx);
-         $tmpl->assign('chain_name', $chain->chain_name);
-         $tmpl->assign('chain_active', $chain->chain_active);
-         $tmpl->assign('chain_sl_idx', $chain->chain_sl_idx);
-         $tmpl->assign('chain_fallback_idx', $chain->chain_fallback_idx);
+         $smarty->assign('chain_idx', $chain_idx);
+         $smarty->assign('chain_name', $chain->chain_name);
+         $smarty->assign('chain_active', $chain->chain_active);
+         $smarty->assign('chain_sl_idx', $chain->chain_sl_idx);
+         $smarty->assign('chain_fallback_idx', $chain->chain_fallback_idx);
 
          if($chain->chain_sl_idx != 0) {
-            $tmpl->assign('chain_sl_name', $chain->chain_sl_name);
+            $smarty->assign('chain_sl_name', $chain->chain_sl_name);
             if($chain->chain_fallback_idx != 0)
-               $tmpl->assign('chain_fallback_name', $chain->chain_fallback_name);
+               $smarty->assign('chain_fallback_name', $chain->chain_fallback_name);
             else
-               $tmpl->assign('chain_fallback_name', _("No Fallback"));
+               $smarty->assign('chain_fallback_name', _("No Fallback"));
          }
          else {
-               $tmpl->assign('chain_sl_name', _("Ignore QoS"));
-               $tmpl->assign('chain_fallback_name', _("Ignore QoS"));
+               $smarty->assign('chain_sl_name', _("Ignore QoS"));
+               $smarty->assign('chain_fallback_name', _("Ignore QoS"));
          }
 
          $index++;
-         $tmpl->assign('smarty.IB.chain_list.index', $index);
+         $smarty->assign('smarty.IB.chain_list.index', $index);
          $repeat = true;
       }
       else {
@@ -254,9 +253,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
     */
    public function smarty_pipe_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $tmpl->get_template_vars('smarty.IB.pipe_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.pipe_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -273,10 +270,10 @@ class Page_Chains extends MASTERSHAPER_PAGE {
             // no override
             $pipe->sl_in_use = -1;
 
-         $tmpl->assign('pipe', $pipe);
+         $smarty->assign('pipe', $pipe);
 
          $index++;
-         $tmpl->assign('smarty.IB.pipe_list.index', $index);
+         $smarty->assign('smarty.IB.pipe_list.index', $index);
          $repeat = true;
       }
       else {
@@ -348,7 +345,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
       }
 
       $db->db_sth_free($sth);
-      $tmpl->register_block("chain_dialog_list", array(&$this, "smarty_chain_dialog_list"));
+      $tmpl->registerPlugin("block", "chain_dialog_list", array(&$this, "smarty_chain_dialog_list"));
       $tmpl->assign('pipe_idx', $id);
 
       $json_obj = Array(
@@ -364,9 +361,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
     */
    public function smarty_chain_dialog_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $tmpl->get_template_vars('smarty.IB.chain_dialog_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.chain_dialog_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -376,16 +371,16 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $chain_idx = $this->avail_chains[$index];
          $chain =  $this->chains[$chain_idx];
 
-         $tmpl->assign('chain_idx', $chain_idx);
-         $tmpl->assign('chain_name', $chain->chain_name);
-         $tmpl->assign('chain_active', $chain->chain_active);
+         $smarty->assign('chain_idx', $chain_idx);
+         $smarty->assign('chain_name', $chain->chain_name);
+         $smarty->assign('chain_active', $chain->chain_active);
          if(isset($chain->apc_chain_idx) && !is_null($chain->apc_chain_idx))
-            $tmpl->assign('chain_used', $chain->apc_chain_idx);
+            $smarty->assign('chain_used', $chain->apc_chain_idx);
          else
-            $tmpl->clear_assign('chain_used');
+            $smarty->clearAssign('chain_used');
 
          $index++;
-         $tmpl->assign('smarty.IB.chain_dialog_list.index', $index);
+         $smarty->assign('smarty.IB.chain_dialog_list.index', $index);
          $repeat = true;
       }
       else {

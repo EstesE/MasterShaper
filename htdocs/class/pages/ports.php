@@ -87,7 +87,7 @@ class Page_Ports extends MASTERSHAPER_PAGE {
       $pager = & Pager::factory($pager_params);
       $tmpl->assign('pager', $pager);
 
-      $tmpl->register_block("port_list", array(&$this, "smarty_port_list"));
+      $tmpl->registerPlugin("block", "port_list", array(&$this, "smarty_port_list"));
       return $tmpl->fetch("ports_list.tpl");
 
    } // showList()
@@ -102,13 +102,14 @@ class Page_Ports extends MASTERSHAPER_PAGE {
 
       global $db, $tmpl, $page;
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $port = new Port($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $port = new Port;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       /* get a list of filters that use this ports */
@@ -142,7 +143,7 @@ class Page_Ports extends MASTERSHAPER_PAGE {
 
       $tmpl->assign('port', $port);
 
-     return $tmpl->fetch("ports_edit.tpl");
+      return $tmpl->fetch("ports_edit.tpl");
 
    } // showEdit()
 
@@ -151,9 +152,7 @@ class Page_Ports extends MASTERSHAPER_PAGE {
     */
    public function smarty_port_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $smarty->get_template_vars('smarty.IB.port_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.port_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -163,10 +162,10 @@ class Page_Ports extends MASTERSHAPER_PAGE {
          $port_idx = $this->avail_ports[$index];
          $port = new Port($port_idx);
 
-         $tmpl->assign('port', $port);
+         $smarty->assign('port', $port);
 
          $index++;
-         $tmpl->assign('smarty.IB.port_list.index', $index);
+         $smarty->assign('smarty.IB.port_list.index', $index);
          $repeat = true;
       }
       else {

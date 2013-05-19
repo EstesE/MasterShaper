@@ -78,8 +78,10 @@ class Service_Level extends MsObject {
 
       /* it seems a new service level gets created, preset some values */
       if(!isset($id) || empty($id)) {
-         $this->sl_sfq_perturb     = 10;
-         $this->sl_sfq_quantum     = 1532;
+         parent::init_fields(Array(
+            'sl_sfq_perturb' => 10,
+            'sl_sfq_quantum' => 1532,
+         ));
       }
 
    } // __construct()

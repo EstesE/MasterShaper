@@ -54,7 +54,9 @@ class User extends MsObject {
       ));
 
       if(!isset($id) || empty($id)) {
-         $this->user_active = 'Y';
+         parent::init_fields(Array(
+            'user_active' => 'Y',
+         ));
       }
 
    } // __construct()

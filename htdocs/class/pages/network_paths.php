@@ -63,7 +63,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
          $cnt_netpaths++;
       }
 
-      $tmpl->register_block("netpath_list", array(&$this, "smarty_netpath_list"));
+      $tmpl->registerPlugin("block", "netpath_list", array(&$this, "smarty_netpath_list"));
 
       return $tmpl->fetch("network_paths_list.tpl");
    
@@ -82,13 +82,14 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       $this->avail_chains = Array();
       $this->chains = Array();
 
-      if($page->id != 0) {
+      if(isset($page->id) && $page->id != 0) {
          $np = new Network_Path($page->id);
          $tmpl->assign('is_new', false);
       }
       else {
          $np = new Network_Path;
          $tmpl->assign('is_new', true);
+         $page->id = NULL;
       }
 
       $sth = $db->db_prepare("
@@ -124,9 +125,9 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
       $db->db_sth_free($sth);
 
       $tmpl->assign('np', $np);
-      $tmpl->register_function("if_select_list", array(&$this, "smarty_if_select_list"), false);
+      $tmpl->registerPlugin("function", "if_select_list", array(&$this, "smarty_if_select_list"), false);
 
-      $tmpl->register_block("chain_list", array(&$this, "smarty_chain_list"), false);
+      $tmpl->registerPlugin("block", "chain_list", array(&$this, "smarty_chain_list"), false);
 
       return $tmpl->fetch("network_paths_edit.tpl");
 
@@ -137,9 +138,9 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
     */
    public function smarty_netpath_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl, $ms;
+      global $ms;
 
-      $index = $smarty->get_template_vars('smarty.IB.netpath_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.netpath_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -149,18 +150,18 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
         $netpath_idx = $this->avail_netpaths[$index];
         $netpath =  $this->netpaths[$netpath_idx];
 
-         $tmpl->assign('netpath_idx', $netpath_idx);
-         $tmpl->assign('netpath_name', $netpath->netpath_name);
-         $tmpl->assign('netpath_active', $netpath->netpath_active);
-         $tmpl->assign('netpath_if1_idx', $netpath->netpath_if1);
-         $tmpl->assign('netpath_if1_name', $ms->getInterfaceName($netpath->netpath_if1));
-         $tmpl->assign('netpath_if1_inside_gre', $netpath->netpath_if1_inside_gre);
-         $tmpl->assign('netpath_if2_idx', $netpath->netpath_if2);
-         $tmpl->assign('netpath_if2_name', $ms->getInterfaceName($netpath->netpath_if2));
-         $tmpl->assign('netpath_if2_inside_gre', $netpath->netpath_if2_inside_gre);
+         $smarty->assign('netpath_idx', $netpath_idx);
+         $smarty->assign('netpath_name', $netpath->netpath_name);
+         $smarty->assign('netpath_active', $netpath->netpath_active);
+         $smarty->assign('netpath_if1_idx', $netpath->netpath_if1);
+         $smarty->assign('netpath_if1_name', $ms->getInterfaceName($netpath->netpath_if1));
+         $smarty->assign('netpath_if1_inside_gre', $netpath->netpath_if1_inside_gre);
+         $smarty->assign('netpath_if2_idx', $netpath->netpath_if2);
+         $smarty->assign('netpath_if2_name', $ms->getInterfaceName($netpath->netpath_if2));
+         $smarty->assign('netpath_if2_inside_gre', $netpath->netpath_if2_inside_gre);
 
          $index++;
-         $tmpl->assign('smarty.IB.netpath_list.index', $index);
+         $smarty->assign('smarty.IB.netpath_list.index', $index);
          $repeat = true;
       }
       else {
@@ -246,6 +247,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
             if_name ASC
       ");
 
+      $string = "";
       while($row = $result->fetch()) {
          $string.= "<option value=\"". $row->if_idx ."\"";
          if($params['if_idx'] == $row->if_idx)
@@ -262,9 +264,7 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
     */
    public function smarty_chain_list($params, $content, &$smarty, &$repeat)
    {
-      global $tmpl;
-
-      $index = $tmpl->get_template_vars('smarty.IB.chain_list.index');
+      $index = $smarty->getTemplateVars('smarty.IB.chain_list.index');
       if(!$index) {
          $index = 0;
       }
@@ -274,10 +274,10 @@ class Page_Network_Paths extends MASTERSHAPER_PAGE {
          $chain_idx = $this->avail_chains[$index];
          $chain =  $this->chains[$chain_idx];
 
-         $tmpl->assign('chain', $chain);
+         $smarty->assign('chain', $chain);
 
          $index++;
-         $tmpl->assign('smarty.IB.chain_list.index', $index);
+         $smarty->assign('smarty.IB.chain_list.index', $index);
          $repeat = true;
       }
       else {
