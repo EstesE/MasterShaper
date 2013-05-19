@@ -1587,7 +1587,7 @@ class MASTERSHAPER {
     */
    public function is_cmdline()
    {
-      if(isset($_ENV['SHELL']) && !empty($_ENV['SHELL']))
+      if(php_sapi_name() == 'cli')
          return true;
 
       return false;
