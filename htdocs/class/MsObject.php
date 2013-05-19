@@ -146,7 +146,7 @@ class MsObject {
    /**
     * clone
     */
-   public function create_clone($srcobj)
+   public function create_clone(&$srcobj)
    {
       global $ms, $db;
 

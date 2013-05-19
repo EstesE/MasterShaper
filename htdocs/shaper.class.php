@@ -71,7 +71,7 @@ class MASTERSHAPER {
          exit(1);
       }
 
-      $GLOBALS['db']       = new MASTERSHAPER_DB(&$this);
+      $GLOBALS['db']       = new MASTERSHAPER_DB;
       $GLOBALS['rewriter'] = Rewriter::instance();
 
       global $db;
@@ -94,7 +94,7 @@ class MASTERSHAPER {
 
       require_once "shaper_tmpl.php";
       $GLOBALS['tmpl'] = new MASTERSHAPER_TMPL($this);
-      $GLOBALS['tmpl']->assign('rewriter', &$rewriter);
+      $GLOBALS['tmpl']->assign('rewriter', $rewriter);
 
       if(session_id() == "")
          session_start();
@@ -513,7 +513,7 @@ class MASTERSHAPER {
          return false;
       }
 
-      if($newobj->create_clone(&$obj)) {
+      if($newobj->create_clone($obj)) {
          print "ok";
          return true;
       }
@@ -2427,7 +2427,7 @@ class MASTERSHAPER {
          2 => array('pipe','w'), /* STDERR */
       );
 
-      $process = proc_open($cmd, $desc, &$pipes);
+      $process = proc_open($cmd, $desc, $pipes);
 
       if(is_resource($process)) {
 
@@ -2498,7 +2498,7 @@ class MASTERSHAPER {
       //setproctitle("shaper_agent.php - tasks");
 
       // reconnect spawned child to database
-      $GLOBALS['db'] = new MASTERSHAPER_DB(&$this);
+      $GLOBALS['db'] = new MASTERSHAPER_DB;
 
       while(!System_Daemon::isDying()) {
          $this->get_tasks();
@@ -2522,7 +2522,7 @@ class MASTERSHAPER {
       //setproctitle("shaper_agent.php - stats");
 
       // reconnect spawned child to database
-      $GLOBALS['db'] = new MASTERSHAPER_DB(&$this);
+      $GLOBALS['db'] = new MASTERSHAPER_DB;
 
       $this->collect_stats();
 
