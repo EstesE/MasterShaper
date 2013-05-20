@@ -1,18 +1,19 @@
 {start_table icon=$icon_chains alt="chain icon" title="Manage Chains"}
 <table style="width: 100%;" class="withborder">
  <tr>
-  <td colspan="4" style="text-align: center;">
+  <td colspan="5" style="text-align: center;">
    <img src="{$icon_new}" alt="new icon" />
    <a href="{$rewriter->get_page_url('Chain New')}" title="Create a new Chain">Create a new Chain</a>
   </td>
  </tr>
  <tr>
-  <td colspan="4">&nbsp;</td>
+  <td colspan="5">&nbsp;</td>
  </tr>
  <tr>
   <td><img src="{$icon_chains}" alt="chain icon" />&nbsp;<i>Chain-Name</i></td>
   <td><img src="{$icon_servicelevels}" alt="servicelevel icon" />&nbsp;<i>Service Level</i></td>
   <td><img src="{$icon_servicelevels}" alt="servicelevel icon" />&nbsp;<i>Fallback</i></td>
+  <td><img src="{$icon_interfaces}" alt="interfaces icon" />&nbsp;<i>Network Path</i></td>
   <td style="text-align: center;"><i>Options</i></td>
  </tr>
  {chain_list}
@@ -36,6 +37,10 @@
   {else}
    {$chain_fallback_name}
   {/if}
+  </td>
+  <td>
+   <img src="{$icon_interfaces}" alt="interfaces icon" />
+   <a href="{$rewriter->get_page_url('Network Path Edit', $chain_netpath_idx)}">{$chain_netpath_name}</a>
   </td>
   <td style="text-align: center;">
    <a title="Clone" class="clone" id="chain-{$chain_idx}"><img src="{$icon_clone}" alt="clone icon" /></a>

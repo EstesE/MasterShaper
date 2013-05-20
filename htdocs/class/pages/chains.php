@@ -48,7 +48,8 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          SELECT
             c.*,
             sl.sl_name as chain_sl_name,
-            slfall.sl_name as chain_fallback_name
+            slfall.sl_name as chain_fallback_name,
+            np.netpath_name as chain_netpath_name
          FROM
             ". MYSQL_PREFIX ."chains c
          LEFT JOIN
@@ -59,6 +60,10 @@ class Page_Chains extends MASTERSHAPER_PAGE {
             ". MYSQL_PREFIX ."service_levels slfall
          ON
             c.chain_fallback_idx=slfall.sl_idx
+         LEFT JOIN
+            ". MYSQL_PREFIX ."network_paths np
+         ON
+            c.chain_netpath_idx=np.netpath_idx
          WHERE
             c.chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
@@ -173,6 +178,8 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $smarty->assign('chain_active', $chain->chain_active);
          $smarty->assign('chain_sl_idx', $chain->chain_sl_idx);
          $smarty->assign('chain_fallback_idx', $chain->chain_fallback_idx);
+         $smarty->assign('chain_netpath_idx', $chain->chain_netpath_idx);
+         $smarty->assign('chain_netpath_name', $chain->chain_netpath_name);
 
          if($chain->chain_sl_idx != 0) {
             $smarty->assign('chain_sl_name', $chain->chain_sl_name);
