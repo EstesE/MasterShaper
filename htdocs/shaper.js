@@ -143,6 +143,9 @@ function draw_jqplot()
       if(data.error != undefined)
          window.alert(data.error);
 
+      if(data.notice != undefined)
+         document.getElementById("jqp_monitor").innerHTML = data.notice;
+
       var time_end    = data.time_end;
       var interface   = data.interface;
       var scalemode   = data.scalemode;
@@ -160,7 +163,7 @@ function draw_jqplot()
       var seriesRendererOptions = {};
 
       if(!data.data) {
-         window.alert(values);
+         //window.alert(values);
          return;
       }
 

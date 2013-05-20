@@ -11,6 +11,7 @@
     Graph Options
    </td>
    <td style="text-align: center; width: 900px; height: 350px" rowspan="10">
+    <div id="graph_messages"></div>
     <div id="jqp_monitor"></div>
     <div id="debug"></div>
    </td>

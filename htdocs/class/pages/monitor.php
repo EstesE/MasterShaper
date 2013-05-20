@@ -320,7 +320,7 @@ class Page_Monitor extends MASTERSHAPER_PAGE {
 
       /* If we have no data here, maybe shaper_agent.php is not running. Stop. */
       if(!isset($bigdata)) {
-         return json_encode(array('error' => 'shaper_agent.php is inactive!'));
+         return json_encode(array('notice' => 'shaper_agent.php is inactive!'));
       }
 	
       /* prepare graph arrays and fill up with data */
