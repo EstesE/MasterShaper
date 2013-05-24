@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '19');
+define('SCHEMA_VERSION', '20');
 
 /***************************************************************************
  *
@@ -567,6 +567,12 @@ class MASTERSHAPER_DB {
 
       $this->upgrade_schema();
 
+      printf("Install source DB version: ". SCHEMA_VERSION ."<br />\n");
+      printf("actual DB version: ". $this->getVersion() ."<br />\n");
+
+      if(SCHEMA_VERSION == $this->getVersion())
+         print "All ok!<br />\n";
+
       return true;
 
    } // install_schema()
@@ -670,15 +676,6 @@ class MASTERSHAPER_DB {
               `filter_tcpflag_urg` char(1) default NULL,
               `filter_tcpflag_psh` char(1) default NULL,
               `filter_packet_length` varchar(255) default NULL,
-              `filter_p2p_edk` char(1) default NULL,
-              `filter_p2p_kazaa` char(1) default NULL,
-              `filter_p2p_dc` char(1) default NULL,
-              `filter_p2p_gnu` char(1) default NULL,
-              `filter_p2p_bit` char(1) default NULL,
-              `filter_p2p_apple` char(1) default NULL,
-              `filter_p2p_soul` char(1) default NULL,
-              `filter_p2p_winmx` char(1) default NULL,
-              `filter_p2p_ares` char(1) default NULL,
               `filter_time_use_range` char(1) default NULL,
               `filter_time_start` int(11) default NULL,
               `filter_time_stop` int(11) default NULL,
@@ -1536,6 +1533,34 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(19);
+      }
+
+      if($this->schema_version < 20) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."filters
+            DROP
+               filter_p2p_edk,
+            DROP
+               filter_p2p_kazaa,
+            DROP
+               filter_p2p_dc,
+            DROP
+               filter_p2p_gnu,
+            DROP
+               filter_p2p_bit,
+            DROP
+               filter_p2p_apple,
+            DROP
+               filter_p2p_soul,
+            DROP
+               filter_p2p_winmx,
+            DROP
+               filter_p2p_ares
+         ");
+
+         $this->setVersion(20);
       }
 
    } // upgrade_schema()

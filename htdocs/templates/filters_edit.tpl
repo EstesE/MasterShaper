@@ -175,33 +175,6 @@
  </tr>
  <tr>
   <td style="white-space: nowrap;">
-   IPP2P:
-  </td>
-  <td>
-   <table class="noborder">
-    <tr>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_edk]')"><input type="checkbox" name="filter_p2p_edk" value="Y" {if $filter->filter_p2p_edk == "Y"} checked="checked" {/if} />Edonkey</td>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_kazaa]')"><input type="checkbox" name="filter_p2p_kazaa" value="Y" {if $filter->filter_p2p_kazaa == "Y"} checked="checked" {/if} />Kazaa</td>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_dc]')"><input type="checkbox" name="filter_p2p_dc" value="Y" {if $filter->filter_p2p_dc == "Y"} checked="checked" {/if} />Direct Connect (DC)</td>
-    </tr>
-    <tr>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_gnu]')"><input type="checkbox" name="filter_p2p_gnu" value="Y" {if $filter->filter_p2p_gnu == "Y"} checked="checked" {/if} />Gnutella</td>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_bit]')"><input type="checkbox" name="filter_p2p_bit" value="Y" {if $filter->filter_p2p_bit == "Y"} checked="checked" {/if} />Bittorent</td>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_apple]')"><input type="checkbox" name="filter_p2p_apple" value="Y" {if $filter->filter_p2p_apple == "Y"} checked="checked" {/if} />AppleJuice</td>
-    </tr>
-    <tr>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_soul]')"><input type="checkbox" name="filter_p2p_soul" value="Y" {if $filter->filter_p2p_soul == "Y"} checked="checked" {/if} />SoulSeek</td>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_winmx]')"><input type="checkbox" name="filter_p2p_winmx" value="Y" {if $filter->filter_p2p_winmx == "Y"} checked="checked" {/if} />WinMX</td>
-     <td onclick="obj_toggle_checkbox('[name=filter_p2p_ares]')"><input type="checkbox" name="filter_p2p_ares" value="Y" {if $filter->filter_p2p_ares == "Y"} checked="checked" {/if} />Ares</td>
-    </tr>
-   </table>
-  </td>
-  <td>
-   Match on specific filesharing protocols. This uses the ipp2p iptables module. It has to be available on your iptables installation. Refer <a href="http://www.ipp2p.org" onclick="window.open('http://www.ipp2p.org'); return false;">www.ipp2p.org</a> for more informations.
-  </td>
- </tr>
- <tr>
-  <td style="white-space: nowrap;">
    layer7:
   </td>
   <td>

@@ -166,15 +166,6 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          !$_POST['filter_tcpflag_urg'] &&
          !$_POST['filter_tcpflag_psh'] &&
          !$_POST['filter_packet_length'] &&
-         !$_POST['filter_p2p_edk'] &&
-         !$_POST['filter_p2p_kazaa'] &&
-         !$_POST['filter_p2p_dc'] &&
-         !$_POST['filter_p2p_gnu'] &&
-         !$_POST['filter_p2p_bit'] &&
-         !$_POST['filter_p2p_apple'] &&
-         !$_POST['filter_p2p_soul'] &&
-         !$_POST['filter_p2p_winmx'] &&
-         !$_POST['filter_p2p_ares'] &&
          !$_POST['filter_time_use_range'] &&
          !$_POST['filter_time_day_mon'] &&
          !$_POST['filter_time_day_tue'] &&
@@ -209,31 +200,6 @@ class Page_Filters extends MASTERSHAPER_PAGE {
          ) &&
          $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6) {
          $ms->throwError(_("TCP-Flags can only be used in combination with TCP protocol!"));
-      }
-      /* ipp2p can only be used with no ports, no l7 filters and tcp &| udp protocol */
-      if(isset($_POST['filter_ipt']) && (
-            $_POST['filter_p2p_edk'] ||
-            $_POST['filter_p2p_kazaa'] ||
-            $_POST['filter_p2p_dc'] ||
-            $_POST['filter_p2p_gnu'] ||
-            $_POST['filter_p2p_bit'] ||
-            $_POST['filter_p2p_apple'] ||
-            $_POST['filter_p2p_soul'] ||
-            $_POST['filter_p2p_winmx'] ||
-            $_POST['filter_p2p_ares']
-         ) &&
-         (
-            count($_POST['used']) > 1 ||
-            (
-               (
-                  $ms->getProtocolNumberById(
-                     $_POST['filter_protocol_id']) != 17 &&
-                  $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6
-               ) &&
-               $_POST['filter_protocol_id'] != -1
-            ) ||
-            count($_POST['filter_l7_used']) > 1)) {
-         $ms->throwError(_("IPP2P match can only be used with no ports select and only with protocols TCP or UDP or completly ignoring protocols!<br />Also IPP2P can not be used in combination with layer7 filters."));
       }
       /* layer7 protocol match can only be used with no ports and no tcp &| udp protocols */
       if(isset($_POST['filter_ipt']) &&

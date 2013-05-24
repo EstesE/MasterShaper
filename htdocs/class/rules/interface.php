@@ -1277,7 +1277,6 @@ class Ruleset_Interface {
 
             $match_str = "";
             $cnt= 0;
-            $str_p2p   = "";
             $match_ary = Array();
             $proto_ary = Array();
 
@@ -1413,29 +1412,6 @@ class Ruleset_Interface {
                if($str_days != "")
                   $match_str.= " -m time --days ". substr($str_days, 0, strlen($str_days)-1);
             }
-
-            // IPP2P matching
-            if($filter->filter_p2p_edk == "Y")
-               $str_p2p.= "--edk ";
-            if($filter->filter_p2p_kazaa == "Y")
-               $str_p2p.= "--kazaa ";
-            if($filter->filter_p2p_dc == "Y")
-               $str_p2p.= "--dc ";
-            if($filter->filter_p2p_gnu == "Y")
-               $str_p2p.= "--gnu ";
-            if($filter->filter_p2p_bit == "Y")
-               $str_p2p.= "--bit ";
-            if($filter->filter_p2p_apple == "Y")
-               $str_p2p.= "--apple ";
-            if($filter->filter_p2p_soul == "Y")
-               $str_p2p.= "--soul ";
-            if($filter->filter_p2p_winmx == "Y")
-               $str_p2p.= "--winmx ";
-            if($filter->filter_p2p_ares == "Y")
-               $str_p2p.= "--ares ";
-
-            if($str_p2p != "")
-               $match_str.= " -m ipp2p ". substr($str_p2p, 0, strlen($str_p2p)-1);
 
             // End of match string
 
