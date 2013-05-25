@@ -77,25 +77,13 @@
 -->
 <div id="menu_others" class="menu">
  <li>
-  <a class="{ldelim}action: 'location.href=\'shaper_export.php\''{rdelim}">
-   <img src="{$icon_rules_export}" />&nbsp;Save Configuration<br />
-   <div class="menu_help">export current configuration</div>
+  <a class="{ldelim}action: 'location.href=\'{$rewriter->get_page_url('Others Update IANA')}\''{rdelim}">
+   <img src="{$icon_rules_update}" />&nbsp;Update Ports &amp; Protocols<br />
+   <div class="menu_help">update list of IANA-assigned ports and protocols</div>
   </a>
  </li>
  <li>
-  <a class="{ldelim}action: 'location.href=\'shaper_restore.php\''{rdelim}">
-   <img src="{$icon_rules_restore}" />&nbsp;Restore Configuration<br />
-   <div class="menu_help">import new configuration</div>
-  </a>
- </li>
- <li>
-  <a class="{ldelim}action: 'location.href=\'shaper_reset.php\''{rdelim}">
-   <img src="{$icon_rules_reset}" />&nbsp;Reset Configuration<br />
-   <div class="menu_help">complete cleanup</div>
-  </a>
- </li>
- <li>
-  <a class="{ldelim}action: 'location.href=\'shaper_update.php\''{rdelim}">
+  <a class="{ldelim}action: 'location.href=\'{$rewriter->get_page_url('Others Update L7')}\''{rdelim}">
    <img src="{$icon_rules_update}" />&nbsp;Update L7 Protocols<br />
    <div class="menu_help">update internal list of known L7-filter patterns</div>
   </a>

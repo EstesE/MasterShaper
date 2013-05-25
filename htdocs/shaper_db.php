@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '20');
+define('SCHEMA_VERSION', '21');
 
 /***************************************************************************
  *
@@ -86,7 +86,9 @@ class MASTERSHAPER_DB {
       $dsn = "mysql:dbname=". MYSQL_DB .";host=". MYSQL_HOST;
 
       try {
-         $this->db = new PDO($dsn, MYSQL_USER, MYSQL_PASS);
+         $this->db = new PDO($dsn, MYSQL_USER, MYSQL_PASS, array(
+            PDO::MYSQL_ATTR_LOCAL_INFILE => true,
+         ));
          $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
          $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
       }
@@ -142,10 +144,12 @@ class MASTERSHAPER_DB {
          return $result;
       }
 
-      $result = $this->db->query($query);
-
-      if(PEAR::isError($result))
+      try {
+         $result = $this->db->query($query);
+      }
+      catch (PDOException $e) {
          $ms->throwError("Unable to query database: ". $e->getMessage());
+      }
 
       return $result;
 
@@ -760,15 +764,6 @@ class MASTERSHAPER_DB {
               PRIMARY KEY  (`port_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
          ");
-         $this->db_query(" 
-            LOAD DATA LOCAL INFILE
-               '". BASE_PATH ."/contrib/port-numbers.csv'
-            IGNORE INTO TABLE
-               ". MYSQL_PREFIX ."ports
-            FIELDS TERMINATED BY ','
-            ENCLOSED BY '\"' LINES
-            TERMINATED BY '\r\n'
-         ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'protocols')) {
          $this->db_query("
@@ -780,15 +775,6 @@ class MASTERSHAPER_DB {
               `proto_user_defined` char(1) default NULL,
               PRIMARY KEY  (`proto_idx`)
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-         ");
-         $this->db_query("
-            LOAD DATA LOCAL INFILE
-               '". BASE_PATH ."/contrib/protocol-numbers.csv'
-            IGNORE INTO TABLE
-               ". MYSQL_PREFIX ."protocols
-            FIELDS TERMINATED BY ','
-            ENCLOSED BY '\"'
-            LINES TERMINATED BY '\r\n'
          ");
       }
       if(!$this->db_check_table_exists(MYSQL_PREFIX . 'service_levels')) {
@@ -1013,7 +999,9 @@ class MASTERSHAPER_DB {
             (52, 'Host Profiles List', 'host-profiles/list.html', '^/host-profiles/list.html$', 'host_profiles.php'),
             (53, 'Host Profile New', 'host-profiles/new.html', '^/host-profiles/new.html$', 'host_profiles.php'),
             (54, 'Host Profile Edit', 'host-profiles/edit-[id].html', '^/host-profiles/edit-([0-9]+).html$', 'host_profiles.php'),
-            (55, 'Host Tasklist', 'tasklist.html', '^/tasklist.html$', 'host_tasklist.php')
+            (55, 'Host Tasklist', 'tasklist.html', '^/tasklist.html$', 'host_tasklist.php'),
+            (56, 'Others Update IANA', 'others/update-iana.html', '^/others/update-iana.html$', 'update-iana.php'),
+            (57, 'Others Update L7', 'others/update-l7.html', '^/others/update-l7.html$', 'update-l7.php')
          ");
       }
 
@@ -1561,6 +1549,23 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(20);
+      }
+
+      if($this->schema_version < 21) {
+
+         $this->db_query("
+            INSERT INTO ". MYSQL_PREFIX ."pages (
+               page_id,
+               page_name,
+               page_uri,
+               page_uri_pattern,
+               page_includefile
+            ) VALUES
+               (56, 'Others Update IANA', 'others/update-iana.html', '^/others/update-iana.html$', 'update-iana.php'),
+               (57, 'Others Update L7', 'others/update-l7.html', '^/others/update-l7.html$', 'update-l7.php')
+         ");
+
+         $this->setVersion(21);
       }
 
    } // upgrade_schema()

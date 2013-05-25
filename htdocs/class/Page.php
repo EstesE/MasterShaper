@@ -161,6 +161,8 @@ class Page {
          'bandwidth',
          'rpc',
          'tasklist',
+         'update-iana',
+         'update-l7',
       );
 
       if(in_array($action, $valid_actions))
