@@ -21,7 +21,6 @@
    <a href="{$rewriter->get_page_url('Service Level Edit', $sl_idx)}">{$sl_name}</a>
   </td>
   <td>
-   {$classifier}
    <img src="{$icon_servicelevels}" alt="servicelevel icon" />
    {if $classifier == "HTB"}
     {if $sl_htb_bw_in_rate != ""}
