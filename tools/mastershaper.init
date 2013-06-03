@@ -21,7 +21,7 @@ cd ${PATH_TO_MS}
 case "$1" in
    start)
       echo -n "Starting MasterShaper: "
-      ${AGENT} load
+      ${AGENT} --load
       echo -n "Shaper "
       ${AGENT}
       echo -n "shaper_agent "
@@ -30,7 +30,7 @@ case "$1" in
       echo -n "Stopping Mastershaper: "
       pkill -f "php shaper_agent.php"
       echo -n "shaper_agent "
-      ${AGENT} unload
+      ${AGENT} --unload
       echo "Shaper"
       ;;
    restart)
