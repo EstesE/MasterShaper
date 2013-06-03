@@ -183,7 +183,7 @@ class MASTERSHAPER {
          die("This function must be called from command line!");
       }
 
-      if(isset($_SERVER['argv']) && $_SERVER['argv'][2] == 'debug')
+      if(isset($_SERVER['argv']) && isset($_SERVER['argv'][2]) && $_SERVER['argv'][2] == 'debug')
          $debug = 1;
 
       require_once "class/rules/ruleset.php";
