@@ -11,7 +11,7 @@
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jquery-1.8.0.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/plugins/jquery.color.js"></script>
   <!-- jqPlot -->
-  <!--[if IE]><script language="javascript" type="text/javascript" src="{$web_path}/jqplot/excanvas.js"></script><![endif]-->
+  <!--[if IE]><script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/excanvas.js"></script><![endif]-->
   <link rel="stylesheet" type="text/css" href="{$web_path}/jquery/jqplot/jquery.jqplot.css" />
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/jquery.jqplot.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.cursor.min.js"></script>
