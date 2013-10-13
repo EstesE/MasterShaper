@@ -295,10 +295,10 @@ class Ruleset_Interface {
                      if($sl->sl_htb_bw_in_ceil != "" && $sl->sl_htb_bw_in_ceil > 0)
                         $string.= "ceil ". $sl->sl_htb_bw_in_ceil ."Kbit ";
                      if($sl->sl_htb_bw_in_burst != "" && $sl->sl_htb_bw_in_burst > 0)
-                        $string.= "burst ". $sl->sl_htb_bw_in_burst ."Kbit ";
+                        $string.= "burst ". $sl->sl_htb_bw_in_burst ."kb ";
                      if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
-                  }	
+                  }
                   else {
                      if(isset($parent_sl)) {
                         $string.= " rate ". $parent_sl->sl_htb_bw_in_rate ."Kbit ";
@@ -376,10 +376,10 @@ class Ruleset_Interface {
                      if($sl->sl_htb_bw_out_ceil != "" && $sl->sl_htb_bw_out_ceil > 0)
                         $string.= "ceil ". $sl->sl_htb_bw_out_ceil ."Kbit ";
                      if($sl->sl_htb_bw_out_burst != "" && $sl->sl_htb_bw_out_burst > 0)
-                        $string.= "burst ". $sl->sl_htb_bw_out_burst ."Kbit ";
+                        $string.= "burst ". $sl->sl_htb_bw_out_burst ."kb ";
                      if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
-                  }	
+                  }
                   else {
                      if(isset($parent_sl)) {
                         $string.= " rate ". $parent_sl->sl_htb_bw_out_rate ."Kbit ";
@@ -498,7 +498,7 @@ class Ruleset_Interface {
       }
 
    } // addAckFilter()
-	
+
    /* create IP/host matching filters */
    private function addHostFilter($parent, $option, $params1 = "", $params2 = "", $chain_direction = "")
    {
