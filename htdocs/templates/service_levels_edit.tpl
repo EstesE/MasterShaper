@@ -52,8 +52,8 @@
  </tr>
  <tr>
   <td style="white-space: nowrap;">Bandwidth burst:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_in_burst" size="25" value="{$sl->sl_htb_bw_in_burst}" />&nbsp;kbps</td>
-  <td>Amount of kbps that can be burst at ceil speed, in excess of the configured rate. Should be at least as high as the highest burst of all children. This is useful for interactive traffic.</td>
+  <td style="white-space: nowrap;"><input type="text" name="sl_htb_bw_in_burst" size="25" value="{$sl->sl_htb_bw_in_burst}" />&nbsp;bytes</td>
+  <td>Amount of bytes that can be burst at ceil speed, in excess of the configured rate. Should be at least as high as the highest burst of all children. This is useful for interactive traffic.</td>
  </tr>
  <tr>
   <td colspan="3">
