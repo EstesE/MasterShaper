@@ -159,10 +159,10 @@
       {if isset($edit_mode) && !empty($edit_mode)}
       <select name="pipe_sl_idx[{$apc_idx}]">
        <option value="0">*** {$pipe_sl_name} ***</option>
-       {service_level_select_list details=no sl_idx=$apc_sl_idx}
+       {service_level_select_list details=no sl_idx=$pipe_sl_idx}
       </select>
       {else}
-       <img src="{$icon_pipes}" alt="pipe icon" />&nbsp;<a href="{$rewriter->get_page_url('Service Level Edit', $apc_sl_idx)}" title="Modify service level {get_item_name type=sl idx=$apc_sl_idx}">{get_item_name type=sl idx=$apc_sl_idx}</a>
+       <img src="{$icon_pipes}" alt="pipe icon" />&nbsp;<a href="{$rewriter->get_page_url('Service Level Edit', $pipe_sl_idx)}" title="Modify service level {get_item_name type=sl idx=$pipe_sl_idx}">{get_item_name type=sl idx=$pipe_sl_idx}</a>
       {/if}
      </td>
      <td>&nbsp;</td>

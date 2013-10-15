@@ -326,7 +326,7 @@ class Page_Overview extends MASTERSHAPER_PAGE {
          $smarty->assign('pipe', $pipe);
          $smarty->assign('pipe_sl_name', $ms->getServiceLevelName($pipe->pipe_sl_idx));
          $smarty->assign('apc_idx', $pipe->apc_idx);
-         $smarty->assign('apc_sl_idx', $pipe->apc_sl_idx);
+         $smarty->assign('pipe_sl_idx', $pipe->pipe_sl_idx);
          $smarty->assign('counter', $index+1);
 
          $index++;
