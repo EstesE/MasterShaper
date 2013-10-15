@@ -102,8 +102,8 @@ if(($group_info = posix_getgrnam(RUNAS_GROUP)) == false) {
 $options = array(
     'appName' => 'shaper_agent',
     'appDir' => dirname(__FILE__),
-    'appRunAsUID' => $group_info['uid'],
-    'appRunAsGID' => $user_info['gid'],
+    'appRunAsUID' => $user_info['uid'],
+    'appRunAsGID' => $group_info['gid'],
     //'logLocation' => '/tmp/shaper_agent.log',
     //'appPidLocation' => '/tmp/shaper_agent/shaper_agent.pid',
     //'logVerbosity' => 7,
