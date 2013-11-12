@@ -308,6 +308,8 @@ class Ruleset_Interface {
                      else
                         $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
 
+                     if($sl->sl_htb_bw_in_burst != "" && $sl->sl_htb_bw_in_burst > 0)
+                        $string.= "burst ". $sl->sl_htb_bw_in_burst ."kb ";
                      if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
                   }
@@ -389,6 +391,8 @@ class Ruleset_Interface {
                      else
                         $string.= " rate 1Kbit ceil ". $this->getSpeed() ."Kbit ";
 
+                     if($sl->sl_htb_bw_out_burst != "" && $sl->sl_htb_bw_out_burst > 0)
+                        $string.= "burst ". $sl->sl_htb_bw_out_burst ."kb ";
                      if($sl->sl_htb_priority > 0)
                         $string.= "prio ". $sl->sl_htb_priority;
                   }
