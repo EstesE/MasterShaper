@@ -138,10 +138,11 @@
        <input type="checkbox" name="used[]" value="{$pipe->pipe_idx}" {if $pipe->apc_pipe_idx != 0} checked="checked" {/if} onclick="if(this.checked == false) $('table#pipelist tbody#pipes tr#pipe{$pipe->pipe_idx}').fadeTo(500, 0.50); else $('table#pipelist tbody#pipes tr#pipe{$pipe->pipe_idx}').fadeTo(500, 1);" />
       </td>
       <td>
-       <select name="pipe_sl_idx[{$pipe->pipe_idx}]">
+       <select name="pipe_sl_idx[{$pipe->pipe_idx}]" id="pipe_sl_idx{$pipe->pipe_idx}">
         <option value="0">*** No override ***</option>
         {service_level_select_list sl_idx=$pipe->sl_in_use}
        </select>
+       <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Service Level Edit', 0)}', $('#pipe_sl_idx{$pipe->pipe_idx}').val());" />
       </td>
       <td style="text-align: center;">
        <input type="hidden" id="pipe-active-{$pipe->pipe_idx}" name="pipe_active[{$pipe->pipe_idx}]" value="{$pipe->apc_pipe_active}" />
