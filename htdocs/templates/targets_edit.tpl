@@ -97,19 +97,21 @@
 </table> 
 </form>
 <p class="footnote">
-This target is assigned to the following objects:<br />
-{foreach from=$obj_use_target key=obj_idx item=obj name=objects}
- {if $obj->type == 'group'}
-  <a href="{$rewriter->get_page_url('Target Edit', $obj->idx)}" title="Edit target {$obj->name}"><img src="{$icon_targets}" alt="target icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
- {/if}
- {if $obj->type == 'pipe'}
-  <a href="{$rewriter->get_page_url('Pipe Edit', $obj->idx)}" title="Edit pipe {$obj->name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
- {/if}
- {if $obj->type == 'chain'}
-  <a href="{$rewriter->get_page_url('Chain Edit', $obj->idx)}" title="Edit chain {$obj->name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
- {/if}
-{foreachelse}
- none
-{/foreach}
+{if isset($obj_use_target) && !empty($obj_use_target)}
+ This target is assigned to the following objects:<br />
+ {foreach from=$obj_use_target key=obj_idx item=obj name=objects}
+  {if $obj->type == 'group'}
+   <a href="{$rewriter->get_page_url('Target Edit', $obj->idx)}" title="Edit target {$obj->name}"><img src="{$icon_targets}" alt="target icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+  {/if}
+  {if $obj->type == 'pipe'}
+   <a href="{$rewriter->get_page_url('Pipe Edit', $obj->idx)}" title="Edit pipe {$obj->name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+  {/if}
+  {if $obj->type == 'chain'}
+   <a href="{$rewriter->get_page_url('Chain Edit', $obj->idx)}" title="Edit chain {$obj->name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+  {/if}
+ {foreachelse}
+  none
+ {/foreach}
+{/if}
 </p>
 {page_end focus_to='target_name'}
