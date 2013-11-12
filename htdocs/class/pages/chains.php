@@ -280,7 +280,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
             $pipe->sl_in_use = $pipe->apc_sl_idx;
          else
             // no override
-            $pipe->sl_in_use = -1;
+            $pipe->sl_in_use = $pipe->pipe_sl_idx;
 
          $smarty->assign('pipe', $pipe);
 
