@@ -258,7 +258,6 @@ class MsObject {
             if(isset($child_sth))
                $db->db_sth_free($child_sth);
             $db->db_sth_free($sth);
-            $db->db_sth_free($result);
 
          }
       }
