@@ -76,6 +76,10 @@ class Chain extends MsObject {
       if(isset($this->id))
          return true;
 
+      if(!isset($_POST['chain_netpath_idx']) || empty($_POST['chain_netpath_idx']))
+         return true;
+
+      // get the last chain position in the current network path
       $max_pos = $db->db_fetchSingleRow("
          SELECT
             MAX(chain_position) as pos
