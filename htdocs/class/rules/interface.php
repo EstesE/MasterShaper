@@ -1646,7 +1646,7 @@ class Ruleset_Interface {
          }
 
          $this->addRuleComment("generating pipes for ". $chain->chain_name ."");
-         $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction);
+         $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction, $ms->get_service_level($chain->chain_sl_idx));
 
          // Fallback
          $this->addRuleComment("fallback pipe");
@@ -1688,7 +1688,7 @@ class Ruleset_Interface {
    } // getChains()
 
    /* build ruleset for incoming pipes */
-   private function buildPipes($chain_idx, $my_parent, $chain_direction)
+   private function buildPipes($chain_idx, $my_parent, $chain_direction, $chain_sl)
    {
       global $ms, $db;
 
@@ -1740,7 +1740,7 @@ class Ruleset_Interface {
          $sl = $ms->get_service_level($pipe->pipe_sl_idx);
 
          /* add a new class for this pipe */
-         $this->addClass($my_parent, $my_id, $sl, $chain_direction);
+         $this->addClass($my_parent, $my_id, $sl, $chain_direction, $chain_sl);
          $this->addSubQdisc($this->get_current_chain() . $this->get_current_pipe() .":", $my_id, $sl);
          $this->setPipeID($pipe->pipe_idx, $chain_idx, "1:". $this->get_current_chain() . $this->get_current_pipe());
 
