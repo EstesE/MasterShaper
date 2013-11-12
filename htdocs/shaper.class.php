@@ -2211,6 +2211,43 @@ class MASTERSHAPER {
    } // set_header()
 
    /**
+    * calculate the summary of guaranteed bandwidths from the
+    * provided array of pipes.
+    *
+    * @params mixed $pipes
+    * @return array
+    */
+   public function get_bandwidth_summary_from_pipes($pipes)
+   {
+      $bw_in = 0;
+      $bw_out = 0;
+
+      foreach($pipes as $pipe) {
+
+         // skip pipes not active in this chain
+         if(!isset($pipe->apc_pipe_active) || $pipe->apc_pipe_active != 'Y')
+            continue;
+
+         // check if pipes original service level got overruled
+         if(isset($pipe->apc_sl_idx) && !empty($pipe->apc_sl_idx))
+            $sl = $pipe->apc_sl_idx;
+         else
+            $sl = $pipe->pipe_sl_idx;
+
+         $sl_details = $this->get_service_level($sl);
+
+         if(isset($sl_details->sl_htb_bw_in_rate) && !empty($sl_details->sl_htb_bw_in_rate))
+            $bw_in+=$sl_details->sl_htb_bw_in_rate;
+         if(isset($sl_details->sl_htb_bw_out_rate) && !empty($sl_details->sl_htb_bw_out_rate))
+            $bw_out+=$sl_details->sl_htb_bw_out_rate;
+
+      }
+
+      return array($bw_in, $bw_out);
+
+   } // get_bandwidth_summary_from_pipes()
+
+   /**
     * get a specific HTTP to be set by MasterShapers headers variable
     *
     * @return string
