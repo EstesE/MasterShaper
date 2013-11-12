@@ -92,7 +92,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
       if($this->is_storing())
          $this->store();
 
-      global $db, $tmpl, $page;
+      global $ms, $db, $tmpl, $page;
 
       $this->avail_pipes = Array();
       $this->pipes = Array();
@@ -149,14 +149,19 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $cnt_pipes++;
       }
 
+      list($chain_total_bw_in, $chain_total_bw_out) = $ms->get_bandwidth_summary_from_pipes($this->pipes);
+
       $db->db_sth_free($sth);
       $tmpl->assign('chain', $chain);
+      $tmpl->assign('chain_sl', $ms->get_service_level($chain->chain_sl_idx));
+      $tmpl->assign('chain_total_bw_in', $chain_total_bw_in);
+      $tmpl->assign('chain_total_bw_out', $chain_total_bw_out);
 
       $tmpl->registerPlugin("block", "pipe_list", array(&$this, "smarty_pipe_list"), false);
 
       return $tmpl->fetch("chains_edit.tpl");
 
-   } // showEdit() 
+   } // showEdit()
 
    /**
     * template function which will be called from the chain listing template
@@ -239,7 +244,7 @@ class Page_Chains extends MASTERSHAPER_PAGE {
          $_POST['chain_position'] = $np->get_next_chain_position();
       }
 
-      $chain_data = $ms->filter_form_data($_POST, 'chain_'); 
+      $chain_data = $ms->filter_form_data($_POST, 'chain_');
 
       if(!$chain->update($chain_data))
          return false;

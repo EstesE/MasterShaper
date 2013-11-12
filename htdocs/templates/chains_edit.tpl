@@ -105,6 +105,19 @@
  <tr>
   <td>Pipes:</td>
   <td style="vertical-align: top;">
+   {if ( $chain_sl->sl_htb_bw_in_rate < $chain_total_bw_in )}
+    <b>More inbound bandwidth has been guaranteed ({$chain_total_bw_in}kbps) than available ({$chain_sl->sl_htb_bw_in_rate}kbps)!</b>
+    <br />
+   {else}
+    Guaranteed inbound bandwidth: {$chain_total_bw_in}kbps<br />
+   {/if}
+   {if ( $chain_sl->sl_htb_bw_out_rate < $chain_total_bw_out )}
+    <b>More outbound bandwidth has been guaranteed ({$chain_total_bw_out}kbps) than available ({$chain_sl->sl_htb_bw_out_rate}kbps)!</b>
+    <br />
+   {else}
+    Guaranteed outbound bandwidth: {$chain_total_bw_out}kbps<br />
+   {/if}
+   <br />
    <i>(Drag &amp; drop pipes to change order.)</i><br />
    <table class="withborder2" id="pipelist">
     <thead>
