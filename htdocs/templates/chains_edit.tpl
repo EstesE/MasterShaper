@@ -139,8 +139,7 @@
       </td>
       <td>
        <select name="pipe_sl_idx[{$pipe->pipe_idx}]" id="pipe_sl_idx{$pipe->pipe_idx}">
-        <option value="0">*** No override ***</option>
-        {service_level_select_list sl_idx=$pipe->sl_in_use}
+        {service_level_select_list sl_idx=$pipe->sl_in_use sl_default=$pipe->pipe_sl_idx }
        </select>
        <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Service Level Edit', 0)}', $('#pipe_sl_idx{$pipe->pipe_idx}').val());" />
       </td>

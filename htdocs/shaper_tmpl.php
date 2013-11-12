@@ -277,7 +277,11 @@ class MASTERSHAPER_TMPL extends Smarty {
          if(isset($params['sl_idx']) && $row->sl_idx == $params['sl_idx'])
             $string.= " selected=\"selected\"";
 
-         $string.= ">". $row->sl_name;
+         $string.= ">";
+
+         if(isset($params['sl_default']) && $row->sl_idx == $params['sl_default'])
+            $string.= "*** ";
+         $string.= $row->sl_name;
 
          if($params['details'] == 'yes') {
 
@@ -293,6 +297,9 @@ class MASTERSHAPER_TMPL extends Smarty {
                   break;
             }
          }
+
+         if(isset($params['sl_default']) && $row->sl_idx == $params['sl_default'])
+            $string.= " ***";
 
          $string.= "</option>\n";
       }
