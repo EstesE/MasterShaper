@@ -27,7 +27,6 @@
    <select name="classifier" onchange="refreshContent('servicelevels', '&mode=edit&idx={$sl->sl_idx}&classifier='+(document.forms['servicelevels'].classifier.options[document.forms['servicelevels'].classifier.selectedIndex].value)+'&qdiscmode='+(document.forms['servicelevels'].sl_qdisc.options[document.forms['servicelevels'].sl_qdisc.selectedIndex].value));">
     <option value="HTB"  {if $classifier == "HTB"} selected="selected" {/if}>HTB</option>
     <option value="HFSC" {if $classifier == "HFSC"} selected="selected" {/if}>HFSC</option>
-    <option value="CBQ"  {if $classifier == "CBQ"} selected="selected" {/if}>CBQ</option>
    </select>
   </td>
   <td>
@@ -144,63 +143,6 @@
   <td style="white-space: nowrap;">ul-Rate:</td>
   <td style="white-space: nowrap;"><input type="text" name="sl_hfsc_out_ulrate" size="25" value="{$sl->sl_hfsc_out_ulrate}" />&nbsp;kbps</td>
   <td>Maximum rate of bandwidth in kbps</td>
- </tr>
- {elseif $classifier == "CBQ"}
- <tr>
-  <td>Bounded:</td>
-  <td>
-   <input type="radio" name="sl_cbq_bounded" value="Y" {if $sl->sl_cbq_bounded == "Y"} checked="checked" {/if} />Yes
-   <input type="radio" name="sl_cbq_bounded" value="N" {if $sl->sl_cbq_bounded != "Y"} checked="checked" {/if} />No
-  </td>
-  <td>
-   If the CBQ class is bounded, it will not borrow unused bandwidth from it parent classes. If disabled the maximum rates are probably not enforced.
-  </td>
- </tr> 
- <tr>
-  <td colspan="3">
-   <img src="{$icon_servicelevels}" alt="servicelevel icon" />&nbsp;Interface 1 -&gt; Interface 2
-  </td>
- </tr>
- <tr>
-  <td style="white-space: nowrap;">Bandwidth:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_cbq_in_rate" size="25" value="{$sl->sl_cbq_in_rate}" />&nbsp;kbps</td>
-  <td>Maximum rate a chain or pipe can send at.</td>
- </tr>
- <tr>
-  <td style="white-space: nowrap;">Priority:</td>
-  <td style="white-space: nowrap;">
-   <select name="sl_cbq_in_priority">
-    <option value="1" {if $sl->sl_cbq_in_priority == 1} selected="selected"; {/if}>Highest (1)</option>
-    <option value="2" {if $sl->sl_cbq_in_priority == 2} selected="selected"; {/if}>High (2)</option>
-    <option value="3" {if $sl->sl_cbq_in_priority == 3} selected="selected"; {/if}>Normal (3)</option>
-    <option value="4" {if $sl->sl_cbq_in_priority == 4} selected="selected"; {/if}>Low (4)</option>
-    <option value="5" {if $sl->sl_cbq_in_priority == 5} selected="selected"; {/if}>Lowest (5)</option>
-   </select>
-  </td>
-  <td>In the round-robin process, classes with the lowest priority field are tried for packets first.</td>
- </tr>
- <tr>
-  <td colspan="3">
-   <img src="{$icon_servicelevels}" alt="servicelevel icon" />&nbsp;Interface 2 -&gt; Interface 1
-  </td>
- </tr>
- <tr>
-  <td style="white-space: nowrap;">Bandwidth:</td>
-  <td style="white-space: nowrap;"><input type="text" name="sl_cbq_out_rate" size="25" value="{$sl->sl_cbq_out_rate}" />&nbsp;kbps</td>
-  <td>Maximum rate a chain or pipe can send at.</td>
- </tr>
- <tr>
-  <td style="white-space: nowrap;">Priority:</td>
-  <td style="white-space: nowrap;">
-   <select name="sl_cbq_out_priority">
-    <option value="1" {if $sl->sl_cbq_out_priority == 1} selected="selected"; {/if}>Highest (1)</option>
-    <option value="2" {if $sl->sl_cbq_out_priority == 2} selected="selected"; {/if}>High (2)</option>
-    <option value="3" {if $sl->sl_cbq_out_priority == 3} selected="selected"; {/if}>Normal (3)</option>
-    <option value="4" {if $sl->sl_cbq_out_priority == 4} selected="selected"; {/if}>Low (4)</option>
-    <option value="5" {if $sl->sl_cbq_out_priority == 5} selected="selected"; {/if}>Lowest (5)</option>
-   </select>
-  </td>
-  <td>In the round-robin process, classes with the lowest priority field are tried for packets first.</td>
  </tr>
  {/if}
  <tr>

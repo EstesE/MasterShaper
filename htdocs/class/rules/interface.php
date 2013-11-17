@@ -228,10 +228,6 @@ class Ruleset_Interface {
             $this->addRule(TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $id ." root hfsc default 1");
             break;
 
-         case 'CBQ':
-            $this->addRule(TC_BIN ." qdisc add dev ". $this->getName() ." handle ". $id ." root cbq avpkt 1000 bandwidth ". $this->getSpeed() ."Kbit cell 8");
-            break;
-
       }
 
    } // addRootQdisc()
@@ -254,10 +250,6 @@ class Ruleset_Interface {
 
          case 'HFSC':
             $this->addRule(TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid ." hfsc sc rate ". $bw ."Kbit ul rate ". $bw ."Kbit");
-            break;
-
-         case 'CBQ':
-            $this->addRule(TC_BIN ." class add dev ". $this->getName() ." parent ". $parent ." classid ". $classid ." cbq bandwidth ". $bw ."Kbit rate ". $bw ."Kbit allot 1000 prio 3 bounded");
             break;
 
       }
@@ -354,13 +346,6 @@ class Ruleset_Interface {
                      $string.= " ul rate ". $sl->sl_hfsc_in_ulrate ."Kbit";
                   break;
 
-               case 'CBQ':
-
-                  $string.= " cbq bandwidth ". $this->inbound ."Kbit rate ". $sl->sl_cbq_in_rate ."Kbit allot 1500 prio ". $sl->sl_cbq_in_priority ." avpkt 1000";
-                  if($sl->sl_cbq_bounded == "Y")
-                     $string.= " bounded";
-                  break;
-
             }
             break;
 
@@ -421,13 +406,6 @@ class Ruleset_Interface {
                      $string.= " rate ". $sl->sl_hfsc_out_rate ."Kbit ";
                   if(isset($sl->sl_hfsc_out_ulrate) && $sl->sl_hfsc_out_ulrate != "" && $sl->sl_hfsc_out_ulrate > 0)
                      $string.= " ul rate ". $sl->sl_hfsc_out_ulrate ."Kbit";
-                  break;
-
-               case 'CBQ':
-
-                  $string.= " cbq bandwidth ifspeedKbit rate ". $sl->sl_cbq_out_rate ."Kbit allot 1500 prio ". $sl->sl_cbq_out_priority ." avpkt 1000";
-                  if($sl->sl_cbq_bounded == "Y")
-                     $string.= " bounded";
                   break;
 
             }

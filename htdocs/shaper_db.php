@@ -1,7 +1,7 @@
 <?php
 
 define('VERSION', '0.60');
-define('SCHEMA_VERSION', '21');
+define('SCHEMA_VERSION', '22');
 
 /***************************************************************************
  *
@@ -797,11 +797,6 @@ class MASTERSHAPER_DB {
               `sl_hfsc_out_dmax` varchar(255) default NULL,
               `sl_hfsc_out_rate` varchar(255) default NULL,
               `sl_hfsc_out_ulrate` varchar(255) default NULL,
-              `sl_cbq_in_rate` varchar(255) default NULL,
-              `sl_cbq_in_priority` varchar(255) default NULL,
-              `sl_cbq_out_rate` varchar(255) default NULL,
-              `sl_cbq_out_priority` varchar(255) default NULL,
-              `sl_cbq_bounded` char(1) default NULL,
               `sl_qdisc` varchar(255) default NULL,
               `sl_sfq_perturb` varchar(255) default NULL,
               `sl_sfq_quantum` varchar(255) default NULL,
@@ -1566,6 +1561,26 @@ class MASTERSHAPER_DB {
          ");
 
          $this->setVersion(21);
+      }
+
+      if($this->schema_version < 22) {
+
+         $this->db_query("
+            ALTER TABLE
+               ". MYSQL_PREFIX ."service_levels
+            DROP
+               sl_cbq_in_rate,
+            DROP
+               sl_cbq_in_priority,
+            DROP
+               sl_cbq_out_rate,
+            DROP
+               sl_cbq_out_priority,
+            DROP
+               sl_cbq_bounded
+         ");
+
+         $this->setVersion(22);
       }
 
    } // upgrade_schema()

@@ -292,9 +292,6 @@ class MASTERSHAPER_TMPL extends Smarty {
                case 'HFSC':
                   $string.= "(in: ". $row->sl_hfsc_in_dmax ."ms,". $row->sl_hfsc_in_rate ."kbit/s, out: ". $row->sl_hfsc_out_dmax ."ms,". $row->sl_hfsc_bw_out_rate ."kbit/s)";
                   break;
-               case 'CBQ':
-                  $string.= "(in: ". $row->sl_cbq_in_rate ."kbit/s, out: ". $row->sl_cbq_out_rate ."kbit/s)";
-                  break;
             }
          }
 
