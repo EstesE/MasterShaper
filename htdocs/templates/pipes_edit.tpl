@@ -101,7 +101,7 @@
     </tr>
    </table>
   </td>
-  <td>Select the filters this pipe will shape.</td>
+  <td>Select the filters this pipe will shape.<br />Remember that port matches will always be matched on "Destination" side!</td>
  </tr>
  <tr>
   <td colspan="3">

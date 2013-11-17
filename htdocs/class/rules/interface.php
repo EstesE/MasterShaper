@@ -512,7 +512,6 @@ class Ruleset_Interface {
                               break;
                            case BIDIRECTIONAL:
                               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2);
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
                               break;
                         }
                      }
@@ -523,7 +522,6 @@ class Ruleset_Interface {
                               break;
                            case BIDIRECTIONAL:
                               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2);
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2);
                               break;
                         }
                      }
@@ -552,7 +550,6 @@ class Ruleset_Interface {
                               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
                               break;
                            case BIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params2);
                               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params2);
                               break;
                         }
@@ -563,7 +560,6 @@ class Ruleset_Interface {
                               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2);
                               break;
                            case BIDIRECTIONAL:
-                              $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip src ". $host ." flowid ". $params2);
                               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params2);
                               break;
                         }
@@ -638,22 +634,7 @@ class Ruleset_Interface {
                      // unidirectional or bidirectional matches
                      switch($params1->chain_direction) {
                         case UNIDIRECTIONAL:
-                           $this->addRule($string);
-                           break;
                         case BIDIRECTIONAL:
-                           $this->addRule($string);
-                           if(!$this->isGRE()) {
-                              // now swap src and dst in the filter string
-                              $string = str_replace("src", "JUSTforAmoment", $string);
-                              $string = str_replace("dst", "src", $string);
-                              $string = str_replace("JUSTforAmoment", "dst", $string);
-                           }
-                           else {
-                              // now swap src and dst in the filter string
-                              $string = str_replace("at 36", "JUSTforAmoment", $string);
-                              $string = str_replace("at 40", "at 36", $string);
-                              $string = str_replace("JUSTforAmoment", "at 40", $string);
-                           }
                            $this->addRule($string);
                            break;
                      }
@@ -972,8 +953,8 @@ class Ruleset_Interface {
                                        array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
                                        break;
                                     case BIDIRECTIONAL:
-                                       array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
                                        array_push($tmp_array, str_replace("[DIRECTION]", "44", $tmp_str));
+                                       array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
                                        break;
                                  }
                               }
@@ -1048,7 +1029,6 @@ class Ruleset_Interface {
                                  break;
                               case BIDIRECTIONAL:
                                  $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
                                  break;
                            }
                         }
@@ -1089,7 +1069,6 @@ class Ruleset_Interface {
                                  break;
                               case BIDIRECTIONAL:
                                  $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
                                  break;
                            }
                         }
@@ -1103,7 +1082,6 @@ class Ruleset_Interface {
                                  break;
                               case BIDIRECTIONAL:
                                  $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
                                  break;
                            }
                         }
@@ -1176,10 +1154,6 @@ class Ruleset_Interface {
                                     $string = str_replace("[DIR1]", "36", $string);
                                     $string = str_replace("[DIR2]", "40", $string);
                                     $this->addRule($string ." flowid ". $my_id);
-                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
-                                    $string = str_replace("[DIR1]", "40", $string);
-                                    $string = str_replace("[DIR2]", "36", $string);
-                                    $this->addRule($string ." flowid ". $my_id);
                                     break;
                               }
                            }
@@ -1201,10 +1175,6 @@ class Ruleset_Interface {
                                     $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
                                     $string = str_replace("[DIR1]", "src", $string);
                                     $string = str_replace("[DIR2]", "dst", $string);
-                                    $this->addRule($string ." flowid ". $my_id);
-                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
-                                    $string = str_replace("[DIR1]", "dst", $string);
-                                    $string = str_replace("[DIR2]", "src", $string);
                                     $this->addRule($string ." flowid ". $my_id);
                                     break;
                               }
@@ -1233,10 +1203,6 @@ class Ruleset_Interface {
                                  $string = str_replace("[HOST_DEFS]", $tmp_str, $tmp_arr);
                                  $string = str_replace("[DIR1]", "match u16 0x0800 0xffff at -2 match u16 0x". $sm5 . $sm6 ." 0xffff at -4 match u32 0x". $sm1 . $sm2 . $sm3 . $sm4 ." 0xffffffff at -8", $string);
                                  $string = str_replace("[DIR2]", "match u16 0x0800 0xffff at -2 match u32 0x". $dm3 . $dm4 . $dm5 .$dm6 ." 0xffffffff at -12 match u16 0x". $dm1 . $dm2 ." 0xffff at -14", $string);
-                                 $this->addRule($string ." flowid ". $my_id);
-                                 $string = str_replace("[HOST_DEFS]", $tmp_str, $tmp_arr);
-                                 $string = str_replace("[DIR1]", "match u16 0x0800 0xffff at -2 match u32 0x". $sm3 . $sm4 . $sm5 .$sm6 ." 0xffffffff at -12 match u16 0x". $sm1 . $sm2 ." 0xffff at -14", $string);
-                                 $string = str_replace("[DIR2]", "match u16 0x0800 0xffff at -2 match u16 0x". $dm5 . $dm6 ." 0xffff at -4 match u32 0x". $dm1 . $dm2 . $dm3 . $dm4 ." 0xffffffff at -8", $string);
                                  $this->addRule($string ." flowid ". $my_id);
                                  break;
 
