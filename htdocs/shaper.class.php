@@ -979,6 +979,9 @@ class MASTERSHAPER {
    {
       global $ms;
 
+      if(empty($sl_idx))
+         return false;
+
       if(!$sl = new Service_Level($sl_idx))
          return false;
 
