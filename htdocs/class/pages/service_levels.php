@@ -215,10 +215,6 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
          $smarty->assign('sl_hfsc_in_rate', $sl->sl_hfsc_in_rate);
          $smarty->assign('sl_hfsc_out_dmax', $sl->sl_hfsc_out_dmax);
          $smarty->assign('sl_hfsc_out_rate', $sl->sl_hfsc_out_rate);
-         $smarty->assign('sl_cbq_in_rate', $sl->sl_cbq_in_rate);
-         $smarty->assign('sl_cbq_out_rate', $sl->sl_cbq_out_rate);
-         $smarty->assign('sl_cbq_in_priority', $ms->getPriorityName($sl->sl_cbq_in_priority));
-         $smarty->assign('sl_cbq_out_priority', $ms->getPriorityName($sl->sl_cbq_out_priority));
 
          $index++;
          $smarty->assign('smarty.IB.sl_list.index', $index);
@@ -261,7 +257,7 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
 
       $is_numeric = 1;
 
-      if(!isset($_POST['classifiermode']) || !in_array($_POST['classifiermode'], Array('HTB', 'HFSC', 'CBQ')))
+      if(!isset($_POST['classifiermode']) || !in_array($_POST['classifiermode'], Array('HTB', 'HFSC')))
          $_POST['classifiermode'] = 'HTB';
 
       switch($_POST['classifiermode']) {
@@ -304,15 +300,6 @@ class Page_Service_Levels extends MASTERSHAPER_PAGE {
             if($_POST['sl_hfsc_out_rate'] != "" && !is_numeric($_POST['sl_hfsc_out_rate']))
                $is_numeric = 0;
             if($_POST['sl_hfsc_out_ulrate'] != "" && !is_numeric($_POST['sl_hfsc_out_ulrate']))
-               $is_numeric = 0;
-            break;
-         case 'CBQ':
-            if($_POST['sl_cbq_in_rate'] == "" || $_POST['sl_cbq_out_rate'] == "") {
-               $ms->throwError(_("Please enter a input and output rate!"));
-            }
-            if($_POST['sl_cbq_in_rate'] != "" && !is_numeric($_POST['sl_cbq_in_rate']))
-               $is_numeric = 0;
-            if($_POST['sl_cbq_out_rate'] != "" && !is_numeric($_POST['sl_cbq_out_rate']))
                $is_numeric = 0;
             break;
       }

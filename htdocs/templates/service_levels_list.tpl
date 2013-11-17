@@ -49,9 +49,6 @@
       {$sl_hfsc_out_rate}kbps
      {/if}
     {/if}
-   {elseif $classifier == "CBQ"}
-    In: {$sl_cbq_in_rate}kbps, Prio: {$sl_cbq_in_priority},
-    Out: {$sl_cbq_out_rate}kbps, Prio: {$sl_cbq_out_priority}
    {elseif $classifier == "NETEM"} 
     NETEM
    {/if}

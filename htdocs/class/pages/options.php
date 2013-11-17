@@ -223,8 +223,7 @@ class Page_Options extends MASTERSHAPER_PAGE {
                                ."sl_htb_bw_out_ceil, sl_htb_bw_out_burst, sl_htb_priority, "
                                ."sl_hfsc_in_umax, sl_hfsc_in_dmax, sl_hfsc_in_rate, sl_hfsc_in_ulrate, "
                                ."sl_hfsc_out_umax, sl_hfsc_out_dmax, sl_hfsc_out_rate, sl_hfsc_out_ulrate, "
-			       ."sl_cbq_in_rate, sl_cbq_in_priority, sl_cbq_out_rate, sl_cbq_out_priority, "
-			       ."sl_cbq_bounded, sl_qdisc, sl_netem_delay, sl_netem_jitter, sl_netem_random, "
+			       ."sl_qdisc, sl_netem_delay, sl_netem_jitter, sl_netem_random, "
 			       ."sl_netem_distribution, sl_netem_loss, sl_netem_duplication, sl_netem_gap, "
                                ."sl_netem_reorder_percentage, sl_netem_reorder_correlation, sl_esfq_perturb, "
 			       ."sl_esfq_limit, sl_esfq_depth, sl_esfq_divisor, sl_esfq_hash) "
@@ -236,9 +235,6 @@ class Page_Options extends MASTERSHAPER_PAGE {
                                ."', '". $object->sl_hfsc_in_rate ."', '". $object->sl_hfsc_in_ulrate 
                                ."', '". $object->sl_hfsc_out_umax ."', '". $object->sl_hfsc_out_dmax 
                                ."', '". $object->sl_hfsc_out_rate ."', '". $object->sl_hfsc_out_ulrate 
-			       ."', '". $object->sl_cbq_in_rate ."', '". $object->sl_cbq_in_priority
-			       ."', '". $object->sl_cbq_out_rate ."', '". $object->sl_cbq_out_priority
-			       ."', '". $object->sl_cbq_bounded ."', "
 			       ."'". $object->sl_qdisc ."', "
 			       ."'". $object->sl_netem_delay ."', "
 			       ."'". $object->sl_netem_jitter ."', "

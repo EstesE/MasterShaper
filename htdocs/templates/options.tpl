@@ -46,10 +46,9 @@
     <select name="classifier">
      <option value="HTB" {if $classifier == "HTB"} selected="selected" {/if}>HTB</option>
      <option value="HFSC" {if $classifier == "HFSC"} selected="selected" {/if}>HFSC</option>
-     <option value="CBQ" {if $classifier == "CBQ"} selected="selected" {/if}>CBQ</option>
    </td>
    <td>
-    Choose HTB if you want to shape on base of maximum bandwidth rates, traffic bursts. Use HFSC for realtime application where network packets should not be delayed more such a specified value (VoIP). CBQ is the predecessor of HTB. Maybe on some systems you have only CBQ support.
+    Choose HTB if you want to shape on base of maximum bandwidth rates, traffic bursts. Use HFSC for realtime application where network packets should not be delayed more such a specified value (VoIP).
    </td>
   </tr>
   <tr>
