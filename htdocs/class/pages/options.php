@@ -75,6 +75,10 @@ class Page_Options extends MASTERSHAPER_PAGE {
       $tmpl->assign('filter', $ms->getOption("filter"));
       $tmpl->assign('msmode', $ms->getOption("msmode"));
       $tmpl->assign('authentication', $ms->getOption("authentication"));
+      $tmpl->assign('use_hashkey', $ms->getOption("use_hashkey"));
+      $tmpl->assign('hashkey_ip', $ms->getOption("hashkey_ip"));
+      $tmpl->assign('hashkey_mask', $ms->getOption("hashkey_mask"));
+      $tmpl->assign('hashkey_matchon', $ms->getOption("hashkey_matchon"));
 
       $tmpl->registerPlugin("block", "service_level_list", array(&$this, "smarty_opt_sl_list"));
       return $tmpl->fetch("options.tpl");
@@ -91,6 +95,10 @@ class Page_Options extends MASTERSHAPER_PAGE {
       $ms->setOption("authentication", $_POST['authentication']);
       $ms->setOption("msmode", $_POST['msmode']);
       $ms->setOption("language", $_POST['language']);
+      $ms->setOption("use_hashkey", $_POST['use_hashkey']);
+      $ms->setOption("hashkey_ip", $_POST['hashkey_ip']);
+      $ms->setOption("hashkey_mask", $_POST['hashkey_mask']);
+      $ms->setOption("hashkey_matchon", $_POST['hashkey_matchon']);
 
       if($_POST['qdisc'] == "ESFQ") {
          $ms->setOption("esfq_default_perturb", $_POST['esfq_default_perturb']);

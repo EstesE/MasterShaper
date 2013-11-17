@@ -148,6 +148,30 @@
     Mechanism which filters your traffic. tc-filter is the tc-builtin filter technic. Good performance, but less options. iptables has many options for matching traffic, l7 protocols, and many more things. But this will add a second needed subsystem for shaping. Make tests if your Linux machine is powerful enough for this.
    </td>
   </tr>
+  {if $filter == "tc" }
+  <tr>
+   <td>Hashkey:</td>
+   <td>
+    Use: <input type="checkbox" name="use_hashkey" value="Y" {if isset($use_hashkey) && $use_hashkey == "Y"}checked="checked"{/if} /><br />
+    IP: <input type="text" name="hashkey_ip" {if isset($hashkey_ip) }value="{$hashkey_ip}"{/if} /><br />
+    Mask: <select name="hashkey_mask">
+           <option {if isset($hashkey_mask) && $hashkey_mask == "255.0.0.0"}selected="selected"{/if}>255.0.0.0</option>
+           <option {if isset($hashkey_mask) && $hashkey_mask == "0.255.0.0"}selected="selected"{/if}>0.255.0.0</option>
+           <option {if isset($hashkey_mask) && $hashkey_mask == "0.0.255.0"}selected="selected"{/if}>0.0.255.0</option>
+           <option {if isset($hashkey_mask) && $hashkey_mask == "0.0.0.255"}selected="selected"{/if}>0.0.0.255</option>
+       </select><br />
+    On: <select name="hashkey_matchon">
+         <option {if isset($hashkey_matchon) && $hashkey_matchon == "src"}selected="selected"{/if}>src</option>
+         <option {if isset($hashkey_matchon) && $hashkey_matchon == "dst"}selected="selected"{/if}>dst</option>
+        </select>
+   </td>
+   <td>
+    10.0.0.0/8<br />
+    00ff0000<br />
+    Remember that "Targets" hashkey match on must only be ONE.
+   <td>
+  </tr>
+  {/if}
   <tr>
    <td>
     Mode:

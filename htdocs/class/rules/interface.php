@@ -261,9 +261,33 @@ class Ruleset_Interface {
     */
    private function addInitFilter($parent)
    {
-      $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
+      //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32");
+      //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
 
    } // addInitFilter()
+
+   /**
+    * adds the hashkey filter
+    */
+   private function addHashkeyFilter($parent)
+   {
+      global $ms;
+
+      if(!$ms->getOption("hashkey_ip") || !$ms->getOption("hashkey_mask") || !$ms->getOption("hashkey_matchon"))
+         return false;
+
+      switch($ms->getOption("hashkey_matchon")) {
+         case 'src': $matchon = 12; break;
+         case 'dst': $matchon = 16; break;
+      }
+
+      $hashkey_mask = $this->convertIpToHex($ms->getOption("hashkey_mask"));
+
+      $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 handle 10: u32 divisor 256");
+      $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 ht 800:: match ip src ". $ms->getOption("hashkey_ip") ." hashkey mask 0x". $hashkey_mask['ip'] ." at ". $matchon ." link 10:");
+      return true;
+
+   } // addHashkeyFilter()
 
    /* Adds a class definition for a inbound chain */
    private function addClass($parent, $classid, $sl, $direction = "in", $parent_sl = null)
@@ -482,9 +506,14 @@ class Ruleset_Interface {
    } // addAckFilter()
 
    /* create IP/host matching filters */
-   private function addHostFilter($parent, $option, $params1 = "", $params2 = "", $chain_direction = "")
+   private function addChainFilter($parent, $params1 = "", $params2 = "", $chain_direction = "")
    {
       global $ms;
+
+      // if hash key filter is in place, we do not need to load any chain filters. this is matched by the hash key
+      //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." handle ". $chain_hex_id .": u32 divisor 256");
+      if($ms->getOption("hashkey_ip") && $ms->getOption("hashkey_mask") && $ms->getOption("hashkey_matchon"))
+         return false;
 
       switch($ms->getOption("filter")) {
 
@@ -727,7 +756,7 @@ class Ruleset_Interface {
             break;
       }
 
-   } // addHostFilter()
+   } // addChainFilter()
 
    /**
     * return all host addresses
@@ -882,7 +911,7 @@ class Ruleset_Interface {
      * @param Pipe $pipe
      * @param string $chain_direction
      */
-   private function addPipeFilter($parent, $option, $filter, $my_id, $pipe, $chain_direction)
+   private function addPipeFilter($parent, $option, $filter, $my_id, $pipe, $chain_direction, $chain_hex_id = NULL)
    {
       global $ms;
 
@@ -899,7 +928,10 @@ class Ruleset_Interface {
          default:
          case 'tc':
 
-            $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 1 [HOST_DEFS] ";
+            if($ms->getOption("use_hashkey") != 'Y')
+               $string = TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 1 [HOST_DEFS] ";
+            else
+               $string = TC_BIN ." filter add dev ". $this->getName() ." parent 1:0 protocol all prio 2 u32 ht 10:". $chain_hex_id ." [HOST_DEFS] ";
 
             if(isset($filter)) {
                if($this->isGRE()) {
@@ -1011,11 +1043,19 @@ class Ruleset_Interface {
                            $hex_host = $this->convertIpToHex($host);
                            switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
+                                 if($ms->getOption("use_hashkey") != 'Y')
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
+                                 else
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
                                  break;
                               case BIDIRECTIONAL:
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 if($ms->getOption("use_hashkey") != 'Y') {
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 } else {
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id);
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 }
                                  break;
                            }
                         }
@@ -1025,10 +1065,16 @@ class Ruleset_Interface {
                         foreach($tmp_array as $tmp_arr) {
                            switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 if($ms->getOption("use_hashkey") != 'Y')
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 else
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
                                  break;
                               case BIDIRECTIONAL:
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 if($ms->getOption("use_hashkey") != 'Y')
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 else
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match ip src ". $host, $tmp_arr) ." flowid ". $my_id);
                                  break;
                            }
                         }
@@ -1065,10 +1111,16 @@ class Ruleset_Interface {
                            $hex_host = $this->convertIpToHex($host);
                            switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 if($ms->getOption("use_hashkey") != 'Y')
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 else
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
                                  break;
                               case BIDIRECTIONAL:
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 if($ms->getOption("use_hashkey") != 'Y')
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
+                                 else
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id);
                                  break;
                            }
                         }
@@ -1078,10 +1130,16 @@ class Ruleset_Interface {
 
                            switch($pipe->pipe_direction) {
                               case UNIDIRECTIONAL:
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 if($ms->getOption("use_hashkey") != 'Y')
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 else
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
                                  break;
                               case BIDIRECTIONAL:
-                                 $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 if($ms->getOption("use_hashkey") != 'Y')
+                                    $this->addRule(str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
+                                 else
+                                    $this->addRule(str_replace("[HOST_DEFS]", "match ip dst ". $host, $tmp_arr) ." flowid ". $my_id);
                                  break;
                            }
                         }
@@ -1120,7 +1178,10 @@ class Ruleset_Interface {
                         $tmp_str = "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR1] ";
                      }
                      else {
-                        $tmp_str = "u32 match ip [DIR1] ". $src_host ." ";
+                        if($ms->getOption("use_hashkey") != 'Y')
+                           $tmp_str = "u32 match ip [DIR1] ". $src_host ." ";
+                        else
+                           $tmp_str = "match ip [DIR1] ". $src_host ." ";
                      }
                   }
                   else {
@@ -1215,7 +1276,10 @@ class Ruleset_Interface {
             else {
 
                foreach($tmp_array as $tmp_arr)
-                  $this->addRule(str_replace("[HOST_DEFS]", "u32", $tmp_arr) ." flowid ". $my_id);
+                  if($ms->getOption("use_hashkey") != 'Y')
+                     $this->addRule(str_replace("[HOST_DEFS]", "u32", $tmp_arr) ." flowid ". $my_id);
+                  else
+                     $this->addRule(str_replace("[HOST_DEFS]", "", $tmp_arr) ." flowid ". $my_id);
 
             }
 
@@ -1505,7 +1569,7 @@ class Ruleset_Interface {
 
    } // addFallbackFilter()
 
-   private function addMatchallFilter($parent, $filter = "")
+   private function addChainMatchallFilter($parent, $filter = "")
    {
       global $ms;
 
@@ -1528,7 +1592,7 @@ class Ruleset_Interface {
 
       }
 
-   } // addMatchallFilter()
+   } // addChainMatchallFilter()
 
    /**
     * build chain-ruleset
@@ -1571,9 +1635,12 @@ class Ruleset_Interface {
 
          /* setup the filter definition to match traffic which should go into this chain */
          if($chain->chain_src_target != 0 || $chain->chain_dst_target != 0) {
-            $this->addHostFilter("1:1", "host", $chain, $filter_flow_target, $direction);
+            if($ms->getOption("use_hashkey") != 'Y')
+               $this->addChainFilter("1:1", $chain, $filter_flow_target, $direction);
+            else
+               $this->addChainFilter("1:0", $chain, $filter_flow_target, $direction);
          } else {
-            $this->addMatchallFilter("1:1", $filter_flow_target);
+            $this->addChainMatchallFilter("1:1", $filter_flow_target);
          }
 
          /* chain does ignore QoS? then skip further processing */
@@ -1590,7 +1657,11 @@ class Ruleset_Interface {
          }
 
          $this->addRuleComment("generating pipes for ". $chain->chain_name ."");
-         $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction, $ms->get_service_level($chain->chain_sl_idx));
+         if($ms->getOption("use_hashkey") != 'Y')
+            $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction, $ms->get_service_level($chain->chain_sl_idx));
+         else {
+            $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction, $ms->get_service_level($chain->chain_sl_idx), $this->get_chain_hashkey($chain, $direction));
+         }
 
          // Fallback
          $this->addRuleComment("fallback pipe");
@@ -1632,7 +1703,7 @@ class Ruleset_Interface {
    } // getChains()
 
    /* build ruleset for incoming pipes */
-   private function buildPipes($chain_idx, $my_parent, $chain_direction, $chain_sl)
+   private function buildPipes($chain_idx, $my_parent, $chain_direction, $chain_sl, $chain_hex_id = NULL)
    {
       global $ms, $db;
 
@@ -1693,13 +1764,13 @@ class Ruleset_Interface {
 
          /* no filter selected */
          if(count($filters) <= 0) {
-            $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe, $chain_direction);
+            $this->addPipeFilter($my_parent, "pipe_filter", NULL, $my_id, $pipe, $chain_direction, $chain_hex_id);
             continue;
          }
 
          foreach($filters as $filter) {
             $detail = new Filter($filter->apf_filter_idx);
-            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe, $chain_direction);
+            $this->addPipeFilter($my_parent, "pipe_filter", $detail, $my_id, $pipe, $chain_direction, $chain_hex_id);
          }
       }
 
@@ -1755,6 +1826,9 @@ class Ruleset_Interface {
          $this->addAckFilter("1:1", "ack", "1:2", "1");
 
       }
+
+      if($ms->getOption("use_hashkey") == "Y")
+         $this->addHashkeyFilter("1:0");
 
       $this->setStatus(true);
 
@@ -1842,6 +1916,55 @@ class Ruleset_Interface {
       return sprintf("%02x", 0xff - $this->current_chain);
 
    } // get_current_chain()
+
+   /*
+    * returns the chain hashkey to match on
+    *
+    * @return string
+    */
+   private function get_chain_hashkey($chain, $direction)
+   {
+      global $ms;
+      $hashkey_matchon = $ms->getOption("hashkey_matchon");
+
+      if($direction == "out") {
+         if($hashkey_matchon == "src") {
+            $hashkey_matchon = "dst";
+         }
+         elseif($hashkey_matchon == "dst")
+            $hashkey_matchon = "src";
+      }
+
+      if($hashkey_matchon == "src" && $chain->chain_src_target == 0)
+         return false;
+      if($hashkey_matchon == "dst" && $chain->chain_dst_target == 0)
+         return false;
+
+      switch($hashkey_matchon) {
+         case 'src': $matchobjs = $this->getTargetHosts($chain->chain_src_target); break;
+         case 'dst': $matchobjs = $this->getTargetHosts($chain->chain_dst_target); break;
+      }
+
+      foreach($matchobjs as $matchobj) {
+
+         $matchobj_hex = $this->convertIptoHex($matchobj);
+         $mask_hex = $this->convertIptoHex($ms->getOption("hashkey_mask"));
+
+         // mask our wanted octet
+         $result = hexdec($matchobj_hex['ip']) & hexdec($mask_hex['ip']);
+
+         // bit shift
+         switch($ms->getOption("hashkey_mask")) {
+            case '255.0.0.0': $result = $result >> 24; break;
+            case '0.255.0.0': $result = $result >> 16; break;
+            case '0.0.255.0': $result = $result >> 8; break;
+         }
+         $result = sprintf("%x", $result);
+         return $result;
+
+      }
+
+   } // get_chain_hashkey()
 
    /* get current pipe ID in hex format
     *
