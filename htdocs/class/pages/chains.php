@@ -157,6 +157,24 @@ class Page_Chains extends MASTERSHAPER_PAGE {
       $tmpl->assign('chain_total_bw_in', $chain_total_bw_in);
       $tmpl->assign('chain_total_bw_out', $chain_total_bw_out);
 
+      if(isset($chain->chain_netpath_idx) && !empty($chain->chain_netpath_idx)) {
+
+         if($np = $db->db_fetchSingleRow("
+            SELECT
+               netpath_if1,
+               netpath_if2
+            FROM
+               ". MYSQL_PREFIX ."network_paths
+            WHERE
+               netpath_idx LIKE ". $db->quote($chain->chain_netpath_idx))) {
+
+            $if1 = new Network_Interface($np->netpath_if1);
+            $if2 = new Network_Interface($np->netpath_if2);
+            $tmpl->assign('chain_netpath_if1', $if1->if_name);
+            $tmpl->assign('chain_netpath_if2', $if2->if_name);
+         }
+      }
+
       $tmpl->registerPlugin("block", "pipe_list", array(&$this, "smarty_pipe_list"), false);
 
       return $tmpl->fetch("chains_edit.tpl");

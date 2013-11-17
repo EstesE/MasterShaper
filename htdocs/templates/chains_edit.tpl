@@ -71,11 +71,11 @@
   <td style="white-space: nowrap;">
    <table class="noborder">
     <tr>
-     <td>Target
+     <td>Source {if isset($chain_netpath_if1)}({$chain_netpath_if1}){/if}
       <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Target Edit', 0)}', $('select[name=chain_src_target]').val());" />
      </td>
      <td>&nbsp;</td>
-     <td style="text-align: right;">Target
+     <td style="text-align: right;">Destination {if isset($chain_netpath_if2)}({$chain_netpath_if2}){/if}
       <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{$rewriter->get_page_url('Target Edit', 0)}', $('select[name=chain_dst_target]').val());" />
      </td>
     </tr>
