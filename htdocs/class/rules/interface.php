@@ -488,7 +488,7 @@ class Ruleset_Interface {
 
    } // addSubQdisc()
 
-   private function addAckFilter($parent, $option, $id = "")
+   private function addAckFilter($parent, $id, $hashtable_id = NULL)
    {
       global $ms;
 
@@ -501,7 +501,12 @@ class Ruleset_Interface {
                $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match u8 0x06 0xff at 33 match u8 0x05 0x0f at 24 match u16 0x0000 0xffc0 at 26 match u8 0x10 0xff at 57 flowid ". $id);
             }
             else {
-               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id);
+               if($ms->getOption("use_hashkey") != 'Y')
+                  $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id);
+               else
+                  $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 ht 10:". $hashtable_id ." match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id);
+
+
                //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x10 0xff at nexthdr+13 match u16 0x0000 0xffc0 at 2 flowid ". $id);
             }
 
@@ -524,8 +529,12 @@ class Ruleset_Interface {
 
       // if hash key filter is in place, we do not need to load any chain filters. this is matched by the hash key
       //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." handle ". $chain_hex_id .": u32 divisor 256");
-      if($ms->getOption("use_hashkey") == 'Y')
+      if($ms->getOption("use_hashkey") == 'Y') {
+
+         if($ms->getOption("ack_sl") != 0)
+            $this->addAckFilter("1:0", "1:2", $this->get_chain_hashkey($params1, $chain_direction));
          return false;
+      }
 
       switch($ms->getOption("filter")) {
 
@@ -1835,7 +1844,10 @@ class Ruleset_Interface {
          $this->addRuleComment("boost ACK packets");
          $this->addClass("1:1", "1:2", $ms->get_service_level($ack_sl), $direction);
          $this->addSubQdisc("2:", "1:2", $ms->get_service_level($ack_sl));
-         $this->addAckFilter("1:1", "ack", "1:2", "1");
+
+         // for hash key filters, the ACK filter needs to be add at another place
+         if($ms->getOption("use_hashkey") != "Y")
+            $this->addAckFilter("1:1", "1:2");
 
       }
 
