@@ -533,6 +533,7 @@ class Ruleset_Interface {
 
          if($ms->getOption("ack_sl") != 0)
             $this->addAckFilter("1:0", "1:2", $this->get_chain_hashkey($params1, $chain_direction));
+
          return false;
       }
 
@@ -1636,7 +1637,7 @@ class Ruleset_Interface {
          $this->current_pipe   = 1;
          $this->current_filter = 1;
 
-         $this->addRuleComment("chain ". $chain->chain_name ."");
+         $this->addRuleComment("chain ". $chain->chain_name);
          /* chain doesn't ignore QoS? */
          if($chain->chain_sl_idx != 0)
             $this->addClass("1:1", "1:". $this->get_current_chain() . $this->get_current_class(), $ms->get_service_level($chain->chain_sl_idx), $direction);
@@ -1658,8 +1659,9 @@ class Ruleset_Interface {
          if($chain->chain_src_target != 0 || $chain->chain_dst_target != 0) {
             if($ms->getOption("use_hashkey") != 'Y')
                $this->addChainFilter("1:1", $chain, $filter_flow_target, $direction);
-            else
+            else {
                $this->addChainFilter("1:0", $chain, $filter_flow_target, $direction);
+            }
          } else {
             $this->addChainMatchallFilter("1:1", $filter_flow_target);
          }
@@ -1677,11 +1679,12 @@ class Ruleset_Interface {
             continue;
          }
 
-         $this->addRuleComment("generating pipes for ". $chain->chain_name ."");
+         $this->addRuleComment("generating pipes for ". $chain->chain_name);
          if($ms->getOption("use_hashkey") != 'Y')
             $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction, $ms->get_service_level($chain->chain_sl_idx));
          else {
-            $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction, $ms->get_service_level($chain->chain_sl_idx), $this->get_chain_hashkey($chain, $direction));
+            $chain_hex_id = $this->get_chain_hashkey($chain, $direction);
+            $this->buildPipes($chain->chain_idx, "1:". $this->get_current_chain() . $this->get_current_class(), $direction, $ms->get_service_level($chain->chain_sl_idx), $chain_hex_id);
          }
 
          // Fallback
@@ -1765,7 +1768,7 @@ class Ruleset_Interface {
          $this->current_pipe+= 0x1;
 
          $my_id = "1:". $this->get_current_chain() . $this->get_current_pipe();
-         $this->addRuleComment("pipe ". $pipe->pipe_name ."");
+         $this->addRuleComment("pipe ". $pipe->pipe_name ." ". $chain_hex_id);
 
          // check if pipes original service level has been overruled locally
          // for this chain. if so, we proceed with the local service level.
@@ -1951,27 +1954,32 @@ class Ruleset_Interface {
       global $ms;
 
       $hashkey_matchon = $ms->getOption("hashkey_matchon");
+      $chain_src = $chain->chain_src_target;
+      $chain_dst = $chain->chain_dst_target;
 
+      // if direction is out, we need to swap matchon key and src & dst targets of our chain
       if($direction == "out") {
-         if($hashkey_matchon == "src") {
+
+         if($hashkey_matchon == "src")
             $hashkey_matchon = "dst";
-         }
          elseif($hashkey_matchon == "dst")
             $hashkey_matchon = "src";
 
-         $tmp = $chain->chain_src_target;
-         $chain->chain_src_target = $chain->chain_dst_target;
-         $chain->chain_dst_target = $tmp;
+         $tmp = $chain_src;
+         $chain_src = $chain_dst;
+         $chain_dst = $tmp;
       }
 
-      if($hashkey_matchon == "src" && $chain->chain_src_target == 0)
+      if($hashkey_matchon == "src" && $chain_src == 0) {
          return false;
-      if($hashkey_matchon == "dst" && $chain->chain_dst_target == 0)
+      }
+      if($hashkey_matchon == "dst" && $chain_dst == 0) {
          return false;
+      }
 
       switch($hashkey_matchon) {
-         case 'src': $matchobjs = $this->getTargetHosts($chain->chain_src_target); break;
-         case 'dst': $matchobjs = $this->getTargetHosts($chain->chain_dst_target); break;
+         case 'src': $matchobjs = $this->getTargetHosts($chain_src); break;
+         case 'dst': $matchobjs = $this->getTargetHosts($chain_dst); break;
       }
 
       foreach($matchobjs as $matchobj) {
