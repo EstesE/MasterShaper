@@ -161,8 +161,8 @@
            <option {if isset($hashkey_mask) && $hashkey_mask == "0.0.0.255"}selected="selected"{/if}>0.0.0.255</option>
        </select><br />
     On: <select name="hashkey_matchon">
-         <option {if isset($hashkey_matchon) && $hashkey_matchon == "src"}selected="selected"{/if}>src</option>
-         <option {if isset($hashkey_matchon) && $hashkey_matchon == "dst"}selected="selected"{/if}>dst</option>
+         <option value="src" {if isset($hashkey_matchon) && $hashkey_matchon == "src"}selected="selected"{/if}>IF1: src, IF2: dst</option>
+         <option value="dst" {if isset($hashkey_matchon) && $hashkey_matchon == "dst"}selected="selected"{/if}>IF1: dst, IF2: src</option>
         </select>
    </td>
    <td>

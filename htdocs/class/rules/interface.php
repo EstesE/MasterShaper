@@ -269,14 +269,26 @@ class Ruleset_Interface {
    /**
     * adds the hashkey filter
     */
-   private function addHashkeyFilter($parent)
+   private function addHashkeyFilter($parent, $direction)
    {
       global $ms;
 
       if(!$ms->getOption("hashkey_ip") || !$ms->getOption("hashkey_mask") || !$ms->getOption("hashkey_matchon"))
          return false;
 
-      switch($ms->getOption("hashkey_matchon")) {
+      $hashkey_matchon = $ms->getOption("hashkey_matchon");
+
+      // if direction is out, we need to swap matchon key and src & dst targets of our chain
+      if($direction == "out") {
+         if($hashkey_matchon == "src") {
+            $hashkey_matchon = "dst";
+         }
+         elseif($hashkey_matchon == "dst")
+            $hashkey_matchon = "src";
+
+      }
+
+      switch($hashkey_matchon) {
          case 'src': $matchon = 12; break;
          case 'dst': $matchon = 16; break;
       }
@@ -284,7 +296,7 @@ class Ruleset_Interface {
       $hashkey_mask = $this->convertIpToHex($ms->getOption("hashkey_mask"));
 
       $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 handle 10: u32 divisor 256");
-      $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 ht 800:: match ip src ". $ms->getOption("hashkey_ip") ." hashkey mask 0x". $hashkey_mask['ip'] ." at ". $matchon ." link 10:");
+      $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 2 u32 ht 800:: match ip ". $hashkey_matchon ." ". $ms->getOption("hashkey_ip") ." hashkey mask 0x". $hashkey_mask['ip'] ." at ". $matchon ." link 10:");
       return true;
 
    } // addHashkeyFilter()
@@ -512,7 +524,7 @@ class Ruleset_Interface {
 
       // if hash key filter is in place, we do not need to load any chain filters. this is matched by the hash key
       //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." handle ". $chain_hex_id .": u32 divisor 256");
-      if($ms->getOption("hashkey_ip") && $ms->getOption("hashkey_mask") && $ms->getOption("hashkey_matchon"))
+      if($ms->getOption("use_hashkey") == 'Y')
          return false;
 
       switch($ms->getOption("filter")) {
@@ -1828,7 +1840,7 @@ class Ruleset_Interface {
       }
 
       if($ms->getOption("use_hashkey") == "Y")
-         $this->addHashkeyFilter("1:0");
+         $this->addHashkeyFilter("1:0", $direction);
 
       $this->setStatus(true);
 
@@ -1925,6 +1937,7 @@ class Ruleset_Interface {
    private function get_chain_hashkey($chain, $direction)
    {
       global $ms;
+
       $hashkey_matchon = $ms->getOption("hashkey_matchon");
 
       if($direction == "out") {
@@ -1933,6 +1946,10 @@ class Ruleset_Interface {
          }
          elseif($hashkey_matchon == "dst")
             $hashkey_matchon = "src";
+
+         $tmp = $chain->chain_src_target;
+         $chain->chain_src_target = $chain->chain_dst_target;
+         $chain->chain_dst_target = $tmp;
       }
 
       if($hashkey_matchon == "src" && $chain->chain_src_target == 0)

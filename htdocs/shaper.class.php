@@ -2551,7 +2551,8 @@ class MASTERSHAPER {
 
       while(!System_Daemon::isDying()) {
          $this->get_tasks();
-         gc_collect_cycles();
+         if(function_exists("gc_collect_cycles"))
+            gc_collect_cycles();
          // sleep a second
          System_Daemon::iterate(1);
       }

@@ -119,7 +119,8 @@ if($run_daemonized == 1)
    System_Daemon::start();
 
 // enable gargabe collector
-gc_enable();
+if(function_exists("gc_enable"))
+   gc_enable();
 
 // spawn task manager
 if($run_taskmgr == 1)
