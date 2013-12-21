@@ -383,6 +383,8 @@ class Ruleset {
 
    private function runProc($option, $cmd = "", $ignore_err = null)
    {
+      global $ms;
+
       $retval = "";
       $error = "";
 
@@ -417,7 +419,7 @@ class Ruleset {
    
       if(is_null($ignore_err)) {
          if(!empty($error) || $retval != "OK")
-            throw new Exception($error);
+            print("An error occured: ". $error);
       }
 
       return $retval;
