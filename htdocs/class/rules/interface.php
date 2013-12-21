@@ -261,8 +261,10 @@ class Ruleset_Interface {
     */
    private function addInitFilter($parent)
    {
-      //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32");
-      //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
+      global $ms;
+
+      if($ms->getOption("use_hashkey") != "Y")
+        $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
 
    } // addInitFilter()
 
@@ -1299,9 +1301,9 @@ class Ruleset_Interface {
 
                foreach($tmp_array as $tmp_arr)
                   if($ms->getOption("use_hashkey") != 'Y')
-                     $this->addRule(str_replace("[HOST_DEFS]", "u32", $tmp_arr) ." flowid ". $my_id);
+                     $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0 0", $tmp_arr) ." flowid ". $my_id);
                   else
-                     $this->addRule(str_replace("[HOST_DEFS]", "", $tmp_arr) ." flowid ". $my_id);
+                     $this->addRule(str_replace("[HOST_DEFS]", " match u32 0 0", $tmp_arr) ." flowid ". $my_id);
 
             }
 
@@ -1768,7 +1770,7 @@ class Ruleset_Interface {
          $this->current_pipe+= 0x1;
 
          $my_id = "1:". $this->get_current_chain() . $this->get_current_pipe();
-         $this->addRuleComment("pipe ". $pipe->pipe_name ." ". $chain_hex_id);
+         $this->addRuleComment("pipe ". $pipe->pipe_name);
 
          // check if pipes original service level has been overruled locally
          // for this chain. if so, we proceed with the local service level.

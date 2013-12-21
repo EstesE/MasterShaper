@@ -277,7 +277,7 @@ class Ruleset {
          }
       }
 
-      unlink($temp_tc);
+      //unlink($temp_tc);
       if($ms->getOption("filter") == "ipt")
          unlink($temp_ipt);
 
