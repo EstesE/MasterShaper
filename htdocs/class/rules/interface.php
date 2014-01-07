@@ -29,8 +29,6 @@ class Ruleset_Interface {
    private $initialized;
    private $rules;
    private $if_id;
-   private $db;
-   private $parent;
 
    /****
     * Just to record the positions of IP packet header fields
