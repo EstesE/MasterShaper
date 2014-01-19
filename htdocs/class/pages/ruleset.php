@@ -58,7 +58,7 @@ class Page_Ruleset extends MASTERSHAPER_PAGE {
             $content = $this->load();
             break;
          case 'load-debug':
-            $content = $this->load(DEBUG);
+            $content = $this->load(1);
             break;
          case 'unload':
             $content = $this->unload();

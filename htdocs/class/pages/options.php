@@ -95,10 +95,18 @@ class Page_Options extends MASTERSHAPER_PAGE {
       $ms->setOption("authentication", $_POST['authentication']);
       $ms->setOption("msmode", $_POST['msmode']);
       $ms->setOption("language", $_POST['language']);
-      $ms->setOption("use_hashkey", $_POST['use_hashkey']);
-      $ms->setOption("hashkey_ip", $_POST['hashkey_ip']);
-      $ms->setOption("hashkey_mask", $_POST['hashkey_mask']);
-      $ms->setOption("hashkey_matchon", $_POST['hashkey_matchon']);
+      if(isset($_POST['use_hashkey']))
+         $ms->setOption("use_hashkey", $_POST['use_hashkey']);
+      else
+         $ms->setOption("use_hashkey", 'N');
+      if(isset($_POST['hashkey_ip']))
+         $ms->setOption("hashkey_ip", $_POST['hashkey_ip']);
+      else
+         $ms->setOption("hashkey_ip", '');
+      if(isset($_POST['hashkey_mask']))
+         $ms->setOption("hashkey_mask", $_POST['hashkey_mask']);
+      if(isset($_POST['hashkey_matchon']))
+         $ms->setOption("hashkey_matchon", $_POST['hashkey_matchon']);
 
       if($_POST['qdisc'] == "ESFQ") {
          $ms->setOption("esfq_default_perturb", $_POST['esfq_default_perturb']);

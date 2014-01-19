@@ -2144,7 +2144,11 @@ class MASTERSHAPER {
             break;
       }
 
-      $this->set_task_state($task->task_idx, 'done', $retval);
+      if($retval == 0)
+         $this->set_task_state($task->task_idx, 'done', $retval);
+      else
+         $this->set_task_state($task->task_idx, 'failed', $retval);
+
       $this->_print(" Done. ". strftime("%Y-%m-%d %H:%M:%S", time()), MSLOG_WARN);
 
    } // task_handler()

@@ -29,8 +29,6 @@ class Ruleset_Interface {
    private $initialized;
    private $rules;
    private $if_id;
-   private $db;
-   private $parent;
 
    /****
     * Just to record the positions of IP packet header fields
@@ -261,8 +259,10 @@ class Ruleset_Interface {
     */
    private function addInitFilter($parent)
    {
-      //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32");
-      //$this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
+      global $ms;
+
+      if($ms->getOption("use_hashkey") != "Y")
+        $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all u32 match u32 0 0 classid 1:1");
 
    } // addInitFilter()
 
@@ -1299,9 +1299,9 @@ class Ruleset_Interface {
 
                foreach($tmp_array as $tmp_arr)
                   if($ms->getOption("use_hashkey") != 'Y')
-                     $this->addRule(str_replace("[HOST_DEFS]", "u32", $tmp_arr) ." flowid ". $my_id);
+                     $this->addRule(str_replace("[HOST_DEFS]", "u32 match u32 0 0", $tmp_arr) ." flowid ". $my_id);
                   else
-                     $this->addRule(str_replace("[HOST_DEFS]", "", $tmp_arr) ." flowid ". $my_id);
+                     $this->addRule(str_replace("[HOST_DEFS]", " match u32 0 0", $tmp_arr) ." flowid ". $my_id);
 
             }
 
@@ -1574,14 +1574,17 @@ class Ruleset_Interface {
 
    } // addPipeFilter()
 
-   private function addFallbackFilter($parent, $filter)
+   private function addFallbackFilter($parent, $filter, $chain_hex_id = NULL)
    {
       global $ms;
 
       switch($ms->getOption("filter")) {
          default:
          case 'tc':
-            $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 5 u32 match u32 0 0 flowid ". $filter);
+            if($ms->getOption("use_hashkey") != 'Y')
+               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent ". $parent ." protocol all prio 5 u32 match u32 0 0 flowid ". $filter);
+            else
+               $this->addRule(TC_BIN ." filter add dev ". $this->getName() ." parent 1:0 protocol all prio 5 u32 ht 10:". $chain_hex_id ." match u32 0 0 flowid ". $filter);
             break;
          case 'ipt':
             $this->addRule(IPT_BIN ." -t mangle -A ms-chain-". $this->getName() ."-". $parent ." -j CLASSIFY --set-class ". $filter);
@@ -1691,7 +1694,10 @@ class Ruleset_Interface {
          $this->addRuleComment("fallback pipe");
          $this->addClass("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."00", $ms->get_service_level($chain->chain_fallback_idx), $direction, $ms->get_service_level($chain->chain_sl_idx));
          $this->addSubQdisc($this->get_current_chain() ."00:", "1:". $this->get_current_chain() ."00", $ms->get_service_level($chain->chain_fallback_idx));
-         $this->addFallbackFilter("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."00");
+         if($ms->getOption("use_hashkey") != 'Y')
+            $this->addFallbackFilter("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."00");
+         else
+            $this->addFallbackFilter("1:". $this->get_current_chain() . $this->get_current_class(), "1:". $this->get_current_chain() ."00", $chain_hex_id);
          $this->setPipeID(-1, $chain->chain_idx, "1:". $this->get_current_chain() ."00");
 
       }
@@ -1768,7 +1774,7 @@ class Ruleset_Interface {
          $this->current_pipe+= 0x1;
 
          $my_id = "1:". $this->get_current_chain() . $this->get_current_pipe();
-         $this->addRuleComment("pipe ". $pipe->pipe_name ." ". $chain_hex_id);
+         $this->addRuleComment("pipe ". $pipe->pipe_name);
 
          // check if pipes original service level has been overruled locally
          // for this chain. if so, we proceed with the local service level.
