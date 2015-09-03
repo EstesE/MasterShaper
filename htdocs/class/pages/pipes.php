@@ -298,7 +298,7 @@ class Page_Pipes extends MASTERSHAPER_PAGE {
       }
 
       /* load chain */
-      if(isset($new))
+      if(isset($new) || !isset($_POST['pipe_idx']))
          $pipe = new Pipe;
       else
          $pipe = new Pipe($_POST['pipe_idx']);
