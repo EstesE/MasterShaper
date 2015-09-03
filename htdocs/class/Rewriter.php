@@ -9,13 +9,12 @@
 
 class Rewriter {
 
-   static public $request;
-   static public $default_page;
+   public $request;
+   static public $default_page = '/overview.html';
    static private $instance;
 
    public function __construct()
    {
-      $this->default_page = '/overview.html';
 
       if(isset($_SERVER['REQUEST_URI'])) {
          $parts = explode('?', $_SERVER['REQUEST_URI']);
@@ -28,7 +27,7 @@ class Rewriter {
          $this->request = str_replace(WEB_PATH, '', $this->request);
 
       if(empty($this->request) || $this->request == "/")
-         $this->request = $this->default_page;
+         $this->request = self::$default_page;
 
    } // __construct()
 
