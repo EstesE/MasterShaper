@@ -2,7 +2,7 @@
 
 class MASTERSHAPER_PAGE {
 
-   public static $rights;
+   public $rights;
 
    public function handler()
    {
