@@ -1,5 +1,7 @@
-# .htaccess file to deny read request to MasterShaper's config file
-<Files "config.dat">
-	order allow,deny
-	deny from all
-</Files>
+RewriteEngine On
+RewriteBase /shaper/
+
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteCond %{SCRIPT_FILENAME} !-f
+RewriteRule ^.*$ ./index.php
+#RewriteRule ^(.*)/$ /$1 [L,R=301]
