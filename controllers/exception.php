@@ -21,30 +21,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_About extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Controllers;
 
-   /**
-    * Page_About constructor
-    *
-    * Initialize the Page_About class
-    */
-   public function __construct()
-   {
+class ExceptionController extends \Exception
+{
+    // custom string representation of object
+    public function __toString()
+    {
+        return "Backtrace:<br />\n". str_replace("\n", "<br />\n", parent::getTraceAsString());
+    }
+}
 
-   } // __construct()
-
-   public function showList()
-   {
-      global $tmpl;
-
-      $tmpl->assign('version', VERSION);
-      return $tmpl->fetch("about.tpl");
-
-   } // show()
-
-} // class Page_About
-
-$obj = new Page_About;
-$obj->handler();
-
-?>
+// vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
