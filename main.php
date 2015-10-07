@@ -21,9 +21,38 @@
  *
  ***************************************************************************/
 
-require_once "shaper.class.php";
+require_once "static.php";
 
-$ms = new MASTERSHAPER;
-$ms->show();
+spl_autoload_register("autoload");
 
-?>
+use MasterShaper\Controllers as Controllers;
+
+$mode = null;
+
+if (
+    isset($_SERVER) &&
+    isset($_SERVER['argv']) &&
+    isset($_SERVER['argv'][1]) &&
+    $_SERVER['argv'][1] == 'incoming'
+) {
+    $mode = 'queue_only';
+}
+
+try {
+    $ms = new Controllers\MasterShaper();
+} catch (Exception $e) {
+    print $e->getMessage();
+    exit(1);
+}
+
+if (!is_null($mode)) {
+    exit(0);
+}
+
+if (!$ms->show()) {
+    exit(1);
+}
+
+exit(0);
+
+// vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
