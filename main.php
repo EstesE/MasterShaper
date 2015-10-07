@@ -49,7 +49,7 @@ if (!is_null($mode)) {
     exit(0);
 }
 
-if (!$ms->show()) {
+if (!$ms->startup()) {
     exit(1);
 }
 
