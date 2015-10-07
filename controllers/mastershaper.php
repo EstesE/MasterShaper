@@ -1,6 +1,9 @@
 <?php
 
 /**
+ *
+ * This file is part of MasterShaper.
+
  * MasterShaper, a web application to handle Linux's traffic shaping
  * Copyright (C) 2015 Andreas Unterkircher <unki@netshadow.net>
 
@@ -18,85 +21,138 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once "shaper_page.php";
-require_once "shaper_cfg.php";
-require_once "shaper_db.php";
-
-require_once "class/Rewriter.php";
-require_once "class/Page.php";
-require_once "class/MsObject.php";
-require_once "class/MsObject.php";
-require_once "class/Chain.php";
-require_once "class/Filter.php";
-require_once "class/Interface.php";
-require_once "class/Network_Path.php";
-require_once "class/Pipe.php";
-require_once "class/Port.php";
-require_once "class/Protocol.php";
-require_once "class/Service_Level.php";
-require_once "class/Target.php";
-require_once "class/User.php";
-require_once "class/Host_Profile.php";
-require_once "class/Host_Task.php";
+namespace MasterShaper\Controllers;
 
 define('MSLOG_WARN',  1);
 define('MSLOG_INFO',  2);
 define('MSLOG_DEBUG', 3);
 
-class MASTERSHAPER {
+class MasterShaperController extends DefaultController {
 
-   var $cfg;
-   var $headers;
+    const VERSION = "0.3";
+    const LOGLEVEL = LOG_WARNING;
 
-   /**
-    * class constructor
-    *
-    * this function will be called on class construct
-    * and will check requirements, loads configuration,
-    * open databases and start the user session
-    */
+   private $cfg;
+   private $headers;
+
    public function __construct($mode = null)
    {
-      $GLOBALS['ms'] = $this;
+      $GLOBALS['ms'] =& $this;
 
-      $this->headers = Array();
-      $this->verbosity_level = MSLOG_WARN;
-      $this->cfg = new MASTERSHAPER_CFG($this, "config.dat");
+        try {
+            $config = new ConfigController;
+        } catch (\Exception $e) {
+            $this->raiseError('Failed to load ConfigController!', true);
+            return false;
+        }
+        $GLOBALS['config'] =& $config;
 
-      /* Check necessary requirements */
-      if(!$this->check_requirements()) {
-         exit(1);
-      }
+        try {
+            $requirements = new RequirementsController;
+        } catch (\Exception $e) {
+            $this->raiseError('Failed to load RequirementsController!', true);
+            return false;
+        }
+        if (!$requirements->check()) {
+            $this->raiseError('Not all requirements are met - please check on your own!', true);
+            return false;
+        }
+        unset($requirements);
 
-      $GLOBALS['db']       = new MASTERSHAPER_DB;
-      $GLOBALS['rewriter'] = Rewriter::instance();
+        try {
+            $db = new DatabaseController;
+        } catch (\Exception $e) {
+            $this->raiseError('Failed to load DatabaseController!', true);
+            return false;
+        }
 
-      global $db;
-      global $rewriter;
+        $GLOBALS['db'] =& $db;
 
-      if($mode == 'install') {
-         if($db->install_schema()) {
-            $this->_print("Successfully installed database tables", MSLOG_INFO);
+        if (!$this->isCmdline()) {
+            try {
+                $router = new HttpRouterController;
+            } catch (\Exception $e) {
+                $this->raiseError('Failed to load HttpRouterController!', true);
+                return false;
+            }
+            $GLOBALS['router'] =& $router;
+            $GLOBALS['query'] = $router->getQuery();
+            global $query;
+        }
+
+        if (isset($query) && isset($query->view) && $query->view == "install") {
+            $mode = "install";
+        }
+
+        if ($mode != "install" && $this->checkUpgrade()) {
+            return false;
+        }
+
+        if (isset($mode) and $mode == "install") {
+
+            try {
+                $installer = new InstallerController;
+            } catch (\Exception $e) {
+                $this->raiseError('Failed to load InstallerController!');
+                return false;
+            }
+
+            if (!$installer->setup()) {
+                exit(1);
+            }
+
+            unset($installer);
             exit(0);
-         }
-         $this->throwError("Failed installing database tables");
-      }
+        }
 
-      /* alert if meta table is missing */
-      if(!$db->db_check_table_exists(MYSQL_PREFIX ."meta"))
-         $this->throwError("You are missing table ". MYSQL_PREFIX ."meta! You may run <a href=\"". WEB_PATH ."/install.php\">install.php</a> again.");
+        try {
+            $session = new SessionController;
+        } catch (\Exception $e) {
+            $this->raiseError('Failed to load SessionController!', true);   
+            return false;
+        }
 
-      if($db->getVersion() < SCHEMA_VERSION)
-         $this->throwError("The local schema version is lower (". $db->getVersion() .") then the programs schema version (". SCHEMA_VERSION ."). You may run <a href=\"". WEB_PATH ."/install.php\">install.php</a> again.");
+        return true;
+    }
 
-      require_once "shaper_tmpl.php";
-      $GLOBALS['tmpl'] = new MASTERSHAPER_TMPL($this);
-      $GLOBALS['tmpl']->assign('rewriter', $rewriter);
+    public function startup()
+    {
+        global $config, $db, $router, $query;
 
-      if(session_id() == "")
-         session_start();
+        if (!isset($query->view)) {
+            $this->raiseError("Error - parsing request URI hasn't unveiled what to view!");
+            return false;
+        }
 
-   } // __construct()
+        try {
+            $views = new ViewsController;
+        } catch (\Exception $e) {
+            $this->raiseError('Failed to load ViewsController!');
+            return false;
+        }
+        $GLOBALS['views'] =& $views;
+
+        if ($router->isRpcCall()) {
+
+            if (!$this->rpcHandler()) {
+                $this->raiseError("rpcHandler() returned false!");
+                return false;
+            }
+            return true;
+        } elseif ($page_name = $views->getViewName($query->view)) {
+
+            if (!$page = $views->load($page_name)) {
+                $this->raiseError("ViewController:load() returned false!");
+                return false;
+            }
+
+            print $page;
+            return true;
+        }
+
+        $this->raiseError("Unable to find a view for ". $query->view);
+        return false;
+    }
 
    public function __destruct()
    {
@@ -1517,45 +1573,112 @@ class MASTERSHAPER {
 
    } // throwError()
 
-   /**
-    * general output function
-    *
-    * @param string $text
-    */
-   public function _print($text, $loglevel = MSLOG_INFO, $override_output = NULL, $no_newline = NULL)
-   {
-      if(isset($this->cfg->logging))
-         $logtype = $this->cfg->logging;
+    public function raiseError($string, $stop = false)
+    {
+        if (defined('DB_NOERROR')) {
+            $this->last_error = $string;
+            return;
+        }
 
-      if(!isset($this->cfg->logging))
-         $logtype = 'display';
+        print "<br /><br />". $string ."<br /><br />\n";
 
-      if(isset($override_output))
-         $logtype = $override_output;
+        try {
+            throw new ExceptionController;
+        } catch (ExceptionController $e) {
+            print "<br /><br />\n";
+            $this->write($e, LOG_WARNING);
+        }
 
-      if($this->get_verbosity() < $loglevel)
-         return true;
+        if ($stop) {
+            die;
+        }
 
-      switch($logtype) {
-         default:
-         case 'display':
-            print $text;
-            if(!$this->is_cmdline())
-               print "<br />";
-            if(!isset($no_newline))
-               print "\n";
-            break;
-         case 'errorlog':
-            error_log($text);
-            break;
-         case 'logfile':
-            error_log($text, 3, $this->cfg->log_file);
-            break;
-      }
+        $this->last_error = $string;
 
-      return true;
+    } // raiseError()
 
-   } // _print()
+    public function write($logtext, $loglevel = LOG_INFO, $override_output = null, $no_newline = null)
+    {
+        if (isset($this->config->logging)) {
+            $logtype = $this->config->logging;
+        } else {
+            $logtype = 'display';
+        }
+
+        if (isset($override_output) || !empty($override_output)) {
+            $logtype = $override_output;
+        }
+
+        if ($loglevel > $this->getVerbosity()) {
+            return true;
+        }
+
+        switch($logtype) {
+            default:
+            case 'display':
+                print $logtext;
+                if (!$this->isCmdline()) {
+                    print "<br />";
+                } elseif (!isset($no_newline)) {
+                    print "\n";
+                }
+                break;
+            case 'errorlog':
+                error_log($logtext);
+                break;
+            case 'logfile':
+                error_log($logtext, 3, $this->config->log_file);
+                break;
+        }
+
+        return true;
+
+    }
+
+    public function getProcessUserId()
+    {
+        if ($uid = posix_getuid()) {
+            return $uid;
+        }
+
+        return false;
+    }
+
+    public function getProcessGroupId()
+    {
+        if ($gid = posix_getgid()) {
+            return $gid;
+        }
+
+        return false;
+    }
+
+    public function getProcessUserName()
+    {
+        if (!$uid = $this->getProcessUserId()) {
+            return false;
+        }
+
+        if ($user = posix_getpwuid($uid)) {
+            return $user['name'];
+        }
+
+        return false;
+
+    }
+
+    public function getProcessGroupName()
+    {
+        if (!$uid = $this->getProcessGroupId()) {
+            return false;
+        }
+
+        if ($group = posix_getgrgid($uid)) {
+            return $group['name'];
+        }
+
+        return false;
+    }
 
    private function handle_page_request()
    {
@@ -2579,37 +2702,59 @@ class MASTERSHAPER {
 
    } // init_stats_collector()
 
-   public function set_verbosity($level)
+   public function getVerbosity()
    {
-      if(!in_array($level, array(0 => MSLOG_INFO, 1 => MSLOG_WARN, 2 => MSLOG_DEBUG)))
-         $this->throwError("Unknown verbosity level ". $level);
-
-      $this->verbosity_level = $level;
-
-   } // set_verbosity()
-
-   public function get_verbosity()
-   {
-      return $this->verbosity_level;
+       return self::LOGLEVEL;
 
    } // get_verbosity()
 
+    public function isCmdline()
+    {
+        if (php_sapi_name() == 'cli') {
+            return true;
+        }
+
+        return false;
+
+    } // isCmdline()
+
+    public function checkUpgrade()
+    {
+        global $db, $config;
+
+        if (!($base_path = $config->getWebPath())) {
+            $this->raiseError("ConfigController::getWebPath() returned false!");
+            return false;
+        }
+
+        if ($base_path == '/') {
+            $base_path = '';
+        }
+
+        if (!$db->checkTableExists("TABLEPREFIXmeta")) {
+            $this->raiseError(
+                "You are missing meta table in database! "
+                ."You may run <a href=\"{$base_path}/install\">"
+                ."Installer</a> to fix this.",
+                true
+            );
+            return true;
+        }
+
+        if ($db->getDatabaseSchemaVersion() < $db::SCHEMA_VERSION) {
+            $this->raiseError(
+                "The local schema version ({$db->getDatabaseSchemaVersion()}) is lower "
+                ."than the programs schema version (". $db::SCHEMA_VERSION ."). "
+                ."You may run <a href=\"{$base_path}/install\">Installer</a> "
+                ."again to upgrade.",
+                true
+            );
+            return true;
+        }
+
+        return false;
+    }
+
 } // class MASTERSHAPER
 
-/***************************************************************************
- *
- * MASTERSHAPER_EXCEPTION class, inherits PHP's Exception class
- *
- ***************************************************************************/
-
-class MASTERSHAPER_EXCEPTION extends Exception {
-
-   // custom string representation of object
-   public function __toString() {
-      return "Backtrace:<br />\n". str_replace("\n", "<br />\n", parent::getTraceAsString());
-   }
-
-} // class MASTERSHAPER_EXCEPTION
-
-// vim: set filetype=php expandtab softtabstop=3 tabstop=3 shiftwidth=3 autoindent smartindent:
-?>
+// vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
