@@ -28,8 +28,8 @@ class SkeletonView extends DefaultView
     public $class_name = 'skeleton';
 
     /**
-     * overwrite parent show() method as we do not have a lot
-     * to do here.
+     * overwrite parents show() method as we do not
+     * have a lot of things to do here.
      */
     public function show()
     {
