@@ -57,7 +57,7 @@ abstract class Templates extends Smarty
         $this->caching = false;
 
 
-        $this->template_dir = self::CACHE_DIRECTORY .'/templates';
+        $this->template_dir = MASTERSHAPER_BASE .'/views/templates';
         $this->compile_dir  = self::CACHE_DIRECTORY .'/templates_c';
         $this->config_dir   = self::CACHE_DIRECTORY .'/smarty_config';
         $this->cache_dir    = self::CACHE_DIRECTORY .'/smarty_cache';
