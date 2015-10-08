@@ -23,21 +23,21 @@
 
 namespace MasterShaper\Controllers;
 
-define('MSLOG_WARN',  1);
-define('MSLOG_INFO',  2);
+define('MSLOG_WARN', 1);
+define('MSLOG_INFO', 2);
 define('MSLOG_DEBUG', 3);
 
-class MasterShaperController extends DefaultController {
-
+class MasterShaperController extends DefaultController
+{
     const VERSION = "0.3";
     const LOGLEVEL = LOG_WARNING;
 
-   private $cfg;
-   private $headers;
+    private $cfg;
+    private $headers;
 
-   public function __construct($mode = null)
-   {
-      $GLOBALS['ms'] =& $this;
+    public function __construct($mode = null)
+    {
+        $GLOBALS['ms'] =& $this;
 
         try {
             $config = new ConfigController;
@@ -108,7 +108,7 @@ class MasterShaperController extends DefaultController {
         try {
             $session = new SessionController;
         } catch (\Exception $e) {
-            $this->raiseError('Failed to load SessionController!', true);   
+            $this->raiseError('Failed to load SessionController!', true);
             return false;
         }
 
@@ -132,6 +132,27 @@ class MasterShaperController extends DefaultController {
         }
         $GLOBALS['views'] =& $views;
 
+        /* page request handled by MS class itself */
+        if (isset($page->includefile) && $page->includefile == "[internal]") {
+            $this->handlePageRequest();
+        }
+
+        /* show login box, if not already logged in */
+        if (!$this->isLoggedIn()) {
+            /* do not return anything for a RPC call */
+            if ($router->isRpcCall()) {
+                return false;
+            }
+
+            /* return login page */
+            if (!($content = $views->load("LoginView"))) {
+                $this->raiseError(get_class($views) .'::load() returned false!');
+                return false;
+            }
+            print $content;
+            return;
+        }
+
         if ($router->isRpcCall()) {
 
             if (!$this->rpcHandler()) {
@@ -150,1428 +171,1016 @@ class MasterShaperController extends DefaultController {
             return true;
         }
 
+        if (!$page->includefile || $page->includefile == '[internal]') {
+            $page->setPage($rewriter->default_page);
+        }
+
+        $fqpn = BASE_PATH ."/class/pages/". $page->includefile;
+
+        if (!file_exists($fqpn)) {
+            $this->raiseError("Page not found. Unable to include ". $fqpn);
+        }
+
+        if (!is_file($fqpn)) {
+            $this->raiseError("No file found at ". $fqpn);
+        }
+
+        if (!is_readable($fqpn)) {
+            $this->raiseError("Unable to read ". $fqpn);
+        }
+
+        include $fqpn;
+
+        $tmpl->show("index.tpl");
+
+
         $this->raiseError("Unable to find a view for ". $query->view);
         return false;
     }
 
-   public function __destruct()
-   {
-
-   } // __destruct()
-
-   /**
-    * show - generate html output
-    *
-    * this function gets called after MASTERSHAPER constructor has
-    * done its preparations. it will load the index.tpl smarty
-    * template.
-    */
-   public function show()
-   {
-      global $rewriter;
-
-      $GLOBALS['page'] = Page::instance($rewriter->request);
-
-      global $tmpl;
-      global $page;
-
-      $tmpl->assign("page_title", "MasterShaper v". VERSION);
-      $tmpl->assign('page', $page);
-
-      /* page request handled by MS class itself */
-      if(isset($page->includefile) && $page->includefile == "[internal]") {
-         $this->handle_page_request();
-      }
-
-      /* show login box, if not already logged in */
-      if(!$this->is_logged_in()) {
-
-         /* do not return anything for a RPC call */
-         if($page->is_rpc_call())
-            return false;
-
-         /* return login page */
-         $tmpl->assign('content', $tmpl->fetch("login_box.tpl"));
-         $tmpl->show("index.tpl");
-         return;
-      }
-
-      /* if the request comes from rpc.html, handle it... */
-      if($page->is_rpc_call()) {
-         $this->rpc_handle();
-         return;
-      }
-
-      if(!$page->includefile || $page->includefile == '[internal]') {
-         $page->set_page($rewriter->default_page);
-      }
-
-      $fqpn = BASE_PATH ."/class/pages/". $page->includefile;
-
-      if(!file_exists($fqpn))
-         $this->throwError("Page not found. Unable to include ". $fqpn);
-
-      if(!is_file($fqpn))
-         $this->throwError("No file found at ". $fqpn);
-
-      if(!is_readable($fqpn))
-         $this->throwError("Unable to read ". $fqpn);
-
-      include $fqpn;
-
-      $tmpl->show("index.tpl");
-
-   } // show()
-
-   /**
-    * load - load ruleset
-    *
-    * this function invokes the ruleset generator.
-    */
-   public function load()
-   {
-      $debug = 0;
-
-      if(!$this->is_cmdline()) {
-         die("This function must be called from command line!");
-      }
-
-      if(isset($_SERVER['argv']) && isset($_SERVER['argv'][2]) && $_SERVER['argv'][2] == 'debug')
-         $debug = 1;
-
-      require_once "class/rules/ruleset.php";
-      require_once "class/rules/interface.php";
-
-      $ruleset = new Ruleset;
-      $retval = $ruleset->load($debug);
-
-      exit($retval);
-
-   } // load()
-
-   /**
-    * unload - unload ruleset
-    *
-    * this function clears all loaded rules.
-    */
-   public function unload()
-   {
-      $debug = 0;
-
-      if(!$this->is_cmdline()) {
-         die("This function must be called from command line!");
-      }
-
-      require_once "class/rules/ruleset.php";
-      require_once "class/rules/interface.php";
-
-      $ruleset = new Ruleset;
-      $retval = $ruleset->unload();
-
-      exit($retval);
-
-   } // unload()
-
-   /**
-    * check if all requirements are met
-    */
-   private function check_requirements()
-   {
-      if(!function_exists("mysql_connect")) {
-         print "PHP MySQL extension is missing<br />\n";
-         $missing = true;
-      }
-
-      ini_set('track_errors', 1);
-      @include_once 'Net/IPv4.php';
-      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-         print "PEAR Net_IPv4 package is missing<br />\n";
-         $missing = true;
-         unset($php_errormsg);
-      }
-      @include_once 'Pager.php';
-      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-         print "PEAR Pager package is missing<br />\n";
-         $missing = true;
-         unset($php_errormsg);
-      }
-      @include_once 'smarty3/Smarty.class.php';
-      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-         print "Smarty3 template engine is missing<br />\n";
-         $missing = true;
-         unset($php_errormsg);
-      }
-      @include_once 'System/Daemon.php';
-      if(isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-         print "PEAR System_Daemon package is missing<br />\n";
-         $missing = true;
-         unset($php_errormsg);
-      }
-      ini_restore('track_errors');
-
-      // check for PDO MySQL support
-      if((array_search("mysql", PDO::getAvailableDrivers())) === false) {
-         print "PDO MySQL support not available<br />\n";
-         $missing = true;
-      }
-
-      if(!defined('BASE_PATH')) {
-         define(BASE_PATH, getcwd());
-      }
-
-      if(isset($missing))
-         return false;
-
-      return true;
-
-   } // check_requirements()
-
-   /**
-    * check login status
-    *
-    * return true if user is logged in
-    * return false if user is not yet logged in
-    *
-    * @return bool
-    */
-   public function is_logged_in()
-   {
-      global $tmpl;
-
-      /* if authentication is disabled, return true */
-      if(!$this->getOption('authentication'))
-         return true;
-
-      if(isset($_SESSION['user_name'])) {
-         $tmpl->assign('user_name', $_SESSION['user_name']);
-         return true;
-      }
-
-      return false;
-
-   } // is_logged_in()
-
-   /**
-    * Generic RPC call handler
-    *
-    * @return string
-    */
-   private function rpc_handle()
-   {
-      global $page;
-
-      if(!$this->is_logged_in()) {
-         print "You need to login first";
-         return false;
-      }
-
-      if(!$this->is_valid_rpc_action()) {
-         print "Invalid RPC action";
-         return false;
-      }
-
-      switch($page->action) {
-         case 'delete':
-            $this->rpc_delete_object();
-            break;
-         case 'toggle':
-            $this->rpc_toggle_object_status();
-            break;
-         case 'clone':
-            $this->rpc_clone_object();
-            break;
-         case 'alter-position':
-            $this->rpc_alter_position();
-            break;
-         case 'graph-data':
-            $this->rpc_graph_data();
-            break;
-         case 'graph-mode':
-            $this->rpc_graph_mode();
-            break;
-         case 'get-content':
-            $this->rpc_get_content();
-            break;
-         case 'get-sub-menu':
-            $this->rpc_get_sub_menu();
-            break;
-         case 'set-host-profile':
-            $this->rpc_set_host_profile();
-            break;
-         case 'get-host-state':
-            $this->rpc_get_host_state();
-            break;
-         case 'idle':
-            // just do nothing, for debugging
-            print "ok";
-            break;
-         default:
-            print "Unknown action\n";
-            return false;
-            break;
-      }
-
-      return true;
-
-   } // rpc_handle()
-
-   /**
-    * RPC handler - delete object
-    *
-    * @return bool
-    */
-   private function rpc_delete_object()
-   {
-      global $page;
-
-      if(!isset($_POST['id'])) {
-         print "id is missing!";
-         return false;
-      }
-
-      $id = $_POST['id'];
-
-      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
-         print "id in incorrect format!";
-         return false;
-      }
-
-      $request_object = $parts[1];
-      $id = $parts[2];
-
-      if(!($obj = $this->load_class($request_object, $id))) {
-         print "unable to locate class for ". $request_object;
-         return false;
-      }
-
-      if($obj->delete()) {
-         print "ok";
-         return true;
-      }
-
-      print "unknown error";
-      return false;
-
-   } // rpc_delete_object()
-
-   /**
-    * RPC handler - toggle object status
-    *
-    * @return bool
-    */
-   private function rpc_toggle_object_status()
-   {
-      global $page;
-
-      if(!isset($_POST['id'])) {
-         print "[id] is missing!";
-         return false;
-      }
-      if(!isset($_POST['to'])) {
-         print "[to] is missing!";
-         return false;
-      }
-      if(!in_array($_POST['to'], Array('on', 'off'))) {
-         print "[to] in incorrect format!";
-         return false;
-      }
-
-      $id = $_POST['id'];
-      $to = $_POST['to'];
-      if(isset($_POST['parent']))
-         $parent = $_POST['parent'];
-
-      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
-         print "[id] in incorrect format!";
-         return false;
-      }
-
-      $request_object = $parts[1];
-      $id = $parts[2];
-
-      // if no parent has been specified, we can go on toggling objects status.
-      if(empty($parent)) {
-
-         if(!($obj = $this->load_class($request_object, $id))) {
-            print "unable to locate class for ". $request_object;
-            return false;
-         }
-
-         if($obj->toggle_status($to)) {
-            print "ok";
+    public function __destruct()
+    {
+
+    } // __destruct()
+
+    /**
+     * load - load ruleset
+     *
+     * this function invokes the ruleset generator.
+     */
+    public function load()
+    {
+        $debug = 0;
+
+        if (!$this->isCmdline()) {
+            die("This function must be called from command line!");
+        }
+
+        if (isset($_SERVER['argv']) && isset($_SERVER['argv'][2]) && $_SERVER['argv'][2] == 'debug') {
+            $debug = 1;
+        }
+
+        require_once "class/rules/ruleset.php";
+        require_once "class/rules/interface.php";
+
+        $ruleset = new Ruleset;
+        $retval = $ruleset->load($debug);
+
+        exit($retval);
+
+    } // load()
+
+    /**
+     * unload - unload ruleset
+     *
+     * this function clears all loaded rules.
+     */
+    public function unload()
+    {
+        $debug = 0;
+
+        if (!$this->isCmdline()) {
+            die("This function must be called from command line!");
+        }
+
+        require_once "class/rules/ruleset.php";
+        require_once "class/rules/interface.php";
+
+        $ruleset = new Ruleset;
+        $retval = $ruleset->unload();
+
+        exit($retval);
+
+    } // unload()
+
+    /**
+     * check login status
+     *
+     * return true if user is logged in
+     * return false if user is not yet logged in
+     *
+     * @return bool
+     */
+    public function isLoggedIn()
+    {
+        global $tmpl;
+
+        /* if authentication is disabled, return true */
+        if (!$this->getOption('authentication')) {
             return true;
-         }
+        }
 
-         print "unknown error occured when trying to change status of ". $request_object ." ". $id;
-         return false;
-      }
-
-      if(!empty($parent) && preg_match('/(.*)-([0-9]+)/', $parent, $parts_parent) === false) {
-         print "[parent] in incorrect format!";
-         return false;
-      }
-
-      $parent_request_object = $parts_parent[1];
-      $parent_id = $parts_parent[2];
-
-      if(!($obj = $this->load_class($parent_request_object, $parent_id))) {
-         print "unable to locate class for ". $parent_request_object;
-         return false;
-      }
-
-      if($obj->toggle_child_status($to, $request_object, $id)) {
-         print "ok";
-         return true;
-      }
-
-      print "unknown error";
-      return false;
-
-   } // rpc_toggle_object_status()
-
-   /**
-    * RPC handler - clone object
-    *
-    * @return bool
-    */
-   private function rpc_clone_object()
-   {
-      global $page;
-
-      if(!isset($_POST['id'])) {
-         print "id is missing!";
-         return false;
-      }
-
-      $id = $_POST['id'];
-
-      if(preg_match('/(.*)-([0-9]+)/', $id, $parts) === false) {
-         print "id in incorrect format!";
-         return false;
-      }
-
-      $request_object = $parts[1];
-      $id = $parts[2];
-
-      /* get existing object */
-      if(!($obj = $this->load_class($request_object, $id))) {
-         print "unable to locate class for ". $request_object;
-         return false;
-      }
-
-      /* initate new object */
-      if(!($newobj = $this->load_class($request_object, NULL))) {
-         print "unable to initate new object with class ". $request_object;
-         return false;
-      }
-
-      if($newobj->create_clone($obj)) {
-         print "ok";
-         return true;
-      }
-
-      print "unknown error";
-      return false;
-
-   } // rpc_clone_object()
-
-   /**
-    * Generic class load function
-    *
-    * This function validates the requested class name
-    * and then tries to load the corresponding class.
-    */
-   public function load_class($object_name, $id = null)
-   {
-      switch($object_name) {
-         case 'target':
-            $obj = new Target($id);
-            break;
-         case 'port':
-            $obj = new Port($id);
-            break;
-         case 'protocol':
-            $obj = new Protocol($id);
-            break;
-         case 'servicelevel':
-            $obj = new Service_Level($id);
-            break;
-         case 'user':
-            $obj = new User($id);
-            break;
-         case 'interface':
-            $obj = new Network_Interface($id);
-            break;
-         case 'networkpath':
-            $obj = new Network_Path($id);
-            break;
-         case 'hostprofile':
-            $obj = new Host_Profile($id);
-            break;
-         case 'hosttask':
-            $obj = new Host_Task($id);
-            break;
-         case 'filter':
-            $obj = new Filter($id);
-            break;
-         case 'pipe':
-            $obj = new Pipe($id);
-            break;
-         case 'chain':
-            $obj = new Chain($id);
-            break;
-      }
-
-      if(isset($obj))
-         return $obj;
-
-      return false;
-
-   } // load_class()
-
-   /**
-    * RPC handler
-    *
-    * change position of netpath, chains, pipes, ...
-    */
-   public function rpc_alter_position()
-   {
-      require_once "class/pages/overview.php";
-      $obj = new Page_Overview;
-      print $obj->alter_position();
-
-   } // rpc_alter_position()
-
-   /**
-    * RPC handler
-    *
-    * return a list of chains used by floating-dialog
-    * to assign pipes to chains.
-    */
-   public function rpc_get_content()
-   {
-      global $ms;
-
-      $valid_content = Array(
-         'chains-list',
-      );
-
-      if(!in_array($_POST['content'], $valid_content)) {
-         $ms->throwError('unknown content requested: '. $_POST['content']);
-         return false;
-      }
-
-      switch($_POST['content']) {
-         case 'chains-list':
-            require_once "class/pages/chains.php";
-            $obj = new Page_Chains;
-            print $obj->get_chains_list();
-            break;
-      }
-
-   } // rpc_get_content()
-
-   /**
-    * RPC handler
-    *
-    * return the requested submenu
-    */
-   public function rpc_get_sub_menu()
-   {
-      require_once "class/pages/menu.php";
-      $obj = new Page_Menu;
-      print $obj->get_sub_menu();
-
-   } // rpc_get_sub_menu()
-
-   /**
-    * check login
-    */
-   private function login()
-   {
-      if(!isset($_POST['user_name']) || empty($_POST['user_name']))
-         $this->throwError(_("Please enter Username and Password."));
-      if(!isset($_POST['user_pass']) || empty($_POST['user_pass']))
-         $this->throwError(_("Please enter Username and Password."));
-
-      if(!$user = $this->getUserDetails($_POST['user_name']))
-         $this->throwError(_("Invalid or inactive User."));
-
-      if($user->user_pass != md5($_POST['user_pass']))
-         $this->throwError(_("Invalid Password."));
-
-      $_SESSION['user_name'] = $_POST['user_name'];
-      $_SESSION['user_idx'] = $user->user_idx;
-
-      if(!isset($_SESSION['host_profile']) || empty($_SESSION['host_profile']) || !is_numeric($_SESSION['host_profile']))
-         $_SESSION['host_profile'] = 1;
-
-      return true;
-
-   } // login()
-
-   /**
-    * general logout function
-    *
-    * this function will take care to destroy the active
-    * user session to force a logout.
-    *
-    * @return bool
-    */
-   private function logout()
-   {
-      if(!$this->destroySession()) {
-         print "failed to destroy user session!";
-         return false;
-      }
-
-      return true;
-
-   } // logout()
-
-   /**
-    * return all user details for the provided user_name
-    */
-   private function getUserDetails($user_name)
-   {
-      global $db;
-
-      if($user = $db->db_fetchSingleRow("
-         SELECT
-            user_idx,
-            user_pass
-         FROM
-            ". MYSQL_PREFIX ."users
-         WHERE
-            user_name LIKE ". $db->quote($user_name) ."
-         AND
-            user_active='Y'")) {
-
-         return $user;
-      }
-
-      return NULL;
-
-   } // getUserDetails()
-
-   /**
-    * destroy the current user session to force logout
-    */
-   public function destroySession()
-   {
-      /* is there really a session? */
-      if(!isset($_SESSION) || !is_array($_SESSION))
-         return false;
-
-      /* unset all session variables */
-      foreach($_SESSION as $k => $v) {
-         unset($_SESSION[$k]);
-      }
-
-      /* finally destroy the active session */
-      session_destroy();
-
-      return true;
-
-   } // destroySession()
-
-   /**
-    * return value of requested setting
-    */
-   public function getOption($object)
-   {
-      global $db;
-
-      $result = $db->db_fetchSingleRow("
-         SELECT setting_value
-         FROM ". MYSQL_PREFIX ."settings
-         WHERE setting_key like '". $object ."'
-      ");
-
-      if(isset($result->setting_value)) {
-         return $result->setting_value;
-      }
-
-      /* return default options if not set yet */
-      if($object == "filter")
-         return "HTB";
-
-      if($object == "msmode")
-         return "router";
-
-      if($object == "authentication")
-         return "Y";
-
-      return "unknown";
-
-   } // getOption()
-
-   /**
-    * set value of requested setting
-    */
-   public function setOption($key, $value)
-   {
-      global $db;
-
-      $sth = $db->db_prepare("
-         REPLACE INTO ". MYSQL_PREFIX ."settings (
-            setting_key,
-            setting_value
-         ) VALUES (
-            ?,
-            ?
-         )
-      ");
-
-      $db->db_execute($sth, array(
-         $key,
-         $value
-      ));
-
-      $db->db_sth_free($sth);
-
-   } // setOption()
-
-   /**
-    * return true if the current user has the requested
-    * permission.
-    */
-   public function checkPermissions($permission)
-   {
-      global $db;
-      $user = $db->db_fetchSingleRow("
-         SELECT ". $permission ."
-         FROM ". MYSQL_PREFIX ."users
-         WHERE user_idx='". $_SESSION['user_idx'] ."'
-      ");
-
-      if(isset($user) && isset($user->$permission) && $user->$permission == "Y")
-         return true;
-
-      return false;
-
-   } // checkPermissions()
-
-   /**
-    * return human readable priority name
-    */
-   public function getPriorityName($prio)
-   {
-      switch($prio) {
-         case 0: return _("Ignored"); break;
-         case 1: return _("Highest"); break;
-         case 2: return _("High");    break;
-         case 3: return _("Normal");  break;
-         case 4: return _("Low");     break;
-         case 5: return _("Lowest");  break;
-      }
-   } // getPriorityName()
-
-   /**
-    * this function validates the provided bandwidth
-    * and will return true if correctly specified
-    */
-   public function validateBandwidth($bw)
-   {
-      if(!is_numeric($bw)) {
-         if(preg_match("/^(\d+)(k|m)$/i", $bw))
+        if (isset($_SESSION['user_name'])) {
+            $tmpl->assign('user_name', $_SESSION['user_name']);
             return true;
-      }
-      else
-         return true;
+        }
 
-   } // validateBandwidth()
+        return false;
 
-   /**
-    * this function will return the interface name
-    * of the interface provided with its index number
-    */
-   public function getInterfaceName($if_idx)
-   {
-      /* we are going on to handle positive indexes */
-      if($if_idx <= 0)
-         return;
+    } // isLoggedIn()
 
-      if(!$if = new Network_Interface($if_idx))
-         return false;
+    /**
+     * check login
+     */
+    private function login()
+    {
+        if (!isset($_POST['user_name']) || empty($_POST['user_name'])) {
+            $this->raiseError(_("Please enter Username and Password."));
+        }
+        if (!isset($_POST['user_pass']) || empty($_POST['user_pass'])) {
+            $this->raiseError(_("Please enter Username and Password."));
+        }
 
-      return $if->if_name;
+        if (!$user = $this->getUserDetails($_POST['user_name'])) {
+            $this->raiseError(_("Invalid or inactive User."));
+        }
 
-   } // getInterfaceName()
+        if ($user->user_pass != md5($_POST['user_pass'])) {
+            $this->raiseError(_("Invalid Password."));
+        }
 
-   public function getYearList($current = "")
-   {
-      $string = "";
-      for($i = date("Y"); $i <= date("Y")+2; $i++) {
-         $string.= "<option value=\"". $i ."\"";
-         if($i == date("Y", (int) $current))
-            $string.= " selected=\"selected\"";
-         $string.= ">". $i ."</option>";
-      }
-      return $string;
+        $_SESSION['user_name'] = $_POST['user_name'];
+        $_SESSION['user_idx'] = $user->user_idx;
 
-   } // getYearList()
+        if (
+            !isset($_SESSION['host_profile']) ||
+            empty($_SESSION['host_profile']) ||
+            !is_numeric($_SESSION['host_profile'])
+        ) {
+            $_SESSION['host_profile'] = 1;
+        }
 
-   public function getMonthList($current = "")
-   {
-      $string = "";
-      for($i = 1; $i <= 12; $i++) {
-         $string.= "<option value=\"". $i ."\"";
-         if($i == date("n", (int) $current))
-            $string.= " selected=\"selected\"";
-         if(date("m") == $i && $current == "")
-            $string.= " selected=\"selected\"";
-         $string.= ">". $i ."</option>";
-      }
-      return $string;
+        return true;
 
-   } // getMonthList()
+    } // login()
 
-   public function getDayList($current = "")
-   {
-      $string = "";
-      for($i = 1; $i <= 31; $i++) {
-         $string.= "<option value=\"". $i ."\"";
-         if($i == date("d", (int) $current))
-            $string.= " selected=\"selected\"";
-         if(date("d") == $i && $current == "")
-            $string.= " selected=\"selected\"";
-         $string.= ">". $i ."</option>";
-      }
-      return $string;
+    /**
+     * general logout function
+     *
+     * this function will take care to destroy the active
+     * user session to force a logout.
+     *
+     * @return bool
+     */
+    private function logout()
+    {
+        if (!$this->destroySession()) {
+            print "failed to destroy user session!";
+            return false;
+        }
 
-   } // getDayList()
+        return true;
 
-   public function getHourList($current = "")
-   {
-      $string = "";
-      for($i = 0; $i <= 23; $i++) {
-         $string.= "<option value=\"". $i ."\"";
-         if($i == date("H", (int) $current))
-            $string.= " selected=\"selected\"";
-         if(date("H") == $i && $current == "")
-            $string.= " selected=\"selected\"";
-         $string.= ">". sprintf("%02d", $i) ."</option>";
-      }
-      return $string;
+    } // logout()
 
-   } // getHourList()
+    /**
+     * return all user details for the provided user_name
+     */
+    private function getUserDetails($user_name)
+    {
+        global $db;
 
-   public function getMinuteList($current = "")
-   {
-      $string = "";
-      for($i = 0; $i <= 59; $i++) {
-         $string.= "<option value=\"". $i ."\"";
-         if($i == date("i", (int) $current))
-            $string.= " selected=\"selected\"";
-         if(date("i") == $i && $current == "")
-            $string.= " selected=\"selected\"";
-         $string.= ">". sprintf("%02d", $i)  ."</option>";
-      }
-      return $string;
+        if ($user = $db->fetchSingleRow(
+            "SELECT
+                user_idx,
+                user_pass
+            FROM
+                TABLEPREFIXusers
+            WHERE
+                user_name LIKE ". $db->quote($user_name) ."
+            AND
+                user_active='Y'"
+        )) {
+            return $user;
+        }
 
-   } // getMinuteList()
+        return null;
 
-   /**
-    * returns IANA protocol number
-    *
-    * this function returns the IANA protocol number
-    * for the specified database entry in protocol table
-    */
-   public function getProtocolNumberById($proto_idx)
-   {
-      if(!$proto = new Protocol($proto_idx))
-         return false;
+    } // getUserDetails()
 
-      return $proto->proto_number;
+    /**
+     * return value of requested setting
+     */
+    public function getOption($object)
+    {
+        global $db;
 
-   } // getProtocolNumberById()
+        $result = $db->fetchSingleRow("
+                SELECT setting_value
+                FROM TABLEPREFIXsettings
+                WHERE setting_key like '". $object ."'
+                ");
 
-   /**
-    * return IANA protocol name
-    *
-    * this function returns the IANA protocol name
-    * for the specified database entry in the protocol table
-    */
-   public function getProtocolNameById($proto_idx)
-   {
-      if(!$proto = new Protocol($proto_idx))
-         return false;
+        if (isset($result->setting_value)) {
+            return $result->setting_value;
+        }
 
-      return $proto->proto_name;
+        /* return default options if not set yet */
+        if ($object == "filter") {
+            return "HTB";
+        }
 
-   } // getProtocolNameById()
+        if ($object == "msmode") {
+            return "router";
+        }
 
-   /**
-    * return kbit/s in integer value
-    *
-    * this function will transform user entered bandwidth
-    * values (kilobit, megabit) into integer values).
-    */
-   public function getKbit($bw)
-   {
-      if(preg_match("/^(\d+)k$/i", $bw))
-         return preg_replace("/k/i", "", $bw);
-      if(preg_match("/^(\d+)m$/i", $bw))
-         return (preg_replace("/m/i", "", $bw) * 1024);
+        if ($object == "authentication") {
+            return "Y";
+        }
 
-      return $bw;
+        return "unknown";
 
-   } // getKbit
+    } // getOption()
 
-   /**
-    * get service level information
-    *
-    * this function will return all details of the requested
-    * service level.
-    *
-    * @param int $sl_idx
-    * @return Service_Level
-    */
-   public function get_service_level($sl_idx)
-   {
-      global $ms;
+    /**
+     * set value of requested setting
+     */
+    public function setOption($key, $value)
+    {
+        global $db;
 
-      if(empty($sl_idx))
-         return false;
+        $sth = $db->prepare("
+                REPLACE INTO TABLEPREFIXsettings (
+                    setting_key,
+                    setting_value
+                    ) VALUES (
+                        ?,
+                        ?
+                        )
+                ");
 
-      if(!$sl = new Service_Level($sl_idx))
-         return false;
+        $db->execute($sth, array(
+                    $key,
+                    $value
+                    ));
 
-      /* without IMQ we have to swap in & out */
-      if($ms->getOption('msmode') == "router")
-         $sl->swap_in_out();
+        $db->db_sth_free($sth);
 
-      return $sl;
+    } // setOption()
 
-   } // getServiceLevel()
+    /**
+     * return true if the current user has the requested
+     * permission.
+     */
+    public function checkPermissions($permission)
+    {
+        global $db;
+        $user = $db->fetchSingleRow("
+                SELECT ". $permission ."
+                FROM TABLEPREFIXusers
+                WHERE user_idx='". $_SESSION['user_idx'] ."'
+                ");
 
-   /**
-    * get service level name
-    *
-    * this function will return the name of the requested
-    * service level.
-    */
-   public function getServiceLevelName($sl_idx)
-   {
-      if(!$sl = new Service_Level($sl_idx))
-         return false;
+        if (isset($user) && isset($user->$permission) && $user->$permission == "Y") {
+            return true;
+        }
 
-      return $sl->sl_name;
+        return false;
 
-   } // getServiceLevelName()
+    } // checkPermissions()
 
-   /**
-    * get target name
-    *
-    * this function will return the name of the requested
-    * target.
-    */
-   public function getTargetName($target_idx)
-   {
-      if(!$target = new Target($target_idx))
-         return false;
+    /**
+     * return human readable priority name
+     */
+    public function getPriorityName($prio)
+    {
+        switch($prio) {
+            case 0:
+                return _("Ignored");
+                break;
+            case 1:
+                return _("Highest");
+                break;
+            case 2:
+                return _("High");
+                break;
+            case 3:
+                return _("Normal");
+                break;
+            case 4:
+                return _("Low");
+                break;
+            case 5:
+                return _("Lowest");
+                break;
+        }
+    } // getPriorityName()
 
-      return $target->target_name;
+    /**
+     * this function validates the provided bandwidth
+     * and will return true if correctly specified
+     */
+    public function validateBandwidth($bw)
+    {
+        if (!is_numeric($bw)) {
+            if (preg_match("/^(\d+)(k|m)$/i", $bw)) {
+                return true;
+            }
+        } else {
+            return true;
+        }
 
-   } // getTargetName()
+    } // validateBandwidth()
 
-   /**
-    * get chain name
-    *
-    * this function will return the name of the requested
-    * chain.
-    */
-   public function getChainName($chain_idx)
-   {
-      if(!$chain = new Chain($chain_idx))
-         return false;
+    /**
+     * this function will return the interface name
+     * of the interface provided with its index number
+     */
+    public function getInterfaceName($if_idx)
+    {
+        /* we are going on to handle positive indexes */
+        if ($if_idx <= 0) {
+            return;
+        }
 
-      return $chain->chain_name;
+        if (!$if = new Network_Interface($if_idx)) {
+            return false;
+        }
 
-   } // getChainName()
+        return $if->if_name;
 
-   /**
-    * get all filters for that pipe
-    *
-    * this function will return all assigned filters
-    * for the specified pipe
-    *
-    * @param int $pipe_idx
-    * @param bool $with_name
-    * @return array
-    */
-   public function getFilters($pipe_idx, $with_name = false)
-   {
-      global $db;
+    } // getInterfaceName()
 
-      $query = "
-         SELECT
+    public function getYearList($current = "")
+    {
+        $string = "";
+        for ($i = date("Y"); $i <= date("Y")+2; $i++) {
+            $string.= "<option value=\"". $i ."\"";
+            if ($i == date("Y", (int) $current)) {
+                $string.= " selected=\"selected\"";
+            }
+            $string.= ">". $i ."</option>";
+        }
+        return $string;
+
+    } // getYearList()
+
+    public function getMonthList($current = "")
+    {
+        $string = "";
+        for ($i = 1; $i <= 12; $i++) {
+            $string.= "<option value=\"". $i ."\"";
+            if ($i == date("n", (int) $current)) {
+                $string.= " selected=\"selected\"";
+            }
+            if (date("m") == $i && $current == "") {
+                $string.= " selected=\"selected\"";
+            }
+            $string.= ">". $i ."</option>";
+        }
+        return $string;
+
+    } // getMonthList()
+
+    public function getDayList($current = "")
+    {
+        $string = "";
+        for ($i = 1; $i <= 31; $i++) {
+            $string.= "<option value=\"". $i ."\"";
+            if ($i == date("d", (int) $current)) {
+                $string.= " selected=\"selected\"";
+            }
+            if (date("d") == $i && $current == "") {
+                $string.= " selected=\"selected\"";
+            }
+            $string.= ">". $i ."</option>";
+        }
+        return $string;
+
+    } // getDayList()
+
+    public function getHourList($current = "")
+    {
+        $string = "";
+        for ($i = 0; $i <= 23; $i++) {
+            $string.= "<option value=\"". $i ."\"";
+            if ($i == date("H", (int) $current)) {
+                $string.= " selected=\"selected\"";
+            }
+            if (date("H") == $i && $current == "") {
+                $string.= " selected=\"selected\"";
+            }
+            $string.= ">". sprintf("%02d", $i) ."</option>";
+        }
+        return $string;
+
+    } // getHourList()
+
+    public function getMinuteList($current = "")
+    {
+        $string = "";
+        for ($i = 0; $i <= 59; $i++) {
+            $string.= "<option value=\"". $i ."\"";
+            if ($i == date("i", (int) $current)) {
+                $string.= " selected=\"selected\"";
+            }
+            if (date("i") == $i && $current == "") {
+                $string.= " selected=\"selected\"";
+            }
+            $string.= ">". sprintf("%02d", $i)  ."</option>";
+        }
+        return $string;
+
+    } // getMinuteList()
+
+    /**
+     * returns IANA protocol number
+     *
+     * this function returns the IANA protocol number
+     * for the specified database entry in protocol table
+     */
+    public function getProtocolNumberById($proto_idx)
+    {
+        if (!$proto = new Protocol($proto_idx)) {
+            return false;
+        }
+
+        return $proto->proto_number;
+
+    } // getProtocolNumberById()
+
+    /**
+     * return IANA protocol name
+     *
+     * this function returns the IANA protocol name
+     * for the specified database entry in the protocol table
+     */
+    public function getProtocolNameById($proto_idx)
+    {
+        if (!$proto = new Protocol($proto_idx)) {
+            return false;
+        }
+
+        return $proto->proto_name;
+
+    } // getProtocolNameById()
+
+    /**
+     * return kbit/s in integer value
+     *
+     * this function will transform user entered bandwidth
+     * values (kilobit, megabit) into integer values).
+     */
+    public function getKbit($bw)
+    {
+        if (preg_match("/^(\d+)k$/i", $bw)) {
+            return preg_replace("/k/i", "", $bw);
+        }
+        if (preg_match("/^(\d+)m$/i", $bw)) {
+            return (preg_replace("/m/i", "", $bw) * 1024);
+        }
+
+        return $bw;
+
+    } // getKbit
+
+    /**
+     * get service level information
+     *
+     * this function will return all details of the requested
+     * service level.
+     *
+     * @param int $sl_idx
+     * @return Service_Level
+     */
+    public function getServiceLevel($sl_idx)
+    {
+        global $ms;
+
+        if (empty($sl_idx)) {
+            return false;
+        }
+
+        if (!$sl = new Service_Level($sl_idx)) {
+            return false;
+        }
+
+        /* without IMQ we have to swap in & out */
+        if ($ms->getOption('msmode') == "router") {
+            $sl->swapInOut();
+        }
+
+        return $sl;
+
+    } // getServiceLevel()
+
+    /**
+     * get service level name
+     *
+     * this function will return the name of the requested
+     * service level.
+     */
+    public function getServiceLevelName($sl_idx)
+    {
+        if (!$sl = new Service_Level($sl_idx)) {
+            return false;
+        }
+
+        return $sl->sl_name;
+
+    } // getServiceLevelName()
+
+    /**
+     * get target name
+     *
+     * this function will return the name of the requested
+     * target.
+     */
+    public function getTargetName($target_idx)
+    {
+        if (!$target = new Target($target_idx)) {
+            return false;
+        }
+
+        return $target->target_name;
+
+    } // getTargetName()
+
+    /**
+     * get chain name
+     *
+     * this function will return the name of the requested
+     * chain.
+     */
+    public function getChainName($chain_idx)
+    {
+        if (!$chain = new Chain($chain_idx)) {
+            return false;
+        }
+
+        return $chain->chain_name;
+
+    } // getChainName()
+
+    /**
+     * get all filters for that pipe
+     *
+     * this function will return all assigned filters
+     * for the specified pipe
+     *
+     * @param int $pipe_idx
+     * @param bool $with_name
+     * @return array
+     */
+    public function getFilters($pipe_idx, $with_name = false)
+    {
+        global $db;
+
+        $query = "
+            SELECT
             af.apf_filter_idx as apf_filter_idx
-      ";
+            ";
 
-      if($with_name)
-         $query.= ",
-            f.filter_name as filter_name
-         ";
+        if ($with_name) {
+            $query.= ",
+                f.filter_name as filter_name
+                    ";
+        }
 
-      $query.= "
-         FROM
-            ". MYSQL_PREFIX ."assign_filters_to_pipes af
-         INNER JOIN
-            ". MYSQL_PREFIX ."filters f
-         ON
-            af.apf_filter_idx=f.filter_idx
-         WHERE
-            af.apf_pipe_idx LIKE ?
-         AND
-            f.filter_active='Y'
-      ";
-
-      $sth = $db->db_prepare($query);
-
-      $db->db_execute($sth, array(
-         $pipe_idx
-      ));
-
-      $res = $sth->fetchAll();
-
-      $db->db_sth_free($sth);
-
-      return $res;
-
-   } // getFilters()
-
-   /**
-    * get all ports for that filters
-    *
-    * this function will return all assigned ports
-    * for the specified filter
-    */
-   public function getPorts($filter_idx)
-   {
-      global $db;
-
-      $list = NULL;
-      $numbers = "";
-
-      /* first get all the port id's for that filter */
-      if(!isset($this->sth_get_ports)) {
-         $this->sth_get_ports = $db->db_prepare("
-            SELECT
-               p.port_name as port_name,
-               p.port_number as port_number
+        $query.= "
             FROM
-               ". MYSQL_PREFIX ."assign_ports_to_filters afp
+            TABLEPREFIXassign_filters_to_pipes af
             INNER JOIN
-               ". MYSQL_PREFIX ."ports p
+            TABLEPREFIXfilters f
             ON
-               afp.afp_port_idx=p.port_idx
+            af.apf_filter_idx=f.filter_idx
             WHERE
-               afp_filter_idx LIKE ?
-         ");
-      }
+            af.apf_pipe_idx LIKE ?
+            AND
+            f.filter_active='Y'
+            ";
 
-      $db->db_execute($this->sth_get_ports, array(
-         $filter_idx
-      ));
+        $sth = $db->prepare($query);
 
-      $numbers = Array();
+        $db->execute($sth, array(
+                    $pipe_idx
+                    ));
 
-      while($port = $this->sth_get_ports->fetch()) {
-         array_push($numbers, array(
-            'name' => $port->port_name,
-            'number' => $port->port_number
-         ));
-      }
+        $res = $sth->fetchAll();
 
-      $db->db_sth_free($this->sth_get_ports);
+        $db->db_sth_free($sth);
 
-      /* now look up the IANA port numbers for that ports */
-      if(empty($numbers))
-         return NULL;
+        return $res;
 
-      return $numbers;
+    } // getFilters()
 
-   } // getPorts()
+    /**
+     * get all ports for that filters
+     *
+     * this function will return all assigned ports
+     * for the specified filter
+     */
+    public function getPorts($filter_idx)
+    {
+        global $db;
 
-   /* extract all ports from a string */
-   public function extractPorts($string)
-   {
-      if(empty($string) || preg_match("/any/", $string))
-         return NULL;
+        $list = null;
+        $numbers = "";
 
-      $string = str_replace(" ", "", $string);
-      $ports = preg_split("/,/", $string);
+        /* first get all the port id's for that filter */
+        if (!isset($this->sth_get_ports)) {
+            $this->sth_get_ports = $db->prepare("
+                    SELECT
+                    p.port_name as port_name,
+                    p.port_number as port_number
+                    FROM
+                    TABLEPREFIXassign_ports_to_filters afp
+                    INNER JOIN
+                    TABLEPREFIXports p
+                    ON
+                    afp.afp_port_idx=p.port_idx
+                    WHERE
+                    afp_filter_idx LIKE ?
+                    ");
+        }
 
-      $targets = Array();
+        $db->execute($this->sth_get_ports, array(
+                    $filter_idx
+                    ));
 
-      foreach($ports as $port) {
+        $numbers = array();
 
-         $port = trim($port);
+        while ($port = $this->sth_get_ports->fetch()) {
+            array_push($numbers, array(
+                        'name' => $port->port_name,
+                        'number' => $port->port_number
+                        ));
+        }
 
-         if(!preg_match("/.*-.*/", $port)) {
-            array_push($targets, $port);
-            continue;
-         }
+        $db->db_sth_free($this->sth_get_ports);
 
-         list($start, $end) = preg_split("/-/", $port);
-         // if the user try to fool us...
-         if($end < $start) {
-            $tmp = $end;
-            $end = $start;
-            $start = $tmp;
-         }
-         for($i = $start*1; $i <= $end*1; $i++) {
-            array_push($targets, $i);
-         }
-      }
+        /* now look up the IANA port numbers for that ports */
+        if (empty($numbers)) {
+            return null;
+        }
 
-      return $targets;
+        return $numbers;
 
-   } // extractPorts()
+    } // getPorts()
 
-   /**
-    * this function generates the value used for CONNMARK
-    */
-   public function getConnmarkId($string1, $string2)
-   {
-      // if dechex returned string longer than 8 chars,
-      // we are running 64 kernel, so we have to shift
-      // first 8 chars from left.
+    /* extract all ports from a string */
+    public function extractPorts($string)
+    {
+        if (empty($string) || preg_match("/any/", $string)) {
+            return null;
+        }
 
-      $tmp = dechex((float) crc32($string1 . str_replace(":", "", $string2))* -1);
-      if(strlen($tmp)>8)
-         $tmp = substr($tmp,8);
+        $string = str_replace(" ", "", $string);
+        $ports = preg_split("/,/", $string);
 
-      return "0x".$tmp;
+        $targets = array();
 
-   } // getConnmarkId()
+        foreach ($ports as $port) {
 
-   /**
-    * return all assigned l7 protocols
-    *
-    * this function will return all assigned l7 protocol which
-    * are assigned to the provided filter
-    */
-   public function getL7Protocols($filter_idx)
-   {
-      global $db;
+            $port = trim($port);
 
-      $list = NULL;
-      $numbers = "";
+            if (!preg_match("/.*-.*/", $port)) {
+                array_push($targets, $port);
+                continue;
+            }
 
-      if(!isset($this->sth_get_l7_protocols)) {
-         $this->sth_get_l7_protocols = $db->db_prepare("
-            SELECT
-               afl7_l7proto_idx
-            FROM
-               ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
-            WHERE
-               afl7_filter_idx LIKE ?
-         ");
-      }
+            list($start, $end) = preg_split("/-/", $port);
+            // if the user try to fool us...
+            if ($end < $start) {
+                $tmp = $end;
+                $end = $start;
+                $start = $tmp;
+            }
+            for ($i = $start*1; $i <= $end*1; $i++) {
+                array_push($targets, $i);
+            }
+        }
 
-      $db->db_execute($this->sth_get_l7_protocols, array(
-         $filter_idx
-      ));
+        return $targets;
 
-      while($protocol = $this->sth_get_l7_protocols->fetch()) {
-         $numbers.= $protocol->afl7_l7proto_idx .",";
-      }
+    } // extractPorts()
 
-      $db->db_sth_free($this->sth_get_l7_protocols);
+    /**
+     * this function generates the value used for CONNMARK
+     */
+    public function getConnmarkId($string1, $string2)
+    {
+        // if dechex returned string longer than 8 chars,
+        // we are running 64 kernel, so we have to shift
+        // first 8 chars from left.
 
-      if(empty($numbers))
-         return NULL;
+        $tmp = dechex((float) crc32($string1 . str_replace(":", "", $string2))* -1);
+        if (strlen($tmp)> 8) {
+            $tmp = substr($tmp, 8);
+        }
 
-      $numbers = substr($numbers, 0, strlen($numbers)-1);
-      $sth = $db->db_prepare("
-         SELECT
-            l7proto_name
-         FROM
-            ". MYSQL_PREFIX ."l7_protocols
-         WHERE
-            l7proto_idx IN (?)
-      ");
+        return "0x".$tmp;
 
-      $list = $db->db_execute($sth, array(
-         $numbers
-      ));
+    } // getConnmarkId()
 
-      $db->db_sth_free($sth);
-      return $list;
+    /**
+     * return all assigned l7 protocols
+     *
+     * this function will return all assigned l7 protocol which
+     * are assigned to the provided filter
+     */
+    public function getL7Protocols($filter_idx)
+    {
+        global $db;
 
-   } // getL7Protocols
+        $list = null;
+        $numbers = "";
 
-   /**
-    * return content around monitor
-    */
-   public function monitor($mode)
-   {
-      $obj = new MASTERSHAPER_MONITOR($this);
-      $obj->show($mode);
+        if (!isset($this->sth_get_l7_protocols)) {
+            $this->sth_get_l7_protocols = $db->prepare("
+                    SELECT
+                    afl7_l7proto_idx
+                    FROM
+                    TABLEPREFIXassign_l7_protocols_to_filters
+                    WHERE
+                    afl7_filter_idx LIKE ?
+                    ");
+        }
 
-   } // monitor()
+        $db->execute($this->sth_get_l7_protocols, array(
+                    $filter_idx
+                    ));
 
-   /**
-    * return JSON data for jqPlot
-    *
-    * @return string
-    */
-   private function rpc_graph_data()
-   {
-      require_once "class/pages/monitor.php";
-      $obj = new Page_Monitor;
-      print $obj->get_jqplot_values();
+        while ($protocol = $this->sth_get_l7_protocols->fetch()) {
+            $numbers.= $protocol->afl7_l7proto_idx .",";
+        }
 
-   } // rpc_graph_data()
+        $db->db_sth_free($this->sth_get_l7_protocols);
 
-   /**
-    * change settings which graph is going to be displayed
-    */
-   private function rpc_graph_mode()
-   {
-      if(isset($_POST['graphmode']) && $this->is_valid_graph_mode($_POST['graphmode']))
-         $_SESSION['graphmode'] = $_POST['graphmode'];
+        if (empty($numbers)) {
+            return null;
+        }
 
-      if(isset($_POST['scalemode']) && $this->is_valid_scale_mode($_POST['scalemode']))
-         $_SESSION['scalemode'] = $_POST['scalemode'];
+        $numbers = substr($numbers, 0, strlen($numbers)-1);
+        $sth = $db->prepare("
+                SELECT
+                l7proto_name
+                FROM
+                TABLEPREFIXl7_protocols
+                WHERE
+                l7proto_idx IN (?)
+                ");
 
-      if(isset($_POST['interface']) && $this->is_valid_interface($_POST['interface']))
-         $_SESSION['showif'] = $_POST['interface'];
+        $list = $db->execute($sth, array(
+                    $numbers
+                    ));
 
-      if(isset($_POST['chain']) && $this->is_valid_chain($_POST['chain']))
-         $_SESSION['showchain'] = $_POST['chain'];
+        $db->db_sth_free($sth);
+        return $list;
 
-      print "ok";
+    } // getL7Protocols
 
-   } // rpc_change_graph()
+    /**
+     * return content around monitor
+     */
+    public function monitor($mode)
+    {
+        $obj = new MASTERSHAPER_MONITOR($this);
+        $obj->show($mode);
 
-   /**
-    * change host profile
-    */
-   private function rpc_set_host_profile()
-   {
-      if(!isset($_POST['hostprofile']) || !is_numeric($_POST['hostprofile'])) {
-         print "invalid host profile";
-         return false;
-      }
+    } // monitor()
 
-      if(!$this->is_valid_host_profile($_POST['hostprofile'])) {
-         print "invalid host profile";
-         return false;
-      }
+    /**
+     * return JSON data for jqPlot
+     *
+     * @return string
+     */
+    private function rpcGraphData()
+    {
+        require_once "class/pages/monitor.php";
+        $obj = new Page_Monitor;
+        print $obj->get_jqplot_values();
 
-      $_SESSION['host_profile'] = $_POST['hostprofile'];
-      print "ok";
+    } // rpc_graph_data()
 
-   } // rpc_change_graph()
+    /**
+     * change settings which graph is going to be displayed
+     */
+    private function rpcGraphMode()
+    {
+        if (isset($_POST['graphmode']) && $this->is_valid_graph_mode($_POST['graphmode'])) {
+            $_SESSION['graphmode'] = $_POST['graphmode'];
+        }
 
-   /**
-    * return current host state (task queue)
-    *
-    * @return bool
-    */
-   private function rpc_get_host_state()
-   {
-      if(!isset($_POST['idx']) || !is_numeric($_POST['idx'])) {
-         print "invalid host profile";
-         return false;
-      }
+        if (isset($_POST['scalemode']) && $this->is_valid_scale_mode($_POST['scalemode'])) {
+            $_SESSION['scalemode'] = $_POST['scalemode'];
+        }
 
-      if(!$this->is_valid_host_profile($_POST['idx'])) {
-         print "invalid host profile";
-         return false;
-      }
+        if (isset($_POST['interface']) && $this->is_valid_interface($_POST['interface'])) {
+            $_SESSION['showif'] = $_POST['interface'];
+        }
 
-      // has host updated its heartbeat recently
-      $hb = $this->get_host_heartbeat($_POST['idx']);
+        if (isset($_POST['chain']) && $this->is_valid_chain($_POST['chain'])) {
+            $_SESSION['showchain'] = $_POST['chain'];
+        }
 
-      if(time() > ($hb + 60)) {
-         print WEB_PATH .'/icons/absent.png';
-         return false;
-      }
+        print "ok";
 
-      if($this->is_running_task($_POST['idx']))
-         print WEB_PATH .'/icons/busy.png';
-      else
-         print WEB_PATH .'/icons/ready.png';
+    } // rpc_change_graph()
 
-      return true;
+    /**
+     * change host profile
+     */
+    private function rpcSetHostProfile()
+    {
+        if (!isset($_POST['hostprofile']) || !is_numeric($_POST['hostprofile'])) {
+            print "invalid host profile";
+            return false;
+        }
 
-   } // rpc_get_host_state()
+        if (!$this->is_valid_host_profile($_POST['hostprofile'])) {
+            print "invalid host profile";
+            return false;
+        }
 
-   /**
-    * check if requested graph mode is valid
-    *
-    * @param int $mode
-    * @return boolean
-    */
-   private function is_valid_graph_mode($mode)
-   {
-      if(!is_numeric($mode))
-         return false;
+        $_SESSION['host_profile'] = $_POST['hostprofile'];
+        print "ok";
 
-      if(!in_array($mode, Array(0,1,2,3)))
-         return false;
+    } // rpc_change_graph()
 
-      return true;
+    /**
+     * return current host state (task queue)
+     *
+     * @return bool
+     */
+    private function rpcGetHostState()
+    {
+        if (!isset($_POST['idx']) || !is_numeric($_POST['idx'])) {
+            print "invalid host profile";
+            return false;
+        }
 
-   } // is_valid_graph_mode()
+        if (!$this->is_valid_host_profile($_POST['idx'])) {
+            print "invalid host profile";
+            return false;
+        }
 
-   /**
-    * check if requested scale mode is valid
-    *
-    * @param string $mode
-    * @return boolean
-    */
-   private function is_valid_scale_mode($mode)
-   {
-      if(in_array($mode, Array('bit', 'byte', 'kbit', 'kbyte', 'mbit', 'mbyte')))
-         return true;
+        // has host updated its heartbeat recently
+        $hb = $this->get_host_heartbeat($_POST['idx']);
 
-      return false;
+        if (time() > ($hb + 60)) {
+            print WEB_PATH .'/icons/absent.png';
+            return false;
+        }
 
-   } // is_valid_scale_mode()
+        if ($this->is_running_task($_POST['idx'])) {
+            print WEB_PATH .'/icons/busy.png';
+        } else {
+            print WEB_PATH .'/icons/ready.png';
+        }
 
-   /**
-    * check if requested interface is valid
-    *
-    * @param string $if
-    * @return boolean
-    */
-   private function is_valid_interface($if)
-   {
-      $interfaces = $this->getActiveInterfaces();
+        return true;
 
-      while($interface = $interfaces->fetch()) {
-         if($if === $interface->if_name)
+    } // rpc_get_host_state()
+
+    /**
+     * check if requested graph mode is valid
+     *
+     * @param int $mode
+     * @return boolean
+     */
+    private function isValidGraphMode($mode)
+    {
+        if (!is_numeric($mode)) {
+            return false;
+        }
+
+        if (!in_array($mode, array(0,1,2,3))) {
+            return false;
+        }
+
+        return true;
+
+    } // is_valid_graph_mode()
+
+    /**
+     * check if requested scale mode is valid
+     *
+     * @param string $mode
+     * @return boolean
+     */
+    private function isValidScaleMode($mode)
+    {
+        if (in_array($mode, array('bit', 'byte', 'kbit', 'kbyte', 'mbit', 'mbyte'))) {
             return true;
-      }
+        }
 
-      return false;
+        return false;
 
-   } // is_valid_interface()
+    } // is_valid_scale_mode()
 
-   /**
-    * check if requested chain is valid
-    *
-    * @param int $chain_idx
-    * @return boolean
-    */
-   private function is_valid_chain($chain_idx)
-   {
-      if(!is_numeric($chain_idx))
-         return false;
+    /**
+     * check if requested interface is valid
+     *
+     * @param string $if
+     * @return boolean
+     */
+    private function isValidInterface($if)
+    {
+        $interfaces = $this->getActiveInterfaces();
 
-      if(!($obj = new Chain($chain_idx)))
-         return false;
+        while ($interface = $interfaces->fetch()) {
+            if ($if === $interface->if_name) {
+                return true;
+            }
+        }
 
-      return true;
+        return false;
 
-   } // is_valid_chain()
+    } // is_valid_interface()
 
-   /**
-    * checks if provided host profile id is valid
-    *
-    * @return boolean
-    */
-   private function is_valid_host_profile($host_idx)
-   {
-      global $db;
+    /**
+     * check if requested chain is valid
+     *
+     * @param int $chain_idx
+     * @return boolean
+     */
+    private function isValidChain($chain_idx)
+    {
+        if (!is_numeric($chain_idx)) {
+            return false;
+        }
 
-      if($db->db_fetchSingleRow("
-         SELECT
-            host_idx
-         FROM
-            ". MYSQL_PREFIX ."host_profiles
-         WHERE
-            host_idx LIKE '". $host_idx ."'"))
-         return true;
+        if (!($obj = new Chain($chain_idx))) {
+            return false;
+        }
 
-      return false;
+        return true;
 
-   } // is_valid_host_profile()
+    } // is_valid_chain()
 
-   public function getActiveInterfaces()
-   {
-      global $db;
+    /**
+     * checks if provided host profile id is valid
+     *
+     * @return boolean
+     */
+    private function isValidHostProfile($host_idx)
+    {
+        global $db;
 
-      $result = $db->db_query("
-         SELECT
-            DISTINCT if_name
-         FROM
-            shaper2_interfaces iface
-         INNER JOIN
-            shaper2_network_paths np
-         ON (
-            np.netpath_if1=iface.if_idx
-            OR
-            np.netpath_if2=iface.if_idx
-         )
-         WHERE
-            np.netpath_active LIKE 'Y'
-         AND
-            np.netpath_host_idx LIKE ". $this->get_current_host_profile() ."
-         AND
-            iface.if_host_idx LIKE ". $this->get_current_host_profile() ."
-      ");
+        if ($db->fetchSingleRow(
+            "SELECT
+                host_idx
+            FROM
+                TABLEPREFIXhost_profiles
+            WHERE
+                host_idx LIKE '". $host_idx ."'"
+        )) {
+            return true;
+        }
 
-      return $result;
+        return false;
 
-   } // getActiveInterfaces()
+    } // is_valid_host_profile()
 
-   public function setShaperStatus($status)
-   {
-      $this->setOption("status", $status);
+    public function getActiveInterfaces()
+    {
+        global $db;
 
-   } // setShaperStatus()
+        $result = $db->db_query("
+                SELECT
+                DISTINCT if_name
+                FROM
+                shaper2_interfaces iface
+                INNER JOIN
+                shaper2_network_paths np
+                ON (
+                    np.netpath_if1=iface.if_idx
+                    OR
+                    np.netpath_if2=iface.if_idx
+                   )
+                WHERE
+                np.netpath_active LIKE 'Y'
+                AND
+                np.netpath_host_idx LIKE ". $this->get_current_host_profile() ."
+                AND
+                iface.if_host_idx LIKE ". $this->get_current_host_profile() ."
+                ");
 
-   /**
-    * return the current process-user name
-    */
-   public function getuid()
-   {
-      if($uid = posix_getuid()) {
-         if($user = posix_getpwuid($uid)) {
-            return $user['name'];
-         }
-      }
+        return $result;
 
-      return 'n/a';
+    } // getActiveInterfaces()
 
-   } // getuid()
+    public function setShaperStatus($status)
+    {
+        $this->setOption("status", $status);
 
-   /**
-    * throw error
-    *
-    * This function shows up error messages and afterwards outputs exceptions.
-    *
-    * @param string $string
-    */
-   public function throwError($string)
-   {
-      if(defined('DB_NOERROR')) {
-         $this->last_error = $string;
-         return;
-      }
+    } // setShaperStatus()
 
-      print "<br /><br />". $string ."<br /><br />\n";
+    /**
+     * return the current process-user name
+     */
+    public function getuid()
+    {
+        if ($uid = posix_getuid()) {
+            if ($user = posix_getpwuid($uid)) {
+                return $user['name'];
+            }
+        }
 
-      try {
-         throw new MASTERSHAPER_EXCEPTION;
-         printf("here");
-      }
-      catch(MASTERSHAPER_EXCEPTION $e) {
-         print "<br /><br />\n";
-         $this->_print($e, MSLOG_WARN);
-         die;
-      }
+        return 'n/a';
 
-      $this->last_error = $string;
-
-   } // throwError()
+    } // getuid()
 
     public function raiseError($string, $stop = false)
     {
@@ -1680,1035 +1289,1057 @@ class MasterShaperController extends DefaultController {
         return false;
     }
 
-   private function handle_page_request()
-   {
-      if(!isset($_POST) || !is_array($_POST))
-         return;
-
-      if(!isset($_POST['action']))
-         return;
-
-      switch($_POST['action']) {
-
-         case 'do_login':
-            if($this->login()) {
-               /* on successful login, redirect browser to start page */
-               Header("Location: ". WEB_PATH ."/");
-               exit(0);
-            }
-            break;
-
-         case 'do_logout':
-            if($this->logout()) {
-               /* on successful logout, redirect browser to login page */
-               Header("Location: ". WEB_PATH ."/");
-               exit(0);
-            }
-            break;
-
-      }
-
-   } // handle_page_request()
-
-   /**
-    * check if called from command line
-    *
-    * this function will return true, if called from command line
-    * otherwise false.
-    * @return boolean
-    */
-   public function is_cmdline()
-   {
-      if(php_sapi_name() == 'cli')
-         return true;
-
-      return false;
-
-   } // is_cmdline()
-
-   /**
-    * return if request RPC action is ok
-    *
-    * @return bool
-    */
-   private function is_valid_rpc_action()
-   {
-      global $page;
-
-      $valid_actions = Array(
-         'delete',
-         'toggle',
-         'clone',
-         'alter-position',
-         'graph-data',
-         'graph-mode',
-         'get-content',
-         'get-sub-menu',
-         'set-host-profile',
-         'get-host-state',
-         'idle',
-      );
-
-      if(in_array($page->action, $valid_actions))
-         return true;
-
-      return false;
-
-   }  // is_valid_rpc_action()
-
-   public function filter_form_data($data, $filter)
-   {
-      if(!is_array($data))
-         return false;
-
-      $filter_result = Array();
-
-      foreach($data as $key => $value) {
-
-         if(strstr($key, $filter) === false)
-            continue;
-
-         $filter_result[$key] = $value;
-      }
-
-      return $filter_result;
-
-   }  // filter_form_data
-
-   /**
-    * return true if the provided chain name with the specified
-    * name already exists
-    *
-    * @param string $object_type
-    * @param string $object_name
-    * @return bool
-   */
-   public function check_object_exists($object_type, $object_name)
-   {
-      global $ms, $db;
-
-      switch($object_type) {
-         case 'chain':
-            $table = 'chains';
-            $column = 'chain';
-            break;
-         case 'filter':
-            $table = 'filters';
-            $column = 'filter';
-            break;
-         case 'pipe':
-            $table = 'pipes';
-            $column = 'pipe';
-            break;
-         case 'target':
-            $table = 'targets';
-            $column = 'target';
-            break;
-         case 'port':
-            $table = 'ports';
-            $column = 'port';
-            break;
-         case 'protocol':
-            $table = 'protocols';
-            $column = 'proto';
-            break;
-         case 'service_level':
-            $table = 'service_levels';
-            $column = 'sl';
-            break;
-         case 'user':
-            $table = 'users';
-            $column = 'user';
-            break;
-         case 'interface':
-            $table = 'interfaces';
-            $column = 'if';
-            break;
-         case 'netpath':
-            $table = 'network_paths';
-            $column = 'netpath';
-            break;
-         case 'hostprofile':
-            $table = 'host_profiles';
-            $column = 'host';
-            break;
-         default:
-            $ms->throwError('Unknown object type');
+    private function handlePageRequest()
+    {
+        if (!isset($_POST) || !is_array($_POST)) {
             return;
-      }
+        }
 
-      if($db->db_fetchSingleRow("
-         SELECT
-            ". $column ."_idx
-         FROM
-            ". MYSQL_PREFIX . $table ."
-         WHERE
-            ". $column ."_name LIKE BINARY '". $object_name ."'
-      ")) {
-         return true;
-      }
+        if (!isset($_POST['action'])) {
+            return;
+        }
 
-      return false;
+        switch($_POST['action']) {
 
-   } // check_object_exist
+            case 'do_login':
+                if ($this->login()) {
+                    /* on successful login, redirect browser to start page */
+                    Header("Location: ". WEB_PATH ."/");
+                    exit(0);
+                }
+                break;
+
+            case 'do_logout':
+                if ($this->logout()) {
+                    /* on successful logout, redirect browser to login page */
+                    Header("Location: ". WEB_PATH ."/");
+                    exit(0);
+                }
+                break;
+
+        }
+
+    } // handle_page_request()
+
+    /**
+     * return if request rpc action is ok
+     *
+     * @return bool
+     */
+    private function isValidRpcAction()
+    {
+        global $page;
+
+        $valid_actions = array(
+                'delete',
+                'toggle',
+                'clone',
+                'alter-position',
+                'graph-data',
+                'graph-mode',
+                'get-content',
+                'get-sub-menu',
+                'set-host-profile',
+                'get-host-state',
+                'idle',
+                );
+
+        if (in_array($page->action, $valid_actions)) {
+            return true;
+        }
+
+        return false;
+
+    }  // is_valid_rpc_action()
+
+    public function filterFormData($data, $filter)
+    {
+        if (!is_array($data)) {
+            return false;
+        }
+
+        $filter_result = array();
+
+        foreach ($data as $key => $value) {
+
+            if (strstr($key, $filter) === false) {
+                continue;
+            }
+
+            $filter_result[$key] = $value;
+        }
+
+        return $filter_result;
+
+    }  // filter_form_data
+
+    /**
+     * return true if the provided chain name with the specified
+     * name already exists
+     *
+     * @param string $object_type
+     * @param string $object_name
+     * @return bool
+     */
+    public function checkObjectExists($object_type, $object_name)
+    {
+        global $ms, $db;
+
+        switch($object_type) {
+            case 'chain':
+                $table = 'chains';
+                $column = 'chain';
+                break;
+            case 'filter':
+                $table = 'filters';
+                $column = 'filter';
+                break;
+            case 'pipe':
+                $table = 'pipes';
+                $column = 'pipe';
+                break;
+            case 'target':
+                $table = 'targets';
+                $column = 'target';
+                break;
+            case 'port':
+                $table = 'ports';
+                $column = 'port';
+                break;
+            case 'protocol':
+                $table = 'protocols';
+                $column = 'proto';
+                break;
+            case 'service_level':
+                $table = 'service_levels';
+                $column = 'sl';
+                break;
+            case 'user':
+                $table = 'users';
+                $column = 'user';
+                break;
+            case 'interface':
+                $table = 'interfaces';
+                $column = 'if';
+                break;
+            case 'netpath':
+                $table = 'network_paths';
+                $column = 'netpath';
+                break;
+            case 'hostprofile':
+                $table = 'host_profiles';
+                $column = 'host';
+                break;
+            default:
+                $ms->raiseError('unknown object type');
+                return;
+        }
+
+        if ($db->fetchSingleRow(
+            "Select ". $column ."_idx from ". mysql_prefix . $table
+            ."where ". $column ."_name like binary '". $object_name ."'"
+        )) {
+            return true;
+        }
+
+        return false;
+
+    } // check_object_exist
 
 
-   /**
-    * update position
-    *
-    */
-   public function update_positions($obj_type, $ms_objects = NULL)
-   {
-      global $db;
+    /**
+     * update position
+     *
+     */
+    public function updatePositions($obj_type, $ms_objects = null)
+    {
+        global $db;
 
-      if($obj_type == "pipes") {
+        if ($obj_type == "pipes") {
 
-         // loop through all provided chain ids
-         foreach($ms_objects as $chain) {
+            // loop through all provided chain ids
+            foreach ($ms_objects as $chain) {
 
-            // get all pipes used by chain
-            $pipes = $db->db_query("
-               SELECT
-                  apc_pipe_idx as pipe_idx
-               FROM
-                  ". MYSQL_PREFIX ."assign_pipes_to_chains
-               WHERE
-                  apc_chain_idx LIKE '". $chain ."'
-               ORDER BY
-                  apc_pipe_pos ASC
-            ");
+                // get all pipes used by chain
+                $pipes = $db->db_query("
+                        select
+                        apc_pipe_idx as pipe_idx
+                        from
+                        TABLEPREFIXassign_pipes_to_chains
+                        where
+                        apc_chain_idx like '". $chain ."'
+                        order by
+                        apc_pipe_pos asc
+                        ");
 
-            // update all pipes position assign to this chain
+                // update all pipes position assign to this chain
+                $pos = 1;
+
+                while ($pipe = $pipes->fetch()) {
+
+                    $sth = $db->prepare("
+                            update
+                            TABLEPREFIXassign_pipes_to_chains
+                            set
+                            apc_pipe_pos=?
+                            where
+                            apc_pipe_idx=?
+                            and
+                            apc_chain_idx=?
+                            ");
+
+                    $db->execute($sth, array(
+                                $pos,
+                                $pipe->pipe_idx,
+                                $chain
+                                ));
+
+                    $db->db_sth_free($sth);
+                    $pos++;
+                }
+            }
+        }
+
+        if ($obj_type == "chains") {
+
+            // get all chains assign to this network-path
+            $sth = $db->prepare("
+                    select
+                    chain_idx
+                    from
+                    TABLEPREFIXchains
+                    where
+                    chain_netpath_idx like ?
+                    and
+                    chain_host_idx like ?
+                    order by
+                    chain_position asc
+                    ");
+
+            $db->execute($sth, array(
+                        $ms_objects,
+                        $this->get_current_host_profile(),
+                        ));
+
             $pos = 1;
 
-            while($pipe = $pipes->fetch()) {
+            while ($chain = $sth->fetch()) {
 
-               $sth = $db->db_prepare("
-                  UPDATE
-                     ". MYSQL_PREFIX ."assign_pipes_to_chains
-                  SET
-                     apc_pipe_pos=?
-                  WHERE
-                     apc_pipe_idx=?
-                  AND
-                     apc_chain_idx=?
-               ");
+                $sth_update = $db->prepare("
+                        update
+                        TABLEPREFIXchains
+                        set
+                        chain_position=?
+                        where
+                        chain_idx like ?
+                        and
+                        chain_netpath_idx like ?
+                        and
+                        chain_host_idx like ?
+                        ");
 
-               $db->db_execute($sth, array(
-                  $pos,
-                  $pipe->pipe_idx,
-                  $chain
-               ));
+                $db->execute($sth_update, array(
+                            $pos,
+                            $chain->chain_idx,
+                            $ms_objects,
+                            $this->get_current_host_profile(),
+                            ));
 
-               $db->db_sth_free($sth);
-               $pos++;
+                $db->db_sth_free($sth_update);
+                $pos++;
             }
-         }
-      }
-
-      if($obj_type == "chains") {
-
-         // get all chains assign to this network-path
-         $sth = $db->db_prepare("
-            SELECT
-               chain_idx
-            FROM
-               ". MYSQL_PREFIX ."chains
-            WHERE
-               chain_netpath_idx LIKE ?
-            AND
-               chain_host_idx LIKE ?
-            ORDER BY
-               chain_position ASC
-         ");
-
-         $db->db_execute($sth, array(
-            $ms_objects,
-            $this->get_current_host_profile(),
-         ));
-
-         $pos = 1;
-
-         while($chain = $sth->fetch()) {
-
-            $sth_update = $db->db_prepare("
-               UPDATE
-                  ". MYSQL_PREFIX ."chains
-               SET
-                  chain_position=?
-               WHERE
-                 chain_idx LIKE ?
-               AND
-                 chain_netpath_idx LIKE ?
-               AND
-                 chain_host_idx LIKE ?
-            ");
-
-            $db->db_execute($sth_update, array(
-               $pos,
-               $chain->chain_idx,
-               $ms_objects,
-               $this->get_current_host_profile(),
-            ));
-
-            $db->db_sth_free($sth_update);
-            $pos++;
-         }
-
-         $db->db_sth_free($sth);
-      }
-
-      if($obj_type == "networkpaths") {
-
-         $pos = 1;
-
-         $sth = $db->db_prepare("
-            SELECT
-               netpath_idx
-            FROM
-               ". MYSQL_PREFIX ."network_paths
-            WHERE
-               netpath_host_idx LIKE ?
-            ORDER BY
-               netpath_position ASC
-         ");
-
-         $db->db_execute($sth, array(
-            $this->get_current_host_profile(),
-         ));
-
-         $pos = 1;
-
-         while($np = $sth->fetch()) {
-
-            $sth_update = $db->db_prepare("
-               UPDATE
-                  ". MYSQL_PREFIX ."network_paths
-               SET
-                  netpath_position=?
-               WHERE
-                  netpath_idx LIKE ?
-               AND
-                  netpath_host_idx LIKE ?
-            ");
-
-            $db->db_execute($sth_update, array(
-               $pos,
-               $np->netpath_idx,
-               $this->get_current_host_profile(),
-            ));
-
-            $db->db_sth_free($sth_update);
-            $pos++;
-         }
-
-         $db->db_sth_free($sth);
-      }
-
-   } // update_positions()
-
-   public function get_current_host_profile()
-   {
-      if(isset($_SESSION['host_profile']) && !empty($_SESSION['host_profile']))
-         return $_SESSION['host_profile'];
-
-      return 1;
-
-   } // get_current_host_profile()
-
-   /**
-    * update host heartbeat indicator
-    *
-    * @param int $host_idx
-    */
-   public function update_host_heartbeat($host_idx)
-   {
-      global $db;
-
-      if(!isset($this->sth_update_host_heartbeat)) {
-         $this->sth_update_host_heartbeat = $db->db_prepare("
-            UPDATE
-               ". MYSQL_PREFIX ."host_profiles
-            SET
-               host_heartbeat=UNIX_TIMESTAMP()
-            WHERE
-               host_idx LIKE ?
-         ");
-      }
-
-      $db->db_execute($this->sth_update_host_heartbeat, array(
-         $host_idx
-      ));
-
-      $db->db_sth_free($this->sth_update_host_heartbeat);
-
-   } // update_host_heartbeat()
-
-   public function get_host_heartbeat($host_idx)
-   {
-      global $db;
-
-      $result = $db->db_query("
-         SELECT
-            host_heartbeat
-         FROM
-            ". MYSQL_PREFIX ."host_profiles
-         WHERE
-            host_idx LIKE '". $host_idx ."'
-      ");
-
-      if($row = $result->fetch()) {
-         return $row->host_heartbeat;
-      }
-
-      return false;
-
-   } // get_host_heartbeat()
-
-   /**
-    * return global unique identifier
-    *
-    * original author
-    * http://www.rodsdot.com/php/How-To-Obtain-A-GUID-Using-PHP-pseudo.php
-    * @return string
-    */
-   public function create_guid()
-   {
-      mt_srand((double)microtime()*10000);//optional for php 4.2.0 and up.
-      $charid = strtoupper(md5(uniqid(rand(), true)));
-      $hyphen = chr(45);// "-"
-      $uuid = substr($charid, 0, 8).$hyphen
-         .substr($charid, 8, 4).$hyphen
-         .substr($charid,12, 4).$hyphen
-         .substr($charid,16, 4).$hyphen
-         .substr($charid,20,12);
-      return $uuid;
-
-   } // create_guid()
-
-   public function add_task($job_cmd)
-   {
-      /* task_state's
-
-         N = new
-         R = running
-         F = finished
-         E = error/failed
-
-      */
-
-      global $db;
-
-      $host_idx = $this->get_current_host_profile();
-
-      if(!$this->is_valid_task($job_cmd))
-         $ms->throwError('Invalid task '. $job_cmd .' submitted');
-
-      /* if there is an RULES_UNLOAD request, we can remove
-         any pending RULES_LOAD(_DEBUG) task that is not yet
-         processed.
-      */
-      if($job_cmd == 'RULES_UNLOAD') {
-         $db->db_query("
-            DELETE FROM
-               ". MYSQL_PREFIX ."tasks
-            WHERE (
-               task_job LIKE 'RULES_LOAD'
-            OR
-               task_job LIKE 'RULES_LOAD_DEBUG'
-            ) AND (
-               task_host_idx LIKE '". $host_idx ."'
-            AND
-               task_state LIKE 'N'
-            )
-         ");
-      }
-
-      $sth = $db->db_prepare("
-         INSERT INTO ". MYSQL_PREFIX ."tasks (
-            task_job,
-            task_submit_time,
-            task_run_time,
-            task_host_idx,
-            task_state
-         ) VALUES (
-            ?,
-            ?,
-            ?,
-            ?,
-            'N'
-         ) ON DUPLICATE KEY UPDATE task_submit_time=UNIX_TIMESTAMP()
-      ");
-
-      $db->db_execute($sth, array(
-         $job_cmd,
-         time(),
-         -1,
-         $host_idx
-      ));
-
-      $db->db_sth_free($sth);
-
-   } // add_task()
-
-   public function get_tasks()
-   {
-      global $db;
-
-      $host_idx = $this->get_current_host_profile();
-      $this->update_host_heartbeat($host_idx);
-
-      if($this->is_running_task()) {
-         $this->_print("There is a running task", MSLOG_WARN);
-         return false;
-      }
-
-      if(!isset($this->sth_get_tasks)) {
-
-         $this->sth_get_tasks = $db->db_prepare("
-            SELECT
-               task_idx,
-               task_job,
-               task_submit_time,
-               task_run_time
-            FROM
-               ". MYSQL_PREFIX ."tasks
-            WHERE
-               task_state LIKE 'N'
-            AND
-               task_host_idx LIKE ?
-            ORDER BY
-               task_submit_time ASC
-         ");
-      }
-
-      $db->db_execute($this->sth_get_tasks, array(
-         $host_idx
-      ));
-
-      while($task = $this->sth_get_tasks->fetch()) {
-         $this->task_handler($task);
-      }
-
-      $db->db_sth_free($this->sth_get_tasks);
-      unset($tasks);
-
-   } // get_tasks()
-
-   public function is_running_task($host_idx = NULL)
-   {
-      global $db;
-
-      if(!isset($host_idx))
-         $host_idx = $this->get_current_host_profile();
-
-      if(!isset($this->sth_is_running_task)) {
-         $this->sth_is_running_task = $db->db_prepare("
-            SELECT
-               task_idx
-            FROM
-               ". MYSQL_PREFIX ."tasks
-            WHERE
-               task_state LIKE 'R'
-            AND
-               task_host_idx LIKE ?
-            ORDER BY
-               task_submit_time ASC
-         ");
-      }
-
-      $db->db_execute($this->sth_is_running_task, array(
-         $host_idx
-      ));
-
-      if($task = $this->sth_is_running_task->fetch()) {
-         $db->db_sth_free($this->sth_is_running_task);
-         return true;
-      }
-
-      $db->db_sth_free($this->sth_is_running_task);
-      return false;
-
-   } // is_running_task()
-
-   private function task_handler($task)
-   {
-      $this->set_task_state($task->task_idx, 'running');
-
-      $this->_print("Running task '". $task->task_job ."' submitted at ". strftime("%Y-%m-%d %H:%M:%S", $task->task_submit_time) .".", MSLOG_WARN, NULL, 1);
-
-      switch($task->task_job) {
-         case 'RULES_LOAD':
-            require_once "class/rules/ruleset.php";
-            require_once "class/rules/interface.php";
-            $ruleset = new Ruleset;
-            $retval = $ruleset->load(0);
-            unset($ruleset);
-            break;
-         case 'RULES_LOAD_DEBUG':
-            require_once "class/rules/ruleset.php";
-            require_once "class/rules/interface.php";
-            $ruleset = new Ruleset;
-            $retval = $ruleset->load(1);
-            unset($ruleset);
-            break;
-         case 'RULES_UNLOAD':
-            require_once "class/rules/ruleset.php";
-            require_once "class/rules/interface.php";
-            $ruleset = new Ruleset;
-            $retval = $ruleset->unload();
-            unset($ruleset);
-            break;
-         default:
-            $this->throwError('Unknown task '. $task->task_job);
-            break;
-      }
-
-      if($retval == 0)
-         $this->set_task_state($task->task_idx, 'done', $retval);
-      else
-         $this->set_task_state($task->task_idx, 'failed', $retval);
-
-      $this->_print(" Done. ". strftime("%Y-%m-%d %H:%M:%S", time()), MSLOG_WARN);
-
-   } // task_handler()
-
-   private function set_task_state($task_idx, $task_state, $retval = NULL)
-   {
-      global $db;
-
-      if(!in_array($task_state, array('running', 'done')))
-         $this->throwError('Invalid task state '. $task_state);
-
-      if(!is_numeric($task_idx) || $task_idx < 0)
-         $this->throwError('Invalid task index '. $task_idx);
-
-      if($task_state == 'running')
-         $task_state = 'R';
-      if($task_state == 'done' && $retval == 0)
-         $task_state = 'F';
-      if($task_state == 'done' && $retval != 0)
-         $task_state = 'E';
-
-      if(!isset($this->sth_set_task_state)) {
-
-         $this->sth_set_task_state = $db->db_prepare("
-            UPDATE
-               ". MYSQL_PREFIX ."tasks
-            SET
-               task_state = ?,
-               task_run_time = UNIX_TIMESTAMP()
-            WHERE
-               task_idx LIKE ?
-         ");
-      }
-
-      $db->db_execute($this->sth_set_task_state, array(
-         $task_state,
-         $task_idx
-      ));
-
-   } // set_task_state()
-
-   public function is_valid_task($job_cmd)
-   {
-      switch($job_cmd) {
-         case 'RULES_LOAD':
-         case 'RULES_LOAD_DEBUG':
-         case 'RULES_UNLOAD':
+
+            $db->db_sth_free($sth);
+        }
+
+        if ($obj_type == "networkpaths") {
+
+            $pos = 1;
+
+            $sth = $db->prepare("
+                    select
+                    netpath_idx
+                    from
+                    TABLEPREFIXnetwork_paths
+                    where
+                    netpath_host_idx like ?
+                    order by
+                    netpath_position asc
+                    ");
+
+            $db->execute($sth, array(
+                        $this->get_current_host_profile(),
+                        ));
+
+            $pos = 1;
+
+            while ($np = $sth->fetch()) {
+
+                $sth_update = $db->prepare("
+                        update
+                        TABLEPREFIXnetwork_paths
+                        set
+                        netpath_position=?
+                        where
+                        netpath_idx like ?
+                        and
+                        netpath_host_idx like ?
+                        ");
+
+                $db->execute($sth_update, array(
+                            $pos,
+                            $np->netpath_idx,
+                            $this->get_current_host_profile(),
+                            ));
+
+                $db->db_sth_free($sth_update);
+                $pos++;
+            }
+
+            $db->db_sth_free($sth);
+        }
+
+    } // update_positions()
+
+    public function getCurrentHostProfile()
+    {
+        if (isset($_session['host_profile']) && !empty($_session['host_profile'])) {
+            return $_session['host_profile'];
+        }
+
+        return 1;
+
+    } // get_current_host_profile()
+
+    /**
+     * update host heartbeat indicator
+     *
+     * @param int $host_idx
+     */
+    public function updateHostHeartbeat($host_idx)
+    {
+        global $db;
+
+        if (!isset($this->sth_update_host_heartbeat)) {
+            $this->sth_update_host_heartbeat = $db->prepare("
+                    update
+                    TABLEPREFIXhost_profiles
+                    set
+                    host_heartbeat=unix_timestamp()
+                    where
+                    host_idx like ?
+                    ");
+        }
+
+        $db->execute($this->sth_update_host_heartbeat, array(
+                    $host_idx
+                    ));
+
+        $db->db_sth_free($this->sth_update_host_heartbeat);
+
+    } // update_host_heartbeat()
+
+    public function getHostHeartbeat($host_idx)
+    {
+        global $db;
+
+        $result = $db->db_query("
+                select
+                host_heartbeat
+                from
+                TABLEPREFIXhost_profiles
+                where
+                host_idx like '". $host_idx ."'
+                ");
+
+        if ($row = $result->fetch()) {
+            return $row->host_heartbeat;
+        }
+
+        return false;
+
+    } // get_host_heartbeat()
+
+    /**
+     * return global unique identifier
+     *
+     * original author
+     * http://www.rodsdot.com/php/how-to-obtain-a-guid-using-php-pseudo.php
+     * @return string
+     */
+    public function createGuid()
+    {
+        mt_srand((double)microtime()*10000);//optional for php 4.2.0 and up.
+        $charid = strtoupper(md5(uniqid(rand(), true)));
+        $hyphen = chr(45);// "-"
+        $uuid = substr($charid, 0, 8) . $hyphen
+            . substr($charid, 8, 4) . $hyphen
+            . substr($charid, 12, 4) . $hyphen
+            . substr($charid, 16, 4) . $hyphen
+            . substr($charid, 20, 12);
+
+        return $uuid;
+
+    } // create_guid()
+
+    public function addTask($job_cmd)
+    {
+        /* task_state's
+
+           n = new
+           r = running
+           f = finished
+           e = error/failed
+
+         */
+
+        global $db;
+
+        $host_idx = $this->get_current_host_profile();
+
+        if (!$this->is_valid_task($job_cmd)) {
+            $ms->raiseError('invalid task '. $job_cmd .' submitted');
+        }
+
+        /* if there is an rules_unload request, we can remove
+           any pending rules_load(_debug) task that is not yet
+           processed.
+         */
+        if ($job_cmd == 'rules_unload') {
+            $db->db_query("
+                    delete from
+                    TABLEPREFIXtasks
+                    where (
+                        task_job like 'rules_load'
+                        or
+                        task_job like 'rules_load_debug'
+                        ) and (
+                            task_host_idx like '". $host_idx ."'
+                            and
+                            task_state like 'n'
+                            )
+                    ");
+        }
+
+        $sth = $db->prepare("
+                insert into TABLEPREFIXtasks (
+                    task_job,
+                    task_submit_time,
+                    task_run_time,
+                    task_host_idx,
+                    task_state
+                    ) values (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
+                        'n'
+                        ) on duplicate key update task_submit_time=unix_timestamp()
+                ");
+
+        $db->execute($sth, array(
+                    $job_cmd,
+                    time(),
+                    -1,
+                    $host_idx
+                    ));
+
+        $db->db_sth_free($sth);
+
+    } // add_task()
+
+    public function getTasks()
+    {
+        global $db;
+
+        $host_idx = $this->get_current_host_profile();
+        $this->update_host_heartbeat($host_idx);
+
+        if ($this->is_running_task()) {
+            $this->_print("there is a running task", mslog_warn);
+            return false;
+        }
+
+        if (!isset($this->sth_get_tasks)) {
+
+            $this->sth_get_tasks = $db->prepare("
+                    select
+                    task_idx,
+                    task_job,
+                    task_submit_time,
+                    task_run_time
+                    from
+                    TABLEPREFIXtasks
+                    where
+                    task_state like 'n'
+                    and
+                    task_host_idx like ?
+                    order by
+                    task_submit_time asc
+                    ");
+        }
+
+        $db->execute($this->sth_get_tasks, array(
+                    $host_idx
+                    ));
+
+        while ($task = $this->sth_get_tasks->fetch()) {
+            $this->task_handler($task);
+        }
+
+        $db->db_sth_free($this->sth_get_tasks);
+        unset($tasks);
+
+    } // get_tasks()
+
+    public function isRunningTask($host_idx = null)
+    {
+        global $db;
+
+        if (!isset($host_idx)) {
+            $host_idx = $this->get_current_host_profile();
+        }
+
+        if (!isset($this->sth_is_running_task)) {
+            $this->sth_is_running_task = $db->prepare("
+                    select
+                    task_idx
+                    from
+                    TABLEPREFIXtasks
+                    where
+                    task_state like 'r'
+                    and
+                    task_host_idx like ?
+                    order by
+                    task_submit_time asc
+                    ");
+        }
+
+        $db->execute($this->sth_is_running_task, array(
+                    $host_idx
+                    ));
+
+        if ($task = $this->sth_is_running_task->fetch()) {
+            $db->db_sth_free($this->sth_is_running_task);
             return true;
-      }
+        }
 
-      return false;
+        $db->db_sth_free($this->sth_is_running_task);
+        return false;
 
-   } // is_valid_task()
+    } // is_running_task()
 
-   /**
-    * add a HTTP header to MasterShapers headers variable
-    * that gets included when the template engine prints
-    * out the document body.
-    *
-    * @return bool
-    */
-   public function set_header($key, $value)
-   {
-      $this->headers[$key] = $value;
-      return true;
+    private function taskHandler($task)
+    {
+        $this->set_task_state($task->task_idx, 'running');
 
-   } // set_header()
+        $this->_print(
+            "running task '". $task->task_job ."' submitted at ".
+            strftime("%y-%m-%d %h:%m:%s", $task->task_submit_time).
+            ".",
+            mslog_warn,
+            null,
+            1
+        );
 
-   /**
-    * calculate the summary of guaranteed bandwidths from the
-    * provided array of pipes.
-    *
-    * @params mixed $pipes
-    * @return array
-    */
-   public function get_bandwidth_summary_from_pipes($pipes)
-   {
-      $bw_in = 0;
-      $bw_out = 0;
+        switch($task->task_job) {
+            case 'rules_load':
+                require_once "class/rules/ruleset.php";
+                require_once "class/rules/interface.php";
+                $ruleset = new ruleset;
+                $retval = $ruleset->load(0);
+                unset($ruleset);
+                break;
+            case 'rules_load_debug':
+                require_once "class/rules/ruleset.php";
+                require_once "class/rules/interface.php";
+                $ruleset = new ruleset;
+                $retval = $ruleset->load(1);
+                unset($ruleset);
+                break;
+            case 'rules_unload':
+                require_once "class/rules/ruleset.php";
+                require_once "class/rules/interface.php";
+                $ruleset = new ruleset;
+                $retval = $ruleset->unload();
+                unset($ruleset);
+                break;
+            default:
+                $this->raiseError('unknown task '. $task->task_job);
+                break;
+        }
 
-      foreach($pipes as $pipe) {
+        if ($retval == 0) {
+            $this->set_task_state($task->task_idx, 'done', $retval);
+        } else {
+            $this->set_task_state($task->task_idx, 'failed', $retval);
+        }
 
-         // skip pipes not active in this chain
-         if(!isset($pipe->apc_pipe_active) || $pipe->apc_pipe_active != 'Y')
-            continue;
+        $this->_print(" done. ". strftime("%y-%m-%d %h:%m:%s", time()), mslog_warn);
 
-         // check if pipes original service level got overruled
-         if(isset($pipe->apc_sl_idx) && !empty($pipe->apc_sl_idx))
-            $sl = $pipe->apc_sl_idx;
-         else
-            $sl = $pipe->pipe_sl_idx;
+    } // task_handler()
 
-         $sl_details = $this->get_service_level($sl);
+    private function setTaskState($task_idx, $task_state, $retval = null)
+    {
+        global $db;
 
-         if(isset($sl_details->sl_htb_bw_in_rate) && !empty($sl_details->sl_htb_bw_in_rate))
-            $bw_in+=$sl_details->sl_htb_bw_in_rate;
-         if(isset($sl_details->sl_htb_bw_out_rate) && !empty($sl_details->sl_htb_bw_out_rate))
-            $bw_out+=$sl_details->sl_htb_bw_out_rate;
+        if (!in_array($task_state, array('running', 'done'))) {
+            $this->raiseError('invalid task state '. $task_state);
+        }
 
-      }
+        if (!is_numeric($task_idx) || $task_idx < 0) {
+            $this->raiseError('invalid task index '. $task_idx);
+        }
 
-      return array($bw_in, $bw_out);
+        if ($task_state == 'running') {
+            $task_state = 'r';
+        }
+        if ($task_state == 'done' && $retval == 0) {
+            $task_state = 'f';
+        }
+        if ($task_state == 'done' && $retval != 0) {
+            $task_state = 'e';
+        }
 
-   } // get_bandwidth_summary_from_pipes()
+        if (!isset($this->sth_set_task_state)) {
 
-   /**
-    * get a specific HTTP to be set by MasterShapers headers variable
-    *
-    * @return string
-    */
-   public function get_header($key)
-   {
-      if(!isset($this->headers[$key]))
-         return NULL;
+            $this->sth_set_task_state = $db->prepare("
+                    update
+                    TABLEPREFIXtasks
+                    set
+                    task_state = ?,
+                    task_run_time = unix_timestamp()
+                    where
+                    task_idx like ?
+                    ");
+        }
 
-      return $this->headers[$key];
+        $db->execute($this->sth_set_task_state, array(
+                    $task_state,
+                    $task_idx
+                    ));
 
-   } // get_header()
+    } // set_task_state()
 
-   public function collect_stats()
-   {
-      global $db;
+    public function isValidTask($job_cmd)
+    {
+        switch($job_cmd) {
+            case 'rules_load':
+            case 'rules_load_debug':
+            case 'rules_unload':
+                return true;
+        }
 
-      $sec_counter = 0;
-      $class_id    = 0;
-      $bandwidth   = array();
-      $counter     = array();
-      $last_bytes  = array();
-      $counter     = array();
+        return false;
 
-      while(!System_Daemon::isDying()) {
+    } // is_valid_task()
 
-         $sec_counter++;
+    /**
+     * add a http header to mastershapers headers variable
+     * that gets included when the template engine prints
+     * out the document body.
+     *
+     * @return bool
+     */
+    public function setHeader($key, $value)
+    {
+        $this->headers[$key] = $value;
+        return true;
 
-         // get active interfaces
-         $interfaces = $this->getActiveInterfaces();
+    } // set_header()
 
-         foreach($interfaces as $interface) {
+    /**
+     * calculate the summary of guaranteed bandwidths from the
+     * provided array of pipes.
+     *
+     * @params mixed $pipes
+     * @return array
+     */
+    public function getBandwidthSummaryFromPipes($pipes)
+    {
+        $bw_in = 0;
+        $bw_out = 0;
 
-            $tc_if = $interface->if_name;
+        foreach ($pipes as $pipe) {
 
-            # get the current stats from tc
-            $lines = $this->run_proc(TC_BIN ." -s class show dev ". $tc_if);
-
-            # just example lines
-            #class htb 1:eefd parent 1:eefe leaf eefd: prio 5 rate 256000bit ceil 1024Kbit burst 1600b cburst 1599b
-            # Sent 263524 bytes 825 pkt (dropped 0, overlimits 0 requeues 0)
-            #class htb 1:eefc parent 1:eefe leaf eefc: prio 2 rate 1000bit ceil 97280Kbit burst 1600b cburst 1580b
-            # Sent 6419843 bytes 35270 pkt (dropped 0, overlimits 0 requeues 0)
-
-            // analyze the lines
-            foreach($lines as $line) {
-
-               // if the line doesn't contain anything we are looking for we skip it
-               if(empty($line) || !preg_match('/(^class htb|^Sent)/', $line))
-                  continue;
-
-               // Do we currently handle a specific class_id?
-               if($class_id == 0) {
-
-                  // extract class id from string
-                  $class_id = $this->extract_class_id($line);
-
-                  // if we have no valid class_id
-                  if(empty($class_id)) {
-                     $this->_print("No classid found in ". $line, MSLOG_DEBUG);
-                     continue;
-                  }
-
-                  $arkey = $tc_if ."_". $class_id;
-
-                  $this->_print("Fetching data interface: ". $tc_if .", class: ". $class_id, MSLOG_DEBUG);
-
-                  # we already counting this class?
-                  if(!isset($counter[$arkey]))
-                     $counter[$arkey] = 0;
-                  if(!isset($bandwidth[$arkey]))
-                     $bandwidth[$arkey] = 0;
-               }
-               // we must have a "Sent" line here
-               else {
-
-                  // extract currently transfered bytes from string
-                  $current_bytes = $this->extract_bytes($line);
-
-                  // we have not located a counter, skip no next class_id
-                  if($current_bytes < 0) {
-                     $this->_print("No traffic found in ". $line, MSLOG_DEBUG);
-                     $class_id = 0;
-                     continue;
-                  }
-
-                  // if counter is zero, we can skip this class_id
-                  if($current_bytes == 0) {
-                     $this->_print("No traffic for interface: ". $tc_if .", class: ". $class_id .", ". $current_bytes ." bytes", MSLOG_DEBUG);
-                     $class_id = 0;
-                     continue;
-                  }
-
-                  $arkey = $tc_if ."_". $class_id;
-
-                  // have we recorded this class_id already before
-                  if(isset($last_bytes[$arkey])) {
-
-                     // calculate the bandwidth for this run
-                     $current_bw = $current_bytes - $last_bytes[$arkey];
-
-                  }
-                  else {
-                     $current_bw = 0;
-                  }
-
-                  // store the currently transfered bytes for the next run
-                  $last_bytes[$arkey] = $current_bytes;
-                  // add bandwidth to summary array
-                  $bandwidth[$arkey]+=$current_bw;
-                  // increment the counter for this class_id
-                  $counter[$arkey]+=1;
-
-                  // prepare for the next class_id to fetch
-                  $class_id = 0;
-               }
+            // skip pipes not active in this chain
+            if (!isset($pipe->apc_pipe_active) || $pipe->apc_pipe_active != 'y') {
+                continue;
             }
-         }
 
-         // we record tenth samples before we record to database
-         if($sec_counter < 10) {
-            System_Daemon::iterate(1);
-            continue;
-         }
-
-         $tcs = array_keys($bandwidth);
-         $data = "";
-
-         $this->_print("TRY: ". count($tcs) ."\n", MSLOG_DEBUG);
-         $this->_print("Storing tc statistic now.", MSLOG_DEBUG);
-
-         foreach($tcs as $tc) {
-
-            list($tc_if, $class_id) = preg_split('/_/', $tc);
-
-            // calculate the average bandwidth based on our recorded samples
-            if($counter[$tc] > 0) {
-               $aver_bw = $bandwidth[$tc]/($counter[$tc]);
+            // check if pipes original service level got overruled
+            if (isset($pipe->apc_sl_idx) && !empty($pipe->apc_sl_idx)) {
+                $sl = $pipe->apc_sl_idx;
             } else {
-               $aver_bw = 0;
+                $sl = $pipe->pipe_sl_idx;
             }
 
-            // bytes to bits
-            $aver_bw = round($aver_bw*8);
+            $sl_details = $this->get_service_level($sl);
 
-            $this->_print("Recording Interface: ". $tc_if .", class: ". $class_id .", transferred: ". $aver_bw ." ". $counter[$tc], MSLOG_INFO);
-
-            $data.= $tc ."=". $aver_bw .",";
-
-            // this class has been calculated, become ready for the next one
-            unset($counter[$tc]);
-            unset($bandwidth[$tc]);
-            unset($last_bytes[$tc]);
-         }
-
-         // get current time
-         $now = time();
-
-         if(!empty($data)) {
-
-            $data = substr($data, 0, strlen($data)-1);
-
-            if(!isset($this->sth_collect_stats)) {
-               $this->sth_collect_stats = $db->db_prepare("
-                  INSERT INTO ". MYSQL_PREFIX ."stats (
-                     stat_time,
-                     stat_data,
-                     stat_host_idx
-                  ) VALUES (
-                     ?,
-                     ?,
-                     ?
-                  )
-               ");
+            if (isset($sl_details->sl_htb_bw_in_rate) && !empty($sl_details->sl_htb_bw_in_rate)) {
+                $bw_in+=$sl_details->sl_htb_bw_in_rate;
+            }
+            if (isset($sl_details->sl_htb_bw_out_rate) && !empty($sl_details->sl_htb_bw_out_rate)) {
+                $bw_out+=$sl_details->sl_htb_bw_out_rate;
             }
 
-            try {
-               $this->sth_collect_stats->execute(array(
-                  $now,
-                  $data,
-                  $this->get_current_host_profile(),
-               ));
+        }
+
+        return array($bw_in, $bw_out);
+
+    } // get_bandwidth_summary_from_pipes()
+
+    /**
+     * get a specific http to be set by mastershapers headers variable
+     *
+     * @return string
+     */
+    public function getHeader($key)
+    {
+        if (!isset($this->headers[$key])) {
+            return null;
+        }
+
+        return $this->headers[$key];
+
+    } // get_header()
+
+    public function collectStats()
+    {
+        global $db;
+
+        $sec_counter = 0;
+        $class_id    = 0;
+        $bandwidth   = array();
+        $counter     = array();
+        $last_bytes  = array();
+        $counter     = array();
+
+        while (!system_daemon::isdying()) {
+
+            $sec_counter++;
+
+            // get active interfaces
+            $interfaces = $this->getactiveinterfaces();
+
+            foreach ($interfaces as $interface) {
+
+                $tc_if = $interface->if_name;
+
+# get the current stats from tc
+                $lines = $this->run_proc(tc_bin ." -s class show dev ". $tc_if);
+
+# just example lines
+#class htb 1:eefd parent 1:eefe leaf eefd: prio 5 rate 256000bit ceil 1024kbit burst 1600b cburst 1599b
+# sent 263524 bytes 825 pkt (dropped 0, overlimits 0 requeues 0)
+#class htb 1:eefc parent 1:eefe leaf eefc: prio 2 rate 1000bit ceil 97280kbit burst 1600b cburst 1580b
+# sent 6419843 bytes 35270 pkt (dropped 0, overlimits 0 requeues 0)
+
+                // analyze the lines
+                foreach ($lines as $line) {
+
+                    // if the line doesn't contain anything we are looking for we skip it
+                    if (empty($line) || !preg_match('/(^class htb|^sent)/', $line)) {
+                        continue;
+                    }
+
+                    // do we currently handle a specific class_id?
+                    if ($class_id == 0) {
+
+                        // extract class id from string
+                        $class_id = $this->extract_class_id($line);
+
+                        // if we have no valid class_id
+                        if (empty($class_id)) {
+                            $this->_print("no classid found in ". $line, mslog_debug);
+                            continue;
+                        }
+
+                        $arkey = $tc_if ."_". $class_id;
+
+                        $this->_print("fetching data interface: ". $tc_if .", class: ". $class_id, mslog_debug);
+
+# we already counting this class?
+                        if (!isset($counter[$arkey])) {
+                            $counter[$arkey] = 0;
+                        }
+                        if (!isset($bandwidth[$arkey])) {
+                            $bandwidth[$arkey] = 0;
+                        }
+                        // we must have a "sent" line here
+                    } else {
+
+                        // extract currently transfered bytes from string
+                        $current_bytes = $this->extract_bytes($line);
+
+                        // we have not located a counter, skip no next class_id
+                        if ($current_bytes < 0) {
+                            $this->_print("no traffic found in ". $line, mslog_debug);
+                            $class_id = 0;
+                            continue;
+                        }
+
+                        // if counter is zero, we can skip this class_id
+                        if ($current_bytes == 0) {
+                            $this->_print(
+                                "no traffic for interface: ". $tc_if .", class: ".
+                                $class_id .", ". $current_bytes ." bytes",
+                                mslog_debug
+                            );
+                            $class_id = 0;
+                            continue;
+                        }
+
+                        $arkey = $tc_if ."_". $class_id;
+
+                        // have we recorded this class_id already before
+                        if (isset($last_bytes[$arkey])) {
+
+                            // calculate the bandwidth for this run
+                            $current_bw = $current_bytes - $last_bytes[$arkey];
+
+                        } else {
+                            $current_bw = 0;
+                        }
+
+                        // store the currently transfered bytes for the next run
+                        $last_bytes[$arkey] = $current_bytes;
+                        // add bandwidth to summary array
+                        $bandwidth[$arkey]+=$current_bw;
+                        // increment the counter for this class_id
+                        $counter[$arkey]+=1;
+
+                        // prepare for the next class_id to fetch
+                        $class_id = 0;
+                    }
+                }
             }
-            catch (PDOException $e) {
-               $this->_print("Exception: ". $e->getMessage(), MSLOG_WARN);
+
+            // we record tenth samples before we record to database
+            if ($sec_counter < 10) {
+                system_daemon::iterate(1);
+                continue;
             }
 
-            $db->db_sth_free($this->sth_collect_stats);
+            $tcs = array_keys($bandwidth);
+            $data = "";
 
-            $this->_print("Statistics stored in MySQL database.", MSLOG_DEBUG);
-         }
-         else {
-            $this->_print("No data available for statistics. tc rules loaded?", MSLOG_INFO);
-         }
+            $this->_print("try: ". count($tcs) ."\n", mslog_debug);
+            $this->_print("storing tc statistic now.", mslog_debug);
 
-         # delete old samples
-         $db->db_query("
-            DELETE FROM
-               ". MYSQL_PREFIX ."stats
-            WHERE
-               stat_host_idx LIKE ". $this->get_current_host_profile() ."
-            AND
-               stat_time < ". ($now-300) ."
-         ");
+            foreach ($tcs as $tc) {
 
-         # reset helper vars
-         $sec_counter = 0;
+                list($tc_if, $class_id) = preg_split('/_/', $tc);
 
-         System_Daemon::iterate(1);
+                // calculate the average bandwidth based on our recorded samples
+                if ($counter[$tc] > 0) {
+                    $aver_bw = $bandwidth[$tc]/($counter[$tc]);
+                } else {
+                    $aver_bw = 0;
+                }
 
-      }
+                // bytes to bits
+                $aver_bw = round($aver_bw*8);
 
-   } // collect_stats()
+                $this->_print(
+                    "recording interface: ". $tc_if .", class: ".
+                    $class_id .", transferred: ". $aver_bw ." ".
+                    $counter[$tc],
+                    mslog_info
+                );
 
-   private function run_proc($cmd = "", $ignore_err = null)
-   {
-      $retval = array();
-      $error = "";
+                $data.= $tc ."=". $aver_bw .",";
 
-      $desc = array(
-         0 => array('pipe','r'), /* STDIN */
-         1 => array('pipe','w'), /* STDOUT */
-         2 => array('pipe','w'), /* STDERR */
-      );
+                // this class has been calculated, become ready for the next one
+                unset($counter[$tc]);
+                unset($bandwidth[$tc]);
+                unset($last_bytes[$tc]);
+            }
 
-      $process = proc_open($cmd, $desc, $pipes);
+            // get current time
+            $now = time();
 
-      if(is_resource($process)) {
+            if (!empty($data)) {
 
-         $stdin = $pipes[0];
-         $stdout = $pipes[1];
-         $stderr = $pipes[2];
+                $data = substr($data, 0, strlen($data)-1);
 
-         while(!feof($stdout)) {
-            array_push($retval, trim(fgets($stdout)));
-         }
-         /*while(!feof($stderr)) {
-            $error.= trim(fgets($stderr));
-         }*/
+                if (!isset($this->sth_collect_stats)) {
+                    $this->sth_collect_stats = $db->prepare("
+                            insert into TABLEPREFIXstats (
+                                stat_time,
+                                stat_data,
+                                stat_host_idx
+                                ) values (
+                                    ?,
+                                    ?,
+                                    ?
+                                    )
+                            ");
+                }
 
-         fclose($pipes[0]);
-         fclose($pipes[1]);
-         fclose($pipes[2]);
+                try {
+                    $this->sth_collect_stats->execute(array(
+                                $now,
+                                $data,
+                                $this->get_current_host_profile(),
+                                ));
+                } catch (pdoexception $e) {
+                    $this->_print("exception: ". $e->getmessage(), mslog_warn);
+                }
 
-         $exit_code = proc_close($process);
+                $db->db_sth_free($this->sth_collect_stats);
 
-      }
+                $this->_print("statistics stored in mysql database.", mslog_debug);
+            } else {
+                $this->_print("no data available for statistics. tc rules loaded?", mslog_info);
+            }
 
-      /*if(is_null($ignore_err)) {
-         if(!empty($error) || $retval != "OK")
-            throw new Exception($error);
-      }*/
+# delete old samples
+            $db->db_query("
+                    delete from
+                    TABLEPREFIXstats
+                    where
+                    stat_host_idx like ". $this->get_current_host_profile() ."
+                    and
+                    stat_time < ". ($now-300) ."
+                    ");
 
-      return $retval;
+# reset helper vars
+            $sec_counter = 0;
 
-   } // run_proc()
+            system_daemon::iterate(1);
 
-   private function extract_class_id($line)
-   {
+        }
 
-      if(!preg_match('/class htb/', $line))
-         return false;
+    } // collect_stats()
 
-      $temp_array = array();
-      $temp_array = preg_split('/\s/', $line);
-      return $temp_array[2];
+    private function runProc($cmd = "", $ignore_err = null)
+    {
+        $retval = array();
+        $error = "";
 
-   } // extract_class_id()
+        $desc = array(
+                0 => array('pipe','r'), /* stdin */
+                1 => array('pipe','w'), /* stdout */
+                2 => array('pipe','w'), /* stderr */
+                );
 
-   private function extract_bytes($line)
-   {
+        $process = proc_open($cmd, $desc, $pipes);
 
-      if(!preg_match('/Sent/', $line))
-         return -1;
+        if (is_resource($process)) {
 
-      $temp_array = array();
-      $temp_array = preg_split('/\s/', $line);
-      return $temp_array[1];
+            $stdin = $pipes[0];
+            $stdout = $pipes[1];
+            $stderr = $pipes[2];
 
-   } // extract_bytes()
+            while (!feof($stdout)) {
+                array_push($retval, trim(fgets($stdout)));
+            }
+            /*while (!feof($stderr)) {
+              $error.= trim(fgets($stderr));
+              }*/
 
-   public function init_task_manager()
-   {
-      $pid = pcntl_fork();
+            fclose($pipes[0]);
+            fclose($pipes[1]);
+            fclose($pipes[2]);
 
-      if($pid == -1) {
-         $this->throwError("Unable to create child process for task-manager");
-         die;
-      }
+            $exit_code = proc_close($process);
 
-      if($pid)
-         return $pid;
+        }
 
-      //setproctitle("shaper_agent.php - tasks");
+        /*if (is_null($ignore_err)) {
+          if (!empty($error) || $retval != "ok")
+          throw new exception($error);
+          }*/
 
-      // reconnect spawned child to database
-      $GLOBALS['db'] = new MASTERSHAPER_DB;
+        return $retval;
 
-      while(!System_Daemon::isDying()) {
-         $this->get_tasks();
-         if(function_exists("gc_collect_cycles"))
-            gc_collect_cycles();
-         // sleep a second
-         System_Daemon::iterate(1);
-      }
+    } // run_proc()
 
-   } // init_task_manager()
+    private function extractClassId($line)
+    {
 
-   public function init_stats_collector()
-   {
-      $pid = pcntl_fork();
+        if (!preg_match('/class htb/', $line)) {
+            return false;
+        }
 
-      if($pid == -1)
-         $this->throwError("Unable to create child process for stats-collector");
+        $temp_array = array();
+        $temp_array = preg_split('/\s/', $line);
+        return $temp_array[2];
 
-      if($pid)
-         return $pid;
+    } // extract_class_id()
 
-      //setproctitle("shaper_agent.php - stats");
+    private function extractBytes($line)
+    {
 
-      // reconnect spawned child to database
-      $GLOBALS['db'] = new MASTERSHAPER_DB;
+        if (!preg_match('/sent/', $line)) {
+            return -1;
+        }
 
-      $this->collect_stats();
+        $temp_array = array();
+        $temp_array = preg_split('/\s/', $line);
+        return $temp_array[1];
 
-   } // init_stats_collector()
+    } // extract_bytes()
 
-   public function getVerbosity()
-   {
-       return self::LOGLEVEL;
+    public function initTaskManager()
+    {
+        $pid = pcntl_fork();
 
-   } // get_verbosity()
+        if ($pid == -1) {
+            $this->raiseError("unable to create child process for task-manager");
+            die;
+        }
 
-    public function isCmdline()
+        if ($pid) {
+            return $pid;
+        }
+
+        //setproctitle("shaper_agent.php - tasks");
+
+        // reconnect spawned child to database
+        $globals['db'] = new mastershaper_db;
+
+        while (!system_daemon::isdying()) {
+            $this->get_tasks();
+            if (function_exists("gc_collect_cycles")) {
+                gc_collect_cycles();
+            }
+            // sleep a second
+            system_daemon::iterate(1);
+        }
+
+    } // init_task_manager()
+
+    public function initStatsCollector()
+    {
+        $pid = pcntl_fork();
+
+        if ($pid == -1) {
+            $this->raiseError("unable to create child process for stats-collector");
+            return false;
+        }
+
+        if ($pid) {
+            return $pid;
+        }
+
+        //setproctitle("shaper_agent.php - stats");
+
+        // reconnect spawned child to database
+        $globals['db'] = new mastershaper_db;
+
+        $this->collect_stats();
+
+    } // init_stats_collector()
+
+    public function getverbosity()
+    {
+        return self::LOGLEVEL;
+
+    } // get_verbosity()
+
+    public function iscmdline()
     {
         if (php_sapi_name() == 'cli') {
             return true;
@@ -2716,14 +2347,49 @@ class MasterShaperController extends DefaultController {
 
         return false;
 
-    } // isCmdline()
+    } // iscmdline()
 
-    public function checkUpgrade()
+    private function rpchandler()
+    {
+        if (!$this->is_logged_in()) {
+            print "you need to login first";
+            return false;
+        }
+
+
+        $this->loadcontroller("rpc", "rpc");
+        global $rpc;
+
+        ob_start();
+        if (!$rpc->perform()) {
+            $this->raiseerror("rpccontroller::perform() returned false!");
+            return false;
+        }
+        unset($rpc);
+
+        $size = ob_get_length();
+        header("content-length: $size");
+        header('connection: close');
+        ob_end_flush();
+        ob_flush();
+        session_write_close();
+
+        // invoke the messagebus processor so pending tasks can
+        // be handled. but suppress any output.
+        if (!$this->performactions()) {
+            $this->raiseerror('performactions() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function checkupgrade()
     {
         global $db, $config;
 
-        if (!($base_path = $config->getWebPath())) {
-            $this->raiseError("ConfigController::getWebPath() returned false!");
+        if (!($base_path = $config->getwebpath())) {
+            $this->raiseerror("configcontroller::getwebpath() returned false!");
             return false;
         }
 
@@ -2754,7 +2420,6 @@ class MasterShaperController extends DefaultController {
 
         return false;
     }
-
-} // class MASTERSHAPER
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
