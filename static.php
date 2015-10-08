@@ -102,9 +102,9 @@ function error($string)
 
     try {
         throw new MasterShaper\Controllers\ExceptionController;
-    } catch (ExceptionController $e) {
+    } catch (MasterShaper\Controllers\ExceptionController $e) {
         print "<br /><br />\n";
-        $this->write($e, LOG_WARNING);
+        print $e->getMessage();
     }
 }
 
