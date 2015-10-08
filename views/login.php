@@ -30,14 +30,6 @@ class LoginView extends DefaultView
     public $class_name = 'login';
     private $queue;
     private $archive;
-
-    public function __construct()
-    {
-        global $ms;
-
-        parent::__construct();
-
-    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
