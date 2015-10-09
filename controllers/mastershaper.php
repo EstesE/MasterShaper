@@ -994,13 +994,20 @@ class MasterShaperController extends DefaultController
      */
     private function rpcGetHostState()
     {
+        global $config;
+
+        if (!($web_path = $config->getWebPath())) {
+            $this->raiseError(get_class($config) .'::getWebPath() returned false!');
+            return false;
+        }
+
         if (!isset($_POST['idx']) || !is_numeric($_POST['idx'])) {
-            print "invalid host profile";
+            $this->raiseError("invalid host profile");
             return false;
         }
 
         if (!$this->is_valid_host_profile($_POST['idx'])) {
-            print "invalid host profile";
+            $this->raiseError("invalid host profile");
             return false;
         }
 
@@ -1008,14 +1015,14 @@ class MasterShaperController extends DefaultController
         $hb = $this->get_host_heartbeat($_POST['idx']);
 
         if (time() > ($hb + 60)) {
-            print WEB_PATH .'/icons/absent.png';
+            print $web_path .'/resources/icons/absent.png';
             return false;
         }
 
         if ($this->is_running_task($_POST['idx'])) {
-            print WEB_PATH .'/icons/busy.png';
+            print $web_path .'/resources/icons/busy.png';
         } else {
-            print WEB_PATH .'/icons/ready.png';
+            print $web_path .'/resources/icons/ready.png';
         }
 
         return true;
@@ -1280,6 +1287,8 @@ class MasterShaperController extends DefaultController
 
     private function handlePageRequest()
     {
+        global $config;
+
         if (!isset($_POST) || !is_array($_POST)) {
             return;
         }
@@ -1288,12 +1297,17 @@ class MasterShaperController extends DefaultController
             return;
         }
 
+        if (!($web_path = $config->getWebPath())) {
+            $this->raiseError(get_class($config) .'::getWebPath() returned false!');
+            return false;
+        }
+
         switch($_POST['action']) {
 
             case 'do_login':
                 if ($this->login()) {
                     /* on successful login, redirect browser to start page */
-                    Header("Location: ". WEB_PATH ."/");
+                    Header("Location: ". $web_path ."/");
                     exit(0);
                 }
                 break;
@@ -2377,8 +2391,8 @@ class MasterShaperController extends DefaultController
     {
         global $db, $config;
 
-        if (!($base_path = $config->getwebpath())) {
-            $this->raiseerror("configcontroller::getwebpath() returned false!");
+        if (!($base_path = $config->getWebPath())) {
+            $this->raiseerror("configcontroller::getWebPath() returned false!");
             return false;
         }
 
