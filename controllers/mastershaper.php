@@ -119,7 +119,7 @@ class MasterShaperController extends DefaultController
 
     public function startup()
     {
-        global $config, $db, $router, $query;
+        global $config, $db, $router, $query, $session;
 
         if (!isset($query->view)) {
             $this->raiseError("Error - parsing request URI hasn't unveiled what to view!");
@@ -151,7 +151,7 @@ class MasterShaperController extends DefaultController
         }
 
         /* show login box, if not already logged in */
-        if (!$this->isLoggedIn()) {
+        if (!$session->isLoggedIn()) {
             /* do not return anything for a RPC call */
             if ($router->isRpcCall()) {
                 return false;
@@ -172,39 +172,22 @@ class MasterShaperController extends DefaultController
                 return false;
             }
             return true;
-        } elseif ($page_name = $views->getViewName($query->view)) {
-
-            if (!$page = $views->load($page_name)) {
+        } elseif (!$page->includefile || $page->includefile == '[internal]') {
+            if (!$page = $views->load($query->view)) {
                 $this->raiseError("ViewController:load() returned false!");
                 return false;
             }
+            print $page;
 
+        } else {
+
+            if (!$page = $views->load($page->includefile)) {
+                $this->raiseError("ViewController:load() returned false!");
+                return false;
+            }
             print $page;
             return true;
         }
-
-        if (!$page->includefile || $page->includefile == '[internal]') {
-            $page->setPage($rewriter->default_page);
-        }
-
-        $fqpn = MASTERSHAPER_BASE ."/class/pages/". $page->includefile;
-
-        if (!file_exists($fqpn)) {
-            $this->raiseError("Page not found. Unable to include ". $fqpn);
-        }
-
-        if (!is_file($fqpn)) {
-            $this->raiseError("No file found at ". $fqpn);
-        }
-
-        if (!is_readable($fqpn)) {
-            $this->raiseError("Unable to read ". $fqpn);
-        }
-
-        include $fqpn;
-
-        $tmpl->show("index.tpl");
-
 
         $this->raiseError("Unable to find a view for ". $query->view);
         return false;
@@ -265,31 +248,6 @@ class MasterShaperController extends DefaultController
 
     } // unload()
 
-    /**
-     * check login status
-     *
-     * return true if user is logged in
-     * return false if user is not yet logged in
-     *
-     * @return bool
-     */
-    public function isLoggedIn()
-    {
-        global $tmpl;
-
-        /* if authentication is disabled, return true */
-        if (!$this->getOption('authentication')) {
-            return true;
-        }
-
-        if (isset($_SESSION['user_name'])) {
-            $tmpl->assign('user_name', $_SESSION['user_name']);
-            return true;
-        }
-
-        return false;
-
-    } // isLoggedIn()
 
     /**
      * check login
@@ -298,35 +256,26 @@ class MasterShaperController extends DefaultController
     {
         global $session;
 
-        if (!isset($_POST['user_name']) || empty($_POST['user_name'])) {
-            $this->raiseError(_("Please enter Username and Password."));
-        }
-        if (!isset($_POST['user_pass']) || empty($_POST['user_pass'])) {
-            $this->raiseError(_("Please enter Username and Password."));
-        }
-
-        if (!($user = $session->getUserDetails($_POST['user_name']))) {
-            $this->raiseError(_("Invalid or inactive User."));
-        }
-
-        if ($user->user_pass != md5($_POST['user_pass'])) {
-            $this->raiseError(_("Invalid Password."));
-        }
-
-        $_SESSION['user_name'] = $_POST['user_name'];
-        $_SESSION['user_idx'] = $user->user_idx;
-
         if (
-            !isset($_SESSION['host_profile']) ||
-            empty($_SESSION['host_profile']) ||
-            !is_numeric($_SESSION['host_profile'])
+            !isset($_POST['user_name']) || empty($_POST['user_name']) ||
+            !isset($_POST['user_pass']) || empty($_POST['user_pass'])
         ) {
-            $_SESSION['host_profile'] = 1;
+            $this->raiseError(_("Please enter Username and Password."));
+            return false;
+        }
+
+        if (!$session->loginRequest($_POST['user_name'], $_POST['user_pass'])) {
+            $this->raiseError(get_class($session) .'::handleLoginRequest() returned false!');
+
+            if (!$this->logout()) {
+                $this->raiseError('logout() returned false!');
+                return false;
+            }
+            return false;
         }
 
         return true;
-
-    } // login()
+    }
 
     /**
      * general logout function
@@ -338,8 +287,10 @@ class MasterShaperController extends DefaultController
      */
     private function logout()
     {
-        if (!$this->destroySession()) {
-            print "failed to destroy user session!";
+        global $session;
+
+        if (!$session->destroySession()) {
+            $this->raiseError(get_class($session) .'::destroySession() returned false!');
             return false;
         }
 
@@ -413,6 +364,10 @@ class MasterShaperController extends DefaultController
      */
     public function checkPermissions($permission)
     {
+        // temporary disabled, unki, 20151009
+        error_log("checkPermissions() is disabled!");
+        return true;
+
         global $db;
         $user = $db->fetchSingleRow("
                 SELECT ". $permission ."
@@ -1290,11 +1245,11 @@ class MasterShaperController extends DefaultController
         global $config;
 
         if (!isset($_POST) || !is_array($_POST)) {
-            return;
+            return true;
         }
 
         if (!isset($_POST['action'])) {
-            return;
+            return true;
         }
 
         if (!($web_path = $config->getWebPath())) {
@@ -1315,11 +1270,10 @@ class MasterShaperController extends DefaultController
             case 'do_logout':
                 if ($this->logout()) {
                     /* on successful logout, redirect browser to login page */
-                    Header("Location: ". WEB_PATH ."/");
+                    Header("Location: ". $web_path ."/");
                     exit(0);
                 }
                 break;
-
         }
 
     } // handle_page_request()
