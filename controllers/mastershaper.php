@@ -160,7 +160,6 @@ class MasterShaperController extends DefaultController
         }
 
         if ($router->isRpcCall()) {
-
             if (!$this->rpcHandler()) {
                 $this->raiseError("rpcHandler() returned false!");
                 return false;
@@ -181,7 +180,7 @@ class MasterShaperController extends DefaultController
             $page->setPage($rewriter->default_page);
         }
 
-        $fqpn = BASE_PATH ."/class/pages/". $page->includefile;
+        $fqpn = MASTERSHAPER_BASE ."/class/pages/". $page->includefile;
 
         if (!file_exists($fqpn)) {
             $this->raiseError("Page not found. Unable to include ". $fqpn);

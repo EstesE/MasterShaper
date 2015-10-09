@@ -59,17 +59,17 @@ class Page_Update_IANA extends MASTERSHAPER_PAGE {
        * Update Protocols
        */
 
-      if(!file_exists(BASE_PATH ."/contrib/protocol-numbers.xml")) {
-         $ms->throwError("Can not locate protocol-numbers.xml file at: ". BASE_PATH ."/contrib/protocol-numbers.xml");
+      if(!file_exists(MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml")) {
+         $ms->throwError("Can not locate protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml");
          return false;
       }
 
-      if(!is_readable(BASE_PATH ."/contrib/protocol-numbers.xml")) {
-         $ms->throwError("Can not read protocol-numbers.xml file at: ". BASE_PATH ."/contrib/protocol-numbers.xml");
+      if(!is_readable(MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml")) {
+         $ms->throwError("Can not read protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml");
          return false;
       }
 
-      $xml = simplexml_load_file(BASE_PATH ."/contrib/protocol-numbers.xml");
+      $xml = simplexml_load_file(MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml");
 
       $xml_reg = $xml->registry;
 
@@ -114,17 +114,17 @@ class Page_Update_IANA extends MASTERSHAPER_PAGE {
        * Update Ports
        */
 
-      if(!file_exists(BASE_PATH ."/contrib/service-names-port-numbers.xml")) {
-         $ms->throwError("Can not locate protocol-numbers.xml file at: ". BASE_PATH ."/contrib/service-names-port-numbers.xml");
+      if(!file_exists(MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml")) {
+         $ms->throwError("Can not locate protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml");
          return false;
       }
 
-      if(!is_readable(BASE_PATH ."/contrib/service-names-port-numbers.xml")) {
-         $ms->throwError("Can not read protocol-numbers.xml file at: ". BASE_PATH ."/contrib/service-names-port-numbers.xml");
+      if(!is_readable(MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml")) {
+         $ms->throwError("Can not read protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml");
          return false;
       }
 
-      $xml = simplexml_load_file(BASE_PATH ."/contrib/service-names-port-numbers.xml");
+      $xml = simplexml_load_file(MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml");
 
       foreach($xml->record as $xml_rec) {
 

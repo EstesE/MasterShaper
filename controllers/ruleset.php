@@ -394,7 +394,7 @@ class Ruleset {
          2 => array('pipe','w'), /* STDERR */ 
       );
 
-      $process = proc_open(SUDO_BIN ." ". BASE_PATH ."/shaper_loader.sh ". $option ." \"". $cmd ."\"", $desc, $pipes);
+      $process = proc_open(SUDO_BIN ." ". MASTERSHAPER_BASE ."/shaper_loader.sh ". $option ." \"". $cmd ."\"", $desc, $pipes);
 
       if(is_resource($process)) {
    
