@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>{$page_title}</title>
+  <title>MasterShaper</title>
   <link href="{$web_path}/resources/shaper_style.css" type="text/css" rel="stylesheet" />
   <link rel="shortcut icon" href="{$web_path}/resources/icons/favicon.ico" type="image/png" />
   <link rel="icon" href="{$web_path}/resources/icons/favicon.ico" type="image/png" />
