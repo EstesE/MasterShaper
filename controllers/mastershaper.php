@@ -112,6 +112,8 @@ class MasterShaperController extends DefaultController
             return false;
         }
 
+        $GLOBALS['session'] =& $session;
+
         return true;
     }
 
@@ -294,6 +296,8 @@ class MasterShaperController extends DefaultController
      */
     private function login()
     {
+        global $session;
+
         if (!isset($_POST['user_name']) || empty($_POST['user_name'])) {
             $this->raiseError(_("Please enter Username and Password."));
         }
@@ -301,7 +305,7 @@ class MasterShaperController extends DefaultController
             $this->raiseError(_("Please enter Username and Password."));
         }
 
-        if (!$user = $this->getUserDetails($_POST['user_name'])) {
+        if (!($user = $session->getUserDetails($_POST['user_name']))) {
             $this->raiseError(_("Invalid or inactive User."));
         }
 
@@ -342,31 +346,6 @@ class MasterShaperController extends DefaultController
         return true;
 
     } // logout()
-
-    /**
-     * return all user details for the provided user_name
-     */
-    private function getUserDetails($user_name)
-    {
-        global $db;
-
-        if ($user = $db->fetchSingleRow(
-            "SELECT
-                user_idx,
-                user_pass
-            FROM
-                TABLEPREFIXusers
-            WHERE
-                user_name LIKE ". $db->quote($user_name) ."
-            AND
-                user_active='Y'"
-        )) {
-            return $user;
-        }
-
-        return null;
-
-    } // getUserDetails()
 
     /**
      * return value of requested setting
