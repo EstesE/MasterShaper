@@ -47,7 +47,7 @@ abstract class Templates extends Smarty
 
     public function __construct()
     {
-        global $ms, $config;
+        global $ms, $config, $views;
 
         parent::__construct();
 
@@ -98,50 +98,50 @@ abstract class Templates extends Smarty
             $base_web_path = '';
         }
 
-        $this->assign('icon_chains', $base_web_path .'/icons/flag_blue.gif');
-        $this->assign('icon_chains_assign_pipe', $base_web_path .'/icons/flag_blue_with_purple_arrow.gif');
-        $this->assign('icon_options', $base_web_path .'/icons/options.gif');
-        $this->assign('icon_pipes', $base_web_path .'/icons/flag_pink.gif');
-        $this->assign('icon_ports', $base_web_path .'/icons/flag_orange.gif');
-        $this->assign('icon_protocols', $base_web_path .'/icons/flag_red.gif');
-        $this->assign('icon_servicelevels', $base_web_path .'/icons/flag_yellow.gif');
-        $this->assign('icon_filters', $base_web_path .'/icons/flag_green.gif');
-        $this->assign('icon_targets', $base_web_path .'/icons/flag_purple.gif');
-        $this->assign('icon_clone', $base_web_path .'/icons/clone.png');
-        $this->assign('icon_delete', $base_web_path .'/icons/delete.png');
-        $this->assign('icon_active', $base_web_path .'/icons/active.gif');
-        $this->assign('icon_inactive', $base_web_path .'/icons/inactive.gif');
-        $this->assign('icon_arrow_left', $base_web_path .'/icons/arrow_left.gif');
-        $this->assign('icon_arrow_right', $base_web_path .'/icons/arrow_right.gif');
-        $this->assign('icon_chains_arrow_up', $base_web_path .'/icons/ms_chains_arrow_up_14.gif');
-        $this->assign('icon_chains_arrow_down', $base_web_path .'/icons/ms_chains_arrow_down_14.gif');
-        $this->assign('icon_pipes_arrow_up', $base_web_path .'/icons/ms_pipes_arrow_up_14.gif');
-        $this->assign('icon_pipes_arrow_down', $base_web_path .'/icons/ms_pipes_arrow_down_14.gif');
-        $this->assign('icon_users', $base_web_path .'/icons/ms_users_14.gif');
-        $this->assign('icon_about', $base_web_path .'/icons/home.gif');
-        $this->assign('icon_home', $base_web_path .'/icons/home.gif');
-        $this->assign('icon_new', $base_web_path .'/icons/page_white.gif');
-        $this->assign('icon_monitor', $base_web_path .'/icons/chart_pie.gif');
-        $this->assign('icon_shaper_start', $base_web_path .'/icons/enable.gif');
-        $this->assign('icon_shaper_stop', $base_web_path .'/icons/disable.gif');
-        $this->assign('icon_bandwidth', $base_web_path .'/icons/bandwidth.gif');
-        $this->assign('icon_update', $base_web_path .'/icons/update.gif');
-        $this->assign('icon_interfaces', $base_web_path .'/icons/network_card.gif');
-        $this->assign('icon_hosts', $base_web_path .'/icons/host.png');
-        $this->assign('icon_treeend', $base_web_path .'/icons/tree_end.gif');
-        $this->assign('icon_rules_show', $base_web_path .'/icons/show.gif');
-        $this->assign('icon_rules_load', $base_web_path .'/icons/enable.gif');
-        $this->assign('icon_rules_unload', $base_web_path .'/icons/disable.gif');
-        $this->assign('icon_rules_export', $base_web_path .'/icons/disk.gif');
-        $this->assign('icon_rules_restore', $base_web_path .'/icons/restore.gif');
-        $this->assign('icon_rules_reset', $base_web_path .'/icons/reset.gif');
-        $this->assign('icon_rules_update', $base_web_path .'/icons/update.gif');
-        $this->assign('icon_pdf', $base_web_path .'/icons/page_white_acrobat.gif');
-        $this->assign('icon_menu_down', $base_web_path .'/icons/bullet_arrow_down.png');
-        $this->assign('icon_menu_right', $base_web_path .'/icons/bullet_arrow_right.png');
-        $this->assign('icon_busy', $base_web_path .'/icons/busy.png');
-        $this->assign('icon_ready', $base_web_path .'/icons/ready.png');
-        $this->assign('icon_process', $base_web_path .'/icons/task.png');
+        $this->assign('icon_chains', $base_web_path .'/resources/icons/flag_blue.gif');
+        $this->assign('icon_chains_assign_pipe', $base_web_path .'/resources/icons/flag_blue_with_purple_arrow.gif');
+        $this->assign('icon_options', $base_web_path .'/resources/icons/options.gif');
+        $this->assign('icon_pipes', $base_web_path .'/resources/icons/flag_pink.gif');
+        $this->assign('icon_ports', $base_web_path .'/resources/icons/flag_orange.gif');
+        $this->assign('icon_protocols', $base_web_path .'/resources/icons/flag_red.gif');
+        $this->assign('icon_servicelevels', $base_web_path .'/resources/icons/flag_yellow.gif');
+        $this->assign('icon_filters', $base_web_path .'/resources/icons/flag_green.gif');
+        $this->assign('icon_targets', $base_web_path .'/resources/icons/flag_purple.gif');
+        $this->assign('icon_clone', $base_web_path .'/resources/icons/clone.png');
+        $this->assign('icon_delete', $base_web_path .'/resources/icons/delete.png');
+        $this->assign('icon_active', $base_web_path .'/resources/icons/active.gif');
+        $this->assign('icon_inactive', $base_web_path .'/resources/icons/inactive.gif');
+        $this->assign('icon_arrow_left', $base_web_path .'/resources/icons/arrow_left.gif');
+        $this->assign('icon_arrow_right', $base_web_path .'/resources/icons/arrow_right.gif');
+        $this->assign('icon_chains_arrow_up', $base_web_path .'/resources/icons/ms_chains_arrow_up_14.gif');
+        $this->assign('icon_chains_arrow_down', $base_web_path .'/resources/icons/ms_chains_arrow_down_14.gif');
+        $this->assign('icon_pipes_arrow_up', $base_web_path .'/resources/icons/ms_pipes_arrow_up_14.gif');
+        $this->assign('icon_pipes_arrow_down', $base_web_path .'/resources/icons/ms_pipes_arrow_down_14.gif');
+        $this->assign('icon_users', $base_web_path .'/resources/icons/ms_users_14.gif');
+        $this->assign('icon_about', $base_web_path .'/resources/icons/home.gif');
+        $this->assign('icon_home', $base_web_path .'/resources/icons/home.gif');
+        $this->assign('icon_new', $base_web_path .'/resources/icons/page_white.gif');
+        $this->assign('icon_monitor', $base_web_path .'/resources/icons/chart_pie.gif');
+        $this->assign('icon_shaper_start', $base_web_path .'/resources/icons/enable.gif');
+        $this->assign('icon_shaper_stop', $base_web_path .'/resources/icons/disable.gif');
+        $this->assign('icon_bandwidth', $base_web_path .'/resources/icons/bandwidth.gif');
+        $this->assign('icon_update', $base_web_path .'/resources/icons/update.gif');
+        $this->assign('icon_interfaces', $base_web_path .'/resources/icons/network_card.gif');
+        $this->assign('icon_hosts', $base_web_path .'/resources/icons/host.png');
+        $this->assign('icon_treeend', $base_web_path .'/resources/icons/tree_end.gif');
+        $this->assign('icon_rules_show', $base_web_path .'/resources/icons/show.gif');
+        $this->assign('icon_rules_load', $base_web_path .'/resources/icons/enable.gif');
+        $this->assign('icon_rules_unload', $base_web_path .'/resources/icons/disable.gif');
+        $this->assign('icon_rules_export', $base_web_path .'/resources/icons/disk.gif');
+        $this->assign('icon_rules_restore', $base_web_path .'/resources/icons/restore.gif');
+        $this->assign('icon_rules_reset', $base_web_path .'/resources/icons/reset.gif');
+        $this->assign('icon_rules_update', $base_web_path .'/resources/icons/update.gif');
+        $this->assign('icon_pdf', $base_web_path .'/resources/icons/page_white_acrobat.gif');
+        $this->assign('icon_menu_down', $base_web_path .'/resources/icons/bullet_arrow_down.png');
+        $this->assign('icon_menu_right', $base_web_path .'/resources/icons/bullet_arrow_right.png');
+        $this->assign('icon_busy', $base_web_path .'/resources/icons/busy.png');
+        $this->assign('icon_ready', $base_web_path .'/resources/icons/ready.png');
+        $this->assign('icon_process', $base_web_path .'/resources/icons/task.png');
         $this->assign('web_path', $base_web_path);
 
         $this->registerPlugin("function", "start_table", array(&$this, "smartyStartTable"), false);
@@ -180,12 +180,7 @@ abstract class Templates extends Smarty
             array(&$this, "getHumanReadableFilesize"),
             false
         );
-    }
-
-    public function show($template)
-    {
-        $this->display($template);
-
+        $this->registerPlugin('function', 'get_page_url', array(&$views, 'getPageUrl'), false);
     }
 
     public function smartStartTable($params, &$smarty)
@@ -194,7 +189,6 @@ abstract class Templates extends Smarty
         $this->assign('icon', $params['icon']);
         $this->assign('alt', $params['alt']);
         $this->show('start_table.tpl');
-
     }
 
     public function smartyPageEnd($params, &$smarty)
@@ -203,8 +197,7 @@ abstract class Templates extends Smarty
             $this->assign('focus_to', $params['focus_to']);
         }
 
-        $this->show('page_end.tpl');
-
+        return $this->fetch('page_end.tpl');
     }
 
     public function smartyYearSelect($params, &$smarty)
@@ -264,7 +257,6 @@ abstract class Templates extends Smarty
         }
 
         return $string;
-
     }
 
     public function smartyPipeSelectList($params, &$smarty)
@@ -294,7 +286,6 @@ abstract class Templates extends Smarty
         }
 
         return $string;
-
     }
 
     public function smartyTargetSelectList($params, &$smarty)
@@ -327,7 +318,6 @@ abstract class Templates extends Smarty
         }
 
         return $string;
-
     }
 
     public function smartyServiceLevelSelectList($params, &$smarty)
@@ -389,7 +379,6 @@ abstract class Templates extends Smarty
         }
 
         return $string;
-
     }
 
     public function smartyNetworkPathSelectList($params, &$smarty)
@@ -421,7 +410,6 @@ abstract class Templates extends Smarty
         }
 
         return $string;
-
     }
 
     public function smartyHostProfileSelectList($params, &$smarty)
@@ -610,7 +598,6 @@ abstract class Templates extends Smarty
         }
 
         return $result;
-
     }
 
     public function getMenuState($params, &$smarty)
