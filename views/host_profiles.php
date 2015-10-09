@@ -46,11 +46,11 @@ class HostProfilesView extends DefaultView
       $this->avail_hosts = Array();
       $this->hosts = Array();
 
-      $res_hosts = $db->db_query("
+      $res_hosts = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."host_profiles
+            TABLEPREFIXhost_profiles
          ORDER BY
             host_name ASC
       ");

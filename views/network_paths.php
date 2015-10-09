@@ -46,11 +46,11 @@ class NetworkPathsView extends DefaultView
       $this->avail_netpaths = Array();
       $this->netpaths = Array();
 
-      $res_netpaths = $db->db_query("
+      $res_netpaths = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."network_paths
+            TABLEPREFIXnetwork_paths
          WHERE
             netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
@@ -94,14 +94,14 @@ class NetworkPathsView extends DefaultView
          $page->id = NULL;
       }
 
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT DISTINCT
             c.chain_idx,
             c.chain_name,
             c.chain_active,
             c.chain_position IS NULL as pos_null
          FROM
-            ". MYSQL_PREFIX ."chains c
+            TABLEPREFIXchains c
          WHERE
             c.chain_netpath_idx LIKE ?
          AND
@@ -111,7 +111,7 @@ class NetworkPathsView extends DefaultView
             chain_position ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id,
          $ms->get_current_host_profile(),
       ));
@@ -238,11 +238,11 @@ class NetworkPathsView extends DefaultView
          return;
       }
 
-      $result = $db->db_query("
+      $result = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."interfaces
+            TABLEPREFIXinterfaces
          WHERE
             if_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY

@@ -46,13 +46,13 @@ class TargetsView extends DefaultView
       $this->avail_targets = Array();
       $this->targets = Array();
 
-      $res_targets = $db->db_query("
+      $res_targets = $db->query("
          SELECT
             target_idx,
             target_name,
             target_match
          FROM
-            ". MYSQL_PREFIX ."targets
+            TABLEPREFIXtargets
          ORDER BY
             target_name ASC
       ");
@@ -91,15 +91,15 @@ class TargetsView extends DefaultView
       }
 
       /* get a list of objects that use this target */
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          (
             SELECT
                'group' as type,
                t.target_idx as idx,
                t.target_name as name
             FROM
-               ". MYSQL_PREFIX ."targets t
-            INNER JOIN ". MYSQL_PREFIX ."assign_targets_to_targets atg
+               TABLEPREFIXtargets t
+            INNER JOIN TABLEPREFIXassign_targets_to_targets atg
                ON t.target_idx=atg.atg_group_idx
             WHERE
                atg.atg_target_idx LIKE ?
@@ -113,7 +113,7 @@ class TargetsView extends DefaultView
                c.chain_idx as idx,
                c.chain_name as name
             FROM
-               ". MYSQL_PREFIX ."chains c
+               TABLEPREFIXchains c
             WHERE
                c.chain_src_target LIKE ?
             OR
@@ -128,7 +128,7 @@ class TargetsView extends DefaultView
                p.pipe_idx as idx,
                p.pipe_name as name
             FROM
-               ". MYSQL_PREFIX ."pipes p
+               TABLEPREFIXpipes p
             WHERE
                p.pipe_src_target LIKE ?
             OR
@@ -138,7 +138,7 @@ class TargetsView extends DefaultView
          )
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id,
          $page->id,
          $page->id,
@@ -307,14 +307,14 @@ class TargetsView extends DefaultView
       switch($group) {
 
          case 'unused':
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                SELECT
                   t.target_idx,
                   t.target_name
                FROM
-                  ". MYSQL_PREFIX ."targets t
+                  TABLEPREFIXtargets t
                LEFT JOIN
-                  ". MYSQL_PREFIX ."assign_targets_to_targets atg
+                  TABLEPREFIXassign_targets_to_targets atg
                ON
                   t.target_idx=atg.atg_target_idx
                WHERE
@@ -324,21 +324,21 @@ class TargetsView extends DefaultView
                ORDER BY
                   t.target_name ASC
             ");
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $idx
             ));
             break;
 
          case 'used':
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                SELECT
                   t.target_idx,
                   t.target_name
                FROM
-                  ". MYSQL_PREFIX ."assign_targets_to_targets atg
+                  TABLEPREFIXassign_targets_to_targets atg
                LEFT JOIN
-                  ". MYSQL_PREFIX ."targets t
+                  TABLEPREFIXtargets t
                ON
                   t.target_idx = atg.atg_target_idx
                WHERE
@@ -346,7 +346,7 @@ class TargetsView extends DefaultView
                ORDER BY
                   t.target_name ASC
             ");
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $idx
             ));
             break;

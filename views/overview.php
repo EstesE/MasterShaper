@@ -60,11 +60,11 @@ class OverviewView extends DefaultView
       $this->filters = Array();
       
       /* get a list of network paths */
-      $res_network_paths = $db->db_query("
+      $res_network_paths = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."network_paths
+            TABLEPREFIXnetwork_paths
          WHERE
             netpath_active LIKE 'Y'
          AND
@@ -85,11 +85,11 @@ class OverviewView extends DefaultView
          $this->network_paths[$network_path->netpath_idx] = $network_path;
 
          /* get a list of chains for the current netpath */
-         $this->sth_chains = $db->db_prepare("
+         $this->sth_chains = $db->prepare("
             SELECT
                *
             FROM
-               ". MYSQL_PREFIX ."chains
+               TABLEPREFIXchains
             WHERE 
                chain_netpath_idx LIKE ?
             AND 
@@ -100,7 +100,7 @@ class OverviewView extends DefaultView
                chain_position ASC
          ");
 
-         $db->db_execute($this->sth_chains, array(
+         $db->execute($this->sth_chains, array(
             $network_path->netpath_idx,
             $ms->get_current_host_profile(),
          ));
@@ -121,13 +121,13 @@ class OverviewView extends DefaultView
                continue;
             }
     
-            $this->sth_pipes = $db->db_prepare("
+            $this->sth_pipes = $db->prepare("
                SELECT
                   *
                FROM
-                  ". MYSQL_PREFIX ."pipes p
+                  TABLEPREFIXpipes p
                INNER JOIN
-                  ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+                  TABLEPREFIXassign_pipes_to_chains apc
                ON
                   p.pipe_idx=apc.apc_pipe_idx
                WHERE
@@ -138,7 +138,7 @@ class OverviewView extends DefaultView
                   apc.apc_pipe_pos ASC
             ");
 
-            $db->db_execute($this->sth_pipes, array(
+            $db->execute($this->sth_pipes, array(
                $chain->chain_idx
             ));
 
@@ -151,13 +151,13 @@ class OverviewView extends DefaultView
                $this->avail_filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
                $this->filters[$network_path->netpath_idx][$chain->chain_idx][$pipe->pipe_idx] = Array();
 
-               $this->sth_filters = $db->db_prepare("
+               $this->sth_filters = $db->prepare("
                   SELECT
                      a.filter_idx as filter_idx,
                      a.filter_name as filter_name
                   FROM
-                     ". MYSQL_PREFIX ."filters a,
-                     ". MYSQL_PREFIX ."assign_filters_to_pipes b
+                     TABLEPREFIXfilters a,
+                     TABLEPREFIXassign_filters_to_pipes b
                   WHERE
                      b.apf_pipe_idx LIKE ?
                   AND
@@ -166,7 +166,7 @@ class OverviewView extends DefaultView
                      a.filter_active='Y'
                ");
 
-               $db->db_execute($this->sth_filters, array(
+               $db->execute($this->sth_filters, array(
                   $pipe->pipe_idx
                ));
 
@@ -302,7 +302,7 @@ class OverviewView extends DefaultView
             SELECT
                apc_sl_idx
             FROM
-               ". MYSQL_PREFIX ."assign_pipes_to_chains
+               TABLEPREFIXassign_pipes_to_chains
             WHERE
                apc_chain_idx LIKE '". $chain_idx ."'
             AND
@@ -443,14 +443,14 @@ class OverviewView extends DefaultView
                      SELECT
                         MAX(chain_position)
                      FROM
-                        ". MYSQL_PREFIX ."chains
+                        TABLEPREFIXchains
                      WHERE
                         /* but only for our parents objects */
                         chain_netpath_idx = (
                         SELECT
                            chain_netpath_idx
                         FROM
-                           ". MYSQL_PREFIX ."chains
+                           TABLEPREFIXchains
                         WHERE
                            chain_idx LIKE '". $idx ."'
                         AND
@@ -460,7 +460,7 @@ class OverviewView extends DefaultView
                         chain_host_idx LIKE '". $ms->get_current_host_profile() ."'
                   ) as max
                FROM
-                  ". MYSQL_PREFIX ."chains
+                  TABLEPREFIXchains
                WHERE
                   chain_idx='". $idx ."'
                AND
@@ -478,21 +478,21 @@ class OverviewView extends DefaultView
                      SELECT
                         MAX(apc_pipe_pos)
                      FROM
-                        ". MYSQL_PREFIX . "assign_pipes_to_chains
+                        TABLEPREFIXassign_pipes_to_chains
                      WHERE
                         apc_chain_idx LIKE (
                            SELECT
                               apc_chain_idx
                            FROM
-                              ". MYSQL_PREFIX . "assign_pipes_to_chains
+                              TABLEPREFIXassign_pipes_to_chains
                            WHERE
                               apc_idx LIKE '". $idx ."'
                         )
                   ) as max
                FROM
-                  ". MYSQL_PREFIX . "pipes p
+                  TABLEPREFIXpipes p
                INNER JOIN
-                  ". MYSQL_PREFIX . "assign_pipes_to_chains apc
+                  TABLEPREFIXassign_pipes_to_chains apc
                ON
                   p.pipe_idx=apc.apc_pipe_idx
                WHERE
@@ -508,12 +508,12 @@ class OverviewView extends DefaultView
                      SELECT
                         MAX(netpath_position)
                      FROM
-                        ". MYSQL_PREFIX ."network_paths
+                        TABLEPREFIXnetwork_paths
                      WHERE
                         netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
                   ) as max
                FROM
-                  ". MYSQL_PREFIX ."network_paths
+                  TABLEPREFIXnetwork_paths
                WHERE
                   netpath_idx='". $idx ."'
                AND
@@ -561,9 +561,9 @@ class OverviewView extends DefaultView
          /* swap position with current position holder */
          switch($_POST['move_obj']) {
             case 'chain':
-               $sth = $db->db_prepare("
+               $sth = $db->prepare("
                   UPDATE
-                     ". MYSQL_PREFIX ."chains
+                     TABLEPREFIXchains
                   SET
                      chain_position=?
                   WHERE
@@ -574,7 +574,7 @@ class OverviewView extends DefaultView
                      chain_host_idx LIKE ?
                ");
 
-               $db->db_execute($sth, array(
+               $db->execute($sth, array(
                   $my_pos->position,
                   $new_pos,
                   $my_pos->parent_idx,
@@ -584,9 +584,9 @@ class OverviewView extends DefaultView
                break;
 
             case 'pipe':
-               $sth = $db->db_prepare("
+               $sth = $db->prepare("
                   UPDATE
-                     ". MYSQL_PREFIX ."assign_pipes_to_chains
+                     TABLEPREFIXassign_pipes_to_chains
                   SET
                      apc_pipe_pos=?
                   WHERE
@@ -595,7 +595,7 @@ class OverviewView extends DefaultView
                      apc_chain_idx LIKE ?
                ");
 
-               $db->db_execute($sth, array(
+               $db->execute($sth, array(
                   $my_pos->position,
                   $new_pos,
                   $my_pos->parent_idx
@@ -604,9 +604,9 @@ class OverviewView extends DefaultView
                break;
 
             case 'netpath':
-               $sth = $db->db_prepare("
+               $sth = $db->prepare("
                   UPDATE
-                     ". MYSQL_PREFIX ."network_paths
+                     TABLEPREFIXnetwork_paths
                   SET
                      netpath_position=?
                   WHERE
@@ -615,7 +615,7 @@ class OverviewView extends DefaultView
                      netpath_host_idx LIKE ?
                ");
 
-               $db->db_execute($sth, array(
+               $db->execute($sth, array(
                   $my_pos->position,
                   $new_pos,
                   $ms->get_current_host_profile(),
@@ -635,9 +635,9 @@ class OverviewView extends DefaultView
          switch($_POST['move_obj']) {
 
             case 'chain':
-               $db->db_query("
+               $db->query("
                   UPDATE
-                     ". MYSQL_PREFIX ."chains
+                     TABLEPREFIXchains
                   SET
                      chain_position = chain_position". $dir ."
                   WHERE
@@ -648,9 +648,9 @@ class OverviewView extends DefaultView
                break;
 
             case 'pipe':
-               $db->db_query("
+               $db->query("
                   UPDATE
-                     ". MYSQL_PREFIX ."assign_pipes_to_chains
+                     TABLEPREFIXassign_pipes_to_chains
                   SET
                      apc_pipe_pos = apc_pipe_pos". $dir ."
                   WHERE
@@ -660,9 +660,9 @@ class OverviewView extends DefaultView
 
             case 'netpath':
 
-               $sth = $db->db_prepare("
+               $sth = $db->prepare("
                   UPDATE
-                     ". MYSQL_PREFIX ."network_paths
+                     TABLEPREFIXnetwork_paths
                   SET
                      netpath_position = netpath_position". $dir ."
                   WHERE
@@ -681,9 +681,9 @@ class OverviewView extends DefaultView
       switch($_POST['move_obj']) {
 
          case 'chain':
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."chains
+                  TABLEPREFIXchains
                SET
                   chain_position = ?
                WHERE
@@ -692,7 +692,7 @@ class OverviewView extends DefaultView
                   chain_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $new_pos,
                $idx,
                $ms->get_current_host_profile(),
@@ -701,16 +701,16 @@ class OverviewView extends DefaultView
             break;
 
          case 'pipe':
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."assign_pipes_to_chains
+                  TABLEPREFIXassign_pipes_to_chains
                SET
                   apc_pipe_pos = ?
                WHERE
                   apc_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $new_pos,
                $my_pos->idx
             ));
@@ -718,9 +718,9 @@ class OverviewView extends DefaultView
             break;
 
          case 'netpath':
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."network_paths
+                  TABLEPREFIXnetwork_paths
                SET
                   netpath_position = ?
                WHERE
@@ -729,7 +729,7 @@ class OverviewView extends DefaultView
                   netpath_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $new_pos,
                $idx,
                $ms->get_current_host_profile(),
@@ -755,9 +755,9 @@ class OverviewView extends DefaultView
          /* save all chain service levels */
          foreach($_POST['chain_sl_idx'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."chains
+                  TABLEPREFIXchains
                SET
                   chain_sl_idx=?
                WHERE
@@ -766,7 +766,7 @@ class OverviewView extends DefaultView
                   chain_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k,
                $ms->get_current_host_profile(),
@@ -781,9 +781,9 @@ class OverviewView extends DefaultView
          /* save all chain fallback service levels */
          foreach($_POST['chain_fallback_idx'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."chains
+                  TABLEPREFIXchains
                SET
                   chain_fallback_idx = ?
                WHERE
@@ -792,7 +792,7 @@ class OverviewView extends DefaultView
                   chain_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k,
                $ms->get_current_host_profile(),
@@ -806,9 +806,9 @@ class OverviewView extends DefaultView
          /* save all chain fallback service levels */
          foreach($_POST['chain_src_target'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."chains
+                  TABLEPREFIXchains
                SET
                   chain_src_target = ?
                WHERE
@@ -817,7 +817,7 @@ class OverviewView extends DefaultView
                   chain_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k,
                $ms->get_current_host_profile(),
@@ -831,9 +831,9 @@ class OverviewView extends DefaultView
          /* save all chain fallback service levels */
          foreach($_POST['chain_dst_target'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."chains
+                  TABLEPREFIXchains
                SET
                   chain_dst_target = ?
                WHERE
@@ -842,7 +842,7 @@ class OverviewView extends DefaultView
                   chain_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k,
                $ms->get_current_host_profile(),
@@ -856,9 +856,9 @@ class OverviewView extends DefaultView
          /* save all chain fallback service levels */
          foreach($_POST['chain_direction'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."chains
+                  TABLEPREFIXchains
                SET
                   chain_direction = ?
                WHERE
@@ -867,7 +867,7 @@ class OverviewView extends DefaultView
                   chain_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k,
                $ms->get_current_host_profile(),
@@ -881,9 +881,9 @@ class OverviewView extends DefaultView
          /* save all chain fallback service levels */
          foreach($_POST['chain_action'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."chains
+                  TABLEPREFIXchains
                SET
                   chain_action = ?
                WHERE
@@ -892,7 +892,7 @@ class OverviewView extends DefaultView
                   chain_host_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k,
                $ms->get_current_host_profile(),
@@ -907,16 +907,16 @@ class OverviewView extends DefaultView
          /* save all pipe service levels */
          foreach($_POST['pipe_sl_idx'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."assign_pipes_to_chains
+                  TABLEPREFIXassign_pipes_to_chains
                SET
                   apc_sl_idx = ?
                WHERE
                   apc_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k
             ));
@@ -929,16 +929,16 @@ class OverviewView extends DefaultView
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_src_target'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."pipes
+                  TABLEPREFIXpipes
                SET
                   pipe_src_target = ?
                WHERE
                   pipe_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k
             ));
@@ -951,16 +951,16 @@ class OverviewView extends DefaultView
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_dst_target'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."pipes
+                  TABLEPREFIXpipes
                SET
                   pipe_dst_target = ?
                WHERE
                   pipe_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k
             ));
@@ -973,16 +973,16 @@ class OverviewView extends DefaultView
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_direction'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."pipes
+                  TABLEPREFIXpipes
                SET
                   pipe_direction = ?
                WHERE
                   pipe_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k
             ));
@@ -995,16 +995,16 @@ class OverviewView extends DefaultView
          /* save all pipe fallback service levels */
          foreach($_POST['pipe_action'] as $k => $v) {
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                UPDATE
-                  ". MYSQL_PREFIX ."pipes
+                  TABLEPREFIXpipes
                SET
                   pipe_action = ?
                WHERE
                   pipe_idx LIKE ?
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $v,
                $k
             ));

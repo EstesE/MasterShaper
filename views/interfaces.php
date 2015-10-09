@@ -46,11 +46,11 @@ class InterfacesView extends DefaultView
       $this->avail_interfaces = Array();
       $this->interfaces = Array();
 
-      $res_interfaces = $db->db_query("
+      $res_interfaces = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."interfaces
+            TABLEPREFIXinterfaces
          WHERE
             if_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
@@ -91,12 +91,12 @@ class InterfacesView extends DefaultView
       }
 
       /* get a list of network paths that use this interface */
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             np.netpath_idx,
             np.netpath_name
          FROM
-            ". MYSQL_PREFIX ."network_paths np
+            TABLEPREFIXnetwork_paths np
          WHERE
             np.netpath_if1 LIKE ?
          OR
@@ -105,7 +105,7 @@ class InterfacesView extends DefaultView
             np.netpath_name ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id,
          $page->id,
       ));

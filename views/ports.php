@@ -52,13 +52,13 @@ class PortsView extends DefaultView
 
       $limit = ($page->num-1) * $this->items_per_page;
 
-      $num_ports = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM ". MYSQL_PREFIX ."ports");
+      $num_ports = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM TABLEPREFIXports");
 
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             port_idx
          FROM
-            ". MYSQL_PREFIX ."ports
+            TABLEPREFIXports
          ORDER BY
             port_name ASC
          LIMIT ?,?
@@ -66,7 +66,7 @@ class PortsView extends DefaultView
 
       $sth->bindParam(1, $limit, PDO::PARAM_INT);
       $sth->bindParam(2, $this->items_per_page, PDO::PARAM_INT);
-      $db->db_execute($sth);
+      $db->execute($sth);
 
       $cnt_ports = $sth->rowCount();
 	
@@ -115,13 +115,13 @@ class PortsView extends DefaultView
       }
 
       /* get a list of filters that use this ports */
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             f.filter_idx,
             f.filter_name
          FROM
-            ". MYSQL_PREFIX ."filters f
-         INNER JOIN ". MYSQL_PREFIX ."assign_ports_to_filters afp
+            TABLEPREFIXfilters f
+         INNER JOIN TABLEPREFIXassign_ports_to_filters afp
             ON afp.afp_filter_idx=f.filter_idx
          WHERE
             afp.afp_port_idx LIKE ?
@@ -129,7 +129,7 @@ class PortsView extends DefaultView
             f.filter_name ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id,
       ));
 

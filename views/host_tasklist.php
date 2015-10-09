@@ -49,11 +49,11 @@ class HostTaskListView extends DefaultView
       if(isset($_GET['clear']) && $_GET['clear'] == 'finished')
          $this->clear_finished_tasks();
 
-      $res_tasks = $db->db_query("
+      $res_tasks = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."tasks
+            TABLEPREFIXtasks
          WHERE
             task_host_idx LIKE '". $ms->get_current_host_profile() ."'
          ORDER BY
@@ -126,9 +126,9 @@ class HostTaskListView extends DefaultView
    {
       global $ms, $db;
 
-      $db->db_query("
+      $db->query("
          DELETE FROM
-            ". MYSQL_PREFIX ."tasks
+            TABLEPREFIXtasks
          WHERE
             task_host_idx LIKE '". $ms->get_current_host_profile() ."'
          AND

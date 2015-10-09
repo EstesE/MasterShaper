@@ -47,11 +47,11 @@ class OptionsView extends DefaultView
       $this->avail_service_levels = Array();
       $this->service_levels = Array();
 
-      $res_sl = $db->db_query("
+      $res_sl = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."service_levels
+            TABLEPREFIXservice_levels
          ORDER BY
             sl_name ASC
       ");
@@ -199,11 +199,11 @@ class OptionsView extends DefaultView
    {
       switch($set) {
          case 'Settings':
-            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."settings (setting_key, setting_value) "
+            $db->query("INSERT INTO TABLEPREFIXsettings (setting_key, setting_value) "
                                ."VALUES ('". $object->setting_key ."', '". $object->setting_value ."')");
             break;
 	 case 'Users':
-	    $db->db_query("INSERT INTO ". MYSQL_PREFIX ."users (user_idx, user_name, user_pass, user_manage_chains, "
+	    $db->query("INSERT INTO TABLEPREFIXusers (user_idx, user_name, user_pass, user_manage_chains, "
 	       ."user_manage_pipes, user_manage_filters, user_manage_ports, user_manage_protocols, "
                ."user_manage_targets, user_manage_users, user_manage_options, user_manage_servicelevels, "
                ."user_show_rules, user_load_rules, user_show_monitor, user_active) VALUES ("
@@ -225,18 +225,18 @@ class OptionsView extends DefaultView
 	       ."'". $object->user_active ."')");
 	    break;
          case 'Protocols':
-            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."protocols (proto_name, proto_number, "
+            $db->query("INSERT INTO TABLEPREFIXprotocols (proto_name, proto_number, "
                                ."proto_user_defined) VALUES ('". $object->proto_name ."', "
                                ."'". $object->proto_name ."', 'Y')");
             break;
          case 'Ports':
-            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."ports (port_name, port_desc, port_number, "
+            $db->query("INSERT INTO TABLEPREFIXports (port_name, port_desc, port_number, "
                                ."port_user_defined) VALUES ('". $object->port_name
                                ."', '". $object->port_desc ."', '". $object->port_number 
                                ."', 'Y')");
             break;
          case 'Servicelevels':
-            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."service_levels (sl_name, sl_htb_bw_in_rate, "
+            $db->query("INSERT INTO TABLEPREFIXservice_levels (sl_name, sl_htb_bw_in_rate, "
                                ."sl_htb_bw_in_ceil, sl_htb_bw_in_burst, sl_htb_bw_out_rate, "
                                ."sl_htb_bw_out_ceil, sl_htb_bw_out_burst, sl_htb_priority, "
                                ."sl_hfsc_in_umax, sl_hfsc_in_dmax, sl_hfsc_in_rate, sl_hfsc_in_ulrate, "
@@ -270,23 +270,23 @@ class OptionsView extends DefaultView
 			       ."'". $object->sl_esfq_hash ."')");
             break;
          case 'Targets':
-            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."targets (target_name, target_match, target_ip, target_mac) "
+            $db->query("INSERT INTO TABLEPREFIXtargets (target_name, target_match, target_ip, target_mac) "
                                ."VALUES ('". $object->target_name ."', '". $object->target_match ."', "
 			       ."'". $object->target_ip ."', '". $object->target_mac ."')");
 
             $id = $db->db_getid();
 	    $members = preg_split('/#/', $object->target_members);
 	    foreach($members as $member) {
-	       $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_targets_to_targets (atg_group_idx, atg_target_idx) "
+	       $db->query("INSERT INTO TABLEPREFIXassign_targets_to_targets (atg_group_idx, atg_target_idx) "
 				    ."VALUES ('". $id ."', '". $ms->getTargetByName($member) ."')");
 	    }
             break;
 	 case 'L7Proto':
-	    $db->db_query("INSERT INTO ". MYSQL_PREFIX ."l7_protocols (l7proto_idx, l7proto_name) "
+	    $db->query("INSERT INTO TABLEPREFIXl7_protocols (l7proto_idx, l7proto_name) "
 	                       ."VALUES ('". $object->l7proto_idx ."', '". $object->l7proto_name ."')");
 	    break;
          case 'Filters':
-            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."filters (filter_idx, filter_name, filter_protocol_id, filter_tos, "
+            $db->query("INSERT INTO TABLEPREFIXfilters (filter_idx, filter_name, filter_protocol_id, filter_tos, "
                                ."filter_tcpflag_syn, filter_tcpflag_ack, filter_tcpflag_fin, "
 			       ."filter_tcpflag_rst, filter_tcpflag_urg, filter_tcpflag_psh, "
 			       ."filter_packet_length, "
@@ -321,17 +321,17 @@ class OptionsView extends DefaultView
             $id = $db->db_getid();
             $ports = preg_split('/#/', $object->filter_ports);
             foreach($ports as $port) {
-               $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_ports_to_filters (afp_filter_idx, afp_port_idx) "
+               $db->query("INSERT INTO TABLEPREFIXassign_ports_to_filters (afp_filter_idx, afp_port_idx) "
                                   ."VALUES ('". $id ."', '". $ms->getPortByName($port) ."')");
             }
 	    $l7protos = preg_split('/#/', $object->l7_protocols);
 	    foreach($l7protos as $l7proto) {
-	       $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_l7_protocols_to_filters (afl7_filter_idx, afl7_l7proto_idx) "
+	       $db->query("INSERT INTO TABLEPREFIXassign_l7_protocols_to_filters (afl7_filter_idx, afl7_l7proto_idx) "
 	                          ."VALUES ('". $id ."', '". $ms->getL7ProtocolByName($l7proto) ."')");
             }
             break;
          case 'Chains':
-            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."chains (chain_name, chain_active, chain_sl_idx, "
+            $db->query("INSERT INTO TABLEPREFIXchains (chain_name, chain_active, chain_sl_idx, "
                                ."chain_src_target, chain_dst_target, chain_position, chain_direction, "
                                ."chain_fallback_idx) VALUES ('". $object->chain_name 
                                ."', '". $object->chain_active 
@@ -342,7 +342,7 @@ class OptionsView extends DefaultView
                                ."', '". $ms->getServiceLevelByName($object->fb_name) ."')");
             break;
          case 'Pipes':
-            $db->db_query("INSERT INTO ". MYSQL_PREFIX ."pipes (pipe_name, pipe_sl_idx, "
+            $db->query("INSERT INTO TABLEPREFIXpipes (pipe_name, pipe_sl_idx, "
                                ."pipe_src_target, pipe_dst_target, pipe_direction, pipe_active)
              VALUES ('". $object->pipe_name 
                                ."', '". $ms->getServiceLevelByName($object->sl_name) 
@@ -350,7 +350,7 @@ class OptionsView extends DefaultView
             $id = $db->db_getid();
             $filters = preg_split('/#/', $object->filters);
             foreach($filters as $filter) {
-               $db->db_query("INSERT INTO ". MYSQL_PREFIX ."assign_filters_to_pipes (apf_pipe_idx, apf_filter_idx) "
+               $db->query("INSERT INTO TABLEPREFIXassign_filters_to_pipes (apf_pipe_idx, apf_filter_idx) "
                                   ."VALUES ('". $id ."', '". $ms->getFilterByName($filter) ."')");
             }
             break;
@@ -377,24 +377,24 @@ class OptionsView extends DefaultView
       }
       else {
 
-         $db->db_truncate_table(MYSQL_PREFIX ."assign_ports_to_filters");
-         $db->db_truncate_table(MYSQL_PREFIX ."assign_filters_to_pipes");
-         $db->db_truncate_table(MYSQL_PREFIX ."assign_targets_to_targets");
-         $db->db_truncate_table(MYSQL_PREFIX ."chains");
-         $db->db_truncate_table(MYSQL_PREFIX ."pipes");
-         $db->db_truncate_table(MYSQL_PREFIX ."service_levels");
-         $db->db_truncate_table(MYSQL_PREFIX ."filters");
-         $db->db_truncate_table(MYSQL_PREFIX ."settings"); 
-         $db->db_truncate_table(MYSQL_PREFIX ."stats");
-         $db->db_truncate_table(MYSQL_PREFIX ."targets");
-         $db->db_truncate_table(MYSQL_PREFIX ."tc_ids");
-	 $db->db_truncate_table(MYSQL_PREFIX ."l7_protocols");
-	 $db->db_truncate_table(MYSQL_PREFIX ."assign_l7_protocols_to_filters");
-	 $db->db_truncate_table(MYSQL_PREFIX ."users");
-	 $db->db_truncate_table(MYSQL_PREFIX ."interfaces");
-	 $db->db_truncate_table(MYSQL_PREFIX ."network_paths");
-         $db->db_query("DELETE FROM ". MYSQL_PREFIX ."ports WHERE port_user_defined='Y'");
-         $db->db_query("DELETE FROM ". MYSQL_PREFIX ."protocols WHERE proto_user_defined='Y'");
+         $db->db_truncate_table("TABLEPREFIXassign_ports_to_filters");
+         $db->db_truncate_table("TABLEPREFIXassign_filters_to_pipes");
+         $db->db_truncate_table("TABLEPREFIXassign_targets_to_targets");
+         $db->db_truncate_table("TABLEPREFIXchains");
+         $db->db_truncate_table("TABLEPREFIXpipes");
+         $db->db_truncate_table("TABLEPREFIXservice_levels");
+         $db->db_truncate_table("TABLEPREFIXfilters");
+         $db->db_truncate_table("TABLEPREFIXsettings"); 
+         $db->db_truncate_table("TABLEPREFIXstats");
+         $db->db_truncate_table("TABLEPREFIXtargets");
+         $db->db_truncate_table("TABLEPREFIXtc_ids");
+	 $db->db_truncate_table("TABLEPREFIXl7_protocols");
+	 $db->db_truncate_table("TABLEPREFIXassign_l7_protocols_to_filters");
+	 $db->db_truncate_table("TABLEPREFIXusers");
+	 $db->db_truncate_table("TABLEPREFIXinterfaces");
+	 $db->db_truncate_table("TABLEPREFIXnetwork_paths");
+         $db->query("DELETE FROM TABLEPREFIXports WHERE port_user_defined='Y'");
+         $db->query("DELETE FROM TABLEPREFIXprotocols WHERE proto_user_defined='Y'");
 
          /* If invoked by "Reset Configuration" and not "Restore Configuration" */
          if(isset($_GET['doit']))
@@ -470,10 +470,10 @@ class OptionsView extends DefaultView
 	    foreach($protocols as $protocol) {
 
 	       // Check if already in database
-	       if(!$db->db_fetchSingleRow("SELECT l7proto_idx FROM ". MYSQL_PREFIX ."l7_protocols WHERE "
+	       if(!$db->db_fetchSingleRow("SELECT l7proto_idx FROM TABLEPREFIXl7_protocols WHERE "
 					      ."l7proto_name LIKE '". $protocol ."'")) {
 
-		  $db->db_query("INSERT INTO ". MYSQL_PREFIX ."l7_protocols (l7proto_name) VALUES "
+		  $db->query("INSERT INTO TABLEPREFIXl7_protocols (l7proto_name) VALUES "
 				     ."('". $protocol ."')");
 
 		  $new++;
@@ -483,12 +483,12 @@ class OptionsView extends DefaultView
 
 	    if(count($protocols) > 0) {
 
-	       $result = $db->db_query("SELECT l7proto_idx, l7proto_name FROM ". MYSQL_PREFIX ."l7_protocols");
+	       $result = $db->query("SELECT l7proto_idx, l7proto_name FROM TABLEPREFIXl7_protocols");
 	       while($row = $result->fetch()) {
 
 		  if(!in_array($row->l7proto_name, $protocols)) {
 
-		     $db->db_query("DELETE FROM ". MYSQL_PREFIX ."l7_protocols WHERE l7proto_idx='". $row->l7proto_idx ."'");
+		     $db->query("DELETE FROM TABLEPREFIXl7_protocols WHERE l7proto_idx='". $row->l7proto_idx ."'");
 		     $deleted++;
 
 		  }

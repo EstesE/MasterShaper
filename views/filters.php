@@ -46,11 +46,11 @@ class FiltersView extends DefaultView
       $this->avail_filters = Array();
       $this->filters = Array();
 
-      $res_filters = $db->db_query("
+      $res_filters = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."filters
+            TABLEPREFIXfilters
          ORDER BY
             filter_name ASC
       ");
@@ -89,14 +89,14 @@ class FiltersView extends DefaultView
       }
 
       /* get a list of pipes that use this filter */
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             p.pipe_idx,
             p.pipe_name
          FROM
-            ". MYSQL_PREFIX ."pipes p
+            TABLEPREFIXpipes p
          INNER JOIN
-            ". MYSQL_PREFIX ."assign_filters_to_pipes afp
+            TABLEPREFIXassign_filters_to_pipes afp
          ON
             afp.apf_pipe_idx=p.pipe_idx
          WHERE
@@ -105,7 +105,7 @@ class FiltersView extends DefaultView
             p.pipe_name ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id,
       ));
 
@@ -287,11 +287,11 @@ class FiltersView extends DefaultView
 
       global $db;
 
-      $result = $db->db_query("
+      $result = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."protocols
+            TABLEPREFIXprotocols
          ORDER BY
             proto_name ASC
       ");
@@ -327,46 +327,46 @@ class FiltersView extends DefaultView
 
          case 'unused':
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                SELECT
                   port_idx,
                   port_name,
                   port_number
                FROM
-                  ". MYSQL_PREFIX ."ports
-               LEFT JOIN ". MYSQL_PREFIX ."assign_ports_to_filters
-                  ON port_idx=". MYSQL_PREFIX ."assign_ports_to_filters.afp_port_idx
+                  TABLEPREFIXports
+               LEFT JOIN TABLEPREFIXassign_ports_to_filters
+                  ON port_idx=TABLEPREFIXassign_ports_to_filters.afp_port_idx
                WHERE
-                  ". MYSQL_PREFIX ."assign_ports_to_filters.afp_filter_idx <> ?
+                  TABLEPREFIXassign_ports_to_filters.afp_filter_idx <> ?
                OR
-                  ISNULL(". MYSQL_PREFIX ."assign_ports_to_filters.afp_filter_idx)
+                  ISNULL(TABLEPREFIXassign_ports_to_filters.afp_filter_idx)
                ORDER BY
                   port_name ASC
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $params['filter_idx']
             ));
             break;
 
          case 'used':
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                SELECT
                   p.port_idx,
                   p.port_name,
                   p.port_number
                FROM
-                  ". MYSQL_PREFIX ."assign_ports_to_filters
+                  TABLEPREFIXassign_ports_to_filters
                LEFT JOIN
-                  ". MYSQL_PREFIX ."ports p
+                  TABLEPREFIXports p
                   ON p.port_idx = afp_port_idx
                WHERE
                   afp_filter_idx LIKE ?
                ORDER BY p.port_name ASC
             ");
 
-            $db->db_execute($sth, array(
+            $db->execute($sth, array(
                $params['filter_idx']
             ));
             break;
@@ -405,13 +405,13 @@ class FiltersView extends DefaultView
       switch($params['mode']) {
          case 'unused':
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                SELECT
                   l7proto_idx,
                   l7proto_name
                FROM
-                  ". MYSQL_PREFIX ."l7_protocols
-               LEFT JOIN ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
+                  TABLEPREFIXl7_protocols
+               LEFT JOIN TABLEPREFIXassign_l7_protocols_to_filters
                   ON l7proto_idx=afl7_l7proto_idx
                      AND afl7_filter_idx LIKE ?
                WHERE
@@ -422,7 +422,7 @@ class FiltersView extends DefaultView
                   l7proto_name ASC
             ");
 
-            $l7protos = $db->db_execute($sth, array(
+            $l7protos = $db->execute($sth, array(
                $params['filter_idx'],
                $params['filter_idx']
             ));
@@ -430,13 +430,13 @@ class FiltersView extends DefaultView
 
          case 'used':
 
-            $sth = $db->db_prepare("
+            $sth = $db->prepare("
                SELECT
                   l7proto_idx,
                   l7proto_name
                FROM
-                  ". MYSQL_PREFIX ."assign_l7_protocols_to_filters
-               LEFT JOIN ". MYSQL_PREFIX ."l7_protocols
+                  TABLEPREFIXassign_l7_protocols_to_filters
+               LEFT JOIN TABLEPREFIXl7_protocols
                   ON l7proto_idx=afl7_l7proto_idx
                WHERE
                   afl7_filter_idx LIKE ?
@@ -444,7 +444,7 @@ class FiltersView extends DefaultView
                   l7proto_name ASC
             ");
 
-            $l7protos = $db->db_execute($sth, array(
+            $l7protos = $db->execute($sth, array(
                $params['filter_idx']
             ));
             break;

@@ -54,8 +54,8 @@ class UpdateIanaView extends DefaultView
       $protocols = array();
       $ports = array();
 
-      $db->db_query("TRUNCATE TABLE shaper2_protocols");
-      $db->db_query("TRUNCATE TABLE shaper2_ports");
+      $db->query("TRUNCATE TABLE shaper2_protocols");
+      $db->query("TRUNCATE TABLE shaper2_ports");
 
       /**
        * Update Protocols
@@ -91,8 +91,8 @@ class UpdateIanaView extends DefaultView
          ));
       }
 
-      $sth = $db->db_prepare("
-         INSERT IGNORE INTO ". MYSQL_PREFIX ."protocols (
+      $sth = $db->prepare("
+         INSERT IGNORE INTO TABLEPREFIXprotocols (
             proto_name,
             proto_desc,
             proto_number
@@ -103,7 +103,7 @@ class UpdateIanaView extends DefaultView
 
       foreach($protocols as $proto) {
 
-         $db->db_execute($sth, array(
+         $db->execute($sth, array(
             $proto[0],
             $proto[1],
             $proto[2],
@@ -144,8 +144,8 @@ class UpdateIanaView extends DefaultView
          ));
       }
 
-      $sth = $db->db_prepare("
-         INSERT IGNORE INTO ". MYSQL_PREFIX ."ports (
+      $sth = $db->prepare("
+         INSERT IGNORE INTO TABLEPREFIXports (
             port_name,
             port_desc,
             port_number
@@ -156,7 +156,7 @@ class UpdateIanaView extends DefaultView
 
       foreach($ports as $port) {
 
-         $db->db_execute($sth, array(
+         $db->execute($sth, array(
             $port[0],
             $port[1],
             $port[2]

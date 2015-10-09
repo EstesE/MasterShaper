@@ -46,11 +46,11 @@ class ServiceLevelView extends DefaultView
       $this->avail_service_levels = Array();
       $this->service_levels = Array();
 
-      $res_sl = $db->db_query("
+      $res_sl = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."service_levels
+            TABLEPREFIXservice_levels
          ORDER BY
             sl_name ASC
       ");
@@ -113,15 +113,15 @@ class ServiceLevelView extends DefaultView
          $tmpl->assign('qdiscmode', $_GET['qdiscmode']);
 
       /* get a list of objects that use this target */
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          (
             SELECT
                'pipe' as type,
                p.pipe_idx as idx,
                p.pipe_name as name
             FROM
-               ". MYSQL_PREFIX ."pipes p
-            INNER JOIN ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+               TABLEPREFIXpipes p
+            INNER JOIN TABLEPREFIXassign_pipes_to_chains apc
                ON p.pipe_idx=apc.apc_pipe_idx
             WHERE
                apc.apc_sl_idx LIKE ?
@@ -135,7 +135,7 @@ class ServiceLevelView extends DefaultView
                c.chain_idx as idx,
                c.chain_name as name
             FROM
-               ". MYSQL_PREFIX ."chains c
+               TABLEPREFIXchains c
             WHERE
                c.chain_sl_idx LIKE ?
             ORDER BY
@@ -148,7 +148,7 @@ class ServiceLevelView extends DefaultView
                p.pipe_idx as idx,
                p.pipe_name as name
             FROM
-               ". MYSQL_PREFIX ."pipes p
+               TABLEPREFIXpipes p
             WHERE
                p.pipe_sl_idx LIKE ?
             ORDER BY
@@ -161,7 +161,7 @@ class ServiceLevelView extends DefaultView
                iface.if_idx as idx,
                iface.if_name as name
             FROM
-               ". MYSQL_PREFIX ."interfaces iface
+               TABLEPREFIXinterfaces iface
             WHERE
                iface.if_fallback_idx LIKE ?
             ORDER BY
@@ -169,7 +169,7 @@ class ServiceLevelView extends DefaultView
          )
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id,
          $page->id,
          $page->id,

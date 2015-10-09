@@ -46,17 +46,17 @@ class PipesView extends DefaultView
       $this->avail_pipes = Array();
       $this->pipes = Array();
 
-      $res_pipes = $db->db_query("
+      $res_pipes = $db->query("
          SELECT DISTINCT
             p.*
          FROM
-            ". MYSQL_PREFIX ."pipes p
+            TABLEPREFIXpipes p
          LEFT JOIN
-            ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+            TABLEPREFIXassign_pipes_to_chains apc
          ON
             p.pipe_idx=apc.apc_pipe_idx
          LEFT JOIN
-            ". MYSQL_PREFIX ."chains c
+            TABLEPREFIXchains c
          ON
             apc.apc_chain_idx=c.chain_idx
          WHERE
@@ -101,14 +101,14 @@ class PipesView extends DefaultView
       }
 
       /* get a list of chains that use this pipe */
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             c.chain_idx,
             c.chain_name
          FROM
-            ". MYSQL_PREFIX ."chains c
+            TABLEPREFIXchains c
          INNER JOIN
-            ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+            TABLEPREFIXassign_pipes_to_chains apc
          ON
             apc.apc_chain_idx=c.chain_idx
          WHERE
@@ -119,7 +119,7 @@ class PipesView extends DefaultView
             c.chain_name ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id,
          $ms->get_current_host_profile(),
       ));
@@ -199,26 +199,26 @@ class PipesView extends DefaultView
       global $db;
 
       if(!isset($params['pipe_idx'])) {
-         $sth = $db->db_query("
+         $sth = $db->query("
             SELECT
                filter_idx, filter_name
             FROM
-               ". MYSQL_PREFIX ."filters
+               TABLEPREFIXfilters
             ORDER BY
                filter_name
          ");
       }
       else {
-         $sth = $db->db_prepare("
+         $sth = $db->prepare("
             SELECT DISTINCT
                f.filter_idx, f.filter_name
             FROM
-               ". MYSQL_PREFIX ."filters f
+               TABLEPREFIXfilters f
             LEFT OUTER JOIN (
                SELECT DISTINCT
                   apf_filter_idx, apf_pipe_idx
                FROM
-                  ". MYSQL_PREFIX ."assign_filters_to_pipes
+                  TABLEPREFIXassign_filters_to_pipes
                WHERE
                   apf_pipe_idx LIKE ?
             ) apf
@@ -228,7 +228,7 @@ class PipesView extends DefaultView
                apf.apf_pipe_idx IS NULL
          ");
 
-         $db->db_execute($sth, array(
+         $db->execute($sth, array(
             $params['pipe_idx']
          ));
 
@@ -255,17 +255,17 @@ class PipesView extends DefaultView
 
       global $db;
 
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT DISTINCT
             f.filter_idx,
             f.filter_name
          FROM
-            ". MYSQL_PREFIX ."filters f
+            TABLEPREFIXfilters f
          INNER JOIN (
             SELECT
                apf_filter_idx
             FROM
-               ". MYSQL_PREFIX ."assign_filters_to_pipes
+               TABLEPREFIXassign_filters_to_pipes
             WHERE
                apf_pipe_idx LIKE ?
          ) apf
@@ -273,7 +273,7 @@ class PipesView extends DefaultView
             apf.apf_filter_idx=f.filter_idx
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $params['pipe_idx']
       ));
 
@@ -346,14 +346,14 @@ class PipesView extends DefaultView
 
       /* delete all connection between chains and this pipe */
 
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          DELETE FROM
-            ". MYSQL_PREFIX ."assign_pipes_to_chains
+            TABLEPREFIXassign_pipes_to_chains
          WHERE
             apc_pipe_idx LIKE ?
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id
       ));
 
@@ -361,9 +361,9 @@ class PipesView extends DefaultView
 
       foreach($_POST['chains'] as $chain) {
 
-         $sth = $db->db_prepare("
+         $sth = $db->prepare("
             INSERT INTO
-               ". MYSQL_PREFIX ."assign_pipes_to_chains
+               TABLEPREFIXassign_pipes_to_chains
             (
                apc_pipe_idx,
                apc_chain_idx,
@@ -387,7 +387,7 @@ class PipesView extends DefaultView
                         apc_pipe_pos,
                         apc_chain_idx
                      FROM
-                        ". MYSQL_PREFIX ."assign_pipes_to_chains
+                        TABLEPREFIXassign_pipes_to_chains
                   ) as temp
                   WHERE
                      temp.apc_chain_idx LIKE ?
@@ -395,7 +395,7 @@ class PipesView extends DefaultView
             )
          ");
 
-         $db->db_execute($sth, array(
+         $db->execute($sth, array(
             $page->id,
             $chain,
             $chain,

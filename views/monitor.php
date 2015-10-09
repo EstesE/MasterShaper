@@ -112,7 +112,7 @@ class MonitorView extends DefaultView
          SELECT
             chain_idx
          FROM
-            ". MYSQL_PREFIX ."chains
+            TABLEPREFIXchains
          WHERE
             chain_sl_idx NOT LIKE 0
          AND
@@ -160,12 +160,12 @@ class MonitorView extends DefaultView
       global $ms, $db;
 
       // list only chains which do not Ignore QoS and are active
-      $chains = $db->db_query("
+      $chains = $db->query("
          SELECT
             chain_idx,
             chain_name
          FROM
-            ". MYSQL_PREFIX ."chains
+            TABLEPREFIXchains
          WHERE 
             chain_sl_idx!='0'
          AND
@@ -249,12 +249,12 @@ class MonitorView extends DefaultView
       $time_now  = mktime();
       $time_past = mktime() - 300;
 
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             stat_time,
             stat_data
          FROM
-            ". MYSQL_PREFIX ."stats
+            TABLEPREFIXstats
          WHERE 
             stat_time >= ?
          AND
@@ -265,7 +265,7 @@ class MonitorView extends DefaultView
             stat_time ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $time_past,
          $time_now,
          $ms->get_current_host_profile(),
@@ -587,7 +587,7 @@ class MonitorView extends DefaultView
             id_pipe_idx,
             id_chain_idx
          FROM
-            ". MYSQL_PREFIX ."tc_ids
+            TABLEPREFIXtc_ids
          WHERE
             id_tc_id='". $id ."'
          AND
@@ -606,7 +606,7 @@ class MonitorView extends DefaultView
             SELECT
                pipe_name
             FROM
-               ". MYSQL_PREFIX ."pipes
+               TABLEPREFIXpipes
             WHERE
                pipe_idx='". $tc_id->id_pipe_idx ."'
          ");
@@ -621,7 +621,7 @@ class MonitorView extends DefaultView
             SELECT
                chain_name
             FROM
-               ". MYSQL_PREFIX ."chains
+               TABLEPREFIXchains
             WHERE
                chain_idx LIKE '". $tc_id->id_chain_idx ."'
             AND
@@ -644,7 +644,7 @@ class MonitorView extends DefaultView
          SELECT
             id_tc_id
          FROM
-            ". MYSQL_PREFIX ."tc_ids
+            TABLEPREFIXtc_ids
          WHERE
             id_if LIKE '". $if ."'
          AND
@@ -673,7 +673,7 @@ class MonitorView extends DefaultView
          SELECT
             id_tc_id
          FROM
-            ". MYSQL_PREFIX ."tc_ids
+            TABLEPREFIXtc_ids
          WHERE
             id_if LIKE '". $if ."'
          AND 

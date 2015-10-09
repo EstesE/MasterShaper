@@ -240,11 +240,11 @@ abstract class Templates extends Smarty
             return;
         }
 
-        $result = $db->db_query("
+        $result = $db->query("
                 SELECT
                 *
                 FROM
-                ". MYSQL_PREFIX ."chains
+                TABLEPREFIXchains
                 ");
 
         $string = "";
@@ -269,11 +269,11 @@ abstract class Templates extends Smarty
             return;
         }
 
-        $result = $db->db_query("
+        $result = $db->query("
                 SELECT
                 *
                 FROM
-                ". MYSQL_PREFIX ."pipes
+                TABLEPREFIXpipes
                 ");
 
         $string = "";
@@ -298,12 +298,12 @@ abstract class Templates extends Smarty
             return;
         }
 
-        $result = $db->db_query("
+        $result = $db->query("
                 SELECT
                 target_idx,
                 target_name
                 FROM
-                ". MYSQL_PREFIX ."targets
+                TABLEPREFIXtargets
                 ORDER BY
                 target_name
                 ");
@@ -329,11 +329,11 @@ abstract class Templates extends Smarty
             $params['details'] = 'yes';
         }
 
-        $result = $db->db_query("
+        $result = $db->query("
                 SELECT
                 *
                 FROM
-                ". MYSQL_PREFIX ."service_levels
+                TABLEPREFIXservice_levels
                 ORDER BY
                 sl_name ASC
                 ");
@@ -391,11 +391,11 @@ abstract class Templates extends Smarty
             return;
         }
 
-        $result = $db->db_query("
+        $result = $db->query("
                 SELECT
                 *
                 FROM
-                ". MYSQL_PREFIX ."network_paths
+                TABLEPREFIXnetwork_paths
                 ORDER BY
                 netpath_name ASC
                 ");
@@ -416,11 +416,11 @@ abstract class Templates extends Smarty
     {
         global $ms, $db;
 
-        $result = $db->db_query("
+        $result = $db->query("
                 SELECT
                 *
                 FROM
-                ". MYSQL_PREFIX ."host_profiles
+                TABLEPREFIXhost_profiles
                 ORDER BY
                 host_name ASC
                 ");
@@ -492,13 +492,13 @@ abstract class Templates extends Smarty
             return $zero;
         }
 
-        $result = $db->db_query("
+        $result = $db->query("
                 SELECT
-                ". $column_prefix ."_name
+                    ". $column_prefix ."_name
                 FROM
-                ". MYSQL_PREFIX . $table ."
+                    TABLEPREFIX{$table}
                 WHERE
-                ". $column_prefix ."_idx LIKE '". $params['idx'] ."'
+                    ". $column_prefix ."_idx LIKE '". $params['idx'] ."'
                 ");
 
         if ($row = $result->fetch(PDO::FETCH_NUM)) {

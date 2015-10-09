@@ -52,16 +52,16 @@ class ProtocolsView extends DefaultView
 
       $limit = ($page->num-1) * $this->items_per_page;
 
-      $num_protocols = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM ". MYSQL_PREFIX ."protocols");
+      $num_protocols = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM TABLEPREFIXprotocols");
 
       $this->avail_protocols = Array();
       $this->protocols = Array();
 
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             proto_idx
          FROM
-            ". MYSQL_PREFIX ."protocols
+            TABLEPREFIXprotocols
          ORDER BY
             proto_name ASC
          LIMIT
@@ -70,7 +70,7 @@ class ProtocolsView extends DefaultView
 
       $sth->bindParam(1, $limit, PDO::PARAM_INT);
       $sth->bindParam(2, $this->items_per_page, PDO::PARAM_INT);
-      $db->db_execute($sth);
+      $db->execute($sth);
 
       while($protocol = $sth->fetch()) {
          $this->avail_protocols[] = $protocol->proto_idx;
@@ -117,19 +117,19 @@ class ProtocolsView extends DefaultView
       }
 
       /* get a list of filters that use this protocol */
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             f.filter_idx,
             f.filter_name
          FROM
-            ". MYSQL_PREFIX ."filters f
+            TABLEPREFIXfilters f
          WHERE
             f.filter_protocol_id LIKE ?
          ORDER BY
             f.filter_name ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id,
       ));
 

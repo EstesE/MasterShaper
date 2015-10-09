@@ -45,11 +45,11 @@ class UsersView extends DefaultView
 
       $cnt_users = 0;
 
-      $res_users = $db->db_query("
+      $res_users = $db->query("
          SELECT
             *
          FROM
-            ". MYSQL_PREFIX ."users
+            TABLEPREFIXusers
          ORDER BY
             user_name ASC
       ");
@@ -178,7 +178,7 @@ class UsersView extends DefaultView
 
       $string = "";
 
-      if($user = $db->db_fetchSingleRow("SELECT * FROM ". MYSQL_PREFIX ."users WHERE user_idx='". $user_idx ."'")) {
+      if($user = $db->db_fetchSingleRow("SELECT * FROM TABLEPREFIXusers WHERE user_idx='". $user_idx ."'")) {
 
          if($user->user_manage_chains == "Y")
 	    $string.= "Chains, ";

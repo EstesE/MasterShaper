@@ -46,24 +46,24 @@ class ChainsView extends DefaultView
       $this->avail_chains = Array();
       $this->chains = Array();
 
-      $res_chains = $db->db_query("
+      $res_chains = $db->query("
          SELECT
             c.*,
             sl.sl_name as chain_sl_name,
             slfall.sl_name as chain_fallback_name,
             np.netpath_name as chain_netpath_name
          FROM
-            ". MYSQL_PREFIX ."chains c
+            TABLEPREFIXchains c
          LEFT JOIN
-            ". MYSQL_PREFIX ."service_levels sl
+            TABLEPREFIXservice_levels sl
          ON
             c.chain_sl_idx=sl.sl_idx
          LEFT JOIN
-            ". MYSQL_PREFIX ."service_levels slfall
+            TABLEPREFIXservice_levels slfall
          ON
             c.chain_fallback_idx=slfall.sl_idx
          LEFT JOIN
-            ". MYSQL_PREFIX ."network_paths np
+            TABLEPREFIXnetwork_paths np
          ON
             c.chain_netpath_idx=np.netpath_idx
          WHERE
@@ -109,7 +109,7 @@ class ChainsView extends DefaultView
          $page->id = NULL;
       }
 
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT DISTINCT
             p.pipe_idx,
             p.pipe_name,
@@ -118,7 +118,7 @@ class ChainsView extends DefaultView
             apc.apc_sl_idx,
             apc.apc_pipe_active
          FROM
-            ". MYSQL_PREFIX ."pipes p
+            TABLEPREFIXpipes p
          LEFT JOIN (
             SELECT
                apc_pipe_idx,
@@ -128,7 +128,7 @@ class ChainsView extends DefaultView
                /* just a trick to get the correct order of result */
                apc_pipe_pos IS NULL as pos_null
             FROM
-               ". MYSQL_PREFIX ."assign_pipes_to_chains
+               TABLEPREFIXassign_pipes_to_chains
             WHERE
                apc_chain_idx LIKE ?
          ) apc
@@ -139,7 +139,7 @@ class ChainsView extends DefaultView
             apc_pipe_pos ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $page->id
       ));
 
@@ -166,7 +166,7 @@ class ChainsView extends DefaultView
                netpath_if1,
                netpath_if2
             FROM
-               ". MYSQL_PREFIX ."network_paths
+               TABLEPREFIXnetwork_paths
             WHERE
                netpath_idx LIKE ". $db->quote($chain->chain_netpath_idx))) {
 
@@ -342,16 +342,16 @@ class ChainsView extends DefaultView
          $ms->raiseError("Unknown ID provided in get_chains_list()");
       }
 
-      $sth = $db->db_prepare("
+      $sth = $db->prepare("
          SELECT
             c.chain_idx,
             c.chain_name,
             c.chain_active,
             apc.apc_chain_idx
          FROM
-            ". MYSQL_PREFIX ."chains c
+            TABLEPREFIXchains c
          LEFT OUTER JOIN
-            ". MYSQL_PREFIX ."assign_pipes_to_chains apc
+            TABLEPREFIXassign_pipes_to_chains apc
          ON (
                c.chain_idx=apc.apc_chain_idx
             AND
@@ -363,7 +363,7 @@ class ChainsView extends DefaultView
             c.chain_name ASC
       ");
 
-      $db->db_execute($sth, array(
+      $db->execute($sth, array(
          $id,
          $ms->get_current_host_profile(),
       ));
