@@ -138,6 +138,11 @@ class MasterShaperController extends DefaultController
             return false;
         }
 
+        if (!($page = $views->getMatchingView())) {
+            $this->raiseError(get_class($views) .'::getMatchingView() returned false!');
+            return false;
+        }
+
         /* page request handled by MS class itself */
         if (isset($page->includefile) && $page->includefile == "[internal]") {
             $this->handlePageRequest();
