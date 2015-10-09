@@ -130,7 +130,13 @@ class MasterShaperController extends DefaultController
             $this->raiseError('Failed to load ViewsController!');
             return false;
         }
+
         $GLOBALS['views'] =& $views;
+
+        if (!$views->loadSkeleton()) {
+            $this->raiseError('Failed to load page skeleton!');
+            return false;
+        }
 
         /* page request handled by MS class itself */
         if (isset($page->includefile) && $page->includefile == "[internal]") {
