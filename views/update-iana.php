@@ -62,12 +62,12 @@ class UpdateIanaView extends DefaultView
        */
 
       if(!file_exists(MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml")) {
-         $ms->throwError("Can not locate protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml");
+         $ms->raiseError("Can not locate protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml");
          return false;
       }
 
       if(!is_readable(MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml")) {
-         $ms->throwError("Can not read protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml");
+         $ms->raiseError("Can not read protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml");
          return false;
       }
 
@@ -117,12 +117,12 @@ class UpdateIanaView extends DefaultView
        */
 
       if(!file_exists(MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml")) {
-         $ms->throwError("Can not locate protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml");
+         $ms->raiseError("Can not locate protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml");
          return false;
       }
 
       if(!is_readable(MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml")) {
-         $ms->throwError("Can not read protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml");
+         $ms->raiseError("Can not read protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml");
          return false;
       }
 

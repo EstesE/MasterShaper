@@ -190,17 +190,17 @@ class NetworkPathsView extends DefaultView
          $np = new Network_Path($_POST['netpath_idx']);
 
       if(!isset($_POST['netpath_name']) || $_POST['netpath_name'] == "") {
-         $ms->throwError(_("Please specify a network path name!"));
+         $ms->raiseError(_("Please specify a network path name!"));
       }
       if(isset($new) && $ms->check_object_exists('netpath', $_POST['netpath_name'])) {
-         $ms->throwError(_("A network path with that name already exists!"));
+         $ms->raiseError(_("A network path with that name already exists!"));
       }
       if(!isset($new) && $np->netpath_name != $_POST['netpath_name'] &&
          $ms->check_object_exists('netpath', $_POST['netpath_name'])) {
-         $ms->throwError(_("A network path with that name already exists!"));
+         $ms->raiseError(_("A network path with that name already exists!"));
       }
       if($_POST['netpath_if1'] == $_POST['netpath_if2']) {
-         $ms->throwError(_("An interface within a network path can not be used twice! Please select different interfaces"));
+         $ms->raiseError(_("An interface within a network path can not be used twice! Please select different interfaces"));
       }
 
       if(!isset($_POST['netpath_if1_inside_gre']) || empty($_POST['netpath_if1_inside_gre']))

@@ -178,14 +178,14 @@ class InterfacesView extends DefaultView
          $if = new Network_Interface($_POST['if_idx']);
 
       if(!isset($_POST['if_name']) || $_POST['if_name'] == "") {
-         $ms->throwError(_("Please specify a interface!"));
+         $ms->raiseError(_("Please specify a interface!"));
       }
       if(isset($new) && $ms->check_object_exists('interface', $_POST['if_name'])) {
-         $ms->throwError(_("A interface with that name already exists!"));
+         $ms->raiseError(_("A interface with that name already exists!"));
       }
       if(!isset($new) && $if->if_name != $_POST['if_name'] && 
          $ms->check_object_exists('interface', $_POST['if_name'])) {
-         $ms->throwError(_("A interface with that name already exists!"));
+         $ms->raiseError(_("A interface with that name already exists!"));
       }
       if(!isset($_POST['if_speed']) || $_POST['if_speed'] == "")
          $_POST['if_speed'] = 0;
@@ -193,7 +193,7 @@ class InterfacesView extends DefaultView
          $_POST['if_speed'] = strtoupper($_POST['if_speed']);
 
       if(!$ms->validateBandwidth($_POST['if_speed'])) {
-         $ms->throwError(_("Invalid bandwidth specified!"));
+         $ms->raiseError(_("Invalid bandwidth specified!"));
       }
 
       $if_data = $ms->filter_form_data($_POST, 'if_');

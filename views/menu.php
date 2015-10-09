@@ -41,15 +41,15 @@ class MenuView extends DefaultView
       global $page, $tmpl, $ms;
 
       if($page->call_type != 'rpc') {
-         $ms->throwError('Invalid call to get_sub_menu()');
+         $ms->raiseError('Invalid call to get_sub_menu()');
          return false;
       }
       if($page->action != 'get-sub-menu') {
-         $ms->throwError('Invalid call to get_sub_menu()');
+         $ms->raiseError('Invalid call to get_sub_menu()');
          return false;
       }
       if(!isset($_POST['menuId']) || empty($_POST['menuId'])) {
-         $ms->throwError('POST parameter menuId is not set.');
+         $ms->raiseError('POST parameter menuId is not set.');
          return false;
       }
 
@@ -63,7 +63,7 @@ class MenuView extends DefaultView
       );
 
       if(!in_array($_POST['menuId'], $valid_menuIds)) {
-         $ms->throwError('Unknown sub-menu id '. $_POST['menuId'] .' requested.');
+         $ms->raiseError('Unknown sub-menu id '. $_POST['menuId'] .' requested.');
          return false;
       }
 

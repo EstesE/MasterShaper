@@ -246,15 +246,15 @@ class ServiceLevelView extends DefaultView
          $sl = new Service_Level($_POST['sl_idx']);
 
       if(!isset($_POST['sl_name']) || $_POST['sl_name'] == "") {
-         $ms->throwError(_("Please enter a service level name!"));
+         $ms->raiseError(_("Please enter a service level name!"));
       }
 
       if(isset($new) && $ms->check_object_exists('service_level', $_POST['sl_name'])) {
-         $ms->throwError(_("A service level with that name already exists!"));
+         $ms->raiseError(_("A service level with that name already exists!"));
       }
 
       if(!isset($new) && $sl->sl_name != $_POST['sl_name'] && $ms->check_object_exists('service_level', $_POST['sl_name'])) {
-         $ms->throwError(_("A service level with that name already exists!"));
+         $ms->raiseError(_("A service level with that name already exists!"));
       }
 
       $is_numeric = 1;
@@ -265,7 +265,7 @@ class ServiceLevelView extends DefaultView
       switch($_POST['classifiermode']) {
          case 'HTB':
             if($_POST['sl_htb_priority'] == 0 && $_POST['sl_htb_bw_in_rate'] == "" && $_POST['sl_htb_bw_out_rate'] == "") {
-               $ms->throwError(_("A service level which ignores priority AND not specified inbound or outbound rate is not possible!"));
+               $ms->raiseError(_("A service level which ignores priority AND not specified inbound or outbound rate is not possible!"));
             }
             if($_POST['sl_htb_bw_in_rate'] != "" && !is_numeric($_POST['sl_htb_bw_in_rate']))
                $is_numeric = 0;
@@ -285,7 +285,7 @@ class ServiceLevelView extends DefaultView
             /* If umax is specifed, also umax is necessary */
             if(($_POST['sl_hfsc_in_umax'] != "" && $_POST['sl_hfsc_in_dmax'] == "") ||
                ($_POST['sl_hfsc_out_umax'] != "" && $_POST['sl_hfsc_out_dmax'] == "")) {
-               $ms->throwError(_("Please enter a \"Max-Delay\" value if you have defined a \"Work-Unit\" value!"));
+               $ms->raiseError(_("Please enter a \"Max-Delay\" value if you have defined a \"Work-Unit\" value!"));
             }
             if($_POST['sl_hfsc_in_umax'] != "" && !is_numeric($_POST['sl_hfsc_in_umax']))
                $is_numeric = 0;
@@ -307,7 +307,7 @@ class ServiceLevelView extends DefaultView
       }
 
       if(!$is_numeric) {
-         $ms->throwError(_("Please enter only numerical values for bandwidth parameters!"));
+         $ms->raiseError(_("Please enter only numerical values for bandwidth parameters!"));
       }
 
       $sl_data = $ms->filter_form_data($_POST, 'sl_');

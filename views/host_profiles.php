@@ -147,14 +147,14 @@ class HostProfilesView extends DefaultView
          $hostprofile = new Host_Profile($_POST['host_idx']);
 
       if(!isset($_POST['host_name']) || $_POST['host_name'] == "") {
-         $ms->throwError(_("Please specify a host profile name!"));
+         $ms->raiseError(_("Please specify a host profile name!"));
       }
       if(isset($new) && $ms->check_object_exists('hostprofile', $_POST['host_name'])) {
-         $ms->throwError(_("A host profile with that name already exists!"));
+         $ms->raiseError(_("A host profile with that name already exists!"));
       }
       if(!isset($new) && $hostprofile->host_name != $_POST['host_name'] &&
          $ms->check_object_exists('hostprofile', $_POST['host_name'])) {
-         $ms->throwError(_("A host profile with that name already exists!"));
+         $ms->raiseError(_("A host profile with that name already exists!"));
       }
 
       $hostprofile_data = $ms->filter_form_data($_POST, 'host_');

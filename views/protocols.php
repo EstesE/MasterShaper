@@ -193,17 +193,17 @@ class ProtocolsView extends DefaultView
          $protocol = new Protocol($_POST['proto_idx']);
 
       if(!isset($_POST['proto_name']) || $_POST['proto_name'] == "") {
-         $ms->throwError(_("Please enter a protocol name!"));
+         $ms->raiseError(_("Please enter a protocol name!"));
       }
       if(isset($new) && $ms->check_object_exists('protocol', $_POST['proto_name'])) {
-         $ms->throwError(_("A protocol with that name already exists!"));
+         $ms->raiseError(_("A protocol with that name already exists!"));
       }
       if(!isset($new) && $protocol->proto_name != $_POST['proto_name']
          && $ms->check_object_exists('protocol', $_POST['proto_name'])) {
-         $ms->throwError(_("A protocol with that name already exists!"));
+         $ms->raiseError(_("A protocol with that name already exists!"));
       }
       if(!is_numeric($_POST['proto_number'])) {
-         $ms->throwError(_("Protocol number needs to be an integer value!"));
+         $ms->raiseError(_("Protocol number needs to be an integer value!"));
       }
 
       $protocol_data = $ms->filter_form_data($_POST, 'proto_');

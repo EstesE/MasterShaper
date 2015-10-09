@@ -246,17 +246,17 @@ class ChainsView extends DefaultView
          $chain = new Chain($_POST['chain_idx']);
 
       if(!isset($new) && (!isset($_POST['chain_idx']) || !is_numeric($_POST['chain_idx'])))
-         $ms->throwError(_("Missing id of chain to be handled!"));
+         $ms->raiseError(_("Missing id of chain to be handled!"));
 
       if(!isset($_POST['chain_name']) || empty($_POST['chain_name']))
-         $ms->throwError(_("Please enter a chain name!"));
+         $ms->raiseError(_("Please enter a chain name!"));
 
       if(isset($new) && $ms->check_object_exists('chain', $_POST['chain_name']))
-         $ms->throwError(_("A chain with such a name already exists!"));
+         $ms->raiseError(_("A chain with such a name already exists!"));
 
       if(!isset($new) && $_POST['chain_name'] != $chain->chain_name &&
          $ms->check_object_exists('chain', $_POST['chain_name']))
-         $ms->throwError(_("A chain with such a name already exists!"));
+         $ms->raiseError(_("A chain with such a name already exists!"));
 
       // if chain gets moved to another network path, reset chain_position
       if(!isset($new) && $_POST['chain_netpath_idx'] != $chain->chain_netpath_idx) {
@@ -339,7 +339,7 @@ class ChainsView extends DefaultView
       $id = $parts[2];
 
       if($request_object != "pipe") {
-         $ms->throwError("Unknown ID provided in get_chains_list()");
+         $ms->raiseError("Unknown ID provided in get_chains_list()");
       }
 
       $sth = $db->db_prepare("

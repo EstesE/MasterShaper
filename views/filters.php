@@ -145,17 +145,17 @@ class FiltersView extends DefaultView
          $filter = new Filter($_POST['filter_idx']);
 
       if(!isset($new) && (!isset($_POST['filter_idx']) || !is_numeric($_POST['filter_idx'])))
-         $ms->throwError(_("Missing id of filter to be handled!"));
+         $ms->raiseError(_("Missing id of filter to be handled!"));
 
       if(!isset($_POST['filter_name']) || $_POST['filter_name'] == "") {
-         $ms->throwError(_("Please enter a filter name!"));
+         $ms->raiseError(_("Please enter a filter name!"));
       }
       if(isset($new) && $ms->check_object_exists('filter', $_POST['filter_name'])) {
-         $ms->throwError(_("A filter with that name already exists!"));
+         $ms->raiseError(_("A filter with that name already exists!"));
       }
       if(!isset($new) && $filter->filter_name != $_POST['filter_name'] &&
          $ms->check_object_exists('filter', $_POST['filter_name'])) {
-         $ms->throwError(_("A filter with that name already exists!"));
+         $ms->raiseError(_("A filter with that name already exists!"));
       }
       if($_POST['filter_protocol_id'] == -1 &&
          count($_POST['used']) <= 1 &&
@@ -178,7 +178,7 @@ class FiltersView extends DefaultView
          !$_POST['filter_time_day_sun'] &&
          !$_POST['filter_match_sip'] &&
          count($_POST['filter_l7_used']) <= 1) {
-         $ms->throwError(_("This filter has nothing to do. Please select at least one match!"));
+         $ms->raiseError(_("This filter has nothing to do. Please select at least one match!"));
       }
       /* Ports can only be used with TCP, UDP or IP protocol */
       if(isset($_POST['used']) && count($_POST['used']) > 1 &&
@@ -189,7 +189,7 @@ class FiltersView extends DefaultView
             $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 17 &&
             $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6
          ))) {
-         $ms->throwError(_("Ports can only be used in combination with IP, TCP or UDP protocol!"));
+         $ms->raiseError(_("Ports can only be used in combination with IP, TCP or UDP protocol!"));
       }
       /* TCP-flags can only be used with TCP protocol */
       if(isset($_POST['filter_ipt']) && (
@@ -201,13 +201,13 @@ class FiltersView extends DefaultView
             $_POST['filter_tcpflag_psh']
          ) &&
          $ms->getProtocolNumberById($_POST['filter_protocol_id']) != 6) {
-         $ms->throwError(_("TCP-Flags can only be used in combination with TCP protocol!"));
+         $ms->raiseError(_("TCP-Flags can only be used in combination with TCP protocol!"));
       }
       /* layer7 protocol match can only be used with no ports and no tcp &| udp protocols */
       if(isset($_POST['filter_ipt']) &&
          count($_POST['filter_l7_used']) > 1 &&
          $_POST['filter_protocol_id'] != -1) {
-            $ms->throwError(_("Layer7 match can only be used with no ports select and no protocol definitions!"));
+            $ms->raiseError(_("Layer7 match can only be used with no ports select and no protocol definitions!"));
       }
 
       if(isset($_POST['filter_ipt'])) {
@@ -372,7 +372,7 @@ class FiltersView extends DefaultView
             break;
 
          default:
-            $ms->throwError('unknown mode');
+            $ms->raiseError('unknown mode');
             break;
       }
 
@@ -450,7 +450,7 @@ class FiltersView extends DefaultView
             break;
 
          default:
-            $ms->throwError('unknown mode');
+            $ms->raiseError('unknown mode');
             break;
       }
 

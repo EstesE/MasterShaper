@@ -179,17 +179,17 @@ class TargetsView extends DefaultView
          $target = new Target($_POST['target_idx']);
 
       if(!isset($_POST['target_name']) || $_POST['target_name'] == "") {
-         $ms->throwError(_("Please enter a name for this target!"));
+         $ms->raiseError(_("Please enter a name for this target!"));
       }
       if(isset($new) && $ms->check_object_exists('target', $_POST['target_name'])) { 
-         $ms->throwError(_("A target with that name already exists!"));
+         $ms->raiseError(_("A target with that name already exists!"));
       }
       if(!isset($new) && $target->target_name != $_POST['target_name']
          && $ms->check_object_exists('target', $_POST['target_name'] )) {
-         $ms->throwError(_("A target with that name already exists!"));
+         $ms->raiseError(_("A target with that name already exists!"));
       }
       if($_POST['target_match'] == "IP" && $_POST['target_ip'] == "") {
-         $ms->throwError(_("You have selected IP match but didn't entered a IP address!"));
+         $ms->raiseError(_("You have selected IP match but didn't entered a IP address!"));
       }
       elseif($_POST['target_match'] == "IP" && $_POST['target_ip'] != "") {
          /* Is target_ip a ip range seperated by "-" */
@@ -198,7 +198,7 @@ class TargetsView extends DefaultView
             foreach($hosts as $host) {
                $ipv4 = new Net_IPv4;
                if(!$ipv4->validateIP($host)) {
-                  $ms->throwError(_("Incorrect IP address in IP range definition! Please enter a valid IP address!"));
+                  $ms->raiseError(_("Incorrect IP address in IP range definition! Please enter a valid IP address!"));
                }
             }
          }
@@ -207,29 +207,29 @@ class TargetsView extends DefaultView
             $ipv4 = new Net_IPv4;
             $net = $ipv4->parseAddress($_POST['target_ip']);
             if($net->netmask == "" || $net->netmask == "0.0.0.0") {
-               $ms->throwError(_("Incorrect CIDR address! Please enter a valid network address!"));
+               $ms->raiseError(_("Incorrect CIDR address! Please enter a valid network address!"));
             }
          }
          /* target_ip is a simple IP */
          else {
             $ipv4 = new Net_IPv4;
             if(!$ipv4->validateIP($_POST['target_ip'])) {
-               $ms->throwError(_("Incorrect IP address! Please enter a valid IP address!"));
+               $ms->raiseError(_("Incorrect IP address! Please enter a valid IP address!"));
             }
          }
       }
       /* MAC address specified? */
       if($_POST['target_match'] == "MAC" && $_POST['target_mac'] == "") {
-         $ms->throwError(_("You have selected MAC match but didn't entered a MAC address!"));
+         $ms->raiseError(_("You have selected MAC match but didn't entered a MAC address!"));
       }
       elseif($_POST['target_match'] == "MAC" && $_POST['target_mac'] != "") {
          if(!preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $_POST['target_mac'])
             && !preg_match("/(.*)-(.*)-(.*)-(.*)-(.*)-(.*)/", $_POST['target_mac'])) {
-            $ms->throwError(_("You have selected MAC match but specified an INVALID MAC address! Please specify a correct MAC address!"));
+            $ms->raiseError(_("You have selected MAC match but specified an INVALID MAC address! Please specify a correct MAC address!"));
          }
       }
       if($_POST['target_match'] == "GROUP" && isset($_POST['used']) && count($_POST['used']) < 1) {
-         $ms->throwError(_("You have selected Group match but didn't selected at least one target from the list!"));
+         $ms->raiseError(_("You have selected Group match but didn't selected at least one target from the list!"));
       }
 
       $target_data = $ms->filter_form_data($_POST, 'target_');

@@ -25,28 +25,15 @@ namespace MasterShaper\Views;
 
 class OverviewView extends DefaultView
 {
-   private $db;
-   private $parent;
-   private $tmpl;
+   public $class_name = 'overview';
 
    private $sth_chains;
    private $sth_pipes;
    private $sth_filters;
 
-   /**
-    * Page_Overview constructor
-    *
-    * Initialize the Page_Overview class
-    */
-   public function __construct()
+   public function show()
    {
-
-   } // __construct()
-
-   /* interface output */
-   public function showList()
-   {
-      global $ms, $db, $tmpl;
+      global $ms, $db;
 
       if($this->is_storing())
          $this->store();
@@ -55,7 +42,7 @@ class OverviewView extends DefaultView
       if($ms->getOption("authentication") == "Y" &&
          !$ms->checkPermissions("user_show_rules")) {
 
-         $ms->throwError("You do not have enough permissions to access this module!");
+         $ms->raiseError("You do not have enough permissions to access this module!");
          return 0;
       }
 
@@ -204,15 +191,15 @@ class OverviewView extends DefaultView
       }
 
       if(isset($_GET['mode']) && $_GET['mode'] == 'edit')
-         $tmpl->assign('edit_mode', true);
+         $this->assign('edit_mode', true);
 
-      $tmpl->assign('cnt_network_paths', $this->cnt_network_paths);
-      $tmpl->registerPlugin("block", "ov_netpath", array(&$this, "smarty_ov_netpath"));
-      $tmpl->registerPlugin("block", "ov_chain", array(&$this, "smarty_ov_chain"));
-      $tmpl->registerPlugin("block", "ov_pipe", array(&$this, "smarty_ov_pipe"));
-      $tmpl->registerPlugin("block", "ov_filter", array(&$this, "smarty_ov_filter"));
+      $this->assign('cnt_network_paths', $this->cnt_network_paths);
+      $this->registerPlugin("block", "ov_netpath", array(&$this, "smarty_ov_netpath"));
+      $this->registerPlugin("block", "ov_chain", array(&$this, "smarty_ov_chain"));
+      $this->registerPlugin("block", "ov_pipe", array(&$this, "smarty_ov_pipe"));
+      $this->registerPlugin("block", "ov_filter", array(&$this, "smarty_ov_filter"));
 
-      return $tmpl->fetch("overview.tpl");
+      return $this->fetch("overview.tpl");
 
    } // showList()
 
@@ -437,10 +424,10 @@ class OverviewView extends DefaultView
       }
 
       if(!isset($_POST['id']) || !is_numeric($_POST['id']))
-         $ms->throwError(_("Id to alter position is missing or not numeric!"));
+         $ms->raiseError(_("Id to alter position is missing or not numeric!"));
 
       if(!isset($_POST['to']) || !in_array($_POST['to'], array('up','down')))
-         $ms->throwError(_("Don't know in which direction we shall alter position!"));
+         $ms->raiseError(_("Don't know in which direction we shall alter position!"));
 
       $idx = $_POST['id'];
 
@@ -1030,9 +1017,6 @@ class OverviewView extends DefaultView
 
    } // store()
 
-} // class Page_Overview
-
-$obj = new Page_Overview;
-$obj->handler();
+}
 
 ?>

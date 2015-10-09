@@ -308,14 +308,14 @@ class PipesView extends DefaultView
       isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = NULL;
 
       if(!isset($_POST['pipe_name']) || $_POST['pipe_name'] == "") {
-         $ms->throwError(_("Please enter a pipe name!"));
+         $ms->raiseError(_("Please enter a pipe name!"));
       }
       if(isset($new) && $ms->check_object_exists('pipe', $_POST['pipe_name'])) {
-         $ms->throwError(_("A pipe with that name already exists for that chain!"));
+         $ms->raiseError(_("A pipe with that name already exists for that chain!"));
       }
       if(!isset($new) && $pipe->pipe_name != $_POST['pipe_name'] &&
          $ms->check_object_exists('pipe', $_POST['pipe_name'])) {
-         $ms->throwError(_("A pipe with that name already exists for that chain!"));
+         $ms->raiseError(_("A pipe with that name already exists for that chain!"));
       }
 
       $pipe_data = $ms->filter_form_data($_POST, 'pipe_');

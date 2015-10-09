@@ -106,16 +106,16 @@ class UsersView extends DefaultView
          $user = new User($_POST['user_idx']);
 
       if(!isset($_POST['user_name']) || $_POST['user_name'] == "") {
-         $ms->throwError(_("Please enter a user name!"));
+         $ms->raiseError(_("Please enter a user name!"));
       }
       if(isset($new) && $ms->check_object_exists('user', $_POST['user_name'])) {
-         $ms->throwError(_("A user with such a user name already exist!"));
+         $ms->raiseError(_("A user with such a user name already exist!"));
       }
       if($_POST['user_pass1'] == "") {
-         $ms->throwError(_("Empty passwords are not allowed!"));
+         $ms->raiseError(_("Empty passwords are not allowed!"));
       }
       if($_POST['user_pass1'] != $_POST['user_pass2']) {
-         $ms->throwError(_("The two entered passwords do not match!"));
+         $ms->raiseError(_("The two entered passwords do not match!"));
       }	       
 
       if($_POST['user_pass1'] != "nochangeMS") {

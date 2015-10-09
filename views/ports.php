@@ -196,16 +196,16 @@ class PortsView extends DefaultView
          $port = new Port($_POST['port_idx']);
 
       if(!isset($_POST['port_name']) || $_POST['port_name'] == "") {
-         $ms->throwError(_("Please enter a port name!"));
+         $ms->raiseError(_("Please enter a port name!"));
       }
 
       if(isset($new) && $ms->check_object_exists('port', $_POST['port_name'])) {
-         $ms->throwError(_("A port with that name already exists!"));
+         $ms->raiseError(_("A port with that name already exists!"));
       }
 
       if(!isset($new) && $port->port_name != $_POST['port_name']
          && $ms->check_object_exists('port', $_POST['port_name'])) {
-         $ms->throwError(_("A port with that name already exists!"));
+         $ms->raiseError(_("A port with that name already exists!"));
       }
 
       // has to user provided one or multiple ports
@@ -229,11 +229,11 @@ class PortsView extends DefaultView
             }
          }
          if(!$is_numeric)
-            $ms->throwError(_("Please enter a valid port number range as shown in the example!"));
+            $ms->raiseError(_("Please enter a valid port number range as shown in the example!"));
       }
       elseif(!is_numeric($_POST['port_number']) ||
          $_POST['port_number'] <= 0 || $_POST['port_number'] >= 65536) {
-         $ms->throwError(_("Please enter a decimal port number within 1 - 65535!"));
+         $ms->raiseError(_("Please enter a decimal port number within 1 - 65535!"));
       }
 
       $port_data = $ms->filter_form_data($_POST, 'port_');

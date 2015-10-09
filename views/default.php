@@ -38,12 +38,27 @@ abstract class DefaultView extends Templates
 
     public function __construct()
     {
-        global $ms, $config;
+        global $ms, $config, $session;
+
         parent::__construct();
 
         if (!isset($this->class_name)) {
-            $ms->raiseError("Class has not defined property 'class_name'. Something is wrong with it");
+            $ms->raiseError("Class has not defined property 'class_name'. Something is wrong with it", true);
+            return false;
         }
+
+        /*if ($session->isLoggedIn()) {
+
+            if (!($user = $session->getUserDetails())) {
+                $ms->raiseError(get_class($session) .'::getUserDetails() returned false!', true);
+                return false;
+            }
+
+            $this->assign('user_name', $user->user_name);
+            return true;
+        }*/
+
+        return true;
     }
 
     public function show()
@@ -156,6 +171,23 @@ abstract class DefaultView extends Templates
 
         return true;
     }
+
+   /**
+    * returns true if storing is requested
+    *
+    * @return bool
+    */
+   public function is_storing()
+   {
+      if(!isset($_POST['action']) || empty($_POST['action']))
+         return false;
+
+      if($_POST['action'] == 'store')
+         return true;
+
+      return false;
+
+   } // is_storing()
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
