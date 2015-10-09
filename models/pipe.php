@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Pipe extends MsObject {
+namespace MasterShaper\Models;
 
+class PipeModel extends DefaultModel
+{
    /**
     * Pipe constructor
     *

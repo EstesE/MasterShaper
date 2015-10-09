@@ -21,46 +21,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class User extends MsObject {
+namespace MasterShaper\Models;
 
+class HostProfileModel extends DefaultModel
+{
    /**
-    * User constructor
+    * Host_Profile constructor
     *
-    * Initialize the User class
+    * Initialize the Host_Profile class
     */
    public function __construct($id = null)
    {
       parent::__construct($id, Array(
-         'table_name' => 'users',
-         'col_name' => 'user',
+         'table_name' => 'host_profiles',
+         'col_name' => 'host',
          'fields' => Array(
-            'user_idx' => 'integer',
-            'user_name' => 'text',
-            'user_pass' => 'text',
-            'user_manage_chains' => 'text',
-            'user_manage_pipes' => 'text',
-            'user_manage_filters' => 'text',
-            'user_manage_ports' => 'text',
-            'user_manage_protocols' => 'text',
-            'user_manage_targets' => 'text',
-            'user_manage_users' => 'text',
-            'user_manage_options' => 'text',
-            'user_manage_servicelevels' => 'text',
-            'user_show_rules' => 'text',
-            'user_load_rules' => 'text',
-            'user_show_monitor' => 'text',
-            'user_active' => 'text',
+            'host_idx' => 'integer',
+            'host_name' => 'text',
+            'host_active' => 'text',
+            'host_heartbeat' => 'timestamp',
          ),
       ));
 
       if(!isset($id) || empty($id)) {
          parent::init_fields(Array(
-            'user_active' => 'Y',
+            'host_active' => 'Y',
          ));
       }
 
    } // __construct()
-  
-} // class User
+
+   public function pre_delete()
+   {
+      global $db, $ms;
+
+      if($this->id == 1) {
+         $ms->throwError('You can not delete the default host profile!');
+      }
+
+   } // pre_delete()
+
+} // class Host_Profile
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

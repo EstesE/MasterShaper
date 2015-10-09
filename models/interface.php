@@ -21,29 +21,48 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Protocol extends MsObject {
+namespace MasterShaper\Models;
 
+class NetworkInterfaceModel extends DefaultModel
+{
    /**
-    * Protocol constructor
+    * Network_Interface constructor
     *
-    * Initialize the Protocol class
+    * Initialize the Network_Interface class
     */
    public function __construct($id = null)
    {
       parent::__construct($id, Array(
-         'table_name' => 'protocols',
-         'col_name' => 'proto',
+         'table_name' => 'interfaces',
+         'col_name' => 'if',
          'fields' => Array(
-            'proto_idx' => 'integer',
-            'proto_number' => 'text',
-            'proto_name' => 'text',
-            'proto_desc' => 'text',
-            'proto_user_defined' => 'text',
+            'if_idx' => 'integer',
+            'if_name' => 'text',
+            'if_speed' => 'text',
+            'if_fallback_idx' => 'integer',
+            'if_ifb' => 'text',
+            'if_active' => 'text',
+            'if_host_idx' => 'integer',
          ),
       ));
 
+      if(!isset($id) || empty($id)) {
+         parent::init_fields(Array(
+            'if_active' => 'Y',
+            'if_fallback_idx' => 0,
+         ));
+      }
+
    } // __construct()
 
-} // class Protocol
+   public function pre_save()
+   {
+      global $ms;
+
+      $this->if_host_idx = $ms->get_current_host_profile();
+
+   } // pre_save()
+
+} // class Network_Interface
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

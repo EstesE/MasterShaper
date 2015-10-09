@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Filter extends MsObject {
+namespace MasterShaper\Models;
 
+class FilteRModel extends DefaultModel
+{
    /**
     * Filter constructor
     *

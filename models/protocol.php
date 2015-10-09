@@ -21,44 +21,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Host_Profile extends MsObject {
+namespace MasterShaper\Models;
 
+class ProtocolModel extends DefaultModel
+{
    /**
-    * Host_Profile constructor
+    * Protocol constructor
     *
-    * Initialize the Host_Profile class
+    * Initialize the Protocol class
     */
    public function __construct($id = null)
    {
       parent::__construct($id, Array(
-         'table_name' => 'host_profiles',
-         'col_name' => 'host',
+         'table_name' => 'protocols',
+         'col_name' => 'proto',
          'fields' => Array(
-            'host_idx' => 'integer',
-            'host_name' => 'text',
-            'host_active' => 'text',
-            'host_heartbeat' => 'timestamp',
+            'proto_idx' => 'integer',
+            'proto_number' => 'text',
+            'proto_name' => 'text',
+            'proto_desc' => 'text',
+            'proto_user_defined' => 'text',
          ),
       ));
 
-      if(!isset($id) || empty($id)) {
-         parent::init_fields(Array(
-            'host_active' => 'Y',
-         ));
-      }
-
    } // __construct()
 
-   public function pre_delete()
-   {
-      global $db, $ms;
-
-      if($this->id == 1) {
-         $ms->throwError('You can not delete the default host profile!');
-      }
-
-   } // pre_delete()
-
-} // class Host_Profile
+} // class Protocol
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

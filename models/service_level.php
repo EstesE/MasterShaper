@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Service_Level extends MsObject {
+namespace MasterShaper\Models;
 
+class ServiceLevelModel extends DefaultModel
+{
    /**
     * Service_Level constructor
     *

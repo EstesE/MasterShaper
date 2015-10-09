@@ -21,46 +21,42 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Network_Interface extends MsObject {
+namespace MasterShaper\Models;
 
+class HostTaskModel extends DefaultModel
+{
    /**
-    * Network_Interface constructor
+    * Host_Task constructor
     *
-    * Initialize the Network_Interface class
+    * Initialize the Host_Task class
     */
    public function __construct($id = null)
    {
       parent::__construct($id, Array(
-         'table_name' => 'interfaces',
-         'col_name' => 'if',
+         'table_name' => 'tasks',
+         'col_name' => 'task',
          'fields' => Array(
-            'if_idx' => 'integer',
-            'if_name' => 'text',
-            'if_speed' => 'text',
-            'if_fallback_idx' => 'integer',
-            'if_ifb' => 'text',
-            'if_active' => 'text',
-            'if_host_idx' => 'integer',
+            'task_idx' => 'integer',
+            'task_job' => 'text',
+            'task_submit_time' => 'timestamp',
+            'task_run_time' => 'timestamp',
+            'task_host_idx' => 'integer',
+            'task_state' => 'text',
          ),
       ));
 
-      if(!isset($id) || empty($id)) {
-         parent::init_fields(Array(
-            'if_active' => 'Y',
-            'if_fallback_idx' => 0,
-         ));
-      }
-
    } // __construct()
 
-   public function pre_save()
+   public function pre_delete()
    {
-      global $ms;
+      global $db, $ms;
 
-      $this->if_host_idx = $ms->get_current_host_profile();
+      if($this->id == 1) {
+         $ms->throwError('You can not delete the default host profile!');
+      }
 
-   } // pre_save()
+   } // pre_delete()
 
-} // class Network_Interface
+} // class Host_Task
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

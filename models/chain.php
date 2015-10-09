@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Chain extends MsObject {
+namespace MasterShaper\Models;
 
+class ChainModel extends DefaultModel
+{
    /**
     * Chain constructor
     *

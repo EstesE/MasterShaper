@@ -21,54 +21,48 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Port extends MsObject {
+namespace MasterShaper\Models;
 
+class UserModel extends DefaultModel
+{
    /**
-    * Port constructor
+    * User constructor
     *
-    * Initialize the Port class
+    * Initialize the User class
     */
    public function __construct($id = null)
    {
       parent::__construct($id, Array(
-         'table_name' => 'ports',
-         'col_name' => 'port',
+         'table_name' => 'users',
+         'col_name' => 'user',
          'fields' => Array(
-            'port_idx' => 'integer',
-            'port_name' => 'text',
-            'port_desc' => 'text',
-            'port_number' => 'text',
-            'port_user_defined' => 'text',
+            'user_idx' => 'integer',
+            'user_name' => 'text',
+            'user_pass' => 'text',
+            'user_manage_chains' => 'text',
+            'user_manage_pipes' => 'text',
+            'user_manage_filters' => 'text',
+            'user_manage_ports' => 'text',
+            'user_manage_protocols' => 'text',
+            'user_manage_targets' => 'text',
+            'user_manage_users' => 'text',
+            'user_manage_options' => 'text',
+            'user_manage_servicelevels' => 'text',
+            'user_show_rules' => 'text',
+            'user_load_rules' => 'text',
+            'user_show_monitor' => 'text',
+            'user_active' => 'text',
          ),
       ));
 
-      return true;
+      if(!isset($id) || empty($id)) {
+         parent::init_fields(Array(
+            'user_active' => 'Y',
+         ));
+      }
 
    } // __construct()
-
-   /**
-    * delete port
-    */
-   public function post_delete()
-   {
-      global $db;
-
-      $sth = $db->db_prepare("
-         DELETE FROM
-            ". MYSQL_PREFIX ."assign_ports_to_filters
-         WHERE
-            afp_port_idx LIKE ?
-      ");
-
-      $db->db_execute($sth, array(
-         $this->id
-      ));
-
-      $db->db_sth_free($sth);
-      return true;
-
-   } // post_delete()
-
-} // class Port
+  
+} // class User
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

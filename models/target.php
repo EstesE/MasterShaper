@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Target extends MsObject {
+namespace MasterShaper\Models;
 
+class TargetModel extends DefaultModel
+{
    /**
     * Target constructor
     *

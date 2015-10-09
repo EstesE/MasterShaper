@@ -21,40 +21,56 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Host_Task extends MsObject {
+namespace MasterShaper\Models;
 
+class PortModel extends DefaultModel
+{
    /**
-    * Host_Task constructor
+    * Port constructor
     *
-    * Initialize the Host_Task class
+    * Initialize the Port class
     */
    public function __construct($id = null)
    {
       parent::__construct($id, Array(
-         'table_name' => 'tasks',
-         'col_name' => 'task',
+         'table_name' => 'ports',
+         'col_name' => 'port',
          'fields' => Array(
-            'task_idx' => 'integer',
-            'task_job' => 'text',
-            'task_submit_time' => 'timestamp',
-            'task_run_time' => 'timestamp',
-            'task_host_idx' => 'integer',
-            'task_state' => 'text',
+            'port_idx' => 'integer',
+            'port_name' => 'text',
+            'port_desc' => 'text',
+            'port_number' => 'text',
+            'port_user_defined' => 'text',
          ),
       ));
 
+      return true;
+
    } // __construct()
 
-   public function pre_delete()
+   /**
+    * delete port
+    */
+   public function post_delete()
    {
-      global $db, $ms;
+      global $db;
 
-      if($this->id == 1) {
-         $ms->throwError('You can not delete the default host profile!');
-      }
+      $sth = $db->db_prepare("
+         DELETE FROM
+            ". MYSQL_PREFIX ."assign_ports_to_filters
+         WHERE
+            afp_port_idx LIKE ?
+      ");
 
-   } // pre_delete()
+      $db->db_execute($sth, array(
+         $this->id
+      ));
 
-} // class Host_Task
+      $db->db_sth_free($sth);
+      return true;
+
+   } // post_delete()
+
+} // class Port
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

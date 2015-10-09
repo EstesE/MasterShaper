@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Network_Path extends MsObject {
+namespace MasterShaper\Models;
 
+class NetworkPathModel extends DefaultModel
+{
    /**
     * Network_Path constructor
     *
