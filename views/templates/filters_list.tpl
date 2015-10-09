@@ -3,7 +3,7 @@
  <tr>
   <td colspan="2" style="text-align: center;">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{$rewriter->get_page_url('Filter New')}">Create a new Filter</a>
+   <a href="{get_page_url page='Filter New'}">Create a new Filter</a>
   </td>
  </tr>
  <tr>
@@ -17,7 +17,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_filters}" alt="filter icon" />
-   <a href="{$rewriter->get_page_url('Filter Edit', $filter_idx)}">{$filter_name}</a>
+   <a href="{get_page_url page='Filter Edit' id=$filter_idx}">{$filter_name}</a>
   </td>
   <td style="text-align: center;">
    <a class="clone" id="filter-{$filter_idx}" title="Clone"><img src="{$icon_clone}" alt="clone icon" /></a>

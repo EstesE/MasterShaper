@@ -3,7 +3,7 @@
  <tr>
   <td colspan="3" style="text-align: center;">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{$rewriter->get_page_url('Service Level New')}">Create a new Service Level</a>
+   <a href="{get_page_url page='Service Level New'}">Create a new Service Level</a>
   </td>
  </tr>
  <tr>
@@ -18,7 +18,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_servicelevels}" alt="servicelevel icon" />
-   <a href="{$rewriter->get_page_url('Service Level Edit', $sl_idx)}">{$sl_name}</a>
+   <a href="{get_page_url page='Service Level Edit' id=$sl_idx}">{$sl_name}</a>
   </td>
   <td>
    <img src="{$icon_servicelevels}" alt="servicelevel icon" />

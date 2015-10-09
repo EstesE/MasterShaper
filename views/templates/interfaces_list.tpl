@@ -3,7 +3,7 @@
  <tr>
   <td style="text-align: center;" colspan="4">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{$rewriter->get_page_url('Interface New')}">Add a new Interface</a>
+   <a href="{get_page_url page='Interface New'}">Add a new Interface</a>
   </td>
  </tr>
  <tr>
@@ -19,14 +19,14 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_interfaces}" alt="interface icon" />
-   <a href="{$rewriter->get_page_url('Interface Edit', $if_idx)}">{$if_name}</a>
+   <a href="{get_page_url page='Interface Edit' id=$if_idx}">{$if_name}</a>
   </td>
   <td>
    {$if_speed}
   </td>
   <td>
    {if $if_fallback_idx != 0}
-    <a href="{$rewriter->get_page_url('Service Level Edit', $if_fallback_idx)}" title="Edit service level $if_fallback_name"><img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;{$if_fallback_name}</a>
+    <a href="{get_page_url page='Service Level Edit' id=$if_fallback_idx}" title="Edit service level $if_fallback_name"><img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;{$if_fallback_name}</a>
    {else}
     &nbsp;
    {/if}

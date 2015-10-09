@@ -1,4 +1,4 @@
-<form action="{$rewriter->get_page_url('Pipe Edit', $pipe_idx)}" id="chains" method="POST">
+<form action="{get_page_url page='Pipe Edit' id=$pipe_idx}" id="chains" method="POST">
 <input type="hidden" name="module" value="chain" />
 <input type="hidden" name="action" value="store" />
 <input type="hidden" name="assign-pipe" value="true" />

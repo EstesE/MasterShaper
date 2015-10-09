@@ -1,4 +1,4 @@
-<form id="login" action="{get_page_url('Login')}" method="POST">
+<form id="login" action="{get_page_url page='Login'}" method="POST">
  <input type="hidden" name="action" value="do_login" />
  <table style="width: 100%;">
   <tr>

@@ -327,7 +327,7 @@
   <td colspan="3">&nbsp;</td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="{$rewriter->get_page_url('Service Levels List')}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{get_page_url page='Service Levels List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
   {include file="common_edit_save.tpl" newobj="Service Level"}
  </tr>
 </table> 
@@ -336,13 +336,13 @@
 This target is assigned to the following objects:<br />
 {foreach from=$obj_used key=obj_idx item=obj name=objects}
  {if $obj->type == 'pipe'}
-  <a href="{$rewriter->get_page_url('Pipe Edit', $obj->idx)}" title="Edit pipe {$obj->name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+  <a href="{get_page_url page='Pipe Edit' id=$obj->idx}" title="Edit pipe {$obj->name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
  {/if}
  {if $obj->type == 'chain'}
-  <a href="{$rewriter->get_page_url('Chain Edit', $obj->idx)}" title="Edit chain {$obj->name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+  <a href="{get_page_url page='Chain Edit' id=$obj->idx}" title="Edit chain {$obj->name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
  {/if}
  {if $obj->type == 'interface'}
-  <a href="{$rewriter->get_page_url('Interface Edit', $obj->idx)}" title="Edit interface {$obj->name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+  <a href="{get_page_url page='Interface Edit' id=$obj->idx}" title="Edit interface {$obj->name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
  {/if}
 {foreachelse}
  none

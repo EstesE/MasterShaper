@@ -6,7 +6,7 @@
  <tr>
   <td colspan="3" style="text-align: center;">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{$rewriter->get_page_url('Target New')}">Create a new Target</a>
+   <a href="{get_page_url page'Target New'}">Create a new Target</a>
   </td>
  </tr>
  <tr>
@@ -21,7 +21,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_targets}" alt="target icon" />
-   <a href="{$rewriter->get_page_url('Target Edit', $target_idx)}">{$target_name}</a>
+   <a href="{get_page_url page='Target Edit' id=$target_idx}">{$target_name}</a>
   </td>
   <td>
    <img src="{$icon_targets}" alt="target icon" />

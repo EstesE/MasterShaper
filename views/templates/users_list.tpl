@@ -3,7 +3,7 @@
  <tr>
   <td style="text-align: center;" colspan="2">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{$rewriter->get_page_url('User New')}">Create a new User</a>
+   <a href="{get_page_url page='User New'}">Create a new User</a>
   </td>
  </tr>
  <tr>
@@ -17,7 +17,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_users}" alt="user icon" />
-   <a href="{$rewriter->get_page_url('User Edit', $user_idx)}">{$user_name}</a>
+   <a href="{get_page_url page='User Edit' id=$user_idx}">{$user_name}</a>
   </td>
   <td style="text-align: center;">
    <a class="delete" id="user-{$user_idx}" title="Delete"><img src="{$icon_delete}" alt="delete icon" /></a>

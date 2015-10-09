@@ -3,7 +3,7 @@
  <tr>
   <td style="text-align: center;" colspan="4">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{$rewriter->get_page_url('Host Profile New')}">Define a new Host Profile</a>
+   <a href="{get_page_url page='Host Profile New'}">Define a new Host Profile</a>
   </td>
  </tr>
  <tr>
@@ -17,7 +17,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_hosts}" alt="host icon" />
-   <a href="{$rewriter->get_page_url('Host Profile Edit', $host_idx)}">{$host_name}</a>
+   <a href="{get_page_url page='Host Profile Edit' id=$host_idx}">{$host_name}</a>
   </td>
   <td style="text-align: center;">
    <a class="clone" id="hostprofile-{$host_idx}" title="Clone"><img src="{$icon_clone}" alt="clone icon" /></a>

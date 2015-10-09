@@ -4,39 +4,39 @@
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>{$page_title}</title>
-  <link href="{$web_path}/shaper_style.css" type="text/css" rel="stylesheet" />
-  <link rel="shortcut icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
-  <link rel="icon" href="{$web_path}/icons/favicon.ico" type="image/png" />
+  <link href="{$web_path}/resources/shaper_style.css" type="text/css" rel="stylesheet" />
+  <link rel="shortcut icon" href="{$web_path}/resources/icons/favicon.ico" type="image/png" />
+  <link rel="icon" href="{$web_path}/resources/icons/favicon.ico" type="image/png" />
   <!-- jQuery -->
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jquery-1.8.0.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/plugins/jquery.color.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jquery-1.8.0.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/plugins/jquery.color.js"></script>
   <!-- jqPlot -->
   <!--[if IE]><script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/excanvas.js"></script><![endif]-->
-  <link rel="stylesheet" type="text/css" href="{$web_path}/jquery/jqplot/jquery.jqplot.css" />
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/jquery.jqplot.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.cursor.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.barRenderer.min.js"></script>
-  <script language="javascript" type="text/javascript" src="{$web_path}/jquery/jqplot/plugins/jqplot.pointLabels.js"></script>
+  <link rel="stylesheet" type="text/css" href="{$web_path}/resources/jquery/jqplot/jquery.jqplot.css" />
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/jquery.jqplot.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/plugins/jqplot.cursor.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/plugins/jqplot.canvasTextRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/plugins/jqplot.pieRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/plugins/jqplot.barRenderer.min.js"></script>
+  <script language="javascript" type="text/javascript" src="{$web_path}/resources/jquery/jqplot/plugins/jqplot.pointLabels.js"></script>
   <!-- jQuery UI -->
-  <link type="text/css" href="{$web_path}/jquery/ui/css/smoothness/jquery-ui-1.8.22.custom.css" rel="Stylesheet" />
-  <script type="text/javascript" src="{$web_path}/jquery/ui/js/jquery-ui-1.8.22.custom.min.js"></script>
+  <link type="text/css" href="{$web_path}/resources/jquery/ui/css/smoothness/jquery-ui-1.8.22.custom.css" rel="Stylesheet" />
+  <script type="text/javascript" src="{$web_path}/resources/jquery/ui/js/jquery-ui-1.8.22.custom.min.js"></script>
   <!-- mb.menu -->
-  <script type="text/javascript" src="{$web_path}/jquery/menu/jquery.metadata.min.js"></script>
-  <script type="text/javascript" src="{$web_path}/jquery/menu/jquery.hoverIntent.min.js"></script>
-  <script type="text/javascript" src="{$web_path}/jquery/menu/mbMenu.min.js"></script>
+  <script type="text/javascript" src="{$web_path}/resources/jquery/menu/jquery.metadata.min.js"></script>
+  <script type="text/javascript" src="{$web_path}/resources/jquery/menu/jquery.hoverIntent.min.js"></script>
+  <script type="text/javascript" src="{$web_path}/resources/jquery/menu/mbMenu.min.js"></script>
   <!-- our own js stuff -->
-  <script type="text/javascript" src="{$web_path}/shaper.js"></script>
+  <script type="text/javascript" src="{$web_path}/resources/shaper.js"></script>
  </head>
  <body>
   <!-- header cell -->
   <div style="height: 10px;"></div>
   <div style="width: 100%; height: 70px;">
-   <a href="{$web_path}"><img src="{$web_path}/images/ms_logo.png" /></a>
+   <a href="{$web_path}"><img src="{$web_path}/resources/images/ms_logo.png" /></a>
   </div>
   <!-- /header cell -->   
 
@@ -50,7 +50,7 @@
       {if !isset($user_name) || empty($user_name)}
        <div><img src="{$icon_home}" />&nbsp;MasterShaper Login</div>
       {else}
-       <form action="{$rewriter->get_page_url('Logout')}" method="POST">
+       <form action="{get_page_url page='Logout'}" method="POST">
        <input type='hidden' name='action' value='do_logout' />
        <div>
         <img src="{$icon_home}" />&nbsp;MasterShaper Login - logged in as {$user_name}
@@ -66,7 +66,7 @@
         {host_profile_select_list}
        </select>
        Agent:
-       <a href="{$rewriter->get_page_url('Host Tasklist')}" title="Host Tasklist"><img src="{$icon_ready}" id="readybusyico" /></a>
+       <a href="{get_page_url page='Host Tasklist'}" title="Host Tasklist"><img src="{$icon_ready}" id="readybusyico" /></a>
       {/if}
      </td>
      <td style="width: 15px;">&nbsp;</td>

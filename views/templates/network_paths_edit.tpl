@@ -105,7 +105,7 @@
     {chain_list}
      <tr id="chain{$chain->chain_idx}" {if $chain->chain_active != 'Y'} style="opacity: 0.5;" {/if} onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
       <td class="chain_dragger">
-       <a href="{$rewriter->get_page_url('Chain Edit', $chain->chain_idx)}" title="Edit chain {$chain->chain_name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$chain->chain_name}</a>
+       <a href="{get_page_url page='Chain Edit' id=$chain->chain_idx}" title="Edit chain {$chain->chain_name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$chain->chain_name}</a>
       </td>
       <td style="text-align: center;">
        <input type="hidden" name="used[]" value="{$chain->chain_idx}" />
@@ -128,7 +128,7 @@
   </td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="{$rewriter->get_page_url('Network Paths List')}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{get_page_url page='Network Paths List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
   {include file="common_edit_save.tpl" newobj="Network Path"}
  </tr>
 </table>
