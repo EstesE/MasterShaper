@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Targets extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class TargetsView extends DefaultView
+{
    /**
     * Page_Targets constructor
     *

@@ -23,8 +23,6 @@
 
 namespace MasterShaper\Views ;
 
-use MasterShaper\Models;
-
 class LoginView extends DefaultView
 {
     public $class_name = 'login';

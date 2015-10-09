@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Pipes extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class PipesView extends DefaultView
+{
    /**
     * Page_Pipes constructor
     *

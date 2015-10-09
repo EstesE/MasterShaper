@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Interfaces extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class InterfacesView extends DefaultView
+{
    /**
     * Page_Interfaces constructor
     *

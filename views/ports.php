@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Ports extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class PortsView extends DefaultView
+{
    /**
     * Page_Ports constructor
     *

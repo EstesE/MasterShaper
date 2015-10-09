@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Service_Levels extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class ServiceLevelView extends DefaultView
+{
    /**
     * Page_Service_Levels constructor
     *

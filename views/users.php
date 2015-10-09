@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Users extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class UsersView extends DefaultView
+{
    /**
     * Page_Users constructor
     *

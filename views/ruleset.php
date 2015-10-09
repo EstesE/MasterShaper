@@ -21,11 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once "class/rules/ruleset.php";
-require_once "class/rules/interface.php";
+namespace MasterShaper\Views;
 
-class Page_Ruleset extends MASTERSHAPER_PAGE {
-
+class RulesetView extends DefaultView
+{
    /**
     * Page_Ruleset constructor
     *

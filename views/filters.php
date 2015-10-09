@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Filters extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class FiltersView extends DefaultView
+{
    /**
     * Page_Filters constructor
     *

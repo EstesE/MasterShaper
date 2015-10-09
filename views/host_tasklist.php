@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Host_Tasklist extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class HostTaskListView extends DefaultView
+{
    /**
     * Page_Host_Tasklist constructor
     *

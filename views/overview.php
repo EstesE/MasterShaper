@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Overview extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class OverviewView extends DefaultView
+{
    private $db;
    private $parent;
    private $tmpl;

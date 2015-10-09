@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Update_IANA extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class UpdateIanaView extends DefaultView
+{
    /**
     * Page_Update_IANA constructor
     *

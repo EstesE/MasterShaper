@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Monitor extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class MonitorView extends DefaultView
+{
    private $total;
    private $names;
    private $colors;

@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Options extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class OptionsView extends DefaultView
+{
    /**
     * Page_Options constructor
     *

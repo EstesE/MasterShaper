@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Host_Profiles extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class HostProfilesView extends DefaultView
+{
    /**
     * Page_Host_Profiles constructor
     *

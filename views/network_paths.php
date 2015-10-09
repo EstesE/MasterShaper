@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Network_Paths extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class NetworkPathsView extends DefaultView
+{
    /**
     * Page_Network_Paths constructor
     *

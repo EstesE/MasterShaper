@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_About extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class AboutView extends DefaultView
+{
    /**
     * Page_About constructor
     *

@@ -23,8 +23,6 @@
 
 namespace MasterShaper\Views ;
 
-use MasterShaper\Models;
-
 class MainView extends DefaultView
 {
     public $class_name = 'main';

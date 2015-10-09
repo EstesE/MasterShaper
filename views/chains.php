@@ -21,8 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-class Page_Chains extends MASTERSHAPER_PAGE {
+namespace MasterShaper\Views;
 
+class ChainsView extends DefaultView
+{
    /**
     * Page_Chains constructor
     *
