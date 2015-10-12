@@ -61,4 +61,4 @@ class Host_Profile extends MsObject {
 
 } // class Host_Profile
 
-?>
+// vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

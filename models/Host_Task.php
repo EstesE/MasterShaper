@@ -57,4 +57,4 @@ class Host_Task extends MsObject {
 
 } // class Host_Task
 
-?>
+// vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
