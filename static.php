@@ -93,7 +93,10 @@ function autoload($class)
         exit(1);
     }
 
-    require_once $filename;
+    if (!require_once($filename)) {
+        error("File ". $filename ." can not be included!");
+        exit(1);
+    }
 }
 
 function error($string)
