@@ -21,19 +21,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-namespace MasterShaper\Views;
+namespace MasterShaper\Controllers;
 
 use Smarty;
 
-abstract class Templates extends Smarty
+class TemplatesController extends DefaultController
 {
     const CONFIG_DIRECTORY = MASTERSHAPER_BASE ."/config";
     const CACHE_DIRECTORY = MASTERSHAPER_BASE ."/cache";
 
-    public $template_dir;
-    public $compile_dir;
-    public $config_dir;
-    public $cache_dir;
+    private $smarty;
+
+    public $config_template_dir;
+    public $config_compile_dir;
+    public $config_config_dir;
+    public $config_cache_dir;
     public $supported_modes = array (
             'list',
             'show',
@@ -49,20 +51,25 @@ abstract class Templates extends Smarty
     {
         global $ms, $config, $views;
 
-        parent::__construct();
+        try {
+            $this->smarty = new Smarty;
+        } catch (\Exception $e) {
+            $ms->raiseError('Failed to load Smarty!', true);
+            return false;
+        }
 
         // disable template caching during development
-        $this->setCaching(Smarty::CACHING_OFF);
-        $this->force_compile = true;
-        $this->caching = false;
+        $this->smarty->setCaching(Smarty::CACHING_OFF);
+        $this->smarty->force_compile = true;
+        $this->smarty->caching = false;
+        parent::__construct();
 
+        $this->config_template_dir = MASTERSHAPER_BASE .'/views/templates';
+        $this->config_compile_dir  = self::CACHE_DIRECTORY .'/templates_c';
+        $this->config_config_dir   = self::CACHE_DIRECTORY .'/smarty_config';
+        $this->config_cache_dir    = self::CACHE_DIRECTORY .'/smarty_cache';
 
-        $this->template_dir = MASTERSHAPER_BASE .'/views/templates';
-        $this->compile_dir  = self::CACHE_DIRECTORY .'/templates_c';
-        $this->config_dir   = self::CACHE_DIRECTORY .'/smarty_config';
-        $this->cache_dir    = self::CACHE_DIRECTORY .'/smarty_cache';
-
-        if (!file_exists($this->compile_dir) && !is_writeable(self::CACHE_DIRECTORY)) {
+        if (!file_exists($this->config_compile_dir) && !is_writeable(self::CACHE_DIRECTORY)) {
             $ms->raiseError(
                 "Cache directory ". CACHE_DIRECTORY ." is not writeable"
                 ."for user (". $this->getuid() .").<br />\n"
@@ -70,24 +77,24 @@ abstract class Templates extends Smarty
             );
         }
 
-        if (!file_exists($this->compile_dir) && !mkdir($this->compile_dir, 0700)) {
-            $ms->raiseError("Failed to create directory ". $this->compile_dir);
+        if (!file_exists($this->config_compile_dir) && !mkdir($this->config_compile_dir, 0700)) {
+            $ms->raiseError("Failed to create directory ". $this->config_compile_dir);
             return false;
         }
 
-        if (!is_writeable($this->compile_dir)) {
+        if (!is_writeable($this->config_compile_dir)) {
             $ms->raiseError(
-                "Error - Smarty compile directory ". $this->compile_dir ." is not writeable
+                "Error - Smarty compile directory ". $this->config_compile_dir ." is not writeable
                 for the current user (". $this->getuid() .").<br />\n
                 Please check that permissions are set correctly to this directory.<br />\n"
             );
             return false;
         }
 
-        $this->setTemplateDir($this->template_dir);
-        $this->setCompileDir($this->compile_dir);
-        $this->setConfigDir($this->config_dir);
-        $this->setCacheDir($this->cache_dir);
+        $this->smarty->setTemplateDir($this->config_template_dir);
+        $this->smarty->setCompileDir($this->config_compile_dir);
+        $this->smarty->setConfigDir($this->config_config_dir);
+        $this->smarty->setCacheDir($this->config_cache_dir);
 
         if (!($base_web_path = $config->getWebPath())) {
             $ms->raiseError("Web path is missing!");
@@ -180,7 +187,9 @@ abstract class Templates extends Smarty
             array(&$this, "getHumanReadableFilesize"),
             false
         );
-        $this->registerPlugin('function', 'get_page_url', array(&$views, 'getPageUrl'), false);
+        $this->registerPlugin('function', 'get_page_url', array(&$this, 'getPageUrl'), false);
+
+        return true;
     }
 
     public function smartyStartTable($params, &$smarty)
@@ -188,7 +197,7 @@ abstract class Templates extends Smarty
         $this->assign('title', $params['title']);
         $this->assign('icon', $params['icon']);
         $this->assign('alt', $params['alt']);
-        $this->show('start_table.tpl');
+        $this->fetch('start_table.tpl');
     }
 
     public function smartyPageEnd($params, &$smarty)
@@ -577,13 +586,14 @@ abstract class Templates extends Smarty
     ) {
         global $ms;
 
-        if (!file_exists($this->template_dir."/". $template)) {
-            $ms->raiseError("Unable to locate ". $template ." in directory ". $this->template_dir);
+        if (!file_exists($this->config_template_dir ."/". $template)) {
+            $ms->raiseError("Unable to locate ". $template ." in directory ". $this->config_template_dir);
+            return false;
         }
 
         // Now call parent method
         try {
-            $result =  parent::fetch(
+            $result =  $this->smarty->fetch(
                 $template,
                 $cache_id,
                 $compile_id,
@@ -594,6 +604,9 @@ abstract class Templates extends Smarty
             );
         } catch (\SmartyException $e) {
             $ms->raiseError("Smarty throwed an exception! ". $e->getMessage());
+            return false;
+        } catch (\Exception $e) {
+            $ms->raiseError('An exception occured: '. $e->getMessage());
             return false;
         }
 
@@ -632,6 +645,82 @@ abstract class Templates extends Smarty
         }
 
         return round($params['size']/1048576, 2) ."MB";
+    }
+
+    public function assign($key, $value)
+    {
+        global $ms;
+
+        if (!$this->smarty->assign($key, $value)) {
+            $ms->raiseError(get_class($this->smarty) .'::assign() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function registerPlugin($type, $name, $callback, $cacheable = true)
+    {
+        global $ms;
+
+        if (!$this->smarty->registerPlugin($type, $name, $callback, $cacheable)) {
+            $ms->raiseError(get_class($this->smarty) .'::registerPlugin() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * return requested page
+     *
+     * @param string
+     */
+    public function getPageUrl($params, &$smarty)
+    {
+        global $ms, $db, $config;
+
+        if (!array_key_exists('page', $params)) {
+            $ms->raiseError("getUrl: missing 'page' parameter", E_USER_WARNING);
+            $repeat = false;
+            return false;
+        }
+
+        $sth = $db->prepare(
+            "SELECT
+                page_uri
+            FROM
+                TABLEPREFIXpages
+            WHERE
+                page_name LIKE ?"
+        );
+
+        $db->execute($sth, array(
+            $params['page']
+        ));
+
+        if ($sth->rowCount() <= 0) {
+            $db->freeStatement($sth);
+            return false;
+        }
+
+        if (($row = $sth->fetch()) === false) {
+            $db->freeStatement($sth);
+            return false;
+        }
+
+        if (!isset($row->page_uri)) {
+            $db->freeStatement($sth);
+            return false;
+        }
+
+        if (isset($params['id']) && !empty($params['id'])) {
+            $row->page_uri = str_replace("[id]", (int) $params['id'], $row->page_uri);
+        }
+
+        $db->freeStatement($sth);
+        $url = $config->getWebPath() .'/'. $row->page_uri;
+        return $url;
     }
 }
 
