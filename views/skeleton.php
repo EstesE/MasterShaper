@@ -33,7 +33,20 @@ class SkeletonView extends DefaultView
      */
     public function show()
     {
-        return $this->fetch('skeleton.tpl');
+        global $tmpl;
+        return $tmpl->fetch('skeleton.tpl');
+    }
+
+    public function setPageContent($content)
+    {
+        global $ms, $tmpl;
+
+        if (!($tmpl->assign('page_content', $content))) {
+            $ms->raiseError(get_class($tmpl) .'::assign() returned false!');
+            return false;
+        }
+
+        return true;
     }
 }
 
