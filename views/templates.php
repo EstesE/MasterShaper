@@ -183,7 +183,7 @@ abstract class Templates extends Smarty
         $this->registerPlugin('function', 'get_page_url', array(&$views, 'getPageUrl'), false);
     }
 
-    public function smartStartTable($params, &$smarty)
+    public function smartyStartTable($params, &$smarty)
     {
         $this->assign('title', $params['title']);
         $this->assign('icon', $params['icon']);
@@ -492,14 +492,14 @@ abstract class Templates extends Smarty
             return $zero;
         }
 
-        $result = $db->query("
-                SELECT
-                    ". $column_prefix ."_name
-                FROM
-                    TABLEPREFIX{$table}
-                WHERE
-                    ". $column_prefix ."_idx LIKE '". $params['idx'] ."'
-                ");
+        $result = $db->query(
+            "SELECT
+                ". $column_prefix ."_name
+            FROM
+                TABLEPREFIX{$table}
+            WHERE
+                ". $column_prefix ."_idx LIKE '". $params['idx'] ."'"
+        );
 
         if ($row = $result->fetch(PDO::FETCH_NUM)) {
             $db->db_sth_free($result);
