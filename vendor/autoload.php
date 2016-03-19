@@ -21,6 +21,7 @@ function autoload($class)
 {
     $prefixes = array(
         'Thallium',
+        'MasterShaper',
     );
 
     $class = str_replace("\\", "/", $class);
