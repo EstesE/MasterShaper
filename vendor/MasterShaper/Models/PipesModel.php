@@ -27,7 +27,66 @@ class PipesModel extends DefaultModel
     protected static $model_table_name = 'pipes';
     protected static $model_column_prefix = 'pipe';
     protected static $model_has_items = true;
-    protected static $model_items_model = 'pipe';
+    protected static $model_items_model = 'PipeModel';
+
+    public function updatePositions($ms_objects = null)
+    {
+        global $db;
+
+        if (!isset($ms_objects) or empty($ms_objects)) {
+            return true;
+        }
+
+        // get all pipes used by chain
+        $sth = $db->prepare(
+            "SELECT
+                apc_pipe_idx as pipe_idx
+            FROM
+                TABLEPREFIXassign_pipes_to_chains
+            WHERE
+                apc_chain_idx LIKE ?
+            ORDER BY
+                apc_pipe_pos ASC"
+        );
+
+        $sth_update = $db->db_prepare(
+            "UPDATE
+                TABLEPREFIXassign_pipes_to_chains
+            SET
+                apc_pipe_pos=?
+            WHERE
+                apc_pipe_idx=?
+            AND
+                apc_chain_idx=?"
+        );
+
+        // loop through all provided chain ids
+        foreach ($ms_objects as $chain) {
+
+            $db->execute($sth, array(
+                $chain
+            ));
+
+            // update all pipes position assign to this chain
+            $pos = 1;
+
+            while ($pipe = $sth->fetch()) {
+
+                $db->execute($sth_update, array(
+                    $pos,
+                    $pipe->pipe_idx,
+                    $chain
+                ));
+
+                $pos++;
+            }
+
+        }
+
+        $db->freeStatement($sth);
+        $db->freeStatement($sth_update);
+        return true;
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
