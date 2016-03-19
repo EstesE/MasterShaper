@@ -3,9 +3,9 @@
 /**
  *
  * This file is part of MasterShaper.
-
+ *
  * MasterShaper, a web application to handle Linux's traffic shaping
- * Copyright (C) 2015 Andreas Unterkircher <unki@netshadow.net>
+ * Copyright (C) 2007-2016 Andreas Unterkircher <unki@netshadow.net>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -25,38 +25,31 @@ namespace MasterShaper\Models;
 
 class HostTaskModel extends DefaultModel
 {
-   /**
-    * Host_Task constructor
-    *
-    * Initialize the Host_Task class
-    */
-   public function __construct($id = null)
-   {
-      parent::__construct($id, Array(
-         'table_name' => 'tasks',
-         'col_name' => 'task',
-         'fields' => Array(
-            'task_idx' => 'integer',
-            'task_job' => 'text',
-            'task_submit_time' => 'timestamp',
-            'task_run_time' => 'timestamp',
-            'task_host_idx' => 'integer',
-            'task_state' => 'text',
-         ),
-      ));
-
-   } // __construct()
-
-   public function pre_delete()
-   {
-      global $db, $ms;
-
-      if($this->id == 1) {
-         $ms->throwError('You can not delete the default host profile!');
-      }
-
-   } // pre_delete()
-
-} // class Host_Task
+    protected static $model_table_name = 'tasks';
+    protected static $model_column_prefix = 'task';
+    protected static $model_fields = array(
+        'idx' => array(
+            FIELD_TYPE => FIELD_INT,
+        ),
+        'guid' => array(
+            FIELD_TYPE => FIELD_GUID,
+        ),
+        'job' => array(
+            FIELD_TYPE => FIELD_STR,
+        ),
+        'submit_time' => array(
+            FIELD_TYPE => FIELD_TIMESTAMP,
+        ),
+        'run_time' => array(
+            FIELD_TYPE => FIELD_TIMESTAMP,
+        ),
+        'host_idx' => array(
+            FIELD_TYPE => FIELD_INT,
+        ),
+        'state' => array(
+            FIELD_TYPE => FIELD_STR,
+        ),
+    );
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
