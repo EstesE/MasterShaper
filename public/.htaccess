@@ -1,7 +1,13 @@
+#
+# If rewriting is not configured in your webservers
+# configuration you may want to enable it via .htaccess
+# instead. Just copy/rename htaccess.example into .htaccess
+# and adapt the RewriteBase to your actual webapplication
+# URL path.
+#
 RewriteEngine On
 RewriteBase /shaper/
 
 RewriteCond %{SCRIPT_FILENAME} !-d
 RewriteCond %{SCRIPT_FILENAME} !-f
 RewriteRule ^.*$ ./index.php
-#RewriteRule ^(.*)/$ /$1 [L,R=301]
