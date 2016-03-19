@@ -3,9 +3,9 @@
 /**
  *
  * This file is part of MasterShaper.
-
+ *
  * MasterShaper, a web application to handle Linux's traffic shaping
- * Copyright (C) 2015 Andreas Unterkircher <unki@netshadow.net>
+ * Copyright (C) 2007-2016 Andreas Unterkircher <unki@netshadow.net>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -25,42 +25,38 @@ namespace MasterShaper\Models;
 
 class HostProfileModel extends DefaultModel
 {
-   /**
-    * Host_Profile constructor
-    *
-    * Initialize the Host_Profile class
-    */
-   public function __construct($id = null)
-   {
-      parent::__construct($id, Array(
-         'table_name' => 'host_profiles',
-         'col_name' => 'host',
-         'fields' => Array(
-            'host_idx' => 'integer',
-            'host_name' => 'text',
-            'host_active' => 'text',
-            'host_heartbeat' => 'timestamp',
-         ),
-      ));
+    protected static $model_table_name = 'host_profiles';
+    protected static $model_column_prefix = 'host';
+    protected static $model_fields = array(
+        'idx' => array(
+            FIELD_TYPE => FIELD_INT,
+        ),
+        'guid' => array(
+            FIELD_TYPE => FIELD_GUID,
+        ),
+        'name' => array(
+            FIELD_TYPE => FIELD_STR,
+        ),
+        'active' => array(
+            FIELD_TYPE => FIELD_YESNO,
+            FIELD_DEFAULT => 'Y',
+        ),
+        'host_heartbeat' => array(
+            FIELD_TYPE => FIELD_TIMESTAMP,
+        ),
+    );
 
-      if(!isset($id) || empty($id)) {
-         parent::init_fields(Array(
-            'host_active' => 'Y',
-         ));
-      }
+    public function preDelete()
+    {
+        global $db, $ms;
 
-   } // __construct()
+        if ($this->id == 1) {
+            $ms->throwError('You can not delete the default host profile!');
+            return false;
+        }
 
-   public function pre_delete()
-   {
-      global $db, $ms;
-
-      if($this->id == 1) {
-         $ms->throwError('You can not delete the default host profile!');
-      }
-
-   } // pre_delete()
-
-} // class Host_Profile
+        return true;
+    }
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
