@@ -6,7 +6,7 @@
 # URL path.
 #
 RewriteEngine On
-RewriteBase /thallium/
+RewriteBase /shaper/
 
 RewriteCond %{SCRIPT_FILENAME} !-d
 RewriteCond %{SCRIPT_FILENAME} !-f
