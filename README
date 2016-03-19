@@ -1,6 +1,6 @@
 Package Name: MasterShaper
-Version:      0.60
-Author:       Andreas Unterkircher <unki@netshadow.at>
+Version:      1.0
+Author:       Andreas Unterkircher <unki@netshadow.net>
 Website:      http://www.mastershaper.org
 Desc:         Websolution for Linux network traffic shaping
               and QoS with iproute2.
