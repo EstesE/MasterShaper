@@ -1,41 +1,26 @@
 <?php
 
 /**
- *
  * This file is part of MasterShaper.
-
+ *
  * MasterShaper, a web application to handle Linux's traffic shaping
- * Copyright (C) 2015 Andreas Unterkircher <unki@netshadow.net>
-
+ * Copyright (C) 2007-2016 Andreas Unterkircher <unki@netshadow.net>
+ *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
-
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace MasterShaper\Controllers;
 
-use Smarty;
-
-class TemplatesController extends DefaultController
+class TemplatesController extends \Thallium\Controllers\TemplatesController
 {
-    const CONFIG_DIRECTORY = MASTERSHAPER_BASE ."/config";
-    const CACHE_DIRECTORY = MASTERSHAPER_BASE ."/cache";
-
-    private $smarty;
-
-    public $config_template_dir;
-    public $config_compile_dir;
-    public $config_config_dir;
-    public $config_cache_dir;
     public $supported_modes = array (
             'list',
             'show',
@@ -49,60 +34,13 @@ class TemplatesController extends DefaultController
 
     public function __construct()
     {
-        global $ms, $config, $views;
+        global $config;
 
-        try {
-            $this->smarty = new Smarty;
-        } catch (\Exception $e) {
-            $ms->raiseError('Failed to load Smarty!', true);
-            return false;
-        }
-
-        // disable template caching during development
-        $this->smarty->setCaching(Smarty::CACHING_OFF);
-        $this->smarty->force_compile = true;
-        $this->smarty->caching = false;
         parent::__construct();
 
-        $this->config_template_dir = MASTERSHAPER_BASE .'/views/templates';
-        $this->config_compile_dir  = self::CACHE_DIRECTORY .'/templates_c';
-        $this->config_config_dir   = self::CACHE_DIRECTORY .'/smarty_config';
-        $this->config_cache_dir    = self::CACHE_DIRECTORY .'/smarty_cache';
-
-        if (!file_exists($this->config_compile_dir) && !is_writeable(self::CACHE_DIRECTORY)) {
-            $ms->raiseError(
-                "Cache directory ". CACHE_DIRECTORY ." is not writeable"
-                ."for user (". $this->getuid() .").<br />\n"
-                ."Please check that permissions are set correctly to this directory.<br />\n"
-            );
-        }
-
-        if (!file_exists($this->config_compile_dir) && !mkdir($this->config_compile_dir, 0700)) {
-            $ms->raiseError("Failed to create directory ". $this->config_compile_dir);
+        if (($base_web_path = $config->getWebPath()) === false) {
+            $this->raiseError(get_class($config) .'::getWebPath() returned false!');
             return false;
-        }
-
-        if (!is_writeable($this->config_compile_dir)) {
-            $ms->raiseError(
-                "Error - Smarty compile directory ". $this->config_compile_dir ." is not writeable
-                for the current user (". $this->getuid() .").<br />\n
-                Please check that permissions are set correctly to this directory.<br />\n"
-            );
-            return false;
-        }
-
-        $this->smarty->setTemplateDir($this->config_template_dir);
-        $this->smarty->setCompileDir($this->config_compile_dir);
-        $this->smarty->setConfigDir($this->config_config_dir);
-        $this->smarty->setCacheDir($this->config_cache_dir);
-
-        if (!($base_web_path = $config->getWebPath())) {
-            $ms->raiseError("Web path is missing!");
-            return false;
-        }
-
-        if ($base_web_path == '/') {
-            $base_web_path = '';
         }
 
         $this->assign('icon_chains', $base_web_path .'/resources/icons/flag_blue.gif');
@@ -181,13 +119,6 @@ class TemplatesController extends DefaultController
         );
         $this->registerPlugin("function", "get_item_name", array(&$this, "smartyGetItemName"), false);
         $this->registerPlugin("function", "get_menu_state", array(&$this, "getMenuState"), false);
-        $this->registerPlugin(
-            "function",
-            "get_humanreadable_filesize",
-            array(&$this, "getHumanReadableFilesize"),
-            false
-        );
-        $this->registerPlugin('function', 'get_page_url', array(&$this, 'getPageUrl'), false);
 
         return true;
     }
@@ -365,7 +296,7 @@ class TemplatesController extends DefaultController
 
             if ($params['details'] == 'yes') {
 
-                switch($ms->getOption("classifier")) {
+                switch ($ms->getOption("classifier")) {
                     case 'HTB':
                         $string.= "(in: ".
                             $row->sl_htb_bw_in_rate ."kbit/s, out: ".
@@ -462,7 +393,7 @@ class TemplatesController extends DefaultController
             return;
         }
 
-        switch($params['type']) {
+        switch ($params['type']) {
 
             case 'sl':
                 $table = 'service_levels';
@@ -483,9 +414,7 @@ class TemplatesController extends DefaultController
                 break;
 
             case 'direction':
-
-                switch($params['idx'])
-                {
+                switch ($params['idx']) {
                     case 1:
                         return "--&gt;";
                         break;
@@ -516,211 +445,6 @@ class TemplatesController extends DefaultController
         }
 
         return $string;
-
-    }
-
-    public function getuid()
-    {
-        if ($uid = posix_getuid()) {
-            if ($user = posix_getpwuid($uid)) {
-                return $user['name'];
-            }
-        }
-
-        return 'n/a';
-
-    }
-
-    public function getUrl($params, &$smarty)
-    {
-        global $ms, $config;
-
-        if (!array_key_exists('page', $params)) {
-            $ms->raiseError("getUrl: missing 'page' parameter", E_USER_WARNING);
-            $repeat = false;
-            return false;
-        }
-
-        if (array_key_exists('mode', $params) && !in_array($params['mode'], $this->supported_modes)) {
-            $ms->raiseError("getUrl: value of parameter 'mode' ({$params['mode']}) isn't supported", E_USER_WARNING);
-            $repeat = false;
-            return false;
-        }
-
-        if (!($url = $config->getWebPath())) {
-            $ms->raiseError("Web path is missing!");
-            return false;
-        }
-
-        if ($url == '/') {
-            $url = "";
-        }
-
-        $url.= "/";
-        $url.= $params['page'] ."/";
-
-        if (isset($params['mode']) && !empty($params['mode'])) {
-            $url.= $params['mode'] ."/";
-        }
-
-        if (array_key_exists('id', $params) && !empty($params['id'])) {
-            $url.= $params['id'];
-        }
-
-        if (array_key_exists('file', $params) && !empty($params['file'])) {
-            $url.= '/'. $params['file'];
-        }
-
-        return $url;
-
-    }
-
-    public function fetch(
-        $template = null,
-        $cache_id = null,
-        $compile_id = null,
-        $parent = null,
-        $display = false,
-        $merge_tpl_vars = true,
-        $no_output_filter = false
-    ) {
-        global $ms;
-
-        if (!file_exists($this->config_template_dir ."/". $template)) {
-            $ms->raiseError("Unable to locate ". $template ." in directory ". $this->config_template_dir);
-            return false;
-        }
-
-        // Now call parent method
-        try {
-            $result =  $this->smarty->fetch(
-                $template,
-                $cache_id,
-                $compile_id,
-                $parent,
-                $display,
-                $merge_tpl_vars,
-                $no_output_filter
-            );
-        } catch (\SmartyException $e) {
-            $ms->raiseError("Smarty throwed an exception! ". $e->getMessage());
-            return false;
-        } catch (\Exception $e) {
-            $ms->raiseError('An exception occured: '. $e->getMessage());
-            return false;
-        }
-
-        return $result;
-    }
-
-    public function getMenuState($params, &$smarty)
-    {
-        global $ms, $query;
-
-        if (!array_key_exists('page', $params)) {
-            $ms->raiseError("getMenuState: missing 'page' parameter", E_USER_WARNING);
-            $repeat = false;
-            return false;
-        }
-
-        if ($params['page'] == $query->view) {
-            return "active";
-        }
-
-        return null;
-    }
-
-    public function getHumanReadableFilesize($params, &$smarty)
-    {
-        global $ms, $query;
-
-        if (!array_key_exists('size', $params)) {
-            $ms->raiseError("getMenuState: missing 'size' parameter", E_USER_WARNING);
-            $repeat = false;
-            return false;
-        }
-
-        if ($params['size'] < 1048576) {
-            return round($params['size']/1024, 2) ."KB";
-        }
-
-        return round($params['size']/1048576, 2) ."MB";
-    }
-
-    public function assign($key, $value)
-    {
-        global $ms;
-
-        if (!$this->smarty->assign($key, $value)) {
-            $ms->raiseError(get_class($this->smarty) .'::assign() returned false!');
-            return false;
-        }
-
-        return true;
-    }
-
-    public function registerPlugin($type, $name, $callback, $cacheable = true)
-    {
-        global $ms;
-
-        if (!$this->smarty->registerPlugin($type, $name, $callback, $cacheable)) {
-            $ms->raiseError(get_class($this->smarty) .'::registerPlugin() returned false!');
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * return requested page
-     *
-     * @param string
-     */
-    public function getPageUrl($params, &$smarty)
-    {
-        global $ms, $db, $config;
-
-        if (!array_key_exists('page', $params)) {
-            $ms->raiseError("getUrl: missing 'page' parameter", E_USER_WARNING);
-            $repeat = false;
-            return false;
-        }
-
-        $sth = $db->prepare(
-            "SELECT
-                page_uri
-            FROM
-                TABLEPREFIXpages
-            WHERE
-                page_name LIKE ?"
-        );
-
-        $db->execute($sth, array(
-            $params['page']
-        ));
-
-        if ($sth->rowCount() <= 0) {
-            $db->freeStatement($sth);
-            return false;
-        }
-
-        if (($row = $sth->fetch()) === false) {
-            $db->freeStatement($sth);
-            return false;
-        }
-
-        if (!isset($row->page_uri)) {
-            $db->freeStatement($sth);
-            return false;
-        }
-
-        if (isset($params['id']) && !empty($params['id'])) {
-            $row->page_uri = str_replace("[id]", (int) $params['id'], $row->page_uri);
-        }
-
-        $db->freeStatement($sth);
-        $url = $config->getWebPath() .'/'. $row->page_uri;
-        return $url;
     }
 }
 
