@@ -21,23 +21,25 @@ namespace MasterShaper\Controllers;
 
 class InstallerController extends \Thallium\Controllers\InstallerController
 {
-    private function createDatabaseTables()
+    protected $schema_version_before;
+
+    protected function createApplicationDatabaseTables()
     {
-        global $ms, $db;
+        global $db;
 
         if (!$db->checkTableExists("TABLEPREFIXassign_filters_to_pipes")) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_filters_to_pipes` (
                 `apf_idx` int(11) NOT NULL auto_increment,
+                `apf_guid` VARCHAR(255) DEFAULT NULL,
                 `apf_pipe_idx` int(11) default NULL,
                 `apf_filter_idx` int(11) default NULL,
                 PRIMARY KEY  (`apf_idx`),
                 KEY `apf_pipe_idx` (`apf_pipe_idx`),
                 KEY `apf_filter_idx` (`apf_filter_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -46,14 +48,16 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_l7_protocols_to_filters` (
                 `afl7_idx` int(11) NOT NULL auto_increment,
+                `afl7_guid` VARCHAR(255) DEFAULT NULL,
                 `afl7_filter_idx` int(11) NOT NULL,
                 `afl7_l7proto_idx` int(11) NOT NULL,
                 PRIMARY KEY  (`afl7_idx`),
                 KEY `afl7_filter_idx` (`afl7_filter_idx`),
                 KEY `afl7_l7proto_idx` (`afl7_l7proto_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
 
@@ -63,29 +67,32 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_ports_to_filters` (
                 `afp_idx` int(11) NOT NULL auto_increment,
+                `afp_guid` VARCHAR(255) DEFAULT NULL,
                 `afp_filter_idx` int(11) default NULL,
                 `afp_port_idx` int(11) default NULL,
                 PRIMARY KEY  (`afp_idx`),
                 KEY `afp_filter_idx` (`afp_filter_idx`),
                 KEY `afp_port_idx` (`afp_port_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXassign_targets_to_targets')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_targets_to_targets` (
                 `atg_idx` int(11) NOT NULL auto_increment,
+                `atg_guid` VARCHAR(255) DEFAULT NULL,
                 `atg_group_idx` int(11) NOT NULL,
                 `atg_target_idx` int(11) NOT NULL,
                 PRIMARY KEY  (`atg_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -94,17 +101,18 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_pipes_to_chains` (
                 `apc_idx` int(11) NOT NULL auto_increment,
+                `apc_guid` VARCHAR(255) DEFAULT NULL,
                 `apc_pipe_idx` int(11) NOT NULL,
                 `apc_chain_idx` int(11) NOT NULL,
                 `apc_sl_idx` int(11) NOT NULL,
                 `apc_pipe_active` char(1) default NULL,
                 `apc_pipe_pos` int(11) DEFAULT NULL,
-                `apc_guid` varchar(36) DEFAULT NULL,
                 PRIMARY KEY  (`apc_idx`),
                 KEY `apc_pipe_to_chain`  (`apc_pipe_idx`,`apc_chain_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -113,6 +121,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
             $table_sql = "CREATE TABLE `TABLEPREFIXchains` (
                 `chain_idx` int(11) NOT NULL auto_increment,
+                `chain_guid` VARCHAR(255) DEFAULT NULL,
                 `chain_name` varchar(255) default NULL,
                 `chain_active` char(1) default NULL,
                 `chain_sl_idx` int(11) default NULL,
@@ -127,9 +136,10 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `chain_host_idx` int(11) default NULL,
                 `chain_guid` varchar(36) DEFAULT NULL,
                 PRIMARY KEY  (`chain_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -138,6 +148,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
             $table_sql = "CREATE TABLE `TABLEPREFIXfilters` (
                 `filter_idx` int(11) NOT NULL auto_increment,
+                `filter_guid` VARCHAR(255) DEFAULT NULL,
                 `filter_name` varchar(255) default NULL,
                 `filter_protocol_id` int(11) default NULL,
                 `filter_tos` varchar(4) default NULL,
@@ -163,9 +174,10 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `filter_match_sip` char(1) default NULL,
                 `filter_active` char(1) default NULL,
                 PRIMARY KEY  (`filter_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -174,6 +186,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
             $table_sql = "CREATE TABLE `TABLEPREFIXinterfaces` (
                 `if_idx` int(11) NOT NULL auto_increment,
+                `if_guid` VARCHAR(255) DEFAULT NULL,
                 `if_name` varchar(255) default NULL,
                 `if_speed` varchar(255) default NULL,
                 `if_fallback_idx` int(11) default NULL,
@@ -181,9 +194,10 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `if_active` char(1) default NULL,
                 `if_host_idx` int(11) default NULL,
                 PRIMARY KEY  (`if_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -192,11 +206,13 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
             $table_sql = "CREATE TABLE `TABLEPREFIXl7_protocols` (
                 `l7proto_idx` int(11) NOT NULL auto_increment,
+                `l7proto_guid` VARCHAR(255) DEFAULT NULL,
                 `l7proto_name` varchar(255) default NULL,
                 PRIMARY KEY  (`l7proto_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -205,6 +221,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
             $table_sql = "CREATE TABLE `TABLEPREFIXnetwork_paths` (
                 `netpath_idx` int(11) NOT NULL auto_increment,
+                `netpath_guid` VARCHAR(255) DEFAULT NULL,
                 `netpath_name` varchar(255) default NULL,
                 `netpath_if1` int(11) default NULL,
                 `netpath_if1_inside_gre` varchar(1) default NULL,
@@ -215,18 +232,19 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `netpath_active` varchar(1) default NULL,
                 `netpath_host_idx` int(11) default NULL,
                 PRIMARY KEY  (`netpath_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXpipes')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXpipes` (
                 `pipe_idx` int(11) NOT NULL auto_increment,
+                `pipe_guid` VARCHAR(255) DEFAULT NULL,
                 `pipe_name` varchar(255) default NULL,
                 `pipe_sl_idx` int(11) default NULL,
                 `pipe_src_target` int(11) default NULL,
@@ -236,52 +254,55 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `pipe_active` char(1) default NULL,
                 `pipe_tc_id` varchar(16) default NULL,
                 PRIMARY KEY  (`pipe_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXports')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXports` (
                 `port_idx` int(11) NOT NULL auto_increment,
+                `port_guid` VARCHAR(255) DEFAULT NULL,
                 `port_name` varchar(255) default NULL,
                 `port_desc` varchar(255) default NULL,
                 `port_number` varchar(255) default NULL,
                 `port_user_defined` char(1) default NULL,
                 PRIMARY KEY  (`port_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXprotocols')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXprotocols` (
                 `proto_idx` int(11) NOT NULL auto_increment,
+                `proto_guid` VARCHAR(255) DEFAULT NULL,
                 `proto_number` varchar(255) default NULL,
                 `proto_name` varchar(255) default NULL,
                 `proto_desc` varchar(255) default NULL,
                 `proto_user_defined` char(1) default NULL,
                 PRIMARY KEY  (`proto_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXservice_levels')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXservice_levels` (
                 `sl_idx` int(11) NOT NULL auto_increment,
+                `sl_guid` VARCHAR(255) DEFAULT NULL,
                 `sl_name` varchar(255) default NULL,
                 `sl_htb_bw_in_rate` varchar(255) default NULL,
                 `sl_htb_bw_in_ceil` varchar(255) default NULL,
@@ -316,12 +337,12 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `sl_esfq_divisor` varchar(255) default NULL,
                 `sl_esfq_hash` varchar(255) default NULL,
                 PRIMARY KEY  (`sl_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXsettings')) {
@@ -330,12 +351,12 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `setting_key` varchar(255) NOT NULL default '',
                 `setting_value` varchar(255) default NULL,
                 PRIMARY KEY  (`setting_key`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXstats')) {
@@ -345,29 +366,30 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `stat_data` text,
                 `stat_host_idx` int(11) default NULL,
                 PRIMARY KEY  (`stat_time`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXtargets')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXtargets` (
                 `target_idx` int(11) NOT NULL auto_increment,
+                `target_guid` VARCHAR(255) DEFAULT NULL,
                 `target_name` varchar(255) default NULL,
                 `target_match` varchar(16) default NULL,
                 `target_ip` varchar(255) default NULL,
                 `target_mac` varchar(255) default NULL,
                 PRIMARY KEY  (`target_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXtc_ids')) {
@@ -385,18 +407,19 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 KEY `id_if` (`id_if`),
                 KEY `id_tc_id` (`id_tc_id`),
                 KEY `id_color` (`id_color`)
-                    ) ENGINE=MEMORY DEFAULT CHARSET=utf8;";
+                ) ENGINE=MEMORY DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
-
         }
 
         if (!$db->checkTableExists('TABLEPREFIXusers')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXusers` (
                 `user_idx` int(11) NOT NULL auto_increment,
+                `user_guid` VARCHAR(255) DEFAULT NULL,
                 `user_name` varchar(32) default NULL,
                 `user_pass` varchar(32) default NULL,
                 `user_manage_chains` char(1) default NULL,
@@ -413,60 +436,68 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `user_show_monitor` char(1) default NULL,
                 `user_active` char(1) default NULL,
                 PRIMARY KEY  (`user_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
 
-            $db->query("
-                    INSERT INTO TABLEPREFIXusers VALUES (
-                        NULL,
-                        'admin',
-                        MD5('admin'),
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y',
-                        'Y'
-                        )");
+            $db->query(
+                "INSERT INTO TABLEPREFIXusers VALUES (
+                    NULL,
+                    NULL,
+                    'admin',
+                    MD5('admin'),
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y',
+                    'Y'
+                )"
+            );
         }
 
         if (!$db->checkTableExists('TABLEPREFIXhost_profiles')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXhost_profiles` (
                 `host_idx` int(11) NOT NULL auto_increment,
+                `host_guid` VARCHAR(255) DEFAULT NULL,
                 `host_name` varchar(32) default NULL,
                 `host_active` char(1) default NULL,
                 `host_heartbeat` int(11) default NULL,
                 PRIMARY KEY  (`host_idx`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
 
-            $db->query("
-                    INSERT INTO TABLEPREFIXhost_profiles VALUES (
-                        NULL,
-                        'Default Host',
-                        'Y',
-                        0
-                        )");
+            $db->query(
+                "INSERT INTO TABLEPREFIXhost_profiles VALUES (
+                    NULL,
+                    NULL,
+                    'Default Host',
+                    'Y',
+                    0
+                )"
+            );
         }
 
         if (!$db->checkTableExists('TABLEPREFIXtasks')) {
 
             $table_sql = "CREATE TABLE `TABLEPREFIXtasks` (
                 `task_idx` int(11) NOT NULL auto_increment,
+                `task_guid` VARCHAR(255) DEFAULT NULL,
                 `task_job` varchar(255) default NULL,
                 `task_submit_time` int(11) NOT NULL default '0',
                 `task_run_time` int(11) NOT NULL default '0',
@@ -474,12 +505,185 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `task_state` varchar(1) default NULL,
                 PRIMARY KEY  (`task_idx`),
                 UNIQUE KEY `task_job` (`task_job`,`task_run_time`,`task_host_idx`,`task_state`)
-                    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
             if ($db->query($table_sql) === false) {
-                $ms->raiseError("Failed to create 'archive' table");
+                $this->raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
+
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV23()
+    {
+        global $db;
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXassign_filters_to_pipes
+            ADD
+                `apf_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `apf_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXassign_l7_protocols_to_filters
+            ADD
+                `afl7_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `afl7_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXassign_ports_to_filters
+            ADD
+                `afp_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `afp_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXassign_targets_to_targets
+            ADD
+                `atg_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `atg_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXassign_pipes_to_chains
+            MODIFY
+                `apc_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `apc_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXchains
+            MODIFY
+                `chain_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `chain_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXfilters
+            ADD
+                `filter_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `filter_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXinterfaces
+            ADD
+                `if_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `if_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXl7_protocols
+            ADD
+                `l7proto_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `l7proto_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXnetwork_paths
+            ADD
+                `netpath_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `netpath_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXpipes
+            ADD
+                `pipe_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `pipe_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXports
+            ADD
+                `port_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `port_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXprotocols
+            ADD
+                `proto_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `proto_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXservice_levels
+            ADD
+                `sl_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `sl_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXtargets
+            ADD
+                `target_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `target_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXusers
+            ADD
+                `user_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `user_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXhost_profiles
+            ADD
+                `host_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `host_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXtasks
+            ADD
+                `task_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `task_idx`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->setDatabaseSchemaVersion(23);
+        return true;
     }
 }
 
