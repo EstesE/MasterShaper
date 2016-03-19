@@ -1,11 +1,10 @@
 <?php
 
 /**
- *
  * This file is part of MasterShaper.
-
+ *
  * MasterShaper, a web application to handle Linux's traffic shaping
- * Copyright (C) 2015 Andreas Unterkircher <unki@netshadow.net>
+ * Copyright (C) 2007-2016 Andreas Unterkircher <unki@netshadow.net>
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -25,27 +24,36 @@ namespace MasterShaper\Models;
 
 class ProtocolModel extends DefaultModel
 {
-   /**
-    * Protocol constructor
-    *
-    * Initialize the Protocol class
-    */
-   public function __construct($id = null)
-   {
-      parent::__construct($id, Array(
-         'table_name' => 'protocols',
-         'col_name' => 'proto',
-         'fields' => Array(
-            'proto_idx' => 'integer',
-            'proto_number' => 'text',
-            'proto_name' => 'text',
-            'proto_desc' => 'text',
-            'proto_user_defined' => 'text',
-         ),
-      ));
+    protected static $model_table_name = 'protocols';
+    protected static $model_column_prefix = 'proto';
+    protected static $model_fields = array(
+        'idx' => array(
+            FIELD_TYPE => FIELD_INT,
+        ),
+        'guid' => array(
+            FIELD_TYPE => FIELD_GUID,
+        ),
+        'number' => array(
+            FIELD_TYPE => FIELD_INT,
+        ),
+        'name' => array(
+            FIELD_TYPE => FIELD_STRING,
+        ),
+        'desc' => array(
+            FIELD_TYPE => FIELD_STRING,
+        ),
+        'user_defined' => array(
+            FIELD_TYPE => FIELD_YESNO,
+        ),
+    );
 
-   } // __construct()
-
-} // class Protocol
+    protected function __init()
+    {
+        $this->permitRpcUpdates(true);
+        $this->addRpcAction('delete');
+        $this->addRpcEnabledField('name');
+        return true;
+    }
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
