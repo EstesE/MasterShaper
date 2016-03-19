@@ -1,5 +1,5 @@
 <pre id="target"></pre>
-<form action="{$page->uri}" id="options" method="post">
+<form action="page->uri" id="options" method="post">
 <input type="hidden" name="module" value="options" />
 <input type="hidden" name="action" value="store" />
 {start_table icon=$icon_options alt="option icon" title="Manage Options"}

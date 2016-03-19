@@ -7,10 +7,7 @@
  {start_table icon=$icon_home alt="home icon" title="MasterShaper Ruleset Overview (edit)"}
 {/if}
 <div>
-{if $cnt_network_paths == 0}
- {include file="welcome.tpl"}
-{/if}
-{ov_netpath}
+{foreach from=$network_paths item=$netpath}
 <table style="width: 100%;" type="netpath" id="netpath{$netpath->netpath_idx}">
  <tr>
   <td style="height: 15px;" />
@@ -64,7 +61,7 @@
     </thead>
 
     <tbody>
- {ov_chain np_idx=$netpath->netpath_idx}
+ {foreach from=$netpath->getActiveChains() item=chain}
 
     <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain->chain_idx}" type="chain">
      <td colspan="2">
@@ -147,7 +144,7 @@
        QoS or DOES NOT use fallback service level
   -->
   {if $chain->chain_sl_idx != 0 && $chain->chain_fallback_idx != 0}
-   {ov_pipe np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx}
+   {foreach $chain->getActivePipes() item=pipe}
     <input type="hidden" name="pipes[{$counter}]" value="{$pipe->pipe_idx}" />
     <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe->apc_idx}" chain="{$chain->chain_idx}" np="{$netpath->netpath_idx}" type="pipe" style="display: none;">
      <td style="text-align: center;">{$counter}</td>
@@ -209,7 +206,7 @@
       <a class="move-up" type="pipe" idx="{$pipe->apc_idx}"><img src="{$icon_pipes_arrow_up}" alt="Move pipe up" /></a>
      </td>
     </tr>
-    {ov_filter np_idx=$netpath->netpath_idx chain_idx=$chain->chain_idx pipe_idx=$pipe->pipe_idx}
+    {foreach from=$pipe->getActiveFilters() item=$filter}
     <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" chain="{$chain->chain_idx}" np="{$netpath->netpath_idx}" pipe="{$pipe->apc_idx}" type="filter" style="display: none;">
      <td>&nbsp;</td>
      <td colspan="7">
@@ -219,26 +216,26 @@
      </td>
      <td>&nbsp;</td>
     </tr>
-    {/ov_filter}
-   {/ov_pipe}
+    {/foreach}
+   {/foreach}
   {/if}
- {/ov_chain}
+ {/foreach}
    </tbody>
    </table>
   </td>
  </tr>
 </table>
-{/ov_netpath}
-</div>
-{if $cnt_network_paths > 0}
- {if isset($edit_mode) && !empty($edit_mode)}
- <table>
+{if isset($edit_mode) && !empty($edit_mode)}
+<table>
  <tr>
   <td>
    {include file="savebutton.tpl"}
   </td>
  </tr>
- </table>
- {/if}
+</table>
 {/if}
+{foreachelse}
+ {include file="welcome.tpl"}
+{/foreach}
+</div>
 </form>
