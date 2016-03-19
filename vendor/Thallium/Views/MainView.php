@@ -17,29 +17,28 @@
  * GNU Affero General Public License for more details.
  */
 
-require_once 'vendor/Thallium/static.php';
-require_once 'vendor/MasterShaper/static.php';
-require_once 'vendor/autoload.php';
+namespace Thallium\Views;
 
-spl_autoload_register("autoload");
+class MainView extends DefaultView
+{
+    protected static $view_class_name = 'main';
+    protected static $view_default_mode = 'show';
 
-$mode = null;
+    public function show()
+    {
+        global $db, $tmpl;
 
-try {
-    $ms = new \MasterShaper\Controllers\MainController($mode);
-} catch (Exception $e) {
-    print $e->getMessage();
-    exit(1);
+        $tmpl->assign("software_version", \Thallium\Controllers\MainController::FRAMEWORK_VERSION);
+        $tmpl->assign("schema_version", $db->getApplicationDatabaseSchemaVersion());
+        $tmpl->assign("framework_schema_version", $db->getFrameworkDatabaseSchemaVersion());
+
+        if (!$tmpl->templateExists('main.tpl')) {
+            static::raiseError(__METHOD__ .'(), main.tpl does not exist!');
+            return false;
+        }
+
+        return $tmpl->fetch("main.tpl");
+    }
 }
-
-if (!is_null($mode)) {
-    exit(0);
-}
-
-if (!$ms->startup()) {
-    exit(1);
-}
-
-exit(0);
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

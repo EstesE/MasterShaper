@@ -1,10 +1,10 @@
 <?php
 
 /**
- * This file is part of Thallium.
+ * This file is part of MasterShaper.
  *
- * Thallium, a PHP-based framework for web applications.
- * Copyright (C) <2015> <Andreas Unterkircher>
+ * MasterShaper, a web application to handle Linux's traffic shaping
+ * Copyright (C) 2007-2016 Andreas Unterkircher <unki@netshadow.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -17,29 +17,10 @@
  * GNU Affero General Public License for more details.
  */
 
-require_once 'vendor/Thallium/static.php';
-require_once 'vendor/MasterShaper/static.php';
-require_once 'vendor/autoload.php';
+namespace MasterShaper\Models;
 
-spl_autoload_register("autoload");
-
-$mode = null;
-
-try {
-    $ms = new \MasterShaper\Controllers\MainController($mode);
-} catch (Exception $e) {
-    print $e->getMessage();
-    exit(1);
+class AuditLogModel extends \Thallium\Models\AuditLogModel
+{
 }
-
-if (!is_null($mode)) {
-    exit(0);
-}
-
-if (!$ms->startup()) {
-    exit(1);
-}
-
-exit(0);
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

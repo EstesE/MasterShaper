@@ -17,29 +17,28 @@
  * GNU Affero General Public License for more details.
  */
 
-require_once 'vendor/Thallium/static.php';
-require_once 'vendor/MasterShaper/static.php';
-require_once 'vendor/autoload.php';
+define('APP_BASE', realpath(__DIR__ .'/../../'));
 
-spl_autoload_register("autoload");
+define('FIELD_TYPE', 'type');
+define('FIELD_INT', 'int');
+define('FIELD_STRING', 'string');
+define('FIELD_BOOL', 'bool');
+define('FIELD_TIMESTAMP', 'timestamp');
+define('FIELD_YESNO', 'yesno');
+define('FIELD_DATE', 'date');
+define('FIELD_GUID', 'guid');
 
-$mode = null;
-
-try {
-    $ms = new \MasterShaper\Controllers\MainController($mode);
-} catch (Exception $e) {
-    print $e->getMessage();
-    exit(1);
+if (!constant('LOG_ERR')) {
+    define('LOG_ERR', 1);
 }
-
-if (!is_null($mode)) {
-    exit(0);
+if (!constant('LOG_WARNING')) {
+    define('LOG_WARNING', 2);
 }
-
-if (!$ms->startup()) {
-    exit(1);
+if (!constant('LOG_INFO')) {
+    define('LOG_INFO', 3);
 }
-
-exit(0);
+if (!constant('LOG_DEBUG')) {
+    define('LOG_DEBUG', 4);
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

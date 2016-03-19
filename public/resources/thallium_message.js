@@ -1,5 +1,3 @@
-<?php
-
 /**
  * This file is part of Thallium.
  *
@@ -17,29 +15,23 @@
  * GNU Affero General Public License for more details.
  */
 
-require_once 'vendor/Thallium/static.php';
-require_once 'vendor/MasterShaper/static.php';
-require_once 'vendor/autoload.php';
+'use strict';
 
-spl_autoload_register("autoload");
+var ThalliumMessage = function () {
+    return true;
 
-$mode = null;
+    var command;
+    var message;
+};
 
-try {
-    $ms = new \MasterShaper\Controllers\MainController($mode);
-} catch (Exception $e) {
-    print $e->getMessage();
-    exit(1);
+ThalliumMessage.prototype.setCommand = function (command) {
+    this.command = command;
+    return true;
 }
 
-if (!is_null($mode)) {
-    exit(0);
+ThalliumMessage.prototype.setMessage = function (message) {
+    this.message = message;
+    return true;
 }
 
-if (!$ms->startup()) {
-    exit(1);
-}
-
-exit(0);
-
-// vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
+// vim: set filetype=javascript expandtab softtabstop=4 tabstop=4 shiftwidth=4:

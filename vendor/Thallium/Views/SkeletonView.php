@@ -17,29 +17,27 @@
  * GNU Affero General Public License for more details.
  */
 
-require_once 'vendor/Thallium/static.php';
-require_once 'vendor/MasterShaper/static.php';
-require_once 'vendor/autoload.php';
+namespace Thallium\Views;
 
-spl_autoload_register("autoload");
+class SkeletonView extends DefaultView
+{
+    protected static $view_class_name = 'skeleton';
 
-$mode = null;
+    /**
+     * overwrite parent show() method as we do not have a lot
+     * to do here.
+     */
+    public function show()
+    {
+        global $tmpl;
 
-try {
-    $ms = new \MasterShaper\Controllers\MainController($mode);
-} catch (Exception $e) {
-    print $e->getMessage();
-    exit(1);
+        if (!$tmpl->templateExists('skeleton.tpl')) {
+            static::raiseError(__METHOD__ .'(), skeleton.tpl does not exist!');
+            return false;
+        }
+
+        return $tmpl->fetch('skeleton.tpl');
+    }
 }
-
-if (!is_null($mode)) {
-    exit(0);
-}
-
-if (!$ms->startup()) {
-    exit(1);
-}
-
-exit(0);
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

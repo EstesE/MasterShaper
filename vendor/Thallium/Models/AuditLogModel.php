@@ -17,29 +17,22 @@
  * GNU Affero General Public License for more details.
  */
 
-require_once 'vendor/Thallium/static.php';
-require_once 'vendor/MasterShaper/static.php';
-require_once 'vendor/autoload.php';
+namespace Thallium\Models ;
 
-spl_autoload_register("autoload");
+class AuditLogModel extends DefaultModel
+{
+    protected static $model_table_name = 'audit';
+    protected static $model_column_prefix = 'audit';
+    protected static $model_fields = array(
+        'log' => array(
+            FIELD_TYPE => FIELD_ARRAY,
+        ),
+    );
 
-$mode = null;
-
-try {
-    $ms = new \MasterShaper\Controllers\MainController($mode);
-} catch (Exception $e) {
-    print $e->getMessage();
-    exit(1);
+    public function getLog()
+    {
+        return $this->audit_log;
+    }
 }
-
-if (!is_null($mode)) {
-    exit(0);
-}
-
-if (!$ms->startup()) {
-    exit(1);
-}
-
-exit(0);
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
