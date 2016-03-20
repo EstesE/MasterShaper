@@ -128,7 +128,7 @@ class OptionsView extends DefaultView
 
             $ms->printError(
                 "<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;".  _("Manage Options"),
-                 _("You do not have enough permissions to access this module!")
+                _("You do not have enough permissions to access this module!")
             );
             return 0;
 
@@ -140,7 +140,6 @@ class OptionsView extends DefaultView
                 "<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;".
                 _("Restore MasterShaper Configuration")
             );
-
 ?>
 <form enctype="multipart/form-data" action="<?php print $ms->self ."?mode=". $ms->mode; ?>&amp;restoreit=1" method="post">
  <table style="width: 100%;" class="withborder2">
@@ -161,13 +160,12 @@ class OptionsView extends DefaultView
  </table>
 </form>
 <?php
-            $ms->closeTable();
-        }
-        else {
+                $ms->closeTable();
+        } else {
 
             $this->resetConfig(1);
 
-            $config = Array();
+            $config = array();
 
             if ($_FILES['ms_config']) {
 
@@ -199,7 +197,7 @@ class OptionsView extends DefaultView
     /* write configuration into database */
     public function loadConfig($set, $object)
     {
-        switch($set) {
+        switch ($set) {
             case 'Settings':
                 $db->query("INSERT INTO TABLEPREFIXsettings (setting_key, setting_value) "
                         ."VALUES ('". $object->setting_key ."', '". $object->setting_value ."')");
@@ -366,18 +364,26 @@ class OptionsView extends DefaultView
 
         /* If authentication is enabled, check permissions */
         if ($ms->getOption("authentication") == "Y" &&
-                !$ms->checkPermissions("user_manage_options")) {
-
-            $ms->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
+            !$ms->checkPermissions("user_manage_options")
+        ) {
+            $ms->printError(
+                "<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;" . _("Manage Options"),
+                _("You do not have enough permissions to access this module!")
+            );
             return 0;
 
         }
 
         if (!isset($_GET['doit']) && !$doit) {
-            $ms->printYesNo("<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;". _("Reset MasterShaper Configuration"),
-                    _("This operation will completely reset your current MasterShaper configuration!<br />All your current settings, rules, chains, pipes, ... will be deleted !!!<br /><br />Of course this will also reset the version information of MasterShaper, you will be<br />forwarded to MasterShaper Installer after you have confirmed this procedure."));
-        }
-        else {
+            $ms->printYesNo(
+                "<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;"
+                . _("Reset MasterShaper Configuration"),
+                _("This operation will completely reset your current MasterShaper configuration!<br />"
+                ."All your current settings, rules, chains, pipes, ... will be deleted !!!<br /><br />"
+                ."Of course this will also reset the version information of MasterShaper, you will be<br />"
+                ."forwarded to MasterShaper Installer after you have confirmed this procedure.")
+            );
+        } else {
 
             $db->db_truncate_table("TABLEPREFIXassign_ports_to_filters");
             $db->db_truncate_table("TABLEPREFIXassign_filters_to_pipes");
@@ -399,36 +405,43 @@ class OptionsView extends DefaultView
             $db->query("DELETE FROM TABLEPREFIXprotocols WHERE proto_user_defined='Y'");
 
             /* If invoked by "Reset Configuration" and not "Restore Configuration" */
-            if (isset($_GET['doit']))
+            if (isset($_GET['doit'])) {
                 $ms->goBack();
+            }
 
         }
 
     } // resetConfig()
 
-    private function Add($option, $object)
+    private function add($option, $object)
     {
         $object = addslashes(serialize($object));
         $this->string.= $option .":". $object ."\n";
 
-    } // Add()
+    } // add()
 
     public function updateL7Protocols()
     {
 
         /* If authentication is enabled, check permissions */
         if ($ms->getOption("authentication") == "Y" &&
-                !$ms->checkPermissions("user_manage_options")) {
+            !$ms->checkPermissions("user_manage_options")) {
 
-            $ms->printError("<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"), _("You do not have enough permissions to access this module!"));
+            $ms->printError(
+                "<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"),
+                _("You do not have enough permissions to access this module!")
+            );
             return 0;
 
         }
 
         if (!isset($_GET['doit'])) {
 
-            $ms->startTable("<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;". _("Update Layer7 Protocols"));
-            ?>
+            $ms->startTable(
+                "<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;"
+                . _("Update Layer7 Protocols")
+            );
+?>
                 <form action="<?php print $ms->self ."?mode=". $ms->mode ."&amp;doit=1"; ?>" method="POST">
                 <table style="width: 100%; text-align: center;" class="withborder2">
                 <tr>
@@ -447,39 +460,37 @@ class OptionsView extends DefaultView
                 <?php
                 $ms->closeTable();
 
-        }
-        else {
+        } else {
 
             $ms->startTable("<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;". _("Update Layer7 Protocols"));
-            ?>
+?>
                 <table style="width: 100%; text-align: center;" class="withborder2">
                 <tr>
                 <td>
-                <?php
-
-                $protocols = Array();
-
+<?php
+            $protocols = array();
             $retval = $this->findPatFiles($protocols, $_POST['basedir']);
-
             if ($retval == "") {
-                ?>
-                    Updating...<br />
-                    <br />
-                    <?php
-                    $new = 0;
+?>
+Updating...<br />
+<br />
+<?php
+                $new = 0;
                 $deleted = 0;
 
                 foreach ($protocols as $protocol) {
 
                     // Check if already in database
-                    if (!$db->db_fetchSingleRow("SELECT l7proto_idx FROM TABLEPREFIXl7_protocols WHERE "
-                                ."l7proto_name LIKE '". $protocol ."'")) {
-
-                        $db->query("INSERT INTO TABLEPREFIXl7_protocols (l7proto_name) VALUES "
-                                ."('". $protocol ."')");
+                    if (!$db->db_fetchSingleRow(
+                        "SELECT l7proto_idx FROM TABLEPREFIXl7_protocols WHERE "
+                                ."l7proto_name LIKE '". $protocol ."'"
+                    )) {
+                        $db->query(
+                            "INSERT INTO TABLEPREFIXl7_protocols (l7proto_name) VALUES "
+                                ."('". $protocol ."')"
+                        );
 
                         $new++;
-
                     }
                 }
 
@@ -490,7 +501,9 @@ class OptionsView extends DefaultView
 
                         if (!in_array($row->l7proto_name, $protocols)) {
 
-                            $db->query("DELETE FROM TABLEPREFIXl7_protocols WHERE l7proto_idx='". $row->l7proto_idx ."'");
+                            $db->query(
+                                "DELETE FROM TABLEPREFIXl7_protocols WHERE l7proto_idx='". $row->l7proto_idx ."'"
+                            );
                             $deleted++;
 
                         }
@@ -500,8 +513,7 @@ class OptionsView extends DefaultView
                     <?php print $new ." ". _("Protocols have been added."); ?><br />
                     <?php print $deleted ." ". _("Protocols have been deleted."); ?><br />
                     <?php
-            }
-            else {
+            } else {
                 ?>
                     <?php print $retval; ?>
                     <?php
@@ -546,8 +558,7 @@ class OptionsView extends DefaultView
 
             return "";
 
-        }
-        else {
+        } else {
 
             return "<font style=\"color: '#FF0000';\">". _("Can't access directory") ." ". $path ."!</font><br />\n";
 
