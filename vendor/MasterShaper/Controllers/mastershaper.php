@@ -173,6 +173,7 @@ class MasterShaperController extends DefaultController
             }
             return true;
         } elseif (!$page->includefile || $page->includefile == '[internal]') {
+
             if (!$page = $views->load($query->view)) {
                 $this->raiseError("ViewController:load() returned false!");
                 return false;
