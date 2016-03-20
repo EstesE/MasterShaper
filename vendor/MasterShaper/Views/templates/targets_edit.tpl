@@ -91,7 +91,7 @@
   <td colspan="3">&nbsp;</td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="{get_page_url page='Targets List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{get_url page='Targets List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
   {include file="common_edit_save.tpl" newobj=Target}
  </tr>
 </table> 
@@ -101,13 +101,13 @@
  This target is assigned to the following objects:<br />
  {foreach from=$obj_use_target key=obj_idx item=obj name=objects}
   {if $obj->type == 'group'}
-   <a href="{get_page_url page='Target Edit' id=$obj->idx}" title="Edit target {$obj->name}"><img src="{$icon_targets}" alt="target icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+   <a href="{get_url page='Target Edit' id=$obj->idx}" title="Edit target {$obj->name}"><img src="{$icon_targets}" alt="target icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
   {/if}
   {if $obj->type == 'pipe'}
-   <a href="{get_page_url page='Pipe Edit', id=$obj->idx}" title="Edit pipe {$obj->name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+   <a href="{get_url page='Pipe Edit', id=$obj->idx}" title="Edit pipe {$obj->name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
   {/if}
   {if $obj->type == 'chain'}
-   <a href="{get_page_url page='Chain Edit' id=$obj->idx}" title="Edit chain {$obj->name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
+   <a href="{get_url page='Chain Edit' id=$obj->idx}" title="Edit chain {$obj->name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
   {/if}
  {foreachelse}
   none

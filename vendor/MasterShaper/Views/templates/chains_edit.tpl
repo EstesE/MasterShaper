@@ -39,7 +39,7 @@
     {service_level_select_list sl_idx=$chain->chain_sl_idx}
     <option value="0" {if $chain->chain_sl_idx == 0} selected="selected" {/if} >--- Ignore QoS ---</option>
    </select>
-   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Service Level Edit' id=0}', $('select[name=chain_sl_idx]').val());" />
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Service Level Edit' id=0}', $('select[name=chain_sl_idx]').val());" />
   </td>
  </tr>
  <tr>
@@ -49,7 +49,7 @@
     {service_level_select_list sl_idx=$chain->chain_fallback_idx}
     <option value="0" {if $chain->chain_fallback_idx == 0} selected="selected" {/if} >--- No Fallback ---</option>
    </select>
-   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Service Level Edit' id=0}', $('select[name=chain_fallback_idx]').val());" />
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Service Level Edit' id=0}', $('select[name=chain_fallback_idx]').val());" />
   </td>
  </tr>
  <tr>
@@ -63,7 +63,7 @@
    <select name="chain_netpath_idx">
     {network_path_select_list np_idx=$chain->chain_netpath_idx}
    </select>
-   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Network Path Edit' id=0}', $('select[name=chain_netpath_idx]').val());" />
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Network Path Edit' id=0}', $('select[name=chain_netpath_idx]').val());" />
   </td>
  </tr>
  <tr>
@@ -72,11 +72,11 @@
    <table class="noborder">
     <tr>
      <td>Source {if isset($chain_netpath_if1)}({$chain_netpath_if1}){/if}
-      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Target Edit' id=0}', $('select[name=chain_src_target]').val());" />
+      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Target Edit' id=0}', $('select[name=chain_src_target]').val());" />
      </td>
      <td>&nbsp;</td>
      <td style="text-align: right;">Destination {if isset($chain_netpath_if2)}({$chain_netpath_if2}){/if}
-      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Target Edit' id=0}', $('select[name=chain_dst_target]').val());" />
+      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Target Edit' id=0}', $('select[name=chain_dst_target]').val());" />
      </td>
     </tr>
     <tr>
@@ -132,7 +132,7 @@
     {pipe_list}
      <tr id="pipe{$pipe->pipe_idx}" {if $pipe->apc_pipe_idx == 0} style="opacity: 0.5;" {/if} onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
       <td class="pipes_dragger">
-       <a href="{get_page_url page='Pipe Edit' id=$pipe->pipe_idx}" title="Edit pipe {$pipe->pipe_name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$pipe->pipe_name}</a>
+       <a href="{get_url page='Pipe Edit' id=$pipe->pipe_idx}" title="Edit pipe {$pipe->pipe_name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$pipe->pipe_name}</a>
       </td>
       <td style="text-align: center;">
        <input type="checkbox" name="used[]" value="{$pipe->pipe_idx}" {if $pipe->apc_pipe_idx != 0} checked="checked" {/if} onclick="if(this.checked == false) $('table#pipelist tbody#pipes tr#pipe{$pipe->pipe_idx}').fadeTo(500, 0.50); else $('table#pipelist tbody#pipes tr#pipe{$pipe->pipe_idx}').fadeTo(500, 1);" />
@@ -141,7 +141,7 @@
        <select name="pipe_sl_idx[{$pipe->pipe_idx}]" id="pipe_sl_idx{$pipe->pipe_idx}">
         {service_level_select_list sl_idx=$pipe->sl_in_use sl_default=$pipe->pipe_sl_idx }
        </select>
-       <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('get_page_url page='Service Level Edit' id=0}', $('#pipe_sl_idx{$pipe->pipe_idx}').val());" />
+       <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('get_url page='Service Level Edit' id=0}', $('#pipe_sl_idx{$pipe->pipe_idx}').val());" />
       </td>
       <td style="text-align: center;">
        <input type="hidden" id="pipe-active-{$pipe->pipe_idx}" name="pipe_active[{$pipe->pipe_idx}]" value="{$pipe->apc_pipe_active}" />
@@ -160,7 +160,7 @@
   <td colspan="2">&nbsp;</td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="{get_page_url page='Chains List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{get_url page='Chains List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
   {include file="common_edit_save.tpl" newobj="Chain"}
  </tr>
 </table>

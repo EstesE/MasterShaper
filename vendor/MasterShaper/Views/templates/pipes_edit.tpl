@@ -42,11 +42,11 @@
    <table class="noborder">
     <tr>
      <td>Source
-      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Target Edit' id=0}', $('select[name=pipe_src_target]').val());" />
+      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Target Edit' id=0}', $('select[name=pipe_src_target]').val());" />
      </td>
      <td>&nbsp;</td>
      <td style="text-align: right;">Destination
-      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Target Edit' id=0}', $('select[name=pipe_dst_target]').val());" />
+      <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Target Edit' id=0}', $('select[name=pipe_dst_target]').val());" />
      </td>
     </tr>
     <tr>
@@ -114,7 +114,7 @@
    <select name="pipe_sl_idx">
    {service_level_select_list sl_idx=$pipe->pipe_sl_idx}
    </select>
-   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Service Level Edit' id=0}', $('select[name=pipe_sl_idx]').val());" />
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Service Level Edit' id=0}', $('select[name=pipe_sl_idx]').val());" />
   </td>
   <td>Default bandwidth limit for this pipe. It can be overriden per chain as soon as you assigned this pipe to it.</td>
  </tr>
@@ -122,7 +122,7 @@
   <td colspan="3">&nbsp;</td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="{get_page_url page='Pipes List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{get_url page='Pipes List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
   {include file="common_edit_save.tpl" newobj="Pipe"}
  </tr>
 </table>
@@ -131,7 +131,7 @@
 {if isset($chain_use_pipes) && !empty($chain_use_pipes)}
  This pipe is assigned to the following chains:<br />
  {foreach from=$chain_use_pipes key=chain_idx item=chain_name name=chains}
-  <a href="{get_page_url page='Chain Edit' id=$chain_idx}" title="Edit chain {$chain_name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$chain_name}</a>{if !isset($smarty.foreach.chains.last) || empty($smarty.foreach.chains.last)},{/if}
+  <a href="{get_url page='Chain Edit' id=$chain_idx}" title="Edit chain {$chain_name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$chain_name}</a>{if !isset($smarty.foreach.chains.last) || empty($smarty.foreach.chains.last)},{/if}
  {foreachelse}
   none
  {/foreach}

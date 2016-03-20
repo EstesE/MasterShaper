@@ -42,7 +42,7 @@
   <td colspan="3">&nbsp;</td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="{get_page_url page='Ports List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{get_url page='Ports List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
   {include file="common_edit_save.tpl" newobj="Port"}
  </tr>
 </table>
@@ -51,7 +51,7 @@
 {if isset($filter_use_port) && !empty($filter_use_port)}
  This port is assigned to the following filters:<br />
  {foreach from=$filter_use_port key=filter_idx item=filter_name name=filters}
-  <a href="{get_page_url page='Filter Edit' id=$filter_idx}" title="Edit filter {$filter_name}"><img src="{$icon_filters}" alt="filter icon" />&nbsp;{$filter_name}</a>{if !isset($smarty.foreach.filters.last) || empty($smarty.foreach.filters.last)},{/if}
+  <a href="{get_url page='Filter Edit' id=$filter_idx}" title="Edit filter {$filter_name}"><img src="{$icon_filters}" alt="filter icon" />&nbsp;{$filter_name}</a>{if !isset($smarty.foreach.filters.last) || empty($smarty.foreach.filters.last)},{/if}
  {foreachelse}
   none
  {/foreach}

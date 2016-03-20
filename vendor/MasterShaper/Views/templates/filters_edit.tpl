@@ -45,7 +45,7 @@
     <option value="-1">--- Ignore ---</option>
     {protocol_select_list proto_idx=$filter->filter_protocol_id}
    </select>
-   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="if($('select[name=filter_protocol_id]').val() > 0) change_to('{get_page_url page='Protocol Edit' id=0}', $('select[name=filter_protocol_id]').val()); return false ;" title="Click to edit currently selected protocol" />
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="if($('select[name=filter_protocol_id]').val() > 0) change_to('{get_url page='Protocol Edit' id=0}', $('select[name=filter_protocol_id]').val()); return false ;" title="Click to edit currently selected protocol" />
   </td>
   <td>
    Match on this protocol. Select TCP or UDP if you want to use port definitions! If you want to match both TCP &amp; UDP use IP as protocol. Be aware that tc-filter can not differ between TCP &amp; UDP. It will match both at the same time!
@@ -315,7 +315,7 @@
   <td colspan="3">&nbsp;</td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="{get_page_url page='Filters List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{get_url page='Filters List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
   {include file="common_edit_save.tpl" newobj="Filter"}
  </tr>
 </table> 
@@ -323,7 +323,7 @@
 {if isset($pipe_use_filters) && !empty($pipe_use_filters)}
  This filter is assigned to the following pipes:<br />
  {foreach from=$pipe_use_filters key=pipe_idx item=pipe_name name=pipes}
-  <a href="{get_page_url page='Pipe Edit' id=$pipe_idx}" title="Edit pipe {$pipe_name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$pipe_name}</a>{if !isset($smarty.foreach.pipes.last)},{/if}
+  <a href="{get_url page='Pipe Edit' id=$pipe_idx}" title="Edit pipe {$pipe_name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$pipe_name}</a>{if !isset($smarty.foreach.pipes.last)},{/if}
  {foreachelse}
   none
  {/foreach}

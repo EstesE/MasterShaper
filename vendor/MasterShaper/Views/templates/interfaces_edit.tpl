@@ -70,7 +70,7 @@
     <option value="0" {if $if->if_fallback_idx == 0} selected="selected" {/if} >--- No Fallback ---</option>
     {service_level_select_list sl_idx=$if->if_fallback_idx}
    </select>
-   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_page_url page='Service Level Edit' id=0}', $('select[name=if_fallback_idx]').val());" />
+   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='Service Level Edit' id=0}', $('select[name=if_fallback_idx]').val());" />
   </td>
   <td>
    If none of the defined chains matches, you can define here a final fallback service level per interface.
@@ -94,7 +94,7 @@
   </td>
  </tr>
  <tr>
-  <td style="text-align: center;"><a href="{get_page_url page='Interfaces List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
+  <td style="text-align: center;"><a href="{get_url page='Interfaces List'}" title="Back"><img src="{$icon_arrow_left}" alt="arrow left icon" /></a></td>
   {include file="common_edit_save.tpl" newobj="Interface"}
  </tr>
 </table>
@@ -102,7 +102,7 @@
 This interface is assigned to the following network paths:<br />
 {if isset($np_use_if) && !empty($np_use_if)}
  {foreach from=$np_use_if key=np_idx item=np_name name=networkpaths}
-  <a href="{get_page_url page='Network Path Edit' id=$np_idx}" title="Edit network path  $np_name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$np_name}</a>{if !isset($smarty.foreach.networkpaths.last) || empty($smarty.foreach.networkpaths.last)},{/if}
+  <a href="{get_url page='Network Path Edit' id=$np_idx}" title="Edit network path  $np_name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$np_name}</a>{if !isset($smarty.foreach.networkpaths.last) || empty($smarty.foreach.networkpaths.last)},{/if}
  {foreachelse}
   none
  {/foreach}

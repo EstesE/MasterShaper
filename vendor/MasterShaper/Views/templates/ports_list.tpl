@@ -6,7 +6,7 @@
  <tr>
   <td style="text-align: center;" colspan="5">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{get_page_url page='Port New'}">Create a new Port</a>
+   <a href="{get_url page='Port New'}">Create a new Port</a>
   </td>
  </tr>
  <tr>
@@ -37,7 +37,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_ports}" alt="port icon" />
-   <a href="{get_page_url page='Port Edit' id=$port->port_idx}">{$port->port_name}</a>
+   <a href="{get_url page='Port Edit' id=$port->port_idx}">{$port->port_name}</a>
   {if $port->port_user_defined == 'Y'}
     <img src="{$icon_users}" alt="User defined port" />
   {/if}

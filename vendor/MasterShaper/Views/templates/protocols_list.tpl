@@ -6,7 +6,7 @@
  <tr>
   <td style="text-align: center;" colspan="5">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{get_page_url page='Protocol New'}">Create a new Protocol</a>
+   <a href="{get_url page='Protocol New'}">Create a new Protocol</a>
   </td>
  </tr>
  <tr>
@@ -34,7 +34,7 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_protocols}" alt="protocol icon" />
-   <a href="{get_page_url page='Protocol Edit' id=$protocol->proto_idx}">{$protocol->proto_name}</a>
+   <a href="{get_url page='Protocol Edit' id=$protocol->proto_idx}">{$protocol->proto_name}</a>
   {if $protocol->proto_user_defined == 'Y'}
     <img src="{$icon_users}" alt="User defined protocol" />
   {/if}

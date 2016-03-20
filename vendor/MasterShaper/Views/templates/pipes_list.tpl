@@ -3,7 +3,7 @@
  <tr>
   <td style="text-align: center;" colspan="4">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{get_page_url page='Pipe New'}">Create a new Pipe</a>
+   <a href="{get_url page='Pipe New'}">Create a new Pipe</a>
   </td>
  </tr>
  <tr>
@@ -18,12 +18,12 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_pipes}" alt="pipe icon" />
-   <a href="{get_page_url page='Pipe Edit' id=$pipe_idx}">{$pipe_name}</a>
+   <a href="{get_url page='Pipe Edit' id=$pipe_idx}">{$pipe_name}</a>
   </td>
   <td>
    <img src="{$icon_filters}" alt="filter icon" />
    {foreach from=$pipe_use_filters key=filter_idx item=filter_name name=filters}
-    <a href="{get_page_url page='Filter Edit' id=$filter_idx}">{$filter_name}</a>{if !isset($smarty.foreach.filters.last) || empty($smarty.foreach.filters.last)},{/if}
+    <a href="{get_url page='Filter Edit' id=$filter_idx}">{$filter_name}</a>{if !isset($smarty.foreach.filters.last) || empty($smarty.foreach.filters.last)},{/if}
    {foreachelse}
     &nbsp;
    {/foreach}

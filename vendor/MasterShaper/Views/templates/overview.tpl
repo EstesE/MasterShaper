@@ -15,7 +15,7 @@
  <tr>
   <td style="width: 99%;">
    &nbsp;<a href="javascript:#" title="Collapse all chains within network path" onclick="toggle_content('tr[np={$netpath->netpath_idx}]', '#togglenp{$netpath->netpath_idx}', '{$icon_menu_down}', '{$icon_menu_right}', 'img[np={$netpath->netpath_idx}]'); return false;"><img src="{$icon_menu_right}" id="togglenp{$netpath->netpath_idx}" state="hidden" /></a>
-   <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{get_page_url page='Network Path Edit' id=$netpath->netpath_idx}" title="Modify network path {$netpath->netpath_name}">Network Path {$netpath->netpath_name}</a>
+   <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{get_url page='Network Path Edit' id=$netpath->netpath_idx}" title="Modify network path {$netpath->netpath_name}">Network Path {$netpath->netpath_name}</a>
    <a class="move-down" type="netpath" idx="{$netpath->netpath_idx}"><img src="{$icon_pipes_arrow_down}" alt="Move netpath down" /></a>
    <a class="move-up" type="netpath" idx="{$netpath->netpath_idx}"><img src="{$icon_pipes_arrow_up}" alt="Move netpath up" /></a>
   </td>
@@ -67,7 +67,7 @@
      <td colspan="2">
       <a href="javascript:#" title="Collapse chain" onclick="toggle_content('#chain{$chain->chain_idx} ~ [chain={$chain->chain_idx}]', '#togglechn{$chain->chain_idx}', '{$icon_menu_down}', '{$icon_menu_right}'); return false;"><img src="{$icon_menu_right}" id="togglechn{$chain->chain_idx}" np="{$netpath->netpath_idx}" state="hidden" /></a>
       <img src="{$icon_chains}" alt="chain icon" />&nbsp;
-      <a href="{get_page_url page='Chain Edit' id=$chain->chain_idx}" title="Modify chain {$chain->chain_name}">{$chain->chain_name}</a>
+      <a href="{get_url page='Chain Edit' id=$chain->chain_idx}" title="Modify chain {$chain->chain_name}">{$chain->chain_name}</a>
      </td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
@@ -76,7 +76,7 @@
        {service_level_select_list details=no sl_idx=$chain->chain_sl_idx}
       </select>
       {else}
-       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_page_url page='Service Level Edit' id=$chain->chain_sl_idx}" title="Modify servicel level {get_item_name type=sl idx=$chain->chain_sl_idx}">{get_item_name type=sl idx=$chain->chain_sl_idx}</a>
+       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='Service Level Edit' id=$chain->chain_sl_idx}" title="Modify servicel level {get_item_name type=sl idx=$chain->chain_sl_idx}">{get_item_name type=sl idx=$chain->chain_sl_idx}</a>
       {/if}
      </td>
 
@@ -88,7 +88,7 @@
        {service_level_select_list details=no sl_idx=$chain->chain_fallback_idx}
       </select>
       {else}
-       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_page_url page='Service Level Edit' id=$chain->chain_sl_idx}" title="Modify servicel level {get_item_name type=fallsl idx=$chain->chain_fallback_idx}">{get_item_name type=fallsl idx=$chain->chain_fallback_idx}</a>
+       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='Service Level Edit' id=$chain->chain_sl_idx}" title="Modify servicel level {get_item_name type=fallsl idx=$chain->chain_fallback_idx}">{get_item_name type=fallsl idx=$chain->chain_fallback_idx}</a>
       {/if}
      </td>
     {else}
@@ -102,7 +102,7 @@
        {target_select_list target_idx=$chain->chain_src_target}
       </select>
       {else}
-       <img src="{$icon_targets}" alt="target icon" />&nbsp;<a href="{get_page_url page='Target Edit' id=$chain->chain_src_target}" title="Modify target {get_item_name type=target idx=$chain->chain_src_target}">{get_item_name type=target idx=$chain->chain_src_target}</a>
+       <img src="{$icon_targets}" alt="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$chain->chain_src_target}" title="Modify target {get_item_name type=target idx=$chain->chain_src_target}">{get_item_name type=target idx=$chain->chain_src_target}</a>
 
       {/if}
      </td>
@@ -123,7 +123,7 @@
        {target_select_list target_idx=$chain->chain_dst_target}
       </select>
       {else}
-       <img src="{$icon_targets}" alt="target icon" />&nbsp;<a href="{get_page_url page='Target Edit' id=$chain->chain_dst_target}" title="Modify target {get_item_name type=target idx=$chain->chain_dst_target}">{get_item_name type=target idx=$chain->chain_dst_target}</a>
+       <img src="{$icon_targets}" alt="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$chain->chain_dst_target}" title="Modify target {get_item_name type=target idx=$chain->chain_dst_target}">{get_item_name type=target idx=$chain->chain_dst_target}</a>
       {/if}
      </td>
      {* <!-- hide actions for now, not in use -->
@@ -150,7 +150,7 @@
      <td style="text-align: center;">{$counter}</td>
      <td>
       <img src="{$icon_pipes}" alt="pipes icon" />&nbsp;
-      <a href="{get_page_url page='Pipe Edit' id=$pipe->pipe_idx}" title="Modify pipe {$pipe->pipe_name}">{$pipe->pipe_name}</a>
+      <a href="{get_url page='Pipe Edit' id=$pipe->pipe_idx}" title="Modify pipe {$pipe->pipe_name}">{$pipe->pipe_name}</a>
      </td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
@@ -159,7 +159,7 @@
        {service_level_select_list details=no sl_idx=$pipe_sl_idx}
       </select>
       {else}
-       <img src="{$icon_pipes}" alt="pipe icon" />&nbsp;<a href="{get_page_url page='Service Level Edit' id=$pipe_sl_idx}" title="Modify service level {get_item_name type=sl idx=$pipe_sl_idx}">{get_item_name type=sl idx=$pipe_sl_idx}</a>
+       <img src="{$icon_pipes}" alt="pipe icon" />&nbsp;<a href="{get_url page='Service Level Edit' id=$pipe_sl_idx}" title="Modify service level {get_item_name type=sl idx=$pipe_sl_idx}">{get_item_name type=sl idx=$pipe_sl_idx}</a>
       {/if}
      </td>
      <td>&nbsp;</td>
@@ -170,7 +170,7 @@
        {target_select_list target_idx=$pipe->pipe_src_target}
       </select>
       {else}
-       <img src="{$icon_targets}" alt ="target icon" />&nbsp;<a href="{get_page_url page='Target Edit' id=$pipe->pipe_src_target}" title="Modify target {get_item_name type=target idx=$pipe->pipe_src_target}">{get_item_name type=target idx=$pipe->pipe_src_target}</a>
+       <img src="{$icon_targets}" alt ="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$pipe->pipe_src_target}" title="Modify target {get_item_name type=target idx=$pipe->pipe_src_target}">{get_item_name type=target idx=$pipe->pipe_src_target}</a>
       {/if}
      </td>
      <td style="text-align: center;">
@@ -190,7 +190,7 @@
        {target_select_list target_idx=$pipe->pipe_dst_target}
       </select>
       {else}
-       <img src="{$icon_targets}" alt ="target icon" />&nbsp;<a href="{get_page_url page='Target Edit' id=$pipe->pipe_dst_target}" title="Modify target {get_item_name type=target idx=$pipe->pipe_dst_target}">{get_item_name type=target idx=$pipe->pipe_dst_target}</a>
+       <img src="{$icon_targets}" alt ="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$pipe->pipe_dst_target}" title="Modify target {get_item_name type=target idx=$pipe->pipe_dst_target}">{get_item_name type=target idx=$pipe->pipe_dst_target}</a>
       {/if}
      </td>
      {*
@@ -212,7 +212,7 @@
      <td colspan="7">
       <img src="{$icon_treeend}" alt="tree" />
       <img src="{$icon_filters}" alt="filter icon" />&nbsp;
-      <a href="{get_page_url page='Filter Edit' id=$filter->filter_idx}" title="Modify filter {$filter->filter_name}">{$filter->filter_name}</a>
+      <a href="{get_url page='Filter Edit' id=$filter->filter_idx}" title="Modify filter {$filter->filter_name}">{$filter->filter_name}</a>
      </td>
      <td>&nbsp;</td>
     </tr>

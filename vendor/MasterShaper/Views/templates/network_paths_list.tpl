@@ -3,7 +3,7 @@
  <tr>
   <td style="text-align: center;" colspan="4">
    <img src="{$icon_new}" alt="new icon" />
-   <a href="{get_page_url page='Network Path New'}">Define a new Network Path</a>
+   <a href="{get_url page='Network Path New'}">Define a new Network Path</a>
   </td>
  </tr>
  <tr>
@@ -19,13 +19,13 @@
  <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');">
   <td>
    <img src="{$icon_interfaces}" alt="interface icon" />
-   <a href="{get_page_url page='Network Path Edit' id=$netpath_idx}">{$netpath_name}</a>
+   <a href="{get_url page='Network Path Edit' id=$netpath_idx}">{$netpath_name}</a>
   </td>
   <td>
-   <a href="{get_page_url page='Interface Edit' id=$netpath_if1_idx}" title="Edit interface {$netpath_if1_name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$netpath_if1_name}</a> {if $netpath_if1_inside_gre == 'Y'}(inside GRE){/if}
+   <a href="{get_url page='Interface Edit' id=$netpath_if1_idx}" title="Edit interface {$netpath_if1_name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$netpath_if1_name}</a> {if $netpath_if1_inside_gre == 'Y'}(inside GRE){/if}
   </td>
   <td>
-   <a href="{get_page_url page='Interface Edit' id=$netpath_if2_idx}" title="Edit interface {$netpath_if2_name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$netpath_if2_name}</a> {if $netpath_if2_inside_gre == 'Y'}(inside GRE){/if}
+   <a href="{get_url page='Interface Edit' id=$netpath_if2_idx}" title="Edit interface {$netpath_if2_name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$netpath_if2_name}</a> {if $netpath_if2_inside_gre == 'Y'}(inside GRE){/if}
   </td>
   <td style="text-align: center;">
    <a class="clone" id="networkpath-{$netpath_idx}" title="Clone"><img src="{$icon_clone}" alt="clone icon" /></a>
