@@ -20,9 +20,10 @@
 {include "header.tpl"}
 </head>
 <body>
-  <div>
+{include "page_start.tpl"}
+ <div>
 {$page_content}
-  </div>
+ </div>
 {include "footer.tpl"}
- </body>
+</body>
 </html>
