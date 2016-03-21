@@ -951,34 +951,6 @@ function parse_json(values)
    return data;
 }
 
-function load_menu()
-{
-   if(!$('.main_menu')) {
-      window.alert('unable to build menu on not-existing object .main_menu');
-   }
-
-   $('.main_menu').buildMenu({
-      menuWidth:        200,
-      openOnRight:      false,
-      openOnClick:      true,
-      menuSelector:     '.menuSelector',
-      iconPath:         'jquery/menu/ico/',
-      hasImages:        false,
-      fadeInTime:       200,
-      fadeOutTime:      150,
-      adjustLeft:       2,
-      minZindex:        'auto',
-      adjustTop:        10,
-      opacity:          1.00,
-      shadow:           true,
-      shadowColor:      '#cccccc',
-      hoverIntent:      1,
-      closeOnMouseOut:  true,
-      closeAfter:       1000
-   });
-
-} // load_menu()
-
 /**
  * change to link
  *
@@ -1064,7 +1036,6 @@ $(document).ready(function() {
          $(this).css('cursor','auto');
       }
    );
-   load_menu();
    // immediately update our host state
    setTimeout("get_host_state()", 250);
    //$.jqplot.config.enablePlugins = true;
