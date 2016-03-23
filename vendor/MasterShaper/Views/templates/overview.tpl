@@ -23,6 +23,7 @@
  {start_table icon=$icon_home alt="home icon" title="MasterShaper Ruleset Overview (edit)"}
 {/if}
 <div>
+{if isset($netpath) && !empty($netpath)}
 {foreach from=$network_paths item=$netpath}
 <table style="width: 100%;" type="netpath" id="netpath{$netpath->netpath_idx}">
  <tr>
@@ -31,7 +32,7 @@
  <tr>
   <td style="width: 99%;">
    &nbsp;<a href="javascript:#" title="Collapse all chains within network path" onclick="toggle_content('tr[np={$netpath->netpath_idx}]', '#togglenp{$netpath->netpath_idx}', '{$icon_menu_down}', '{$icon_menu_right}', 'img[np={$netpath->netpath_idx}]'); return false;"><img src="{$icon_menu_right}" id="togglenp{$netpath->netpath_idx}" state="hidden" /></a>
-   <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{get_url page='Network Path Edit' id=$netpath->netpath_idx}" title="Modify network path {$netpath->netpath_name}">Network Path {$netpath->netpath_name}</a>
+   <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{get_url page='network-paths' mode='edit' id=$netpath->getSafeLink()}" title="Modify network path {$netpath->netpath_name}">Network Path {$netpath->netpath_name}</a>
    <a class="move-down" type="netpath" idx="{$netpath->netpath_idx}"><img src="{$icon_pipes_arrow_down}" alt="Move netpath down" /></a>
    <a class="move-up" type="netpath" idx="{$netpath->netpath_idx}"><img src="{$icon_pipes_arrow_up}" alt="Move netpath up" /></a>
   </td>
@@ -83,7 +84,7 @@
      <td colspan="2">
       <a href="javascript:#" title="Collapse chain" onclick="toggle_content('#chain{$chain->chain_idx} ~ [chain={$chain->chain_idx}]', '#togglechn{$chain->chain_idx}', '{$icon_menu_down}', '{$icon_menu_right}'); return false;"><img src="{$icon_menu_right}" id="togglechn{$chain->chain_idx}" np="{$netpath->netpath_idx}" state="hidden" /></a>
       <img src="{$icon_chains}" alt="chain icon" />&nbsp;
-      <a href="{get_url page='Chain Edit' id=$chain->chain_idx}" title="Modify chain {$chain->chain_name}">{$chain->chain_name}</a>
+      <a href="{get_url page='chains' mode='edit' id=$chain->getId()}" title="Modify chain {$chain->chain_name}">{$chain->chain_name}</a>
      </td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
@@ -92,7 +93,7 @@
        {service_level_select_list details=no sl_idx=$chain->chain_sl_idx}
       </select>
       {else}
-       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='Service Level Edit' id=$chain->chain_sl_idx}" title="Modify servicel level {get_item_name type=sl idx=$chain->chain_sl_idx}">{get_item_name type=sl idx=$chain->chain_sl_idx}</a>
+       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='service-levels' mode='edit' id=$chain->getServiceLevel()}" title="Modify servicel level {get_item_name type=sl idx=$chain->chain_sl_idx}">{get_item_name type=sl idx=$chain->chain_sl_idx}</a>
       {/if}
      </td>
 
@@ -104,7 +105,7 @@
        {service_level_select_list details=no sl_idx=$chain->chain_fallback_idx}
       </select>
       {else}
-       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='Service Level Edit' id=$chain->chain_sl_idx}" title="Modify servicel level {get_item_name type=fallsl idx=$chain->chain_fallback_idx}">{get_item_name type=fallsl idx=$chain->chain_fallback_idx}</a>
+       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='service-levels' mode='edit' id=$chain->chain_sl_idx}" title="Modify servicel level {get_item_name type=fallsl idx=$chain->chain_fallback_idx}">{get_item_name type=fallsl idx=$chain->chain_fallback_idx}</a>
       {/if}
      </td>
     {else}
@@ -250,8 +251,9 @@
  </tr>
 </table>
 {/if}
-{foreachelse}
- {include file="welcome.tpl"}
 {/foreach}
+{else}
+ {include file="welcome.tpl"}
+{/if}
 </div>
 </form>
