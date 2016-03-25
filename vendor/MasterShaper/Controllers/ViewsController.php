@@ -24,10 +24,9 @@ class ViewsController extends \Thallium\Controllers\ViewsController
     protected static $page_map = array(
         '/^$/' => 'OverviewView',
         '/^main$/' => 'OverviewView',
-        '/^overview.html$/' => 'OverviewView',
-        '/^manage.html$/' => 'ManagerView',
-        '/^login.html$/' => 'LoginView',
-        '/^logout.html$/' => 'LogoutView',
+        '/^overview$/' => 'OverviewView',
+        '/^login$/' => 'LoginView',
+        '/^logout$/' => 'LogoutView',
         '/^chains$/' => 'ChainsView',
         '/^pipes$/' => 'PipesView',
         '/^filters$/' => 'FiltersView',
@@ -46,6 +45,7 @@ class ViewsController extends \Thallium\Controllers\ViewsController
         '/^tasklist$/' => 'TaskListView',
         '/^monitoring$/' => 'MonitoringView',
         '/^update$/' => 'UpdateView',
+        '/^about$/' => 'AboutView',
     );
 }
 
