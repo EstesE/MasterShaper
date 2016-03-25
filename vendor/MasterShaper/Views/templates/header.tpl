@@ -29,6 +29,7 @@
   <script type="text/javascript" src="{$app_web_path}/resources/thallium_store.js"></script>
   <!-- Thallium CSS -->
   <link type="text/css" href="{$app_web_path}/resources/thallium.css" rel="Stylesheet" />
+  <link type="text/css" href="{$app_web_path}/resources/shaper.css" rel="Stylesheet" />
   <!-- forge crypto -->
   <script type="text/javascript" src="{$app_web_path}/resources/forge/js/forge.js"></script>
   <script type="text/javascript" src="{$app_web_path}/resources/forge/js/util.js"></script>
