@@ -37,7 +37,7 @@ class ViewsController extends \Thallium\Controllers\ViewsController
         '/^interfaces$/' => 'InterfacesView',
         '/^networkpaths$/' => 'NetworkPathsView',
         '/^users$/' => 'UsersView',
-        '/^hostprofiles$/' => 'hostprofiles',
+        '/^hostprofiles$/' => 'HostProfilesView',
         '/^settings$/' => 'SettingsView',
         '/^options$/' => 'OptionsView',
         '/^rules$/' => 'RulesView',
