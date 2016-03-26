@@ -35,23 +35,29 @@ class HostProfileModel extends DefaultModel
             FIELD_TYPE => FIELD_GUID,
         ),
         'name' => array(
-            FIELD_TYPE => FIELD_STR,
+            FIELD_TYPE => FIELD_STRING,
         ),
         'active' => array(
             FIELD_TYPE => FIELD_YESNO,
             FIELD_DEFAULT => 'Y',
         ),
-        'host_heartbeat' => array(
+        'heartbeat' => array(
             FIELD_TYPE => FIELD_TIMESTAMP,
         ),
     );
 
-    public function preDelete()
+    protected function __init()
     {
-        global $db, $ms;
+        $this->addRpcAction('delete');
+        $this->permitRpcUpdates(true);
+        $this->addRpcEnabledField('name');
+        return true;
+    }
 
-        if ($this->id == 1) {
-            $ms->throwError('You can not delete the default host profile!');
+    protected function preDelete()
+    {
+        if (isset($this->host_idx) and $this->host_idx == 1) {
+            $this->raiseError(__METHOD__ .'(), it is not allowed to delete the network path with ID 1!');
             return false;
         }
 
