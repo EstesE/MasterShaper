@@ -25,6 +25,9 @@ namespace MasterShaper\Views;
 
 class MonitorView extends DefaultView
 {
+    protected static $view_default_mode = 'show';
+    protected static $view_class_name = 'monitoring';
+
     private $total;
     private $names;
     private $colors;
