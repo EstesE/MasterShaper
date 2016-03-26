@@ -34,10 +34,10 @@ class PortModel extends DefaultModel
             FIELD_TYPE => FIELD_GUID,
         ),
         'name' => array(
-            FIELD_TYPE => FIELD_STR,
+            FIELD_TYPE => FIELD_STRING,
         ),
         'desc' => array(
-            FIELD_TYPE => FIELD_STR,
+            FIELD_TYPE => FIELD_STRING,
         ),
         'number' => array(
             FIELD_TYPE => FIELD_INT,
@@ -47,24 +47,12 @@ class PortModel extends DefaultModel
         ),
     );
 
-    public function postDelete()
+    protected function __init()
     {
-        global $db;
-
-        $sth = $db->db_prepare(
-            "DELETE FROM
-                TABLEPREFIXassign_ports_to_filters
-            WHERE
-                afp_port_idx LIKE ?"
-        );
-
-        $db->db_execute($sth, array(
-            $this->id
-        ));
-
-        $db->db_sth_free($sth);
+        $this->permitRpcUpdates(true);
+        $this->addRpcAction('delete');
+        $this->addRpcEnabledField('name');
         return true;
-
     }
 }
 
