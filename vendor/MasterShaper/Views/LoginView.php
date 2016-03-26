@@ -25,9 +25,8 @@ namespace MasterShaper\Views ;
 
 class LoginView extends DefaultView
 {
-    public $class_name = 'login';
-    private $queue;
-    private $archive;
+    protected static $view_default_mode = 'show';
+    protected static $view_class_name = 'login';
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
