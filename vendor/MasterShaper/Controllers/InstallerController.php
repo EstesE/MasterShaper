@@ -25,7 +25,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
     protected function createApplicationDatabaseTables()
     {
-        global $db;
+        global $db, $ms;
 
         if (!$db->checkTableExists("TABLEPREFIXassign_filters_to_pipes")) {
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_filters_to_pipes` (
@@ -446,7 +446,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
             $db->query(
                 "INSERT INTO TABLEPREFIXusers VALUES (
                     NULL,
-                    NULL,
+                    '". $ms->createGuid() ."',
                     'admin',
                     MD5('admin'),
                     'Y',
@@ -485,7 +485,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
             $db->query(
                 "INSERT INTO TABLEPREFIXhost_profiles VALUES (
                     NULL,
-                    NULL,
+                    '". $ms->createGuid() ."',
                     'Default Host',
                     'Y',
                     0
@@ -683,6 +683,40 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(23);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV24()
+    {
+        global $ms, $db;
+
+        $db->query(
+            "UPDATE
+                TABLEPREFIXusers
+            SET
+                user_guid='". $ms->createGuid() ."'
+            WHERE
+                user_idx LIKE 1
+            AND
+                user_name LIKE 'admin'
+            AND
+                user_guid IS NULL"
+        );
+
+        $db->query(
+            "UPDATE
+                TABLEPREFIXhost_profiles
+            SET
+                host_guid='". $ms->createGuid() ."'
+            WHERE
+                host_idx LIKE 1
+            AND
+                host_name LIKE 'Default Host'
+            AND
+                host_guid IS NULL"
+        );
+
+        $db->setDatabaseSchemaVersion(24);
         return true;
     }
 }
