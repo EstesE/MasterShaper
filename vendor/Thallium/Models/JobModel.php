@@ -65,23 +65,23 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        $this->job_session_id = $sessionid;
+        $this->model_values['session_id'] = $sessionid;
         return true;
     }
 
     public function getSessionId()
     {
-        if (!isset($this->job_session_id)) {
+        if (!isset($this->model_values['session_id'])) {
             static::raiseError(__METHOD__ .', \$job_session_id has not been set yet!');
             return false;
         }
 
-        return $this->job_session_id;
+        return $this->model_values['session_id'];
     }
 
     public function hasSessionId()
     {
-        if (!isset($this->job_session_id) || empty($this->job_session_id)) {
+        if (!isset($this->model_values['session_id']) || empty($this->model_values['session_id'])) {
             return false;
         }
 
@@ -91,21 +91,21 @@ class JobModel extends DefaultModel
     public function setProcessingFlag($value = true)
     {
         if (!$value) {
-            $this->job_in_processing = 'N';
+            $this->model_values['in_processing'] = 'N';
             return true;
         }
 
-        $this->job_in_processing = 'Y';
+        $this->model_values['in_processing'] = 'Y';
         return true;
     }
 
     public function getProcessingFlag()
     {
-        if (!isset($this->job_in_processing)) {
+        if (!isset($this->model_values['in_processing'])) {
             return 'N';
         }
 
-        return $this->job_in_processing;
+        return $this->model_values['in_processing'];
     }
 
     public function isProcessing()
@@ -114,7 +114,7 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        if ($this->job_in_processing != 'Y') {
+        if ($this->model_values['in_processing'] != 'Y') {
             return false;
         }
 
@@ -123,8 +123,8 @@ class JobModel extends DefaultModel
 
     protected function preSave()
     {
-        if (!isset($this->job_in_processing) || empty($this->job_in_processing)) {
-            $this->job_in_processing = 'N';
+        if (!isset($this->model_values['in_processing']) || empty($this->model_values['in_processing'])) {
+            $this->model_values['in_processing'] = 'N';
         }
 
         return true;
@@ -139,27 +139,27 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        $this->job_request_guid = $guid;
+        $this->model_values['request_guid'] = $guid;
         return true;
     }
 
     public function getRequestGuid()
     {
-        if (!isset($this->job_request_guid)) {
+        if (!isset($this->model_values['request_guid'])) {
             static::raiseError(__METHOD__ .', \$job_request_guid has not been set yet!');
             return false;
         }
 
-        return $this->job_request_guid;
+        return $this->model_values['request_guid'];
     }
 
     public function getCommand()
     {
-        if (!isset($this->job_command)) {
+        if (!isset($this->model_values['command'])) {
             return false;
         }
 
-        return $this->job_command;
+        return $this->model_values['command'];
     }
 
     public function setCommand($command)
@@ -169,7 +169,7 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        $this->job_command = $command;
+        $this->model_values['command'] = $command;
         return true;
     }
 
@@ -180,7 +180,7 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        if (($params = base64_decode($this->job_parameters)) === false) {
+        if (($params = base64_decode($this->model_values['parameters'])) === false) {
             static::raiseError(__METHOD__ .'(), base64_decode() failed on job_parameters!');
             return false;
         }
@@ -200,13 +200,13 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        $this->job_parameters = base64_encode(serialize($parameters));
+        $this->model_values['parameters'] = base64_encode(serialize($parameters));
         return true;
     }
 
     public function hasParameters()
     {
-        if (!isset($this->job_parameters) || empty($this->job_parameters)) {
+        if (!isset($this->model_values['parameters']) || empty($this->model_values['parameters'])) {
             return false;
         }
 

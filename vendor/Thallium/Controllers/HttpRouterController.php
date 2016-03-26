@@ -23,22 +23,36 @@ class HttpRouterController extends DefaultController
 {
     protected $query;
     protected $query_parts;
+    protected static $valid_request_methods = array(
+        'GET',
+        'POST',
+    );
+    protected static $valid_request_actions = array(
+        'overview',
+        'login',
+        'logout',
+        'show',
+        'list',
+        'new',
+        'edit',
+        'rpc.html',
+    );
     protected $valid_rpc_actions = array(
-            'add',
-            'update',
-            'delete',
-            'find-prev-next',
-            'get-content',
-            'submit-messages',
-            'retrieve-messages',
-            'process-messages',
-            /*'toggle',
-            'clone',
-            'alter-position',
-            'get-sub-menu',
-            'set-host-profile',
-            'get-host-state',
-            'idle',*/
+        'add',
+        'update',
+        'delete',
+        'find-prev-next',
+        'get-content',
+        'submit-messages',
+        'retrieve-messages',
+        'process-messages',
+        /*'toggle',
+        'clone',
+        'alter-position',
+        'get-sub-menu',
+        'set-host-profile',
+        'get-host-state',
+        'idle',*/
     );
 
     public function __construct()
@@ -49,36 +63,35 @@ class HttpRouterController extends DefaultController
 
         // check HTTP request method
         if (!isset($_SERVER['REQUEST_URI']) || empty($_SERVER['REQUEST_URI'])) {
-            static::raiseError("Error - \$_SERVER['REQUEST_URI'] is not set!");
-            return false;
+            static::raiseError(__METHOD__ .'(), $_SERVER["REQUEST_URI"] is not set!', true);
+            return;
         }
 
         if (!isset($_SERVER['REQUEST_METHOD']) || empty($_SERVER['REQUEST_METHOD'])) {
-            static::raiseError("\$_SERVER['REQUEST_METHOD'] is not set!");
-            return false;
+            static::raiseError(__METHOD__ .'(), $_SERVER["REQUEST_METHOD"] is not set!', true);
+            return;
         }
 
-        if (!$this->isValidRequestMethod($_SERVER['REQUEST_METHOD'])) {
-            static::raiseError("unspported request method {$_SERVER['REQUEST_METHOD']}");
-            return false;
+        if (!static::isValidRequestMethod($_SERVER['REQUEST_METHOD'])) {
+            static::raiseError(__METHOD__ .'(), unspported request method found!', true);
+            return;
         }
 
         $this->query->method = $_SERVER['REQUEST_METHOD'];
+        $this->query->uri = $_SERVER['REQUEST_URI'];
 
         // check HTTP request URI
         $uri = $_SERVER['REQUEST_URI'];
 
-        $this->query->uri = $uri;
-
         // just to check if someone may fools us.
         if (substr_count($uri, '/') > 10) {
             static::raiseError(__METHOD__ .'(), request looks strange - are you try to fooling us?', true);
-            return false;
+            return;
         }
 
-        if (!($webpath = $config->getWebPath())) {
+        if (($webpath = $config->getWebPath()) === false) {
             $this->raiseErrro(get_class($config) .'::getWebPath() returned false!', true);
-            return false;
+            return;
         }
 
         // strip off our known base path (e.g. /thallium)
@@ -97,7 +110,7 @@ class HttpRouterController extends DefaultController
             count($this->query_parts) < 1
         ) {
             static::raiseError(__METHOD__ .'(), unable to parse request URI - nothing to be found.', true);
-            return false;
+            return;
         }
 
         // remove empty array elements
@@ -106,8 +119,8 @@ class HttpRouterController extends DefaultController
 
         if ($last_element >= 0 && strpos($this->query_parts[$last_element], '?') !== false) {
             if (($query_parts_params = explode('?', $this->query_parts[$last_element], 2)) === false) {
-                static::raiseError(__METHOD__ .'(), explode() returned false!');
-                return false;
+                static::raiseError(__METHOD__ .'(), explode() returned false!', true);
+                return;
             }
             $this->query_parts[$last_element] = $query_parts_params[0];
             unset($query_parts_params[0]);
@@ -125,17 +138,19 @@ class HttpRouterController extends DefaultController
         } elseif (isset($this->query_parts[0]) && !empty($this->query_parts[0])) {
             $this->query->view = $this->query_parts[0];
         } else {
-            static::raiseError(
-                "Something is wrong here. "
-                ."Check if base_web_path is correctly defined in your configuration."
-            );
-            return false;
+            static::raiseError(__METHOD__ .'(), check if base_web_path is correctly defined!', true);
+            return;
         }
 
-        if (isset($this->query_parts[0]) && $this->isValidAction($this->query_parts[0])) {
-            $this->query->mode = $this->query_parts[0];
-        } elseif (isset($this->query_parts[1]) && $this->isValidAction($this->query_parts[1])) {
-            $this->query->mode = $this->query_parts[1];
+        foreach (array_reverse($this->query_parts) as $part) {
+            if (!isset($part) || empty($part) || !is_string($part)) {
+                continue;
+            }
+            if (!static::isValidAction($part)) {
+                continue;
+            }
+            $this->query->mode = $part;
+            break;
         }
 
         $this->query->params = array();
@@ -170,13 +185,13 @@ class HttpRouterController extends DefaultController
             array_push($this->query->params, $this->query_parts[$i]);
         }
 
-        if (isset($query_parts_params)) {
-            foreach ($query_parts_params as $param) {
-                array_push($this->query->params, $param);
-            }
+        if (!isset($query_parts_params)) {
+            return;
         }
 
-        return true;
+        foreach ($query_parts_params as $param) {
+            array_push($this->query->params, $param);
+        }
     }
 
     public function select()
@@ -279,24 +294,20 @@ class HttpRouterController extends DefaultController
         return false;
     }
 
-    protected function isValidAction($action)
+    protected static function isValidAction($action)
     {
-        $valid_actions = array(
-                'overview',
-                'login',
-                'logout',
-                'show',
-                'list',
-                'new',
-                'edit',
-                'rpc.html',
-                );
-
-        if (in_array($action, $valid_actions)) {
-            return true;
+        if (!isset($action) ||
+            empty($action) ||
+            !is_string($action) ||
+            !isset(static::$valid_request_actions) ||
+            empty(static::$valid_request_actions) ||
+            !is_array(static::$valid_request_actions) ||
+            !in_array($action, static::$valid_request_actions)
+        ) {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public function addValidRpcAction($action)
@@ -339,22 +350,34 @@ class HttpRouterController extends DefaultController
 
     public function parseQueryParams()
     {
-        if (!isset($this->query->params) || !isset($this->query->params[1])) {
-            return array('id' => null, 'hash' => 'null');
+        if (!isset($this->query->params) ||
+            empty($this->query->params) ||
+            !is_array($this->query->params) ||
+            !isset($this->query->params[1])
+        ) {
+            return array(
+                'id' => null,
+                'guid' => null
+            );
         }
 
+        $safe_link = $this->query->params[1];
         $matches = array();
 
-        $id = $this->query->params[1];
-
-        if (preg_match("/^([0-9]+)\-([a-z0-9]+)$/", $id, $matches)) {
-            $id = $matches[1];
-            $hash = $matches[2];
-            return array('id' => $id, 'hash' => $hash);
-
+        if (!preg_match("/^([0-9]+)\-([a-z0-9]+)$/", $safe_link, $matches)) {
+            return array(
+                'id' => null,
+                'guid' => null
+            );
         }
 
-        return array('id' => null, 'hash' => 'null');
+        $id = $matches[1];
+        $guid = $matches[2];
+
+        return array(
+            'id' => $id,
+            'guid' => $guid
+        );
     }
 
     public function redirectTo($page, $mode, $id)
@@ -379,18 +402,20 @@ class HttpRouterController extends DefaultController
         return true;
     }
 
-    protected function isValidRequestMethod($method)
+    protected static function isValidRequestMethod($method)
     {
-        $valid_methods = array(
-            'GET',
-            'POST',
-        );
-
-        if (in_array($method, $valid_methods)) {
-            return true;
+        if (!isset($method) ||
+            empty($method) ||
+            !is_string($method) ||
+            !isset(static::$valid_request_methods) ||
+            empty(static::$valid_request_methods) ||
+            !is_array(static::$valid_request_methods) ||
+            !in_array($method, static::$valid_request_methods)
+        ) {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     protected function isValidUpdateObject($update_object)

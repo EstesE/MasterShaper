@@ -840,12 +840,7 @@ class MainController extends DefaultController
             return false;
         }
 
-        if (($page_name = $views->getViewName($query->view)) === false) {
-            static::raiseError(__METHOD__ ."(), unable to find a view for {$query->view}!");
-            return false;
-        }
-
-        if (($page = $views->load($page_name)) === false) {
+        if (($page = $views->load($query->view)) === false) {
             static::raiseError("ViewController:load() returned false!");
             return false;
         }

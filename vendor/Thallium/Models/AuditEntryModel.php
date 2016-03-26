@@ -51,8 +51,7 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->audit_time = $time;
-
+        $this->model_values['time'] = $time;
         return true;
     }
 
@@ -69,7 +68,7 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->audit_guid = $guid;
+        $this->model_values['guid'] = $guid;
         return true;
     }
 
@@ -89,7 +88,7 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->audit_message = $message;
+        $this->model_values['message'] = $message;
         return true;
     }
 
@@ -109,7 +108,7 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->audit_type = $entry_type;
+        $this->model_values['type'] = $entry_type;
         return true;
     }
 
@@ -129,7 +128,7 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->audit_scene = $scene;
+        $this->model_values['scene'] = $scene;
         return true;
     }
 }

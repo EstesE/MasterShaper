@@ -35,7 +35,6 @@ $(document).ready(function () {
         return false;
     }
 
-    /* RPC handlers */
     $("form.ui.form.add").on('submit', function () {
         rpc_object_update($(this), function (element, data) {
             if (data != "ok") {
@@ -52,13 +51,9 @@ $(document).ready(function () {
         inlineobj.toggle();
     });
     /* RPC handlers */
-    $("table tr td a.delete").click(function () {
+    $("a.delete.item").click(function () {
         delete_object($(this));
     })
-    $('.inline.editable.edit.link').click(function () {
-        inlineobj = new ThalliumInlineEditable($(this));
-        inlineobj.toggle();
-    });
 });
 
 function show_modal(type, settings, id, do_function, modalclass)

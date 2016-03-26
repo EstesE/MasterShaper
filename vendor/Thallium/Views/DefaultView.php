@@ -23,6 +23,12 @@ abstract class DefaultView
 {
     protected static $view_default_mode = "list";
     protected static $view_class_name;
+    protected static $view_default_modes = array(
+        'list',
+        'show',
+        'edit',
+    );
+    protected $view_modes = array();
 
     public function __construct()
     {
@@ -82,7 +88,7 @@ abstract class DefaultView
         if ($mode == "list" && $tmpl->templateExists(static::$view_class_name ."_list.tpl")) {
             return $this->showList();
         } elseif ($mode == "edit" && $tmpl->templateExists(static::$view_class_name ."_edit.tpl")) {
-            if (!$item = $router->parseQueryParams()) {
+            if (($item = $router->parseQueryParams()) === false) {
                 static::raiseError("HttpRouterController::parseQueryParams() returned false!");
                 return false;
             }
@@ -90,33 +96,33 @@ abstract class DefaultView
                 !is_array($item) ||
                 !isset($item['id']) ||
                 empty($item['id']) ||
-                !isset($item['hash']) ||
-                empty($item['hash']) ||
+                !isset($item['guid']) ||
+                empty($item['guid']) ||
                 !$thallium->isValidId($item['id']) ||
-                !$thallium->isValidGuidSyntax($item['hash'])
+                !$thallium->isValidGuidSyntax($item['guid'])
             ) {
                 static::raiseError("HttpRouterController::parseQueryParams() was unable to parse query parameters!");
                 return false;
             }
-            return $this->showEdit($item['id'], $item['hash']);
+            return $this->showEdit($item['id'], $item['guid']);
 
         } elseif ($mode == "show" && $tmpl->templateExists(static::$view_class_name ."_show.tpl")) {
-            if (!$item = $router->parseQueryParams()) {
+            if (($item = $router->parseQueryParams()) === false) {
                 static::raiseError("HttpRouterController::parseQueryParams() returned false!");
             }
             if (empty($item) ||
                 !is_array($item) ||
                 !isset($item['id']) ||
                 empty($item['id']) ||
-                !isset($item['hash']) ||
-                empty($item['hash']) ||
+                !isset($item['guid']) ||
+                empty($item['guid']) ||
                 !$thallium->isValidId($item['id']) ||
-                !$thallium->isValidGuidSyntax($item['hash'])
+                !$thallium->isValidGuidSyntax($item['guid'])
             ) {
                 static::raiseError("HttpRouterController::parseQueryParams() was unable to parse query parameters!");
                 return false;
             }
-            return $this->showItem($item['id'], $item['hash']);
+            return $this->showItem($item['id'], $item['guid']);
 
         } elseif ($tmpl->templateExists(static::$view_class_name .".tpl")) {
             return $tmpl->fetch(static::$view_class_name .".tpl");
@@ -145,7 +151,7 @@ abstract class DefaultView
         return $tmpl->fetch($template_name);
     }
 
-    public function showEdit($id)
+    public function showEdit($id, $guid)
     {
         global $tmpl;
 
@@ -161,7 +167,7 @@ abstract class DefaultView
         return $tmpl->fetch($template_name);
     }
 
-    public function showItem($id, $hash)
+    public function showItem($id, $guid)
     {
         global $tmpl;
 
@@ -177,13 +183,7 @@ abstract class DefaultView
 
     protected static function isKnownMode($mode)
     {
-        $valid_modes = array(
-            'list',
-            'edit',
-            'show',
-        );
-
-        if (!in_array($mode, $valid_modes)) {
+        if (!in_array($mode, static::$view_modes)) {
             return false;
         }
 
@@ -199,6 +199,89 @@ abstract class DefaultView
             $stop_execution,
             $exception
         );
+
+        return true;
+    }
+
+    public function addMode($mode)
+    {
+        if (!isset($mode) || empty($mode) || !is_string($mode)) {
+            static::raiseError(__METHOD__ .'(), $mode parameter is invalid!');
+            return false;
+        }
+
+        if (in_array($mode, static::$view_default_modes)) {
+            return true;
+        }
+
+        if (isset($this->view_modes) &&
+            !empty($this->view_modes) &&
+            is_array($this->view_modes) &&
+            in_array($mode, $this->view_modes)
+        ) {
+            return true;
+        }
+
+        array_push($this->view_modes, $mode);
+        return true;
+    }
+
+    public function isValidMode($mode)
+    {
+        if (!isset($mode) || empty($mode) || !is_string($mode)) {
+            static::raiseError(__METHOD__ .'(), $mode parameter is invalid!');
+            return false;
+        }
+
+        if (($modes = $this->getModes()) === false) {
+            static::raiseError(__CLASS__ .'::getModes() returned false!');
+            return false;
+        }
+
+        if (!in_array($mode, $modes)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getModes()
+    {
+        if (!isset($this->view_modes) || empty($this->view_modes) || !is_array($this->view_modes)) {
+            return static::$view_default_modes;
+        }
+
+        return array_merge(static::$view_default_modes, $this->view_modes);
+    }
+
+    protected function getSessionVar($name)
+    {
+        global $session;
+
+        if (!$session->hasVariable($name, static::$view_class_name)) {
+            return false;
+        }
+
+        if (($value = $session->getVariable($name, static::$view_class_name)) === false) {
+            static::raiseError(get_class($session) .'::getVariable() returned false!');
+            return false;
+        }
+
+        return $value;
+    }
+
+    protected function setSessionVar($name, $value)
+    {
+        global $session;
+
+        if (!$session->setVariable(
+            $name,
+            $value,
+            static::$view_class_name
+        )) {
+            static::raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
 
         return true;
     }

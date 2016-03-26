@@ -29,20 +29,10 @@ class TemplatesController extends DefaultController
     protected $config_compile_dir;
     protected $config_config_dir;
     protected $config_cache_dir;
-    protected $supported_modes = array (
-            'list',
-            'show',
-            'edit',
-            'delete',
-            'add',
-            'upload',
-            'truncate',
-            );
-    protected $default_mode = "list";
 
     public function __construct()
     {
-        global $config, $views, $thallium;
+        global $config, $thallium;
 
         try {
             $this->smarty = new Smarty;
@@ -82,9 +72,9 @@ class TemplatesController extends DefaultController
 
         if (!is_writeable($this->config_compile_dir)) {
             static::raiseError(
-                "Error - Smarty compile directory ". $this->config_compile_dir ." is not writeable
-                for the current user (". $this->getuid() .").<br />\n
-                Please check that permissions are set correctly to this directory.<br />\n",
+                "Error - Smarty compile directory {$this->config_compile_dir} is not "
+                ."writeable for the current user ({$this->getuid()}).<br />"
+                ."Please check that permissions are set correctly to this directory.<br />",
                 true
             );
             return false;
@@ -233,22 +223,50 @@ class TemplatesController extends DefaultController
 
     public function getUrl($params, &$smarty)
     {
-        global $config;
+        global $config, $views;
 
-        if (!array_key_exists('page', $params)) {
-            static::raiseError("getUrl: missing 'page' parameter", E_USER_WARNING);
+        if (!isset($params) ||
+            empty($params) ||
+            !is_array($params)
+        ) {
+            static::raiseError(__METHOD__ .'(), $params parameter is invalid!');
             $repeat = false;
             return false;
         }
 
-        if (array_key_exists('mode', $params) && !$this->isSupportedMode($params['mode'])) {
-            static::raiseError("getUrl: value of parameter 'mode' ({$params['mode']}) isn't supported", E_USER_WARNING);
+        if (!isset($params['page']) ||
+            empty($params['page']) ||
+            !is_string($params['page'])
+        ) {
+            static::raiseError(__METHOD__ .'(), missing "page" parameter!');
             $repeat = false;
             return false;
         }
 
-        if (!($url = $config->getWebPath())) {
-            static::raiseError("Web path is missing!");
+        if (array_key_exists('mode', $params)) {
+
+            if (($view = $views->getView($params['page'])) === false) {
+                static::raiseError(get_class($views) .'::getView() returned false!');
+                $repeat = false;
+                return false;
+            }
+
+            if (!isset($view) || empty($view) || !is_object($view)) {
+                static::raiseError(get_class($views) .'::getView() returned invalid data!');
+                $repeat = false;
+                return false;
+            }
+
+            if (!$view->isValidMode($params['mode'])) {
+                static::raiseError(get_class($view) .'::isValidMode() returned false!');
+                $repeat = false;
+                return false;
+            }
+        }
+
+        if (($url = $config->getWebPath()) === false) {
+            static::raiseError(get_class($config) .'::getWebPath() returned false!');
+            $repeat = false;
             return false;
         }
 
@@ -256,65 +274,28 @@ class TemplatesController extends DefaultController
             $url = "";
         }
 
-        $url.= "/";
-        $url.= $params['page'] ."/";
+        $url.= '/'. $params['page'] .'/';
 
-        if (isset($params['mode']) && !empty($params['mode'])) {
-            $url.= $params['mode'] ."/";
+        if (isset($params['mode']) &&
+            !empty($params['mode'])
+        ) {
+            $url.= $params['mode'] .'/';
         }
 
-        if (array_key_exists('id', $params) && !empty($params['id'])) {
-            $url.= $params['id'];
+        if (isset($params['id']) &&
+            !empty($params['id'])
+        ) {
+            $url.= $params['id'] .'/';
         }
-        if (array_key_exists('file', $params) && !empty($params['file'])) {
-            $url.= '/'. $params['file'];
+
+        if (isset($params['file']) &&
+            !empty($params['file'])
+        ) {
+            $url.= $params['file'] .'/';
         }
 
         return $url;
 
-    } // getUrl()
-
-    public function addSupportedMode($mode)
-    {
-        if (!isset($mode) || empty($mode) || !is_string($mode)) {
-            static::raiseError(__METHOD__ .'(), $mode parameter is invalid!');
-            return false;
-        }
-
-        if (in_array($mode, $this->supported_modes)) {
-            return true;
-        }
-
-        array_push($this->supported_modes, $mode);
-        return true;
-    }
-
-    public function isSupportedMode($mode)
-    {
-        if (!isset($mode) || empty($mode) || !is_string($mode)) {
-            static::raiseError(__METHOD__ .'(), $mode parameter is invalid!');
-            return false;
-        }
-
-        if (($modes = $this->getSupportedModes()) === false) {
-            static::raiseError(__CLASS__ .'::getSupportedModes() returned false!');
-            return false;
-        }
-
-        if (!in_array($mode, $modes)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function getSupportedModes()
-    {
-        if (!isset($this->supported_modes)) {
-            return false;
-        }
-
-        return $this->supported_modes;
     }
 }
 

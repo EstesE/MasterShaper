@@ -31,7 +31,7 @@ class AuditLogModel extends DefaultModel
 
     public function getLog()
     {
-        return $this->audit_log;
+        return $this->model_values['log'];
     }
 }
 

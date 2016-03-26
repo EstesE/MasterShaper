@@ -27,6 +27,7 @@ class ViewsController extends DefaultController
         '/^about$/' => 'AboutView',
     );
     protected $page_skeleton;
+    protected $loaded_views = array();
 
     public function __construct()
     {
@@ -47,7 +48,7 @@ class ViewsController extends DefaultController
         return true;
     }
 
-    public function getViewName($view)
+    public static function getViewName($view)
     {
         global $thallium;
 
@@ -61,8 +62,13 @@ class ViewsController extends DefaultController
                 continue;
             }
 
-            if (!($prefix = $thallium->getNamespacePrefix())) {
+            if (($prefix = $thallium->getNamespacePrefix()) === false) {
                 static::raiseError(get_class($thallium) .'::getNamespacePrefix() returned false!');
+                return false;
+            }
+
+            if (!isset($prefix) || empty($prefix) || !is_string($prefix)) {
+                static::raiseError(get_class($thallium) .'::getNamespacePrefix() returned no valid data!');
                 return false;
             }
 
@@ -71,30 +77,44 @@ class ViewsController extends DefaultController
                 return false;
             }
 
-            return static::$page_map[$entry];
+            $view = '\\'. $prefix .'\\Views\\'.static::$page_map[$entry];
+            return $view;
         }
+    }
+
+    public function getView($view)
+    {
+        if (!isset($view) || empty($view) || !is_string($view)) {
+            static::raiseError(__METHOD__ .'(), $view parameter is invalid!');
+            return false;
+        }
+
+        if (($view_class = static::getViewName($view)) === false) {
+            static::raiseError(__CLASS__ .'::getViewName() returned false!');
+            return false;
+        }
+
+        if ($this->isLoadedView($view_class)) {
+            return $this->getLoadedView($view_class);
+        }
+
+        try {
+            $view_obj = new $view_class;
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ ."(), failed to load '{$view}'!", true, $e);
+            return false;
+        }
+
+        $this->loaded_views[$view_class] =& $view_obj;
+        return $view_obj;
     }
 
     public function load($view, $skeleton = true)
     {
         global $thallium, $tmpl;
 
-        if (!($prefix = $thallium->getNamespacePrefix())) {
-            static::raiseError(get_class($thallium) .'::getNamespacePrefix() returned false!');
-            return false;
-        }
-
-        if (!isset($view) || empty($view) || !is_string($view)) {
-            $this->raiseError(__METHOD__ .'(), $view parameter is invalid!');
-            return false;
-        }
-
-        $view = '\\'. $prefix .'\\Views\\'.$view;
-
-        try {
-            $page = new $view;
-        } catch (Exception $e) {
-            static::raiseError(__METHOD__ ."(), failed to load '{$view}'!");
+        if (($page = $this->getView($view)) === false) {
+            static::raiseError(__CLASS__ .'::getView() returned false!');
             return false;
         }
 
@@ -116,6 +136,25 @@ class ViewsController extends DefaultController
         }
 
         return $this->page_skeleton->show();
+    }
+
+    protected function isLoadedView($name)
+    {
+        if (!isset($this->loaded_views[$name]) || empty($this->loaded_views[$name])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getLoadedView($name)
+    {
+        if (!$this->isLoadedView($name)) {
+            static::raiseError(__CLASS__ .'::isViewLoaded() returned false!');
+            return false;
+        }
+
+        return $this->loaded_views[$name];
     }
 }
 

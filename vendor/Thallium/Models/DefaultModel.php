@@ -36,6 +36,7 @@ abstract class DefaultModel
     protected $model_rpc_allowed_actions = array();
     protected $model_virtual_fields = array();
     protected $model_init_values = array();
+    protected $model_values = array();
     protected $id;
 
     protected $child_names;
@@ -277,8 +278,8 @@ abstract class DefaultModel
             }
         } elseif (static::isHavingItems()) {
             $fields = array(
-                'idx',
-                'guid',
+                FIELD_IDX,
+                FIELD_GUID,
             );
         }
 
@@ -389,8 +390,8 @@ abstract class DefaultModel
                     static::raiseError(__CLASS__ ."::validateField() returned false for field {$field}!");
                     return false;
                 }
-                $this->model_init_values[$key] = $value;
-                $this->$key = $value;
+                $this->model_init_values[$field] = $value;
+                $this->model_values[$field] = $value;
             }
         } elseif (static::isHavingItems()) {
             while (($row = $sth->fetch(\PDO::FETCH_ASSOC)) !== false) {
@@ -403,7 +404,7 @@ abstract class DefaultModel
                         static::raiseError(__CLASS__ .'() returned false!');
                         return false;
                     }
-                    if (!in_array($field, array('idx', 'guid'))) {
+                    if (!in_array($field, array(FIELD_IDX, FIELD_GUID))) {
                         static::raiseError(__METHOD__ ."(), received data for unknown field '{$field}'!");
                         return false;
                     }
@@ -414,8 +415,8 @@ abstract class DefaultModel
                 }
                 try {
                     $item = new $child_model_name(array(
-                        'idx' => $row[$child_model_name::column('idx')],
-                        'guid' => $row[$child_model_name::column('guid')],
+                        FIELD_IDX => $row[$child_model_name::column(FIELD_IDX)],
+                        FIELD_GUID => $row[$child_model_name::column(FIELD_GUID)],
                     ));
                 } catch (\Exception $e) {
                     static::raiseError(__METHOD__ ."(), failed to load {$child_model_name}!");
@@ -435,13 +436,9 @@ abstract class DefaultModel
             }
         }
 
-        if (!isset($this->id) || empty($this->id) && static::hasField('idx')) {
-            if (($idx = $this->column('idx')) === false) {
-                static::raiseError(__CLASS__ .'::column() returned false!');
-                return false;
-            }
-            if (isset($this->$idx) && !empty($this->$idx)) {
-                $this->id = $this->$idx;
+        if (!isset($this->id) || empty($this->id) && static::hasField(FIELD_IDX)) {
+            if (isset($this->model_values[FIELD_IDX]) && !empty($this->model_values[FIELD_IDX])) {
+                $this->id = $this->model_values[FIELD_IDX];
             }
         }
 
@@ -457,11 +454,25 @@ abstract class DefaultModel
      */
     final public function update($data)
     {
-        if (!is_array($data)) {
+        if (!isset($data) ||
+            empty($data) ||
+            (!is_array($data) && !is_object($data))
+        ) {
+            static::raiseError(__METHOD__ .'(), $data parameter is invalid!');
             return false;
         }
 
         foreach ($data as $key => $value) {
+            if (($field = static::getFieldNameFromColumn($key)) === false) {
+                static::raiseError(__METHOD__ .'(), unknown field found!');
+                return false;
+            }
+            if (!static::hasField($field)) {
+                static::raiseError(__METHOD__ .'(), model has no field like that!');
+                return false;
+            }
+
+            // this will trigger the __set() method.
             $this->$key = $value;
         }
 
@@ -601,7 +612,7 @@ abstract class DefaultModel
                 continue;
             }
 
-            $this->$field = $srcobj->$field;
+            $this->model_values[$field] = $srcobj->model_values[$field];
         }
 
         if (method_exists($this, 'preClone') && is_callable(array($this, 'preClone'))) {
@@ -611,24 +622,22 @@ abstract class DefaultModel
             }
         }
 
-        $idx_field = static::column('idx');
-        $guid_field = static::column('guid');
-        $pguid = static::column('derivation_guid');
+        $pguid = 'derivation_guid';
 
         $this->id = null;
-        if (isset($this->$idx_field)) {
-            $this->$idx_field = null;
+        if (isset($this->model_values[FIELD_IDX])) {
+            $this->model_values[FIELD_IDX] = null;
         }
-        if (isset($this->$guid_field)) {
-            $this->$guid_field = $thallium->createGuid();
+        if (isset($this->model_values[FIELD_GUID])) {
+            $this->model_values[FIELD_GUID] = $thallium->createGuid();
         }
 
         // record the parent objects GUID
-        if (isset($srcobj->$guid_field) &&
-            !empty($srcobj->$guid_field) &&
+        if (isset($srcobj->model_values[FIELD_GUID]) &&
+            !empty($srcobj->model_values[FIELD_GUID]) &&
             static::hasField($pguid)
         ) {
-            $this->$pguid = $srcobj->$guid_field;
+            $this->model_values[$pguid] = $srcobj->getGuid();
         }
 
         if (!$this->save()) {
@@ -642,7 +651,7 @@ abstract class DefaultModel
             return false;
         }
 
-        $this->$idx_field = $this->id;
+        $this->model_values[FIELD_IDX] = $this->id;
 
         // now check for assigned childrens and duplicate those links too
         if (isset($this->child_names) && !isset($this->ignore_child_on_clone)) {
@@ -702,7 +711,7 @@ abstract class DefaultModel
                             )
                         ";
 
-                    $row[$this->child_names[$child] .'_idx'] = 'NULL';
+                    $row[$this->child_names[$child] .'_idx'] = null;
                     $row[$this->child_names[$child] .'_'.static::$model_column_prefix.'_idx'] = $this->id;
                     if (isset($row[$this->child_names[$child] .'_guid'])) {
                         $row[$this->child_names[$child] .'_guid'] = $thallium->createGuid();
@@ -750,11 +759,19 @@ abstract class DefaultModel
                 is_array($override) &&
                 in_array($field, array_keys($override))
             ) {
-                $this->$field = $override[$field];
+                $this->model_values[$field] = $override[$field];
                 continue;
             }
 
-            $this->$field = null;
+            if (!$this->hasDefaultValue($field)) {
+                $this->model_values[$field] = null;
+                continue;
+            }
+
+            if (($this->model_values[$field] = $this->getDefaultValue($field)) === false) {
+                $this->raiseError(__CLASS__ .'::getDefaultValue() returned false!');
+                return false;
+            }
         }
 
         return true;
@@ -764,34 +781,37 @@ abstract class DefaultModel
     /* override PHP's __set() function */
     final public function __set($name, $value)
     {
+        global $ms;
+
         if ($this->hasVirtualFields() && $this->hasVirtualField($name)) {
 
             if (($name = static::getFieldNamefromColumn($name)) === false) {
-                static::raiseError(__CLASS__ .'::getFieldNameFromColumn() returned false!');
-                return false;
+                static::raiseError(__CLASS__ .'::getFieldNameFromColumn() returned false!', true);
+                return;
             }
 
             $method_name = 'set'.ucwords(strtolower($name));
 
             if (!method_exists($this, $method_name) && is_callable(array($this, $method_name))) {
                 static::raiseError(__METHOD__ .'(), virtual field exists but there is no set-method for it!', true);
-                return false;
+                return;
             }
 
             if (!$this->$method_name($value)) {
                 static::raiseError(__CLASS__ ."::{$method_name} returned false!", true);
-                return false;
+                return;
             }
-            return true;
+            return;
         }
 
         if (!static::hasFields()) {
             static::raiseError(__METHOD__ ."(), model_fields array not set for class ". get_class($this), true);
+            return;
         }
 
         if (($field = static::getFieldNameFromColumn($name)) === false) {
-            $this->raiseEerror(__CLASS__ .'::getFieldNameFromColumn() returned false!');
-            return false;
+            $this->raiseEerror(__CLASS__ .'::getFieldNameFromColumn() returned false!', true);
+            return;
         }
 
         if (!$this->hasField($field) &&
@@ -799,17 +819,118 @@ abstract class DefaultModel
             $field != 'id'
         ) {
             static::raiseError(__METHOD__ ."(), unknown key in ". __CLASS__ ."::__set(): {$field}", true);
+            return;
         }
 
-        $this->$name = $value;
+        if (($field_type = static::getFieldType($field)) === false || empty($field_type)) {
+            static::raiseError(__CLASS__ .'::getFieldType() returned false!', true);
+            return;
+        }
 
-    } // __set()
+        if (($value_type = gettype($value)) === 'unknown type' || empty($value_type)) {
+            static::raiseError(__METHOD__ .'(), value is of an unknown type!', true);
+            return;
+        }
+
+        if (!static::validateField($field, $value)) {
+            static::raiseError(__CLASS__ .'::validateField() returned false!', true);
+            return;
+        }
+
+        if (is_null($value) || empty($value)) {
+            $this->model_values[$field] = null;
+            return;
+        }
+
+        /* values have been validated already by validateField(), but
+           sometimes we have to cast values to their field types.
+        */
+        if ($value_type == 'string' &&
+            $field_type == 'int' &&
+            ctype_digit($value) &&
+            is_numeric($value)
+        ) {
+            $value = (int) $value;
+            $value_type = $field_type;
+        /* distinguish GUIDs */
+        } elseif ($value_type == 'string' &&
+            $field_type == FIELD_GUID &&
+            $ms->isValidGuidSyntax($value)
+        ) {
+            $value_type = FIELD_GUID;
+        /* distinguish YESNO */
+        } elseif ($value_type == 'string' &&
+            $field_type == 'yesno' &&
+            in_array($value, array('yes', 'no', 'Y', 'N'))
+        ) {
+            $value_type = 'yesno';
+        /* distinguish timestamps */
+        } elseif ($value_type == 'string' &&
+            $field_type == 'timestamp'
+        ) {
+            $value_type = 'timestamp';
+        }
+
+        if ($value_type !== $field_type) {
+            static::raiseError(
+                __METHOD__
+                ."(), field {$field}, value type ({$value_type}) does not match field type ({$field_type})!",
+                true
+            );
+            return;
+        }
+
+        if (!static::hasFieldSetMethod($field)) {
+            $this->model_values[$field] = $value;
+            return;
+        }
+
+        if (($set_method = static::getFieldSetMethod($field)) === false) {
+            static::raiseError(__CLASS__ .'::getFieldSetMethod() returned false!', true);
+            return;
+        }
+
+        if (!is_callable(array($this, $set_method))) {
+            $this->raiseError(__CLASS__ ."::{$set_method}() is not callable!", true);
+            return;
+        }
+
+        if (!call_user_func(array($this, $set_method), $value)) {
+            $this->raiseError(__CLASS__ ."::{$set_method}() returned false!", true);
+            return;
+        }
+    }
 
     /* override PHP's __get() function */
     final public function __get($name)
     {
-        if (isset($this->$name)) {
-            return $this->$name;
+        if (($field = static::getFieldNamefromColumn($name)) === false) {
+            static::raiseError(__CLASS__ .'::getFieldNameFromColumn() returned false!', true);
+            return;
+        }
+
+        if (isset($this->model_values[$field])) {
+
+            if (!static::hasFieldGetMethod($field)) {
+                return $this->model_values[$field];
+            }
+
+            if (($set_method = static::getFieldGetMethod($field)) === false) {
+                static::raiseError(__CLASS__ .'::getFieldGetMethod() returned false!', true);
+                return;
+            }
+
+            if (!is_callable(array($this, $set_method))) {
+                $this->raiseError(__CLASS__ ."::{$set_method}() is not callable!", true);
+                return;
+            }
+
+            if (($retval = call_user_func(array($this, $set_method), $value)) === false) {
+                $this->raiseError(__CLASS__ ."::{$set_method}() returned false!", true);
+                return;
+            }
+
+            return $retval;
         }
 
         if (!$this->hasVirtualFields()) {
@@ -853,12 +974,12 @@ abstract class DefaultModel
             }
         }
 
-        $guid_field = static::column('guid');
-        $idx_field = static::column('idx');
         $time_field = static::column('time');
 
-        if (!isset($this->$guid_field) || empty($this->$guid_field)) {
-            $this->$guid_field = $thallium->createGuid();
+        if (!isset($this->model_values[FIELD_GUID]) ||
+            empty($this->model_values[FIELD_GUID])
+        ) {
+            $this->model_values[FIELD_GUID] = $thallium->createGuid();
         }
 
         /* new object */
@@ -874,29 +995,29 @@ abstract class DefaultModel
         $arr_values = array();
         $arr_columns = array();
 
-        foreach (array_keys(static::$model_fields) as $key) {
-            if (($field = static::column($key)) === false) {
+        foreach (array_keys(static::$model_fields) as $field) {
+            if (($column = static::column($field)) === false) {
                 static::raiseError(__METHOD__ .'(), invalid column found!');
                 return false;
             }
 
-            if (!isset($this->$field)) {
+            if (!isset($this->model_values[$field])) {
                 continue;
             }
 
-            if ($field == $time_field) {
-                $arr_columns[] = sprintf("%s = FROM_UNIXTIME(?)", $field);
+            if ($column == $time_field) {
+                $arr_columns[] = sprintf("%s = FROM_UNIXTIME(?)", $column);
             } else {
-                $arr_columns[] = sprintf("%s = ?", $field);
+                $arr_columns[] = sprintf("%s = ?", $column);
             }
-            $arr_values[] = $this->$field;
+            $arr_values[] = $this->model_values[$field];
         }
         $sql.= implode(', ', $arr_columns);
 
         if (!isset($this->id) || empty($this->id)) {
-            $this->$idx_field = 'NULL';
+            $this->model_values[FIELD_IDX] = null;
         } else {
-            $sql.= sprintf(" WHERE %s_idx LIKE ?", static::$model_column_prefix);
+            $sql.= sprintf(" WHERE %s LIKE ?", static::column(FIELD_IDX));
             $arr_values[] = $this->id;
         }
 
@@ -914,8 +1035,10 @@ abstract class DefaultModel
             $this->id = $db->getid();
         }
 
-        if (!isset($this->$idx_field) || empty($this->$idx_field) || $this->$idx_field == 'NULL') {
-            $this->$idx_field = $this->id;
+        if (!isset($this->model_values[FIELD_IDX]) ||
+            empty($this->model_values[FIELD_IDX]) ||
+            is_null($this->model_values[FIELD_IDX])) {
+            $this->model_values[FIELD_IDX] = $this->id;
         }
 
         $db->freeStatement($sth);
@@ -932,11 +1055,11 @@ abstract class DefaultModel
         $this->model_init_values = array();
 
         foreach (array_keys(static::$model_fields) as $field) {
-            if (!isset($this->$field)) {
+            if (!isset($this->model_values[$field])) {
                 continue;
             }
 
-            $this->model_init_values[$field] = $this->$field;
+            $this->model_init_values[$field] = $this->model_values[$field];
         }
 
         return true;
@@ -1080,8 +1203,8 @@ abstract class DefaultModel
     {
         global $thallium, $db;
 
-        $idx_field = static::column('idx');
-        $guid_field = static::column('guid');
+        $idx_field = static::column(FIELD_IDX);
+        $guid_field = static::column(FIELD_GUID);
 
         $result = $db->fetchSingleRow(sprintf(
             "SELECT
@@ -1132,8 +1255,8 @@ abstract class DefaultModel
     {
         global $thallium, $db;
 
-        $idx_field = static::column('idx');
-        $guid_field = static::column('guid');
+        $idx_field = static::column(FIELD_IDX);
+        $guid_field = static::column(FIELD_GUID);
 
         $result = $db->fetchSingleRow(sprintf(
             "SELECT
@@ -1187,11 +1310,8 @@ abstract class DefaultModel
             return false;
         }
 
-        $idx_field = static::column('idx');
-        $guid_field = static::column('guid');
-
-        if ((!isset($this->$idx_field) || empty($this->$idx_field)) &&
-            (!isset($this->$guid_field) || empty($this->$guid_field))
+        if ((!isset($this->model_values[FIELD_IDX]) || empty($this->model_values[FIELD_IDX])) &&
+            (!isset($this->model_values[FIELD_GUID]) || empty($this->model_values[FIELD_GUID]))
         ) {
             static::raiseError(
                 __METHOD__ ."(), can't check for duplicates if neither \$idx_field or \$guid_field is set!"
@@ -1199,15 +1319,17 @@ abstract class DefaultModel
             return false;
         }
 
+        $guid_field = static::column(FIELD_GUID);
+
         $arr_values = array();
         $where_sql = '';
-        if (isset($this->$idx_field) && !empty($this->$idx_field)) {
+        if (isset($this->model_values[FIELD_IDX]) && !empty($this->model_values[FIELD_IDX])) {
             $where_sql.= "
                 {$idx_field} LIKE ?
             ";
-            $arr_values[] = $this->$idx_field;
+            $arr_values[] = $this->model_values[FIELD_IDX];
         }
-        if (isset($this->$guid_field) && !empty($this->$guid_field)) {
+        if (isset($this->model_values[FIELD_GUID]) && !empty($this->model_values[FIELD_GUID])) {
             if (!empty($where_sql)) {
                 $where_sql.= "
                     AND
@@ -1216,7 +1338,7 @@ abstract class DefaultModel
             $where_sql.= "
                 {$guid_field} LIKE ?
             ";
-            $arr_values[] = $this->$guid_field;
+            $arr_values[] = $this->model_values[FIELD_GUID];
         }
 
         if (!isset($where_sql) ||
@@ -1235,9 +1357,9 @@ abstract class DefaultModel
                 %s <> %s
             AND
                 %s",
-            $idx_field,
+            static::column(FIELD_IDX),
             static::$model_table_name,
-            $idx_field,
+            static::column(FIELD_IDX),
             $this->id,
             $where_sql
         );
@@ -1417,34 +1539,30 @@ abstract class DefaultModel
 
     final public function getId()
     {
-        if (!static::hasField('idx')) {
+        if (!static::hasField(FIELD_IDX)) {
             static::raiseError(__METHOD__ .'(), model has no idx field!');
             return false;
         }
 
-        $idx_field = static::column('idx');
-
-        if (!isset($this->$idx_field)) {
+        if (!isset($this->model_values[FIELD_IDX])) {
             return false;
         }
 
-        return $this->$idx_field;
+        return $this->model_values[FIELD_IDX];
     }
 
     final public function getGuid()
     {
-        if (!static::hasField('guid')) {
+        if (!static::hasField(FIELD_GUID)) {
             static::raiseError(__METHOD__ .'(), model has no guid field!');
             return false;
         }
 
-        $guid_field = static::column('guid');
-
-        if (!isset($this->$guid_field)) {
+        if (!isset($this->model_values[FIELD_GUID])) {
             return false;
         }
 
-        return $this->$guid_field;
+        return $this->model_values[FIELD_GUID];
     }
 
     final public function setGuid($guid)
@@ -1461,9 +1579,7 @@ abstract class DefaultModel
             return false;
         }
 
-        $guid_field = static::column('guid');
-
-        $this->$guid_field = $guid;
+        $this->model_values[FIELD_GUID] = $guid;
         return true;
     }
 
@@ -1496,7 +1612,7 @@ abstract class DefaultModel
         foreach (static::$model_fields as $field => $sec) {
             $field_ary = array(
                 'name' => $field,
-                'value' => $this->$field,
+                'value' => $this->model_values[$field],
                 'privacy' => $sec,
             );
             $fields[$field] = $field_ary;
@@ -1509,7 +1625,7 @@ abstract class DefaultModel
         foreach ($this->model_virtual_fields as $field) {
             $field_ary = array(
                 'name' => $field,
-                'value' => $this->$field,
+                'value' => $this->model_values[$field],
                 'privacy' => 'public'
             );
             $fields[$field] = $field_ary;
@@ -1645,7 +1761,7 @@ abstract class DefaultModel
             return false;
         }
 
-        $this->$field = $value;
+        $this->model_values[$field] = $value;
         return true;
     }
 
@@ -1952,6 +2068,211 @@ abstract class DefaultModel
         }
 
         return true;
+    }
+
+    protected function hasFieldSetMethod($field)
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField($field)) {
+            static::raiseError(__METHOD__ .'(), model does not provide the requested field!');
+            return false;
+        }
+
+        if (!isset(static::$model_fields[$field]) ||
+            empty(static::$model_fields[$field]) ||
+            !is_array(static::$model_fields[$field])
+        ) {
+            static::raiseError(__METHOD__ .'(), $model_fields does not contain requested field!');
+            return false;
+        }
+
+        if (!isset(static::$model_fields[$field][FIELD_SET]) ||
+            empty(static::$model_fields[$field][FIELD_SET]) ||
+            !is_string(static::$model_fields[$field][FIELD_SET]) ||
+            !method_exists(get_called_class(), static::$model_fields[$field][FIELD_SET])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getFieldSetMethod($field)
+    {
+        if (!static::hasFieldSetMethod($field)) {
+            static::raiseError(__CLASS__ .'::hasFieldSetMethod() returned false!');
+            return false;
+        }
+
+        return static::$model_fields[$field][FIELD_SET];
+    }
+
+    protected function hasFieldGetMethod($field)
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField($field)) {
+            static::raiseError(__METHOD__ .'(), model does not provide the requested field!');
+            return false;
+        }
+
+        if (!isset(static::$model_fields[$field]) ||
+            empty(static::$model_fields[$field]) ||
+            !is_array(static::$model_fields[$field])
+        ) {
+            static::raiseError(__METHOD__ .'(), $model_fields does not contain requested field!');
+            return false;
+        }
+
+        if (!isset(static::$model_fields[$field][FIELD_GET]) ||
+            empty(static::$model_fields[$field][FIELD_GET]) ||
+            !is_string(static::$model_fields[$field][FIELD_GET]) ||
+            !method_exists(get_called_class(), static::$model_fields[$field][FIELD_GET])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getFieldGetMethod($field)
+    {
+        if (!static::hasFieldGetMethod($field)) {
+            static::raiseError(__CLASS__ .'::hasFieldGetMethod() returned false!');
+            return false;
+        }
+
+        return static::$model_fields[$field][FIELD_GET];
+    }
+
+    public function hasIdx()
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField(FIELD_IDX)) {
+            static::raiseError(__METHOD__ .'(), this model has no idx field!');
+            return false;
+        }
+
+        if (!isset($this->model_values[FIELD_IDX]) ||
+            empty($this->model_values[FIELD_IDX])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function hasGuid()
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField(FIELD_GUID)) {
+            static::raiseError(__METHOD__ .'(), this model has no guid field!');
+            return false;
+        }
+
+        if (!isset($this->model_values[FIELD_GUID]) ||
+            empty($this->model_values[FIELD_GUID])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function hasValue($field)
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField($field)) {
+            static::raiseError(__METHOD__ .'(), this model has not that field!');
+            return false;
+        }
+
+        if (!isset($this->model_values[$field]) ||
+            empty($this->model_values[$field])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function setValue($field, $value)
+    {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField($field)) {
+            static::raiseError(__METHOD__ .'(), this model has not that field!');
+            return false;
+        }
+
+        $this->model_values[$field] = $value;
+        return true;
+    }
+
+    public function getValue($field)
+    {
+        if (!$this->hasValue($field)) {
+            static::raiseError(__CLASS__ .'::hasValue() returned false!');
+            return false;
+        }
+
+        return $this->model_values[$field];
+    }
+
+    public function hasDefaultValue($field)
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField($field)) {
+            static::raiseError(__METHOD__ .'(), this model has not that field!');
+            return false;
+        }
+
+        if (!isset($this->model_fields[$field][FIELD_DEFAULT])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getDefaultValue($field)
+    {
+        if (!$this->hasDefaultValue($field)) {
+            static::raiseError(__CLASS__ .'::hasDefaultValue() returned false!');
+            return false;
+        }
+
+        return $this->model_model_fields[$field][FIELD_DEFAULT];
     }
 }
 

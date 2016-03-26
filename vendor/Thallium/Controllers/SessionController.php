@@ -71,21 +71,48 @@ class SessionController extends DefaultController
         return session_id();
     }
 
-    public function getVariable($key)
+    public function hasVariable($key, $prefix = null)
     {
         if (!isset($key) || empty($key) || !is_string($key)) {
             static::raiseError(__METHOD__ .'(), $key parameter is invalid!');
             return false;
         }
 
-        if (!isset($_SESSION[$key])) {
+        if (isset($prefix) && !is_string($prefix)) {
+            static::raiseError(__METHOD__ .'(), $prefix parameter is invalid!');
             return false;
         }
 
-        return $_SESSION[$key];
+        if (!isset($prefix) || empty($prefix)) {
+            $var_key = $key;
+        } else {
+            $var_key = $prefix .'_'. $key;
+        }
+
+        if (!isset($_SESSION[$var_key])) {
+            return false;
+        }
+
+        return true;
     }
 
-    public function setVariable($key, $value)
+    public function getVariable($key, $prefix = null)
+    {
+        if (!$this->hasVariable($key, $prefix)) {
+            static::raiseError(__CLASS__ .'::hasVariable() returned false!');
+            return false;
+        }
+
+        if (!isset($prefix) || empty($prefix)) {
+            $var_key = $key;
+        } else {
+            $var_key = $prefix .'_'. $key;
+        }
+
+        return $_SESSION[$var_key];
+    }
+
+    public function setVariable($key, $value, $prefix = null)
     {
         if (!isset($key) || empty($key) || !is_string($key) ||
             !isset($value) || (!is_string($value) && !is_numeric($value))
@@ -94,7 +121,18 @@ class SessionController extends DefaultController
             return false;
         }
 
-        $_SESSION[$key] = $value;
+        if (isset($prefix) && !is_string($prefix)) {
+            static::raiseError(__METHOD__ .'(), $prefix parameter is invalid!');
+            return false;
+        }
+
+        if (!isset($prefix) || empty($prefix)) {
+            $var_key = $key;
+        } else {
+            $var_key = $prefix .'_'. $key;
+        }
+
+        $_SESSION[$var_key] = $value;
         return true;
     }
 }

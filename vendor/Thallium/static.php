@@ -19,14 +19,18 @@
 
 define('APP_BASE', realpath(__DIR__ .'/../../'));
 
+define('FIELD_SET', 'set');
+define('FIELD_GET', 'get');
 define('FIELD_TYPE', 'type');
-define('FIELD_INT', 'int');
+define('FIELD_DEFAULT', 'default');
+define('FIELD_INT', 'integer');
 define('FIELD_STRING', 'string');
 define('FIELD_BOOL', 'bool');
 define('FIELD_TIMESTAMP', 'timestamp');
 define('FIELD_YESNO', 'yesno');
 define('FIELD_DATE', 'date');
 define('FIELD_GUID', 'guid');
+define('FIELD_IDX', 'idx');
 
 if (!constant('LOG_ERR')) {
     define('LOG_ERR', 1);

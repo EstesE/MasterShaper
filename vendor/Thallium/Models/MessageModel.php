@@ -65,7 +65,7 @@ class MessageModel extends DefaultModel
             return false;
         }
 
-        $this->msg_command = $command;
+        $this->model_values['command'] = $command;
         return true;
     }
 
@@ -81,28 +81,28 @@ class MessageModel extends DefaultModel
             return false;
         }
 
-        $this->msg_session_id = $sessionid;
+        $this->model_values['session_id'] = $sessionid;
         return true;
     }
 
     public function getSessionId()
     {
-        if (!isset($this->msg_session_id)) {
+        if (!isset($this->model_values['session_id'])) {
             static::raiseError(__METHOD__ .'(), \$msg_session_id has not been set yet!');
             return false;
         }
 
-        return $this->msg_session_id;
+        return $this->model_values['session_id'];
     }
 
     public function getCommand()
     {
-        if (!isset($this->msg_command)) {
+        if (!isset($this->model_values['command'])) {
             static::raiseError(__METHOD__ .'(), \$msg_command has not been set yet!');
             return false;
         }
 
-        return $this->msg_command;
+        return $this->model_values['command'];
     }
 
     public function setBody($body)
@@ -113,7 +113,7 @@ class MessageModel extends DefaultModel
         }
 
         if (is_string($body)) {
-            $this->msg_body = base64_encode(serialize($body));
+            $this->model_values['body'] = base64_encode(serialize($body));
             return true;
         }
 
@@ -124,7 +124,7 @@ class MessageModel extends DefaultModel
                 }
                 return false;
             });
-            $this->msg_body = base64_encode(serialize($filtered_body));
+            $this->model_values['body'] = base64_encode(serialize($filtered_body));
             return true;
         }
 
@@ -158,13 +158,13 @@ class MessageModel extends DefaultModel
             $filtered_body->$key = $value;
         }
 
-        $this->msg_body = base64_encode(serialize($filtered_body));
+        $this->model_values['body'] = base64_encode(serialize($filtered_body));
         return true;
     }
 
     public function hasBody()
     {
-        if (!isset($this->msg_body) || empty($this->msg_body)) {
+        if (!isset($this->model_values['body']) || empty($this->model_values['body'])) {
             return false;
         }
 
@@ -173,12 +173,12 @@ class MessageModel extends DefaultModel
 
     public function getBody()
     {
-        if (!isset($this->msg_body)) {
+        if (!isset($this->model_values['body'])) {
             static::raiseError(__METHOD__ .'(), \$msg_body has not been set yet!');
             return false;
         }
 
-        if (($body = base64_decode($this->msg_body)) === false) {
+        if (($body = base64_decode($this->model_values['body'])) === false) {
             static::raiseError(__METHOD__ .'(), base64_decode() failed on msg_body!');
             return false;
         }
@@ -193,12 +193,12 @@ class MessageModel extends DefaultModel
 
     public function getBodyRaw()
     {
-        if (!isset($this->msg_body)) {
+        if (!isset($this->model_values['body'])) {
             static::raiseError(__METHOD__ .'(), \$msg_body has not been set yet!');
             return false;
         }
 
-        return $this->msg_body;
+        return $this->model_values['body'];
     }
 
     public function setScope($scope)
@@ -213,18 +213,18 @@ class MessageModel extends DefaultModel
             return false;
         }
 
-        $this->msg_scope = $scope;
+        $this->model_values['scope'] = $scope;
         return true;
     }
 
     public function getScope()
     {
-        if (!isset($this->msg_scope)) {
+        if (!isset($this->model_values['scope'])) {
             static::raiseError(__METHOD__ .'(), \$msg_scope has not been set yet!');
             return false;
         }
 
-        return $this->msg_scope;
+        return $this->model_values['scope'];
     }
 
     public function isClientMessage()
@@ -258,21 +258,21 @@ class MessageModel extends DefaultModel
     public function setProcessingFlag($value = true)
     {
         if (!$value) {
-            $this->msg_in_processing = 'N';
+            $this->model_values['in_processing'] = 'N';
             return true;
         }
 
-        $this->msg_in_processing = 'Y';
+        $this->model_values['in_processing'] = 'Y';
         return true;
     }
 
     public function getProcessingFlag()
     {
-        if (!isset($this->msg_in_processing)) {
+        if (!isset($this->model_values['in_processing'])) {
             return 'N';
         }
 
-        return $this->msg_in_processing;
+        return $this->model_values['in_processing'];
     }
 
     public function isProcessing()
@@ -281,7 +281,7 @@ class MessageModel extends DefaultModel
             return false;
         }
 
-        if ($this->msg_in_processing != 'Y') {
+        if ($this->model_values['in_processing'] != 'Y') {
             return false;
         }
 
@@ -295,7 +295,7 @@ class MessageModel extends DefaultModel
             return false;
         }
 
-        $this->msg_value = $value;
+        $this->model_values['value'] = $value;
         return true;
     }
 
@@ -305,12 +305,12 @@ class MessageModel extends DefaultModel
             return false;
         }
 
-        return $this->msg_value;
+        return $this->model_values['value'];
     }
 
     public function hasValue()
     {
-        if (!isset($this->msg_value) || empty($this->msg_value)) {
+        if (!isset($this->model_values['value']) || empty($this->model_values['value'])) {
             return false;
         }
 
@@ -319,8 +319,8 @@ class MessageModel extends DefaultModel
 
     protected function preSave()
     {
-        if (!isset($this->msg_in_processing) || empty($this->msg_in_processing)) {
-            $this->msg_in_processing = 'N';
+        if (!isset($this->model_values['in_processing']) || empty($this->model_values['in_processing'])) {
+            $this->model_values['in_processing'] = 'N';
         }
 
         return true;
