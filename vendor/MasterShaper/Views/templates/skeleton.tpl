@@ -25,5 +25,6 @@
 {$page_content}
  </div>
 {include "footer.tpl"}
+{include "confirm_modal.tpl"}
 </body>
 </html>
