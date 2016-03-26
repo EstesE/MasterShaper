@@ -25,237 +25,129 @@ namespace MasterShaper\Views;
 
 class PortsView extends DefaultView
 {
-    /**
-     * Page_Ports constructor
-     *
-     * Initialize the Page_Ports class
-     */
+    protected static $view_default_mode = 'list';
+    protected static $view_class_name = 'ports';
+    private $ports;
+
     public function __construct()
     {
-        $this->rights = 'user_manage_ports';
-        $this->items_per_page = 50;
+        try {
+            $this->ports = new \MasterShaper\Models\PortsModel;
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load PortsModel!', false, $e);
+            return false;
+        }
 
-    } // __construct()
+        parent::__construct();
+    }
 
-    /**
-     * display all ports
-     */
-    public function showList()
+    public function showList($pageno = null, $items_limit = null)
     {
-        global $db, $tmpl, $rewriter, $page;
+        global $session, $tmpl;
 
-        $this->avail_ports = array();
-        $this->ports = array();
-
-        if (empty($page->num)) {
-            $page->num = 1;
+        if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
+            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+                $current_page = 1;
+            }
+        } else {
+            $current_page = $pageno;
         }
 
-        $limit = ($page->num-1) * $this->items_per_page;
-
-        $num_ports = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM TABLEPREFIXports");
-
-        $sth = $db->prepare("
-                SELECT
-                port_idx
-                FROM
-                TABLEPREFIXports
-                ORDER BY
-                port_name ASC
-                LIMIT ?,?
-                ");
-
-        $sth->bindParam(1, $limit, PDO::PARAM_INT);
-        $sth->bindParam(2, $this->items_per_page, PDO::PARAM_INT);
-        $db->execute($sth);
-
-        $cnt_ports = $sth->rowCount();
-
-        while ($port = $sth->fetch()) {
-            $this->avail_ports[] = $port->port_idx;
+        if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
+            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+                $current_items_limit = -1;
+            }
+        } else {
+            $current_items_limit = $items_limit;
         }
 
-        $db->db_sth_free($sth);
+        if (!$this->ports->hasItems()) {
+            return parent::showList();
+        }
 
-        $pager_params = array(
-                'mode' => 'Sliding',
-                'delta' => 3,
-                'append' => true,
-                'urlVar' => 'num',
-                'totalItems' => $num_ports->count,
-                'perPage' => $this->items_per_page,
-                'currentPage' => $page->num,
-                );
+        try {
+            $pager = new \MasterShaper\Controllers\PagingController(array(
+                'delta' => 2,
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load PagingController!', false, $e);
+            return false;
+        }
 
-        $pager = & Pager::factory($pager_params);
+        if (!$pager->setPagingData($this->ports->getItems())) {
+            $this->raiseError(get_class($pager) .'::setPagingData() returned false!');
+            return false;
+        }
+
+        if (!$pager->setCurrentPage($current_page)) {
+            $this->raiseError(get_class($pager) .'::setCurrentPage() returned false!');
+            return false;
+        }
+
+        if (!$pager->setItemsLimit($current_items_limit)) {
+            $this->raiseError(get_class($pager) .'::setItemsLimit() returned false!');
+            return false;
+        }
+
+        global $tmpl;
         $tmpl->assign('pager', $pager);
 
-        $tmpl->registerPlugin("block", "port_list", array(&$this, "smartyPortList"));
-        return $tmpl->fetch("ports_list.tpl");
+        if (($data = $pager->getPageData()) === false) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned false!');
+            return false;
+        }
+
+        if (!isset($data) || empty($data) || !is_array($data)) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned invalid data!');
+            return false;
+        }
+
+        $this->avail_items = array_keys($data);
+        $this->items = $data;
+
+        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        return parent::showList();
 
     } // showList()
 
-    /**
-     * display interface to create or edit ports
-     */
-    public function showEdit()
+    public function portsList($params, $content, &$smarty, &$repeat)
     {
-        if ($this->is_storing()) {
-            $this->store();
-        }
+        $index = $smarty->getTemplateVars('smarty.IB.item_list.index');
 
-        global $db, $tmpl, $page;
-
-        if (isset($page->id) && $page->id != 0) {
-            $port = new Port($page->id);
-            $tmpl->assign('is_new', false);
-        } else {
-            $port = new Port;
-            $tmpl->assign('is_new', true);
-            $page->id = null;
-        }
-
-        /* get a list of filters that use this ports */
-        $sth = $db->prepare("
-                SELECT
-                f.filter_idx,
-                f.filter_name
-                FROM
-                TABLEPREFIXfilters f
-                INNER JOIN TABLEPREFIXassign_ports_to_filters afp
-                ON afp.afp_filter_idx=f.filter_idx
-                WHERE
-                afp.afp_port_idx LIKE ?
-                ORDER BY
-                f.filter_name ASC
-                ");
-
-        $db->execute($sth, array(
-                    $page->id,
-                    ));
-
-        if ($sth->rowCount() > 0) {
-            $filter_use_port = array();
-            while ($filter = $sth->fetch()) {
-                $filter_use_port[$filter->filter_idx] = $filter->filter_name;
-            }
-            $tmpl->assign('filter_use_port', $filter_use_port);
-        }
-
-        $db->db_sth_free($sth);
-
-        $tmpl->assign('port', $port);
-
-        return $tmpl->fetch("ports_edit.tpl");
-
-    } // showEdit()
-
-    /**
-     * template function which will be called from the port listing template
-     */
-    public function smartyPortList($params, $content, &$smarty, &$repeat)
-    {
-        $index = $smarty->getTemplateVars('smarty.IB.port_list.index');
-        if (!$index) {
+        if (!isset($index) || empty($index)) {
             $index = 0;
         }
 
-        if ($index < count($this->avail_ports)) {
-
-            $port_idx = $this->avail_ports[$index];
-            $port = new Port($port_idx);
-
-            $smarty->assign('port', $port);
-
-            $index++;
-            $smarty->assign('smarty.IB.port_list.index', $index);
-            $repeat = true;
-        } else {
-            $repeat =  false;
+        if (!isset($this->avail_items) || empty($this->avail_items)) {
+            $repeat = false;
+            return $content;
         }
+
+        if ($index >= count($this->avail_items)) {
+            $repeat = false;
+            return $content;
+        }
+
+        $item_idx = $this->avail_items[$index];
+        $item =  $this->items[$item_idx];
+
+        $smarty->assign("item", $item);
+
+        $index++;
+        $smarty->assign('smarty.IB.item_list.index', $index);
+        $repeat = true;
 
         return $content;
-
-    } // smartyPortList()
-
-    /**
-     * handle updates
-     */
-    public function store()
-    {
-        global $ms, $db, $rewriter;
-
-        isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = null;
-
-        /* load port */
-        if (isset($new)) {
-            $port = new Port;
-            $port->port_user_defined = 'Y';
-        } else {
-            $port = new Port($_POST['port_idx']);
-        }
-
-        if (!isset($_POST['port_name']) || $_POST['port_name'] == "") {
-            $ms->raiseError(_("Please enter a port name!"));
-        }
-
-        if (isset($new) && $ms->check_object_exists('port', $_POST['port_name'])) {
-            $ms->raiseError(_("A port with that name already exists!"));
-        }
-
-        if (!isset($new) && $port->port_name != $_POST['port_name']
-                && $ms->check_object_exists('port', $_POST['port_name'])) {
-            $ms->raiseError(_("A port with that name already exists!"));
-        }
-
-        // has to user provided one or multiple ports
-        if (preg_match("/,/", $_POST['port_number']) || preg_match("/-/", $_POST['port_number'])) {
-            $is_numeric = true;
-            // split the port number string into an array
-            $port_numbers = preg_split("/,/", $_POST['port_number']);
-            foreach ($port_numbers as $port_number) {
-                $port_number = trim($port_number);
-                // if value contains a list, split the string
-                if (preg_match("/-/", $port_number)) {
-                    list($lower, $higher) = preg_split("/-/", $port_number);
-                    if (!is_numeric($lower) || $lower <= 0 || $lower >= 65536) {
-                        $is_numeric = false;
-                    }
-                    if (!is_numeric($higher) || $higher <= 0 || $higher >= 65536) {
-                        $is_numeric = false;
-                    }
-                } else {
-                    if (!is_numeric($port_number) || $port_number <= 0 || $port_number >= 65536) {
-                        $is_numeric = false;
-                    }
-                }
-            }
-            if (!$is_numeric) {
-                $ms->raiseError(_("Please enter a valid port number range as shown in the example!"));
-            }
-        } elseif (!is_numeric($_POST['port_number']) ||
-                $_POST['port_number'] <= 0 || $_POST['port_number'] >= 65536) {
-            $ms->raiseError(_("Please enter a decimal port number within 1 - 65535!"));
-        }
-
-        $port_data = $ms->filter_form_data($_POST, 'port_');
-
-        if (!$port->update($port_data)) {
-            return false;
-        }
-
-        if (!$port->save()) {
-            return false;
-        }
-
-        if (isset($_POST['add_another']) && $_POST['add_another'] == 'Y') {
-            return true;
-        }
-
-        $ms->set_header('Location', $rewriter->get_page_url('Ports List'));
-        return true;
-
-    } // store()
-} // class Page_Ports
+    }
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
