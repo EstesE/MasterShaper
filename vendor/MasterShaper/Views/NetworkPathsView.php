@@ -25,49 +25,99 @@ namespace MasterShaper\Views;
 
 class NetworkPathsView extends DefaultView
 {
-    /**
-     * Page_Network_Paths constructor
-     *
-     * Initialize the Page_Network_Paths class
-     */
+    protected static $view_default_mode = 'list';
+    protected static $view_class_name = 'network_paths';
+    private $network_paths;
+
     public function __construct()
     {
-        $this->rights = 'user_manage_options';
-
-    } // __construct()
-
-    /**
-     * list all netpaths
-     */
-    public function showList()
-    {
-        global $ms, $db, $tmpl;
-
-        $this->avail_netpaths = array();
-        $this->netpaths = array();
-
-        $res_netpaths = $db->query("
-                SELECT
-                *
-                FROM
-                TABLEPREFIXnetwork_paths
-                WHERE
-                netpath_host_idx LIKE '". $ms->get_current_host_profile() ."'
-                ORDER BY
-                netpath_name ASC
-                ");
-
-        $cnt_netpaths = 0;
-
-        while ($np = $res_netpaths->fetch()) {
-            $this->avail_netpaths[$cnt_netpaths] = $np->netpath_idx;
-            $this->netpaths[$np->netpath_idx] = $np;
-            $cnt_netpaths++;
+        try {
+            $this->network_paths = new \MasterShaper\Models\NetworkPathsModel;
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load NetworkPathsModel!', false, $e);
+            return false;
         }
 
-        $tmpl->registerPlugin("block", "netpath_list", array(&$this, "smartyNetpathList"));
+        parent::__construct();
+        return;
+    }
 
-        return $tmpl->fetch("network_paths_list.tpl");
+    public function showList($pageno = null, $items_limit = null)
+    {
+        global $session, $tmpl;
+
+        if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
+            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+                $current_page = 1;
+            }
+        } else {
+            $current_page = $pageno;
+        }
+
+        if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
+            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+                $current_items_limit = -1;
+            }
+        } else {
+            $current_items_limit = $items_limit;
+        }
+
+        if (!$this->network_paths->hasItems()) {
+            return parent::showList();
+        }
+
+        try {
+            $pager = new \MasterShaper\Controllers\PagingController(array(
+                'delta' => 2,
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load PagingController!');
+            return false;
+        }
+
+        if (!$pager->setPagingData($this->network_paths->getItems())) {
+            $this->raiseError(get_class($pager) .'::setPagingData() returned false!');
+            return false;
+        }
+
+        if (!$pager->setCurrentPage($current_page)) {
+            $this->raiseError(get_class($pager) .'::setCurrentPage() returned false!');
+            return false;
+        }
+
+        if (!$pager->setItemsLimit($current_items_limit)) {
+            $this->raiseError(get_class($pager) .'::setItemsLimit() returned false!');
+            return false;
+        }
+
+        global $tmpl;
+        $tmpl->assign('pager', $pager);
+
+        if (($data = $pager->getPageData()) === false) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned false!');
+            return false;
+        }
+
+        if (!isset($data) || empty($data) || !is_array($data)) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned invalid data!');
+            return false;
+        }
+
+        $this->avail_items = array_keys($data);
+        $this->items = $data;
+
+        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        return parent::showList();
+
     } // showList()
 
     /**
@@ -137,40 +187,35 @@ class NetworkPathsView extends DefaultView
     /**
      * template function which will be called from the netpath listing template
      */
-    public function smartyNetpathList($params, $content, &$smarty, &$repeat)
+    public function network_pathsList($params, $content, &$smarty, &$repeat)
     {
-        global $ms;
+        $index = $smarty->getTemplateVars('smarty.IB.item_list.index');
 
-        $index = $smarty->getTemplateVars('smarty.IB.netpath_list.index');
-        if (!$index) {
+        if (!isset($index) || empty($index)) {
             $index = 0;
         }
 
-        if ($index < count($this->avail_netpaths)) {
-
-            $netpath_idx = $this->avail_netpaths[$index];
-            $netpath =  $this->netpaths[$netpath_idx];
-
-            $smarty->assign('netpath_idx', $netpath_idx);
-            $smarty->assign('netpath_name', $netpath->netpath_name);
-            $smarty->assign('netpath_active', $netpath->netpath_active);
-            $smarty->assign('netpath_if1_idx', $netpath->netpath_if1);
-            $smarty->assign('netpath_if1_name', $ms->getInterfaceName($netpath->netpath_if1));
-            $smarty->assign('netpath_if1_inside_gre', $netpath->netpath_if1_inside_gre);
-            $smarty->assign('netpath_if2_idx', $netpath->netpath_if2);
-            $smarty->assign('netpath_if2_name', $ms->getInterfaceName($netpath->netpath_if2));
-            $smarty->assign('netpath_if2_inside_gre', $netpath->netpath_if2_inside_gre);
-
-            $index++;
-            $smarty->assign('smarty.IB.netpath_list.index', $index);
-            $repeat = true;
-        } else {
-            $repeat =  false;
+        if (!isset($this->avail_items) || empty($this->avail_items)) {
+            $repeat = false;
+            return $content;
         }
 
-        return $content;
+        if ($index >= count($this->avail_items)) {
+            $repeat = false;
+            return $content;
+        }
 
-    } // smartyNetpathList()
+        $item_idx = $this->avail_items[$index];
+        $item =  $this->items[$item_idx];
+
+        $smarty->assign("item", $item);
+
+        $index++;
+        $smarty->assign('smarty.IB.item_list.index', $index);
+        $repeat = true;
+
+        return $content;
+    }
 
     /**
      * handle updates
