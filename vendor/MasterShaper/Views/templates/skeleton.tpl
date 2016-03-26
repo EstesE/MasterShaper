@@ -26,5 +26,6 @@
  </div>
 {include "footer.tpl"}
 {include "confirm_modal.tpl"}
+{include "progress_modal.tpl"}
 </body>
 </html>
