@@ -25,287 +25,160 @@ namespace MasterShaper\Views;
 
 class TargetsView extends DefaultView
 {
-    /**
-     * Page_Targets constructor
-     *
-     * Initialize the Page_Targets class
-     */
+    protected static $view_default_mode = 'list';
+    protected static $view_class_name = 'targets';
+    private $targets;
+
     public function __construct()
     {
-        $this->rights = 'user_manage_targets';
-
-    } // __construct()
-
-    /**
-     * display all targets
-     */
-    public function showList()
-    {
-        global $db, $tmpl;
-
-        $this->avail_targets = array();
-        $this->targets = array();
-
-        $res_targets = $db->query("
-                SELECT
-                target_idx,
-                target_name,
-                target_match
-                FROM
-                TABLEPREFIXtargets
-                ORDER BY
-                target_name ASC
-                ");
-
-        $cnt_targets = 0;
-
-        while ($target = $res_targets->fetch()) {
-            $this->avail_targets[$cnt_targets] = $target->target_idx;
-            $this->targets[$target->target_idx] = $target;
-            $cnt_targets++;
+        try {
+            $this->targets = new \MasterShaper\Models\TargetsModel;
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load TargetsModel!', false, $e);
+            return false;
         }
 
-        $tmpl->registerPlugin("block", "target_list", array(&$this, "smartyTargetList"));
-        return $tmpl->fetch("targets_list.tpl");
+        parent::__construct();
+    }
+
+    public function showList($pageno = null, $items_limit = null)
+    {
+        global $session, $tmpl;
+
+        if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
+            if (($current_page = $this->getSessionVar("current_page")) === false) {
+                $current_page = 1;
+            }
+        } else {
+            $current_page = $pageno;
+        }
+
+        if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
+            if (($current_items_limit = $this->getSessionVar("current_items_limit")) === false) {
+                $current_items_limit = -1;
+            }
+        } else {
+            $current_items_limit = $items_limit;
+        }
+
+        if (!$this->targets->hasItems()) {
+            return parent::showList();
+        }
+
+        try {
+            $pager = new \MasterShaper\Controllers\PagingController(array(
+                'delta' => 2,
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load PagingController!', false, $e);
+            return false;
+        }
+
+        if (!$pager->setPagingData($this->targets->getItems())) {
+            $this->raiseError(get_class($pager) .'::setPagingData() returned false!');
+            return false;
+        }
+
+        if (!$pager->setCurrentPage($current_page)) {
+            $this->raiseError(get_class($pager) .'::setCurrentPage() returned false!');
+            return false;
+        }
+
+        if (!$pager->setItemsLimit($current_items_limit)) {
+            $this->raiseError(get_class($pager) .'::setItemsLimit() returned false!');
+            return false;
+        }
+
+        global $tmpl;
+        $tmpl->assign('pager', $pager);
+
+        if (($data = $pager->getPageData()) === false) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned false!');
+            return false;
+        }
+
+        if (!isset($data) || empty($data) || !is_array($data)) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned invalid data!');
+            return false;
+        }
+
+        $this->avail_items = array_keys($data);
+        $this->items = $data;
+
+        if (!$this->setSessionVar("current_page", $current_page)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        if (!$this->setSessionVar("current_items_limit", $current_items_limit)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        return parent::showList();
 
     } // showList()
 
-    /**
-     * display interface to create or edit targets
-     */
-    public function showEdit()
+    public function targetsList($params, $content, &$smarty, &$repeat)
     {
-        if ($this->is_storing()) {
-            $this->store();
+        $index = $smarty->getTemplateVars('smarty.IB.item_list.index');
+
+        if (!isset($index) || empty($index)) {
+            $index = 0;
         }
 
-        global $db, $tmpl, $page;
-
-        if (isset($page->id) && $page->id != 0) {
-            $target = new Target($page->id);
-            $tmpl->assign('is_new', false);
-        } else {
-            $target = new Target;
-            $tmpl->assign('is_new', true);
-            $page->id = null;
+        if (!isset($this->avail_items) || empty($this->avail_items)) {
+            $repeat = false;
+            return $content;
         }
 
-        /* get a list of objects that use this target */
-        $sth = $db->prepare("
-                (
-                 SELECT
-                 'group' as type,
-                 t.target_idx as idx,
-                 t.target_name as name
-                 FROM
-                 TABLEPREFIXtargets t
-                 INNER JOIN TABLEPREFIXassign_targets_to_targets atg
-                 ON t.target_idx=atg.atg_group_idx
-                 WHERE
-                 atg.atg_target_idx LIKE ?
-                 ORDER BY
-                 t.target_name
-                )
-                UNION
-                (
-                 SELECT
-                 'chain' as type,
-                 c.chain_idx as idx,
-                 c.chain_name as name
-                 FROM
-                 TABLEPREFIXchains c
-                 WHERE
-                 c.chain_src_target LIKE ?
-                 OR
-                 c.chain_dst_target LIKE ?
-                 ORDER BY
-                 c.chain_name
-                )
-                UNION
-                (
-                 SELECT
-                 'pipe' as type,
-                 p.pipe_idx as idx,
-                 p.pipe_name as name
-                 FROM
-                 TABLEPREFIXpipes p
-                 WHERE
-                 p.pipe_src_target LIKE ?
-                 OR
-                 p.pipe_dst_target LIKE ?
-                 ORDER BY
-                 p.pipe_name
-                )
-                ");
-
-        $db->execute($sth, array(
-                    $page->id,
-                    $page->id,
-                    $page->id,
-                    $page->id,
-                    $page->id,
-                    ));
-
-        if ($sth->rowCount() > 0) {
-            $obj_use_target = array();
-            while ($obj = $sth->fetch()) {
-                array_push($obj_use_target, $obj);
-            }
-            $tmpl->assign('obj_use_target', $obj_use_target);
+        if ($index >= count($this->avail_items)) {
+            $repeat = false;
+            return $content;
         }
 
-        $db->db_sth_free($sth);
+        $item_idx = $this->avail_items[$index];
+        $item =  $this->items[$item_idx];
 
-        $tmpl->assign('target', $target);
+        $smarty->assign("item", $item);
+
+        $index++;
+        $smarty->assign('smarty.IB.item_list.index', $index);
+        $repeat = true;
+
+        return $content;
+    }
+
+    public function showEdit($id, $guid)
+    {
+        global $tmpl;
+
+        try {
+            $item = new \MasterShaper\Models\TargetModel(array(
+                'idx' => $id,
+                'guid' => $guid
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load TargetModel!', false, $e);
+            return false;
+        }
 
         $tmpl->registerPlugin(
             "function",
             "target_group_select_list",
-            array(&$this, "smartyTargetGroupSelectList"),
+            array(&$this, "smartyTargetGroupSelectLists"),
             false
         );
-        return $tmpl->fetch("targets_edit.tpl");
 
-    } // showEdit()
+        $tmpl->assign('target', $item);
 
-    /**
-     * handle updates
-     */
-    public function store()
-    {
-        global $ms, $db, $rewriter;
+        return parent::showEdit($id, $guid);
+    }
 
-        isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = null;
-
-        /* load target */
-        if (isset($new)) {
-            $target = new Target;
-        } else {
-            $target = new Target($_POST['target_idx']);
-        }
-
-        if (!isset($_POST['target_name']) || $_POST['target_name'] == "") {
-            $ms->raiseError(_("Please enter a name for this target!"));
-        }
-        if (isset($new) && $ms->check_object_exists('target', $_POST['target_name'])) {
-            $ms->raiseError(_("A target with that name already exists!"));
-        }
-        if (!isset($new) && $target->target_name != $_POST['target_name']
-            && $ms->check_object_exists('target', $_POST['target_name'])
-        ) {
-            $ms->raiseError(_("A target with that name already exists!"));
-        }
-        if ($_POST['target_match'] == "IP" && $_POST['target_ip'] == "") {
-            $ms->raiseError(_("You have selected IP match but didn't entered a IP address!"));
-        } elseif ($_POST['target_match'] == "IP" && $_POST['target_ip'] != "") {
-            /* Is target_ip a ip range seperated by "-" */
-            if (strstr($_POST['target_ip'], "-") !== false) {
-                $hosts = preg_split("/-/", $_POST['target_ip']);
-                foreach ($hosts as $host) {
-                    $ipv4 = new Net_IPv4;
-                    if (!$ipv4->validateIP($host)) {
-                        $ms->raiseError(
-                            _("Incorrect IP address in IP range definition! Please enter a valid IP address!")
-                        );
-                    }
-                }
-            /* Is target_ip a network */
-            } elseif (strstr($_POST['target_ip'], "/") !== false) {
-                $ipv4 = new Net_IPv4;
-                $net = $ipv4->parseAddress($_POST['target_ip']);
-                if ($net->netmask == "" || $net->netmask == "0.0.0.0") {
-                    $ms->raiseError(_("Incorrect CIDR address! Please enter a valid network address!"));
-                }
-            /* target_ip is a simple IP */
-            } else {
-                $ipv4 = new Net_IPv4;
-                if (!$ipv4->validateIP($_POST['target_ip'])) {
-                    $ms->raiseError(_("Incorrect IP address! Please enter a valid IP address!"));
-                }
-            }
-        }
-        /* MAC address specified? */
-        if ($_POST['target_match'] == "MAC" && $_POST['target_mac'] == "") {
-            $ms->raiseError(_("You have selected MAC match but didn't entered a MAC address!"));
-        } elseif ($_POST['target_match'] == "MAC" && $_POST['target_mac'] != "") {
-            if (!preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $_POST['target_mac'])
-                    && !preg_match("/(.*)-(.*)-(.*)-(.*)-(.*)-(.*)/", $_POST['target_mac'])) {
-                $ms->raiseError(
-                    _("You have selected MAC match but specified an INVALID MAC "
-                        ."address! Please specify a correct MAC address!")
-                );
-            }
-        }
-        if ($_POST['target_match'] == "GROUP" && isset($_POST['used']) && count($_POST['used']) < 1) {
-            $ms->raiseError(_("You have selected Group match but didn't selected at least one target from the list!"));
-        }
-
-        $target_data = $ms->filter_form_data($_POST, 'target_');
-
-        if (!$target->update($target_data)) {
-            return false;
-        }
-
-        if (!$target->save()) {
-            return false;
-        }
-
-        if (isset($_POST['add_another']) && $_POST['add_another'] == 'Y') {
-            return true;
-        }
-
-        $ms->set_header('Location', $rewriter->get_page_url('Targets List'));
-        return true;
-
-    } // store()
-
-    /**
-     * template function which will be called from the target listing template
-     */
-    public function smartyTargetList($params, $content, &$smarty, &$repeat)
-    {
-        $index = $smarty->getTemplateVars('smarty.IB.target_list.index');
-        if (!$index) {
-            $index = 0;
-        }
-
-        if ($index < count($this->avail_targets)) {
-
-            $target_idx = $this->avail_targets[$index];
-            $target =  $this->targets[$target_idx];
-
-            $smarty->assign('target_idx', $target_idx);
-            $smarty->assign('target_name', $target->target_name);
-            switch ($target->target_match) {
-                case 'IP':
-                    $smarty->assign('target_type', _("IP match"));
-                    break;
-                case 'MAC':
-                    $smarty->assign('target_type', _("MAC match"));
-                    break;
-                case 'GROUP':
-                    $smarty->assign('target_type', _("Target Group"));
-                    break;
-            }
-
-            $index++;
-            $smarty->assign('smarty.IB.target_list.index', $index);
-            $repeat = true;
-        } else {
-            $repeat =  false;
-        }
-
-        return $content;
-
-    } // smartyTargetList()
-
-    /**
-     * return select-list of available or used targets assigned to a target-group
-     */
-    public function smartyTargetGroupSelectList($params, &$smarty)
+    public function smartyTargetGroupSelectLists($params, &$smarty)
     {
         if (!array_key_exists('group', $params)) {
-            $tmpl->trigger_error("getSLList: missing 'group' parameter", E_USER_WARNING);
+            $this->raiseError(__METHOD__ .'(), missing "group" parameter!');
             $repeat = false;
             return;
         }
@@ -323,59 +196,53 @@ class TargetsView extends DefaultView
 
         switch ($group) {
             case 'unused':
-                $sth = $db->prepare("
-                        SELECT
+                $sql = "SELECT
                         t.target_idx,
                         t.target_name
-                        FROM
+                    FROM
                         TABLEPREFIXtargets t
-                        LEFT JOIN
+                    LEFT JOIN
                         TABLEPREFIXassign_targets_to_targets atg
-                        ON
+                    ON
                         t.target_idx=atg.atg_target_idx
-                        WHERE
+                    WHERE
                         atg.atg_group_idx NOT LIKE ?
-                        OR
+                    OR
                         ISNULL(atg.atg_group_idx)
-                        ORDER BY
-                        t.target_name ASC
-                        ");
-                $db->execute($sth, array(
-                            $idx
-                            ));
+                    ORDER BY
+                        t.target_name ASC";
                 break;
-
             case 'used':
-                $sth = $db->prepare("
-                        SELECT
+                $sql = "SELECT
                         t.target_idx,
                         t.target_name
-                        FROM
+                    FROM
                         TABLEPREFIXassign_targets_to_targets atg
-                        LEFT JOIN
+                    LEFT JOIN
                         TABLEPREFIXtargets t
-                        ON
+                    ON
                         t.target_idx = atg.atg_target_idx
-                        WHERE
+                    WHERE
                         atg_group_idx LIKE ?
-                        ORDER BY
-                        t.target_name ASC
-                        ");
-                $db->execute($sth, array(
-                            $idx
-                            ));
+                    ORDER BY
+                        t.target_name ASC";
                 break;
         }
+
+        $sth = $db->prepare($sql);
+
+        $db->execute($sth, array(
+            $idx
+        ));
 
         $string = "";
         while ($row = $sth->fetch()) {
             $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
         }
 
-        $db->db_sth_free($sth);
+        $db->freeStatement($sth);
         return $string;
-
-    } // smartyTargetGroupSelectList()
-} // class Page_Targets
+    }
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
