@@ -21,6 +21,33 @@ namespace MasterShaper\Models;
 
 abstract class DefaultModel extends \Thallium\Models\DefaultModel
 {
+    public function getName()
+    {
+        if (!isset(static::$model_column_prefix) || empty(static::$model_column_prefix)) {
+            $this->raiseError(__METHOD__ .'(), can not continue without column name!');
+            return false;
+        }
+
+        if (!static::hasFields()) {
+            $this->raiseError(__METHOD__ .'(), model has no fields defined!');
+            return false;
+        }
+
+        $name_field = static::$model_column_prefix .'_name';
+
+        if (static::hasField('name')) {
+            return $this->$name_field;
+        }
+
+        $file_field = static::$model_column_prefix .'_file_name';
+
+        if (static::hasField('file_name')) {
+            return $this->$file_field;
+        }
+
+        $this->raiseError(__METHOD__ .'(), no clue where to get the name from!');
+        return false;
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
