@@ -34,7 +34,7 @@ class NetworkPathsModel extends DefaultModel
     {
         global $ms;
 
-        if (!isset($this->items)) {
+        if (!$this->hasItems()) {
             $ms->raiseError(__METHOD__ .'(), no items set!');
             return false;
         }
@@ -73,6 +73,64 @@ class NetworkPathsModel extends DefaultModel
         }
 
         return $this->hostProfileId;
+    }
+
+    public function updatePositions()
+    {
+        global $session, $db;
+
+        if (($host_idx = $session->getCurrentHostProfile()) === false) {
+            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
+            return false;
+        }
+
+        $sth = $db->prepare(
+            "SELECT
+                netpath_idx
+            FROM
+                TABLEPREFIXnetwork_paths
+            WHERE
+                netpath_host_idx LIKE ?
+            ORDER BY
+                netpath_position ASC"
+        );
+
+        $db->execute($sth, array(
+            $host_idx
+        ));
+
+        $pos = 1;
+
+        if ($sth->rowCount() < 1) {
+            $db->freeStatement($sth);
+            return true;
+        }
+
+        $sth_update = $db->prepare(
+            "UPDATE
+                TABLEPREFIXnetwork_paths
+            SET
+                netpath_position=?
+            WHERE
+                netpath_idx LIKE ?
+            AND
+                netpath_host_idx LIKE ?"
+        );
+
+        while ($np = $sth->fetch()) {
+
+            $db->execute($sth_update, array(
+                 $pos,
+                 $np->netpath_idx,
+                 $host_idx
+             ));
+
+            $pos++;
+        }
+
+        $db->freeStatement($sth);
+        $db->freeStatement($sth_update);
+        return true;
     }
 }
 
