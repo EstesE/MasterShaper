@@ -23,37 +23,24 @@
 
 namespace MasterShaper\Views;
 
-use MasterShaper\Models;
-
 class OptionsView extends DefaultView
 {
-    public $class_name = 'options';
-
-    public function __construct()
-    {
-        $this->page = 'user_manage_rights';
-
-        parent::__construct();
-
-    } // __construct()
+    protected static $view_default_mode = 'show';
+    protected static $view_class_name = 'options';
 
     public function show()
     {
-        if ($this->isStoring()) {
-            $this->store();
-        }
-
         global $ms, $db, $tmpl;
 
         try {
-            $service_levels = new Models\ServiceLevelsModel;
+            $service_levels = new \MasterShaper\Models\ServiceLevelsModel;
         } catch (\Exception $e) {
             $ms->raiseError(__METHOD__ .'(), failed to load ЅerviceLevelsModel!');
             return false;
         }
 
-        if (($this->service_levels = $service_levels->getServiceLevels()) === false) {
-            $ms->raiseError(get_class($service_levels) .'::getServiceLevels() returned false!');
+        if (($this->service_levels = $service_levels->getItems()) === false) {
+            $ms->raiseError(get_class($service_levels) .'::getItems() returned false!');
             return false;
         }
 
@@ -581,18 +568,9 @@ Updating...<br />
             return $content;
         }
 
-        $sl_idx = $this->service_levels[$index];
+        $sl = $this->service_levels[$index];
 
-        try {
-            $sl = new Models\ServiceLevel($sl_idx);
-        } catch (\Exception $e) {
-            $ms->raiseError(__METHOD__ ."(), unable to load ServiceLevelModel({$sl_idx})!");
-            $repeat = false;
-            return false;
-        }
-
-        $smarty->assign('sl_idx', $sl_idx);
-        $smarty->assign('sl_name', $sl->getName());
+        $smarty->assign('sl', $sl);
 
         $index++;
         $smarty->assign('smarty.IB.sl_list.index', $index);
