@@ -25,16 +25,8 @@ namespace MasterShaper\Views;
 
 class HostTaskListView extends DefaultView
 {
-    /**
-     * Page_Host_Tasklist constructor
-     *
-     * Initialize the Page_Host_Tasklist class
-     */
-    public function __construct()
-    {
-        $this->rights = 'user_manage_options';
-
-    } // __construct()
+    protected static $view_default_mode = 'list';
+    protected static $view_class_name = 'host_tasks';
 
     /**
      * list all tasks
@@ -69,16 +61,14 @@ class HostTaskListView extends DefaultView
             $cnt_tasks++;
         }
 
-        $tmpl->registerPlugin("block", "task_list", array(&$this, "smartyTaskList"));
-
-        return $tmpl->fetch("tasklist.tpl");
+        return parent::showList();
 
     } // showList()
 
     /**
      * template function which will be called from the task listing template
      */
-    public function smartyTaskList($params, $content, &$smarty, &$repeat)
+    public function host_tasksList($params, $content, &$smarty, &$repeat)
     {
         global $ms;
 
