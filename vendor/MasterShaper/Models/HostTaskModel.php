@@ -35,7 +35,7 @@ class HostTaskModel extends DefaultModel
             FIELD_TYPE => FIELD_GUID,
         ),
         'job' => array(
-            FIELD_TYPE => FIELD_STR,
+            FIELD_TYPE => FIELD_STRING,
         ),
         'submit_time' => array(
             FIELD_TYPE => FIELD_TIMESTAMP,
@@ -47,7 +47,7 @@ class HostTaskModel extends DefaultModel
             FIELD_TYPE => FIELD_INT,
         ),
         'state' => array(
-            FIELD_TYPE => FIELD_STR,
+            FIELD_TYPE => FIELD_STRING,
         ),
     );
 }
