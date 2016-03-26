@@ -25,6 +25,9 @@ namespace MasterShaper\Views;
 
 class RulesetView extends DefaultView
 {
+    protected static $view_default_mode = 'show';
+    protected static $view_class_name = 'ruleset';
+
     /**
      * Page_Ruleset constructor
      *
@@ -32,6 +35,7 @@ class RulesetView extends DefaultView
      */
     public function __construct()
     {
+        $this->addMode('load');
         //$this->rights = 'user_manage_rules';
 
     } // __construct()
