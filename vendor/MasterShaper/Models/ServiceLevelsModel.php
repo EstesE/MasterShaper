@@ -26,29 +26,8 @@ class ServiceLevelsModel extends DefaultModel
 {
     protected static $model_table_name = 'service_levels';
     protected static $model_column_prefix = 'sl';
-    protected static $model_has_fields = true;
-    protected static $model_item_model = 'servicelevel';
-
-    public function getServiceLevels()
-    {
-        global $ms;
-
-        if (!isset($this->items)) {
-            $ms->raiseError(__METHOD__ .'(), no items set!');
-            return false;
-        }
-
-        if (empty($this->items)) {
-            return array();
-        }
-
-        /*$filtered = array_filter($this->items, function ($item) {
-            print_r($item);
-            return false;
-        });*/
-
-        return $this->items;
-    }
+    protected static $model_has_items = true;
+    protected static $model_items_model = 'ServiceLevelModel';
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
