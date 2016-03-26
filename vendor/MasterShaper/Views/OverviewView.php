@@ -34,10 +34,6 @@ class OverviewView extends DefaultView
     {
         global $ms, $db, $session;
 
-        if ($this->isStoring()) {
-            $this->store();
-        }
-
         /* If authentication is enabled, check permissions */
         if ($ms->getOption("authentication") == "Y" &&
             !$ms->checkPermissions("user_show_rules")) {
@@ -71,34 +67,32 @@ class OverviewView extends DefaultView
             return false;
         }
 
-        if (!$np->hasItems()) {
-            return true;
-        }
-
-        if (($network_paths = $np->getNetworkPaths($host_id)) === false) {
-            $this->raiseError(get_class($np) .'::getNetworkPaths() returned false!');
-            return false;
-        }
-
-        foreach ($network_paths as $network_path) {
-
-            if (($chains = $network_path->getActiveChains()) === false) {
-                $this->raiseError(get_class($network_path) .'::getActiveChains() returned false!');
+        if ($np->hasItems()) {
+            if (($network_paths = $np->getNetworkPaths($host_id)) === false) {
+                $this->raiseError(get_class($np) .'::getNetworkPaths() returned false!');
                 return false;
             }
 
-            foreach ($chains as $chain) {
+            foreach ($network_paths as $network_path) {
 
-                if (($pipes = $chain->getActivePipes()) === false) {
-                    $this->raiseError(get_class($chain) .'::getActivePipes() returned false!');
+                if (($chains = $network_path->getActiveChains()) === false) {
+                    $this->raiseError(get_class($network_path) .'::getActiveChains() returned false!');
                     return false;
                 }
 
-                foreach ($pipes as $pipe) {
+                foreach ($chains as $chain) {
 
-                    if (($filters = $pipe->getActiveFilters()) === false) {
-                        $this->raiseError(get_class($pipe) .'::getActiveFilters() returned false!');
+                    if (($pipes = $chain->getActivePipes()) === false) {
+                        $this->raiseError(get_class($chain) .'::getActivePipes() returned false!');
                         return false;
+                    }
+
+                    foreach ($pipes as $pipe) {
+
+                        if (($filters = $pipe->getActiveFilters()) === false) {
+                                $this->raiseError(get_class($pipe) .'::getActiveFilters() returned false!');
+                                return false;
+                        }
                     }
                 }
             }
@@ -117,7 +111,7 @@ class OverviewView extends DefaultView
           $this->registerPlugin("block", "ov_filter", array(&$this, "smartyOverviewFilter"));
           }*/
 
-        return $this->fetch("overview.tpl");
+        return parent::show();
     }
 
     public function smartyOverviewNetpath($params, $content, &$smarty, &$repeat)
