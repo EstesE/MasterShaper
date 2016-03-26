@@ -25,6 +25,9 @@ namespace MasterShaper\Views;
 
 class UpdateIanaView extends DefaultView
 {
+    protected static $view_default_mode = 'show';
+    protected static $view_class_name = 'update_iana';
+
     /**
      * Page_Update_IANA constructor
      *
