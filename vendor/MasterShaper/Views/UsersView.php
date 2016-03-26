@@ -25,155 +25,129 @@ namespace MasterShaper\Views;
 
 class UsersView extends DefaultView
 {
-    /**
-     * Page_Users constructor
-     *
-     * Initialize the Page_Users class
-     */
+    protected static $view_default_mode = 'list';
+    protected static $view_class_name = 'users';
+    private $users;
+
     public function __construct()
     {
-        $this->rights = 'user_manage_users';
-
-    } // __construct()
-
-    public function showList()
-    {
-        global $db, $tmpl;
-
-        $this->avail_users = array();
-        $this->users = array();
-
-        $cnt_users = 0;
-
-        $res_users = $db->query("
-                SELECT
-                *
-                FROM
-                TABLEPREFIXusers
-                ORDER BY
-                user_name ASC
-                ");
-
-        while ($user = $res_users->fetch()) {
-            $this->avail_users[$cnt_users] = $user->user_idx;
-            $this->users[$user->user_idx] = $user;
-            $cnt_users++;
+        try {
+            $this->users = new \MasterShaper\Models\UsersModel;
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load UsersModel!', false, $e);
+            return false;
         }
 
-        $tmpl->registerPlugin("block", "user_list", array(&$this, "smartyUserList"));
-        return $tmpl->fetch("users_list.tpl");
+        parent::__construct();
+    }
+
+    public function showList($pageno = null, $items_limit = null)
+    {
+        global $session, $tmpl;
+
+        if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
+            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+                $current_page = 1;
+            }
+        } else {
+            $current_page = $pageno;
+        }
+
+        if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
+            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+                $current_items_limit = -1;
+            }
+        } else {
+            $current_items_limit = $items_limit;
+        }
+
+        if (!$this->users->hasItems()) {
+            return parent::showList();
+        }
+
+        try {
+            $pager = new \MasterShaper\Controllers\PagingController(array(
+                'delta' => 2,
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load PagingController!', false, $e);
+            return false;
+        }
+
+        if (!$pager->setPagingData($this->users->getItems())) {
+            $this->raiseError(get_class($pager) .'::setPagingData() returned false!');
+            return false;
+        }
+
+        if (!$pager->setCurrentPage($current_page)) {
+            $this->raiseError(get_class($pager) .'::setCurrentPage() returned false!');
+            return false;
+        }
+
+        if (!$pager->setItemsLimit($current_items_limit)) {
+            $this->raiseError(get_class($pager) .'::setItemsLimit() returned false!');
+            return false;
+        }
+
+        global $tmpl;
+        $tmpl->assign('pager', $pager);
+
+        if (($data = $pager->getPageData()) === false) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned false!');
+            return false;
+        }
+
+        if (!isset($data) || empty($data) || !is_array($data)) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned invalid data!');
+            return false;
+        }
+
+        $this->avail_items = array_keys($data);
+        $this->items = $data;
+
+        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        return parent::showList();
 
     } // showList()
 
-    /**
-     * display interface to create or edit users
-     */
-    public function showEdit()
+    public function usersList($params, $content, &$smarty, &$repeat)
     {
-        if ($this->is_storing()) {
-            $this->store();
-        }
+        $index = $smarty->getTemplateVars('smarty.IB.item_list.index');
 
-        global $db, $tmpl, $page;
-
-        if (isset($page->id) && $page->id != 0) {
-            $user = new User($page->id);
-            $tmpl->assign('is_new', false);
-        } else {
-            $user = new User;
-            $tmpl->assign('is_new', true);
-            $page->id = null;
-        }
-
-        $tmpl->assign('user', $user);
-        return $tmpl->fetch("users_edit.tpl");
-
-    } // showEdit()
-
-    /**
-     * store user values
-     */
-    public function store()
-    {
-        global $ms, $db, $rewriter;
-
-        isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = null;
-
-        /* load user */
-        if (isset($new)) {
-            $user = new User;
-        } else {
-            $user = new User($_POST['user_idx']);
-        }
-
-        if (!isset($_POST['user_name']) || $_POST['user_name'] == "") {
-            $ms->raiseError(_("Please enter a user name!"));
-        }
-        if (isset($new) && $ms->check_object_exists('user', $_POST['user_name'])) {
-            $ms->raiseError(_("A user with such a user name already exist!"));
-        }
-        if ($_POST['user_pass1'] == "") {
-            $ms->raiseError(_("Empty passwords are not allowed!"));
-        }
-        if ($_POST['user_pass1'] != $_POST['user_pass2']) {
-            $ms->raiseError(_("The two entered passwords do not match!"));
-        }
-
-        if ($_POST['user_pass1'] != "nochangeMS") {
-            $_POST['user_pass'] = md5($_POST['user_pass1']);
-            unset($_POST['user_pass1']);
-            unset($_POST['user_pass2']);
-        }
-
-        $user_data = $ms->filter_form_data($_POST, 'user_');
-
-        if (!$user->update($user_data)) {
-            return false;
-        }
-
-        if (!$user->save()) {
-            return false;
-        }
-
-        if (isset($_POST['add_another']) && $_POST['add_another'] == 'Y') {
-            return true;
-        }
-
-        $ms->set_header('Location', $rewriter->get_page_url('Users List'));
-        return true;
-
-    } // store()
-
-    /**
-     * template function which will be called from the user listing template
-     */
-    public function smartyUserList($params, $content, &$smarty, &$repeat)
-    {
-        $index = $smarty->getTemplateVars('smarty.IB.user_list.index');
-        if (!$index) {
+        if (!isset($index) || empty($index)) {
             $index = 0;
         }
 
-        if ($index < count($this->avail_users)) {
-
-            $user_idx = $this->avail_users[$index];
-            $user =  $this->users[$user_idx];
-
-            $smarty->assign('user_idx', $user_idx);
-            $smarty->assign('user_name', $user->user_name);
-            $smarty->assign('user_active', $user->user_active);
-
-            $index++;
-            $smarty->assign('smarty.IB.user_list.index', $index);
-            $repeat = true;
-        } else {
-            $repeat =  false;
+        if (!isset($this->avail_items) || empty($this->avail_items)) {
+            $repeat = false;
+            return $content;
         }
 
+        if ($index >= count($this->avail_items)) {
+            $repeat = false;
+            return $content;
+        }
+
+        $item_idx = $this->avail_items[$index];
+        $item =  $this->items[$item_idx];
+
+        $smarty->assign("item", $item);
+
+        $index++;
+        $smarty->assign('smarty.IB.item_list.index', $index);
+        $repeat = true;
+
         return $content;
-
-    } // smartyUserList()
-
+    }
 
     private function getPermissions($user_idx)
     {
