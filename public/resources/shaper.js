@@ -416,44 +416,6 @@ function get_host_state()
 
 } // get_host_state()
 
-function obj_delete(element, target, idx)
-{
-   var del_id = element.attr("id");
-
-   if(del_id == undefined || del_id == "") {
-      alert('no attribute "id" found!');
-      return;
-   }
-
-   if(!confirm("Are you sure you want to delete this object? There is NO undo!")) {
-      return false;
-   }
-
-   $.ajax({
-      type: "POST",
-      url: "rpc.html",
-      data: ({type : 'rpc', action : 'delete', id : del_id }),
-      beforeSend: function() {
-         // change row color to red
-         element.parent().parent().animate({backgroundColor: "#fbc7c7" }, "fast");
-      },
-      error: function(XMLHttpRequest, textStatus, errorThrown) {
-         alert('Failed to contact server! ' + textStatus);
-      },
-      success: function(data){
-         if(data == "ok") {
-            element.parent().parent().animate({ opacity: "hide" }, "fast");
-            return;
-         }
-         // change row color back to white
-         element.parent().parent().animate({backgroundColor: "#ffffff" }, "fast");
-         alert('Server returned: ' + data + ', length ' + data.length);
-         return;
-      }
-   });
-
-} // obj_delete()
-
 function obj_clone(element, target, idx)
 {
    var clone_id = element.attr("id");
@@ -1013,9 +975,6 @@ function toggle_content(element, imgobj, imgshow, imghide, imgobjoth)
 } // toggle_content()
 
 $(document).ready(function() {
-   $("table td a.delete").click(function(){
-      obj_delete($(this));
-   });
    $("table td a.clone").click(function(){
       obj_clone($(this));
    });
