@@ -25,206 +25,129 @@ namespace MasterShaper\Views;
 
 class ProtocolsView extends DefaultView
 {
-    /**
-     * Page_Protocols constructor
-     *
-     * Initialize the Page_Protocols class
-     */
+    protected static $view_default_mode = 'list';
+    protected static $view_class_name = 'protocols';
+    private $protocols;
+
     public function __construct()
     {
-        $this->rights = 'user_manage_protocols';
-        $this->items_per_page = 50;
+        try {
+            $this->protocols = new \MasterShaper\Models\ProtocolsModel;
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load ProtocolsModel!', false, $e);
+            return false;
+        }
 
-    } // __construct()
+        parent::__construct();
+    }
 
-    /**
-     * display all protocols
-     */
-    public function showList()
+    public function showList($pageno = null, $items_limit = null)
     {
-        global $db, $tmpl, $rewriter, $page;
+        global $session, $tmpl;
 
-        $this->avail_ports = array();
-        $this->ports = array();
-
-        if (empty($page->num)) {
-            $page->num = 1;
+        if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
+            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+                $current_page = 1;
+            }
+        } else {
+            $current_page = $pageno;
         }
 
-        $limit = ($page->num-1) * $this->items_per_page;
-
-        $num_protocols = $db->db_fetchSingleRow("SELECT COUNT(*) as count FROM TABLEPREFIXprotocols");
-
-        $this->avail_protocols = array();
-        $this->protocols = array();
-
-        $sth = $db->prepare("
-                SELECT
-                proto_idx
-                FROM
-                TABLEPREFIXprotocols
-                ORDER BY
-                proto_name ASC
-                LIMIT
-                ?, ?
-                ");
-
-        $sth->bindParam(1, $limit, PDO::PARAM_INT);
-        $sth->bindParam(2, $this->items_per_page, PDO::PARAM_INT);
-        $db->execute($sth);
-
-        while ($protocol = $sth->fetch()) {
-            $this->avail_protocols[] = $protocol->proto_idx;
+        if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
+            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+                $current_items_limit = -1;
+            }
+        } else {
+            $current_items_limit = $items_limit;
         }
 
-        $db->db_sth_free($sth);
+        if (!$this->protocols->hasItems()) {
+            return parent::showList();
+        }
 
-        $pager_params = array(
-                'mode' => 'Sliding',
-                'delta' => 3,
-                'append' => true,
-                'urlVar' => 'num',
-                'totalItems' => $num_protocols->count,
-                'perPage' => $this->items_per_page,
-                'currentPage' => $page->num,
-                );
+        try {
+            $pager = new \MasterShaper\Controllers\PagingController(array(
+                'delta' => 2,
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load PagingController!', false, $e);
+            return false;
+        }
 
-        $pager = & Pager::factory($pager_params);
+        if (!$pager->setPagingData($this->protocols->getItems())) {
+            $this->raiseError(get_class($pager) .'::setPagingData() returned false!');
+            return false;
+        }
+
+        if (!$pager->setCurrentPage($current_page)) {
+            $this->raiseError(get_class($pager) .'::setCurrentPage() returned false!');
+            return false;
+        }
+
+        if (!$pager->setItemsLimit($current_items_limit)) {
+            $this->raiseError(get_class($pager) .'::setItemsLimit() returned false!');
+            return false;
+        }
+
+        global $tmpl;
         $tmpl->assign('pager', $pager);
 
-        $tmpl->registerPlugin("block", "protocol_list", array(&$this, "smartyProtocolList"));
-        return $tmpl->fetch("protocols_list.tpl");
+        if (($data = $pager->getPageData()) === false) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned false!');
+            return false;
+        }
+
+        if (!isset($data) || empty($data) || !is_array($data)) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned invalid data!');
+            return false;
+        }
+
+        $this->avail_items = array_keys($data);
+        $this->items = $data;
+
+        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        return parent::showList();
 
     } // showList()
 
-    /**
-     * display interface to create or edit protocols
-     */
-    public function showEdit()
+    public function protocolsList($params, $content, &$smarty, &$repeat)
     {
-        if ($this->is_storing()) {
-            $this->store();
-        }
+        $index = $smarty->getTemplateVars('smarty.IB.item_list.index');
 
-        global $db, $tmpl, $page;
-
-        if (isset($page->id) && $page->id != 0) {
-            $protocol = new Protocol($page->id);
-            $tmpl->assign('is_new', false);
-        } else {
-            $protocol = new Protocol;
-            $tmpl->assign('is_new', true);
-            $page->id = null;
-        }
-
-        /* get a list of filters that use this protocol */
-        $sth = $db->prepare("
-                SELECT
-                f.filter_idx,
-                f.filter_name
-                FROM
-                TABLEPREFIXfilters f
-                WHERE
-                f.filter_protocol_id LIKE ?
-                ORDER BY
-                f.filter_name ASC
-                ");
-
-        $db->execute($sth, array(
-                    $page->id,
-                    ));
-
-        if ($sth->rowCount() > 0) {
-            $filter_use_protocol = array();
-            while ($filter = $sth->fetch()) {
-                $filter_use_protocol[$filter->filter_idx] = $filter->filter_name;
-            }
-            $tmpl->assign('filter_use_protocol', $filter_use_protocol);
-        }
-
-        $db->db_sth_free($sth);
-
-        $tmpl->assign('protocol', $protocol);
-        return $tmpl->fetch("protocols_edit.tpl");
-
-    } // showEdit()
-
-    /**
-     * template function which will be called from the protocol listing template
-     */
-    public function smartyProtocolList($params, $content, &$smarty, &$repeat)
-    {
-        $index = $smarty->getTemplateVars('smarty.IB.protocol_list.index');
-        if (!$index) {
+        if (!isset($index) || empty($index)) {
             $index = 0;
         }
 
-        if ($index < count($this->avail_protocols)) {
-
-            $proto_idx = $this->avail_protocols[$index];
-
-            $protocol = new Protocol($proto_idx);
-            $smarty->assign('protocol', $protocol);
-
-            $index++;
-            $smarty->assign('smarty.IB.protocol_list.index', $index);
-            $repeat = true;
-        } else {
-            $repeat =  false;
+        if (!isset($this->avail_items) || empty($this->avail_items)) {
+            $repeat = false;
+            return $content;
         }
+
+        if ($index >= count($this->avail_items)) {
+            $repeat = false;
+            return $content;
+        }
+
+        $item_idx = $this->avail_items[$index];
+        $item =  $this->items[$item_idx];
+
+        $smarty->assign("item", $item);
+
+        $index++;
+        $smarty->assign('smarty.IB.item_list.index', $index);
+        $repeat = true;
 
         return $content;
-
-    } // smartyProtocolList()
-
-    /**
-     * handle updates
-     */
-    public function store()
-    {
-        global $ms, $db, $rewriter;
-
-        isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = null;
-
-        /* load protocol */
-        if (isset($new)) {
-            $protocol = new Protocol;
-        } else {
-            $protocol = new Protocol($_POST['proto_idx']);
-        }
-
-        if (!isset($_POST['proto_name']) || $_POST['proto_name'] == "") {
-            $ms->raiseError(_("Please enter a protocol name!"));
-        }
-        if (isset($new) && $ms->check_object_exists('protocol', $_POST['proto_name'])) {
-            $ms->raiseError(_("A protocol with that name already exists!"));
-        }
-        if (!isset($new) && $protocol->proto_name != $_POST['proto_name']
-                && $ms->check_object_exists('protocol', $_POST['proto_name'])) {
-            $ms->raiseError(_("A protocol with that name already exists!"));
-        }
-        if (!is_numeric($_POST['proto_number'])) {
-            $ms->raiseError(_("Protocol number needs to be an integer value!"));
-        }
-
-        $protocol_data = $ms->filter_form_data($_POST, 'proto_');
-
-        if (!$protocol->update($protocol_data)) {
-            return false;
-        }
-
-        if (!$protocol->save()) {
-            return false;
-        }
-
-        if (isset($_POST['add_another']) && $_POST['add_another'] == 'Y') {
-            return true;
-        }
-
-        $ms->set_header('Location', $rewriter->get_page_url('Protocols List'));
-        return true;
-
-    } // store()
-} // class Page_Protocols
+    }
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
