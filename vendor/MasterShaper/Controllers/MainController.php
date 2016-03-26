@@ -37,17 +37,18 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('auditlog', 'AuditLogModel');
             $this->registerModel('filter', 'FilterModel');
             $this->registerModel('filters', 'FiltersModel');
-            $this->registerModel('hostprofile', 'HostProfileModel');
-            $this->registerModel('hosttask', 'HostTaskModel');
-            $this->registerModel('netif', 'NetworkInterfaceModel');
-            $this->registerModel('netpath', 'NetworkPathModel');
-            $this->registerModel('netpaths', 'NetworkPathsModel');
+            $this->registerModel('host_profile', 'HostProfileModel');
+            $this->registerModel('host_task', 'HostTaskModel');
+            $this->registerModel('network_interface', 'NetworkInterfaceModel');
+            $this->registerModel('network_interfaces', 'NetworkInterfacesModel');
+            $this->registerModel('network_path', 'NetworkPathModel');
+            $this->registerModel('network_paths', 'NetworkPathsModel');
             $this->registerModel('pipe', 'PipeModel');
             $this->registerModel('pipes', 'PipesModel');
             $this->registerModel('port', 'PortModel');
             $this->registerModel('protocol', 'ProtocolModel');
-            $this->registerModel('servicelevel', 'ServiceLevelModel');
-            $this->registerModel('servicelevels', 'ServiceLevelsModel');
+            $this->registerModel('service_level', 'ServiceLevelModel');
+            $this->registerModel('service_levels', 'ServiceLevelsModel');
             $this->registerModel('target', 'TargetModel');
             $this->registerModel('user', 'UserModel');
         } catch (\Exception $e) {
