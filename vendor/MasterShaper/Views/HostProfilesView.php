@@ -25,47 +25,97 @@ namespace MasterShaper\Views;
 
 class HostProfilesView extends DefaultView
 {
-    /**
-     * Page_Host_Profiles constructor
-     *
-     * Initialize the Page_Host_Profiles class
-     */
+    protected static $view_default_mode = 'list';
+    protected static $view_class_name = 'host_profiles';
+    private $hostprofiles;
+
     public function __construct()
     {
-        $this->rights = 'user_manage_options';
-
-    } // __construct()
-
-    /**
-     * list all hosts
-     */
-    public function showList()
-    {
-        global $db, $tmpl;
-
-        $this->avail_hosts = array();
-        $this->hosts = array();
-
-        $res_hosts = $db->query("
-                SELECT
-                *
-                FROM
-                TABLEPREFIXhost_profiles
-                ORDER BY
-                host_name ASC
-                ");
-
-        $cnt_hosts = 0;
-
-        while ($hostprofile = $res_hosts->fetch()) {
-            $this->avail_hosts[$cnt_hosts] = $hostprofile->host_idx;
-            $this->hosts[$hostprofile->host_idx] = $hostprofile;
-            $cnt_hosts++;
+        try {
+            $this->hostprofiles = new \MasterShaper\Models\HostProfilesModel;
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load HostProfilesModel!', false, $e);
+            return false;
         }
 
-        $tmpl->registerPlugin("block", "host_list", array(&$this, "smartyHostList"));
+        parent::__construct();
+    }
 
-        return $tmpl->fetch("host_profiles_list.tpl");
+    public function showList($pageno = null, $items_limit = null)
+    {
+        global $session, $tmpl;
+
+        if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
+            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+                $current_page = 1;
+            }
+        } else {
+            $current_page = $pageno;
+        }
+
+        if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
+            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+                $current_items_limit = -1;
+            }
+        } else {
+            $current_items_limit = $items_limit;
+        }
+
+        if (!$this->hostprofiles->hasItems()) {
+            return parent::showList();
+        }
+
+        try {
+            $pager = new \MasterShaper\Controllers\PagingController(array(
+                'delta' => 2,
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load PagingController!');
+            return false;
+        }
+
+        if (!$pager->setPagingData($this->hostprofiles->getItems())) {
+            $this->raiseError(get_class($pager) .'::setPagingData() returned false!');
+            return false;
+        }
+
+        if (!$pager->setCurrentPage($current_page)) {
+            $this->raiseError(get_class($pager) .'::setCurrentPage() returned false!');
+            return false;
+        }
+
+        if (!$pager->setItemsLimit($current_items_limit)) {
+            $this->raiseError(get_class($pager) .'::setItemsLimit() returned false!');
+            return false;
+        }
+
+        global $tmpl;
+        $tmpl->assign('pager', $pager);
+
+        if (($data = $pager->getPageData()) === false) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned false!');
+            return false;
+        }
+
+        if (!isset($data) || empty($data) || !is_array($data)) {
+            $this->raiseError(get_class($pager) .'::getPageData() returned invalid data!');
+            return false;
+        }
+
+        $this->avail_items = array_keys($data);
+        $this->items = $data;
+
+        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
+            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+            return false;
+        }
+
+        return parent::showList();
 
     } // showList()
 
@@ -101,34 +151,35 @@ class HostProfilesView extends DefaultView
     /**
      * template function which will be called from the host listing template
      */
-    public function smartyHostList($params, $content, &$smarty, &$repeat)
+    public function host_profilesList($params, $content, &$smarty, &$repeat)
     {
-        global $ms;
+        $index = $smarty->getTemplateVars('smarty.IB.item_list.index');
 
-        $index = $smarty->getTemplateVars('smarty.IB.host_list.index');
-        if (!$index) {
+        if (!isset($index) || empty($index)) {
             $index = 0;
         }
 
-        if ($index < count($this->avail_hosts)) {
-
-            $host_idx = $this->avail_hosts[$index];
-            $host =  $this->hosts[$host_idx];
-
-            $smarty->assign('host_idx', $host_idx);
-            $smarty->assign('host_name', $host->host_name);
-            $smarty->assign('host_active', $host->host_active);
-
-            $index++;
-            $smarty->assign('smarty.IB.host_list.index', $index);
-            $repeat = true;
-        } else {
-            $repeat =  false;
+        if (!isset($this->avail_items) || empty($this->avail_items)) {
+            $repeat = false;
+            return $content;
         }
 
-        return $content;
+        if ($index >= count($this->avail_items)) {
+            $repeat = false;
+            return $content;
+        }
 
-    } // smartyHostList()
+        $item_idx = $this->avail_items[$index];
+        $item =  $this->items[$item_idx];
+
+        $smarty->assign("item", $item);
+
+        $index++;
+        $smarty->assign('smarty.IB.item_list.index', $index);
+        $repeat = true;
+
+        return $content;
+    }
 
     /**
      * handle updates
@@ -175,6 +226,6 @@ class HostProfilesView extends DefaultView
         return true;
 
     } // store()
-} // class Page_Host_Profiles
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
