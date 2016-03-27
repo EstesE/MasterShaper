@@ -42,9 +42,13 @@ class TargetModel extends DefaultModel
         ),
         'ip' => array(
             FIELD_TYPE => FIELD_STRING,
+            FIELD_SET => 'setIP',
+            FIELD_GET => 'getIP',
         ),
         'mac' => array(
             FIELD_TYPE => FIELD_STRING,
+            FIELD_SET => 'setMAC',
+            FIELD_GET => 'getMAC',
         ),
         'active' => array(
             FIELD_TYPE => FIELD_YESNO,
@@ -60,7 +64,9 @@ class TargetModel extends DefaultModel
     {
         $this->permitRpcUpdates(true);
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
+
         return true;
     }
 
@@ -157,13 +163,16 @@ class TargetModel extends DefaultModel
             return false;
         }
 
-        $this->target_match = strtoupper($match);
+        $this->model_values['match'] = strtoupper($match);
         return true;
     }
 
     public function hasMatch()
     {
-        if (!isset($this->target_match) || empty($this->target_match) || !is_string($this->target_match)) {
+        if (!isset($this->model_values['match']) ||
+            empty($this->model_values['match']) ||
+            !is_string($this->model_values['match'])
+        ) {
             return false;
         }
 
@@ -177,19 +186,19 @@ class TargetModel extends DefaultModel
             return false;
         }
 
-        if (!in_array($this->target_match, static::$valid_matches)) {
+        if (!in_array($this->model_values['match'], static::$valid_matches)) {
             $this->raiseError(__METHOD__ .'(), target_match contains an invalid match!');
             return false;
         }
 
-        return $this->target_match;
+        return $this->model_values['match'];
     }
 
     public function setIP($ip)
     {
         if (!isset($ip) || empty($ip) || !is_string($ip)) {
-            $this->raiseError(__METHOD__ .'(), $ip parameter is invalid!');
-            return false;
+            $this->model_values['ip'] = null;
+            return true;
         }
 
         if (!filter_var($ip, FILTER_VALIDATE_IP)) {
@@ -197,15 +206,15 @@ class TargetModel extends DefaultModel
             return false;
         }
 
-        $this->target_ip = $ip;
+        $this->model_values['ip'] = $ip;
         return true;
     }
 
     public function hasIP()
     {
-        if (!isset($this->target_ip) ||
-            empty($this->target_ip) ||
-            !is_string($this->target_ip)
+        if (!isset($this->model_values['ip']) ||
+            empty($this->model_values['ip']) ||
+            !is_string($this->model_values['ip'])
         ) {
             return false;
         }
@@ -220,19 +229,19 @@ class TargetModel extends DefaultModel
             return false;
         }
 
-        if (!filter_var($this->target_ip, FILTER_VALIDATE_IP)) {
+        if (!filter_var($this->model_values['ip'], FILTER_VALIDATE_IP)) {
             $this->raiseError(__METHOD__ .'(), target_ip contains an valid IP address!');
             return false;
         }
 
-        return $this->target_ip;
+        return $this->model_values['ip'];
     }
 
     public function setMAC($mac)
     {
         if (!isset($mac) || empty($mac) || !is_string($mac)) {
-            $this->raiseError(__METHOD__ .'(), $mac parameter is invalid!');
-            return false;
+            $this->model_values['mac'] = null;
+            return true;
         }
 
         if (!preg_match('/([a-fA-F0-9]{2}[:|\-]?){6}/', $mac)) {
@@ -240,15 +249,15 @@ class TargetModel extends DefaultModel
             return false;
         }
 
-        $this->target_mac = $mac;
+        $this->model_values['mac'] = $mac;
         return true;
     }
 
     public function hasMAC()
     {
-        if (!isset($this->target_mac) ||
-            empty($this->target_mac) ||
-            !is_string($this->target_mac)
+        if (!isset($this->model_values['mac']) ||
+            empty($this->model_values['mac']) ||
+            !is_string($this->model_values['mac'])
         ) {
             return false;
         }
@@ -263,12 +272,12 @@ class TargetModel extends DefaultModel
             return false;
         }
 
-        if (!preg_match('/([a-fA-F0-9]{2}[:|\-]?){6}/', $this->target_mac)) {
+        if (!preg_match('/([a-fA-F0-9]{2}[:|\-]?){6}/', $this->model_values['mac'])) {
             $this->raiseError(__METHOD__ .'(), target_mac contains an valid MAC address!');
             return false;
         }
 
-        return $this->target_mac;
+        return $this->model_values['mac'];
     }
 }
 
