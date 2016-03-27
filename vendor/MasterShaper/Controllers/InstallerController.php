@@ -383,6 +383,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `target_match` varchar(16) default NULL,
                 `target_ip` varchar(255) default NULL,
                 `target_mac` varchar(255) default NULL,
+                `target_active` VARCHAR(1) DEFAULT NULL,
                 PRIMARY KEY  (`target_idx`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
@@ -717,6 +718,23 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         );
 
         $db->setDatabaseSchemaVersion(24);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV25()
+    {
+        global $db;
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXtargets
+            ADD
+                `target_active` VARCHAR(1) DEFAULT NULL
+            AFTER
+                `target_mac`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->setDatabaseSchemaVersion(25);
         return true;
     }
 }
