@@ -74,6 +74,30 @@ abstract class DefaultModel extends \Thallium\Models\DefaultModel
 
         return true;
     }
+
+    public function getSafeLink()
+    {
+        if (!static::hasFields()) {
+            $this->raiseError(__METHOD__ .'(), model has no fields defined!');
+            return false;
+        }
+
+        if (!static::hasField('idx')) {
+            $this->raiseError(__METHOD__ .'(), model has no "idx" field!');
+            return false;
+        }
+
+        if (!static::hasField('guid')) {
+            $this->raiseError(__METHOD__ .'(), model has no "guid" field!');
+            return false;
+        }
+
+        return sprintf(
+            "%s-%s",
+            $this->getId(),
+            $this->getGuid()
+        );
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
