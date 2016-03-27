@@ -21,6 +21,34 @@ namespace MasterShaper\Models;
 
 abstract class DefaultModel extends \Thallium\Models\DefaultModel
 {
+    public function hasName()
+    {
+        if (!isset(static::$model_column_prefix) || empty(static::$model_column_prefix)) {
+            $this->raiseError(__METHOD__ .'(), can not continue without column name!');
+            return false;
+        }
+
+        if (!static::hasFields()) {
+            $this->raiseError(__METHOD__ .'(), model has no fields defined!');
+            return false;
+        }
+
+        $name_field = static::$model_column_prefix .'_name';
+
+        if (!static::hasField('name')) {
+            return false;
+        }
+
+        if (!isset($this->$name_field) ||
+            empty($this->$name_field) ||
+            !is_string($this->$name_field)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getName()
     {
         if (!isset(static::$model_column_prefix) || empty(static::$model_column_prefix)) {
