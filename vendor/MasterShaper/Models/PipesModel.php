@@ -29,6 +29,13 @@ class PipesModel extends DefaultModel
     protected static $model_has_items = true;
     protected static $model_items_model = 'PipeModel';
 
+    protected function __init()
+    {
+        $this->permitRpcUpdates(true);
+        $this->addRpcAction('delete');
+        return true;
+    }
+
     public function updatePositions($ms_objects = null)
     {
         global $db;
