@@ -33,15 +33,13 @@ abstract class DefaultModel extends \Thallium\Models\DefaultModel
             return false;
         }
 
-        $name_field = static::$model_column_prefix .'_name';
-
         if (!static::hasField('name')) {
             return false;
         }
 
-        if (!isset($this->$name_field) ||
-            empty($this->$name_field) ||
-            !is_string($this->$name_field)
+        if (!isset($this->model_values['name']) ||
+            empty($this->model_values['name']) ||
+            !is_string($this->model_values['name'])
         ) {
             return false;
         }
@@ -64,13 +62,13 @@ abstract class DefaultModel extends \Thallium\Models\DefaultModel
         $name_field = static::$model_column_prefix .'_name';
 
         if (static::hasField('name')) {
-            return $this->$name_field;
+            return $this->model_values['name'];
         }
 
         $file_field = static::$model_column_prefix .'_file_name';
 
         if (static::hasField('file_name')) {
-            return $this->$file_field;
+            return $this->model_values['file_name'];
         }
 
         $this->raiseError(__METHOD__ .'(), no clue where to get the name from!');
@@ -89,14 +87,12 @@ abstract class DefaultModel extends \Thallium\Models\DefaultModel
             return false;
         }
 
-        $active_field = static::$model_column_prefix .'_active';
-
         if (!static::hasField('active')) {
             $this->raiseError(__METHOD__ .'(), model has no "active" field!');
             return false;
         }
 
-        if ($this->$active_field != 'Y') {
+        if ($this->model_values['active'] != 'Y') {
             return false;
         }
 
