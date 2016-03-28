@@ -271,6 +271,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `port_desc` varchar(255) default NULL,
                 `port_number` varchar(255) default NULL,
                 `port_user_defined` char(1) default NULL,
+                `port_active` char(1) default NULL,
                 PRIMARY KEY  (`port_idx`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
@@ -289,6 +290,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `proto_name` varchar(255) default NULL,
                 `proto_desc` varchar(255) default NULL,
                 `proto_user_defined` char(1) default NULL,
+                `proto_active` char(1) default NULL,
                 PRIMARY KEY  (`proto_idx`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
@@ -735,6 +737,32 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(25);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV26()
+    {
+        global $db;
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXports
+            ADD
+                `port_active` char(1) default NULL
+            AFTER
+                `port_user_defined`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXprotocols
+            ADD
+                `proto_active` char(1) default NULL
+            AFTER
+                `proto_user_defined`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->setDatabaseSchemaVersion(26);
         return true;
     }
 }
