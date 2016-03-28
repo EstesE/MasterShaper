@@ -45,6 +45,9 @@ class PortModel extends DefaultModel
         'user_defined' => array(
             FIELD_TYPE => FIELD_YESNO,
         ),
+        'active' => array(
+            FIELD_TYPE => FIELD_YESNO,
+        ),
     );
 
     protected function __init()
