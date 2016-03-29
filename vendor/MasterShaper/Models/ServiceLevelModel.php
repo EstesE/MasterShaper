@@ -36,6 +36,10 @@ class ServiceLevelModel extends DefaultModel
         'name' => array(
             FIELD_TYPE => FIELD_STRING,
         ),
+        'active' => array(
+            FIELD_TYPE => FIELD_YESNO,
+            FIELD_DEFAULT => 'Y',
+        ),
         'htb_bw_in_rate' => array(
             FIELD_TYPE => FIELD_INT,
         ),
