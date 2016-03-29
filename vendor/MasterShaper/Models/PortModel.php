@@ -54,8 +54,53 @@ class PortModel extends DefaultModel
     {
         $this->permitRpcUpdates(true);
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
         return true;
+    }
+
+    public function hasDescription()
+    {
+        if (!isset($this->model_values['desc']) ||
+            empty($this->model_values['desc']) ||
+            !is_string($this->model_values['desc'])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getDescription()
+    {
+        if (!$this->hasDescription()) {
+            $this->raiseError(__CLASS__ .'::hasDescription() returned false!');
+            return false;
+        }
+
+        return $this->model_values['desc'];
+    }
+
+    public function hasNumber()
+    {
+        if (!isset($this->model_values['number']) ||
+            empty($this->model_values['number']) ||
+            !is_string($this->model_values['number'])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNumber()
+    {
+        if (!$this->hasNumber()) {
+            $this->raiseError(__CLASS__ .'::hasNumber() returned false!');
+            return false;
+        }
+
+        return $this->model_values['number'];
     }
 }
 
