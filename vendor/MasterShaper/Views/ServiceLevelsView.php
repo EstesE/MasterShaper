@@ -46,7 +46,7 @@ class ServiceLevelsView extends DefaultView
         global $session, $tmpl;
 
         if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
-            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+            if (($current_page = $this->getSessionVar("current_page")) === false) {
                 $current_page = 1;
             }
         } else {
@@ -54,7 +54,7 @@ class ServiceLevelsView extends DefaultView
         }
 
         if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
-            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+            if (($current_items_limit = $this->getSessionVar("current_items_limit")) === false) {
                 $current_items_limit = -1;
             }
         } else {
@@ -105,12 +105,12 @@ class ServiceLevelsView extends DefaultView
         $this->avail_items = array_keys($data);
         $this->items = $data;
 
-        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
+        if (!$this->setSessionVar("current_page", $current_page)) {
             $this->raiseError(get_class($session) .'::setVariable() returned false!');
             return false;
         }
 
-        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
+        if (!$this->setSessionVar("current_items_limit", $current_items_limit)) {
             $this->raiseError(get_class($session) .'::setVariable() returned false!');
             return false;
         }
@@ -147,6 +147,24 @@ class ServiceLevelsView extends DefaultView
         $repeat = true;
 
         return $content;
+    }
+
+    public function showEdit($id, $guid)
+    {
+        global $tmpl;
+
+        try {
+            $item = new \MasterShaper\Models\ServiceLevelModel(array(
+                'idx' => $id,
+                'guid' => $guid
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load ServiceLevelModel!', false, $e);
+            return false;
+        }
+
+        $tmpl->assign('servicelevel', $item);
+        return parent::showEdit($id, $guid);
     }
 }
 
