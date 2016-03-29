@@ -306,6 +306,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `sl_idx` int(11) NOT NULL auto_increment,
                 `sl_guid` VARCHAR(255) DEFAULT NULL,
                 `sl_name` varchar(255) default NULL,
+                `sl_active` char(1) default NULL,
                 `sl_htb_bw_in_rate` varchar(255) default NULL,
                 `sl_htb_bw_in_ceil` varchar(255) default NULL,
                 `sl_htb_bw_in_burst` varchar(255) default NULL,
@@ -763,6 +764,23 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(26);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV27()
+    {
+        global $db;
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXservice_levels
+            ADD
+                `sl_active` char(1) default NULL
+            AFTER
+                `sl_name`"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->setDatabaseSchemaVersion(27);
         return true;
     }
 }
