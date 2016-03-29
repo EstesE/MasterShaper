@@ -98,7 +98,7 @@ class ServiceLevelModel extends DefaultModel
             FIELD_TYPE => FIELD_INT
         ),
         'netem_distribution' => array(
-            FIELD_TYPE => FIELD_INT,
+            FIELD_TYPE => FIELD_STRING,
         ),
         'netem_loss' => array(
             FIELD_TYPE => FIELD_INT,
@@ -137,7 +137,7 @@ class ServiceLevelModel extends DefaultModel
             FIELD_TYPE => FIELD_INT,
         ),
         'esfq_hash' => array(
-            FIELD_TYPE => FIELD_INT,
+            FIELD_TYPE => FIELD_STRING,
         )
     );
 
@@ -145,6 +145,7 @@ class ServiceLevelModel extends DefaultModel
     {
         $this->permitRpcUpdates(true);
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
         return true;
     }
@@ -178,6 +179,615 @@ class ServiceLevelModel extends DefaultModel
         $this->sl_hfsc_out_ulrate = $tmp['sl_hfsc_in_ulrate'];
 
         return true;
+    }
+
+    public function hasHtbBandwidthInRate()
+    {
+        if (!$this->hasValue('htb_bw_in_rate')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHtbBandwidthInRate()
+    {
+        if (!$this->hasHtbBandwidthInRate()) {
+            static::raiseError(__CLASS__ .'::hasHtbBandwidthInRate() returned false!');
+            return false;
+        }
+
+        return $this->getValue('htb_bw_in_rate');
+    }
+
+    public function hasHtbBandwidthInCeil()
+    {
+        if (!$this->hasValue('htb_bw_in_ceil')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHtbBandwidthInCeil()
+    {
+        if (!$this->hasHtbBandwidthInCeil()) {
+            static::raiseError(__CLASS__ .'::hasHtbBandwidthInCeil() returned false!');
+            return false;
+        }
+
+        return $this->getValue('htb_bw_in_ceil');
+    }
+
+    public function hasHtbBandwidthInBurst()
+    {
+        if (!$this->hasValue('htb_bw_in_burst')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHtbBandwidthInBurst()
+    {
+        if (!$this->hasHtbBandwidthInBurst()) {
+            static::raiseError(__CLASS__ .'::hasHtbBandwidthInBurst() returned false!');
+            return false;
+        }
+
+        return $this->getValue('htb_bw_in_burst');
+    }
+
+    public function hasHtbBandwidthOutRate()
+    {
+        if (!$this->hasValue('htb_bw_out_rate')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHtbBandwidthOutRate()
+    {
+        if (!$this->hasHtbBandwidthOutRate()) {
+            static::raiseError(__CLASS__ .'::hasHtbBandwidthOutRate() returned false!');
+            return false;
+        }
+
+        return $this->getValue('htb_bw_out_rate');
+    }
+
+    public function hasHtbBandwidthOutCeil()
+    {
+        if (!$this->hasValue('htb_bw_out_ceil')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHtbBandwidthOutCeil()
+    {
+        if (!$this->hasHtbBandwidthOutCeil()) {
+            static::raiseError(__CLASS__ .'::hasHtbBandwidthOutCeil() returned false!');
+            return false;
+        }
+
+        return $this->getValue('htb_bw_out_ceil');
+    }
+
+    public function hasHtbBandwidthOutBurst()
+    {
+        if (!$this->hasValue('htb_bw_out_burst')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHtbBandwidthOutBurst()
+    {
+        if (!$this->hasHtbBandwidthOutBurst()) {
+            static::raiseError(__CLASS__ .'::hasHtbBandwidthOutBurst() returned false!');
+            return false;
+        }
+
+        return $this->getValue('htb_bw_out_burst');
+    }
+
+    public function hasHtbPriority()
+    {
+        if (!$this->hasValue('htb_priority')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHtbPriority()
+    {
+        if (!$this->hasHtbPriority()) {
+            static::raiseError(__CLASS__ .'::hasHtbPriority() returned false!');
+            return false;
+        }
+
+        return $this->getValue('htb_priority');
+    }
+
+    public function hasHfscInUmax()
+    {
+        if (!$this->hasValue('hfsc_in_umax')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHfscInUmax()
+    {
+        if (!$this->hasHfscInUmax()) {
+            static::raiseError(__CLASS__ .'::hasHfscInUmax() returned false!');
+            return false;
+        }
+
+        return $this->getValue('hfsc_in_umax');
+    }
+
+    public function hasHfscInDmax()
+    {
+        if (!$this->hasValue('hfsc_in_dmax')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHfscInDmax()
+    {
+        if (!$this->hasHfscInDmax()) {
+            static::raiseError(__CLASS__ .'::hasHfscInDmax() returned false!');
+            return false;
+        }
+
+        return $this->getValue('hfsc_in_dmax');
+    }
+
+    public function hasHfscInRate()
+    {
+        if (!$this->hasValue('hfsc_in_rate')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHfscInRate()
+    {
+        if (!$this->hasHfscInRate()) {
+            static::raiseError(__CLASS__ .'::hasHfscInRate() returned false!');
+            return false;
+        }
+
+        return $this->getValue('hfsc_in_rate');
+    }
+
+    public function hasHfscInUlrate()
+    {
+        if (!$this->hasValue('hfsc_in_ulrate')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHfscInUlrate()
+    {
+        if (!$this->hasHfscInUlrate()) {
+            static::raiseError(__CLASS__ .'::hasHfscInUlrate() returned false!');
+            return false;
+        }
+
+        return $this->getValue('hfsc_in_ulrate');
+    }
+
+    public function hasHfscOutUmax()
+    {
+        if (!$this->hasValue('hfsc_out_umax')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHfscOutUmax()
+    {
+        if (!$this->hasHfscOutUmax()) {
+            static::raiseError(__CLASS__ .'::hasHfscOutUmax() returned false!');
+            return false;
+        }
+
+        return $this->getValue('hfsc_out_umax');
+    }
+
+    public function hasHfscOutDmax()
+    {
+        if (!$this->hasValue('hfsc_out_dmax')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHfscOutDmax()
+    {
+        if (!$this->hasHfscOutDmax()) {
+            static::raiseError(__CLASS__ .'::hasHfscOutDmax() returned false!');
+            return false;
+        }
+
+        return $this->getValue('hfsc_out_dmax');
+    }
+
+    public function hasHfscOutRate()
+    {
+        if (!$this->hasValue('hfsc_out_rate')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHfscOutRate()
+    {
+        if (!$this->hasHfscOutRate()) {
+            static::raiseError(__CLASS__ .'::hasHfscOutRate() returned false!');
+            return false;
+        }
+
+        return $this->getValue('hfsc_out_rate');
+    }
+
+    public function hasHfscOutUlrate()
+    {
+        if (!$this->hasValue('hfsc_out_ulrate')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getHfscOutUlrate()
+    {
+        if (!$this->hasHfscOutUlrate()) {
+            static::raiseError(__CLASS__ .'::hasHfscOutUlrate() returned false!');
+            return false;
+        }
+
+        return $this->getValue('hfsc_out_ulrate');
+    }
+
+    public function hasQdisc()
+    {
+        if (!$this->hasValue('qdisc')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getQdisc()
+    {
+        if (!$this->hasQdisc()) {
+            static::raiseError(__CLASS__ .'::hasQdisc() returned false!');
+            return false;
+        }
+
+        return $this->getValue('qdisc');
+    }
+
+    public function hasSfqPerturb()
+    {
+        if (!$this->hasValue('sfq_perturb')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getSfqPerturb()
+    {
+        if (!$this->hasSfqPerturb()) {
+            static::raiseError(__CLASS__ .'::hasSfqPerturb() returned false!');
+            return false;
+        }
+
+        return $this->getValue('sfq_perturb');
+    }
+
+    public function hasSfqQuantum()
+    {
+        if (!$this->hasValue('sfq_quantum')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getSfqQuantum()
+    {
+        if (!$this->hasSfqQuantum()) {
+            static::raiseError(__CLASS__ .'::hasSfqQuantum() returned false!');
+            return false;
+        }
+
+        return $this->getValue('sfq_quantum');
+    }
+
+    public function hasEsfqPerturb()
+    {
+        if (!$this->hasValue('esfq_perturb')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getEsfqPerturb()
+    {
+        if (!$this->hasEsfqPerturb()) {
+            static::raiseError(__CLASS__ .'::hasEsfqPerturb() returned false!');
+            return false;
+        }
+
+        return $this->getValue('esfq_perturb');
+    }
+
+    public function hasEsfqLimit()
+    {
+        if (!$this->hasValue('esfq_limit')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getEsfqLimit()
+    {
+        if (!$this->hasEsfqLimit()) {
+            static::raiseError(__CLASS__ .'::hasEsfqLimit() returned false!');
+            return false;
+        }
+
+        return $this->getValue('esfq_limit');
+    }
+
+    public function hasEsfqDepth()
+    {
+        if (!$this->hasValue('esfq_depth')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getEsfqDepth()
+    {
+        if (!$this->hasEsfqDepth()) {
+            static::raiseError(__CLASS__ .'::hasEsfqDepth() returned false!');
+            return false;
+        }
+
+        return $this->getValue('esfq_depth');
+    }
+
+    public function hasEsfqDivisor()
+    {
+        if (!$this->hasValue('esfq_divisor')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getEsfqDivisor()
+    {
+        if (!$this->hasEsfqDivisor()) {
+            static::raiseError(__CLASS__ .'::hasEsfqDivisor() returned false!');
+            return false;
+        }
+
+        return $this->getValue('esfq_divisor');
+    }
+
+    public function hasEsfqHash()
+    {
+        if (!$this->hasValue('esfq_hash')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getEsfqHash()
+    {
+        if (!$this->hasEsfqHash()) {
+            static::raiseError(__CLASS__ .'::hasEsfqHash() returned false!');
+            return false;
+        }
+
+        return $this->getValue('esfq_hash');
+    }
+
+
+    public function hasNetemDelay()
+    {
+        if (!$this->hasValue('netem_delay')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemDelay()
+    {
+        if (!$this->hasNetemDelay()) {
+            static::raiseError(__CLASS__ .'::hasNetemDelay() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_delay');
+    }
+
+    public function hasNetemJitter()
+    {
+        if (!$this->hasValue('netem_jitter')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemJitter()
+    {
+        if (!$this->hasNetemJitter()) {
+            static::raiseError(__CLASS__ .'::hasNetemJitter() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_jitter');
+    }
+
+    public function hasNetemRandom()
+    {
+        if (!$this->hasValue('netem_random')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemRandom()
+    {
+        if (!$this->hasNetemRandom()) {
+            static::raiseError(__CLASS__ .'::hasNetemRandom() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_random');
+    }
+
+    public function hasNetemLoss()
+    {
+        if (!$this->hasValue('netem_loss')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemLoss()
+    {
+        if (!$this->hasNetemLoss()) {
+            static::raiseError(__CLASS__ .'::hasNetemLoss() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_loss');
+    }
+
+    public function hasNetemDuplication()
+    {
+        if (!$this->hasValue('netem_duplication')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemDuplication()
+    {
+        if (!$this->hasNetemDuplication()) {
+            static::raiseError(__CLASS__ .'::hasNetemDuplication() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_duplication');
+    }
+
+    public function hasNetemGap()
+    {
+        if (!$this->hasValue('netem_gap')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemGap()
+    {
+        if (!$this->hasNetemGap()) {
+            static::raiseError(__CLASS__ .'::hasNetemGap() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_gap');
+    }
+
+    public function hasNetemReorderPercentage()
+    {
+        if (!$this->hasValue('netem_reorder_percentage')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemReorderPercentage()
+    {
+        if (!$this->hasNetemReorderPercentage()) {
+            static::raiseError(__CLASS__ .'::hasNetemReorderPercentage() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_reorder_percentage');
+    }
+
+    public function hasNetemReorderCorrelation()
+    {
+        if (!$this->hasValue('netem_reorder_correlation')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemReorderCorrelation()
+    {
+        if (!$this->hasNetemReorderCorrelation()) {
+            static::raiseError(__CLASS__ .'::hasNetemReorderCorrelation() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_reorder_correlation');
+    }
+
+    public function hasNetemDistribution()
+    {
+        if (!$this->hasValue('netem_distribution')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetemDistribution()
+    {
+        if (!$this->hasNetemDistribution()) {
+            static::raiseError(__CLASS__ .'::hasNetemDistribution() returned false!');
+            return false;
+        }
+
+        return $this->getValue('netem_distribution');
     }
 }
 
