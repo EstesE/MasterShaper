@@ -425,7 +425,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `user_idx` int(11) NOT NULL auto_increment,
                 `user_guid` VARCHAR(255) DEFAULT NULL,
                 `user_name` varchar(32) default NULL,
-                `user_password` varchar(32) default NULL,
+                `user_password` varchar(255) default NULL,
                 `user_manage_chains` char(1) default NULL,
                 `user_manage_pipes` char(1) default NULL,
                 `user_manage_filters` char(1) default NULL,
@@ -796,6 +796,21 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(28);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV29()
+    {
+        global $db;
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXusers
+            MODIFY
+                `user_password` varchar(255) default NULL"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->setDatabaseSchemaVersion(29);
         return true;
     }
 }
