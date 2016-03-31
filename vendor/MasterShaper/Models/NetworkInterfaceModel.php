@@ -60,6 +60,7 @@ class NetworkInterfaceModel extends DefaultModel
     {
         $this->permitRpcUpdates(true);
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
         return true;
     }
@@ -78,6 +79,50 @@ class NetworkInterfaceModel extends DefaultModel
         }
     
         $this->if_host_idx = $host_idx;
+        return true;
+    }
+
+    public function hasSpeed()
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField('speed')) {
+            static::raiseError(__METHOD__ .'(), this model has no "speed" field!');
+            return false;
+        }
+
+        if (!isset($this->model_values['speed']) ||
+            empty($this->model_values['speed'])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getSpeed()
+    {
+        if (!$this->hasSpeed()) {
+            static::raiseError(__CLASS__ .'::hasSpeed() returned false!');
+            return false;
+        }
+
+        return $this->model_values['speed'];
+    }
+
+    public function isIfb()
+    {
+        if (!$this->hasValue('ifb')) {
+            return false;
+        }
+
+        if ($this->getValue('ifb') != 'Y') {
+            return false;
+        }
+
         return true;
     }
 }
