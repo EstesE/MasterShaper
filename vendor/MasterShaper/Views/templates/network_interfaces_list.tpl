@@ -85,7 +85,11 @@
   </td>
   <td>
    <div class="ui icon buttons">
+    <a id="edit_link_{$item->getId()}" href="{get_url page='network-interfaces' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
     <a id="delete_link_{$item->getId()}" class="delete item ui icon button action link" data-action-title="Deleting {$item->getName()|escape}" data-modal-title="Delete {$item->getName()|escape}" data-modal-text="Please confirm to delete {$item->getName()|escape}" data-id="{$item->getId()}" data-guid="{$item->getGuid()}" data-model="network_interface" data-content="Delete {$item->getName()|escape}" data-variation="wide"><i class="remove circle icon"></i></a>
+    <div class="ui icon button slider checkbox">
+     <input type="checkbox" {if $item->isActive()}checked="checked"{/if}/>
+     <label></label>
    </div>
   </td>
  </tr>
@@ -99,7 +103,7 @@
      <a class="delete item" data-action-title="Deleting all interfaces" data-modal-title="Delete all interfaces" data-modal-text="Do you really want to delete all interfaces?" data-id="all" data-guid="all" data-model="network_interfaces"><i class="remove circle icon"></i>Delete all</a>
     </div>
 {if isset($pager)}
-{include file='pager.tpl' pager=$pager view=interfaces}
+{include file='pager.tpl' pager=$pager view='network-interfaces'}
 {/if}
    </th>
   </tr>
