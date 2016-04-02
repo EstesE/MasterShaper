@@ -46,7 +46,7 @@ class PipesView extends DefaultView
         global $session, $tmpl;
 
         if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
-            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+            if (($current_page = $this->getSessionVar("current_page")) === false) {
                 $current_page = 1;
             }
         } else {
@@ -54,7 +54,7 @@ class PipesView extends DefaultView
         }
 
         if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
-            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+            if (($current_items_limit = $this->getSessionVar("current_items_limit")) === false) {
                 $current_items_limit = -1;
             }
         } else {
@@ -105,12 +105,12 @@ class PipesView extends DefaultView
         $this->avail_items = array_keys($data);
         $this->items = $data;
 
-        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
+        if (!$this->setSessionVar("current_page", $current_page)) {
             $this->raiseError(get_class($session) .'::setVariable() returned false!');
             return false;
         }
 
-        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
+        if (!$this->setSessionVar("current_items_limit", $current_items_limit)) {
             $this->raiseError(get_class($session) .'::setVariable() returned false!');
             return false;
         }
@@ -148,6 +148,135 @@ class PipesView extends DefaultView
 
         return $content;
     }
+
+    public function showEdit($id, $guid)
+    {
+        global $tmpl;
+
+        try {
+            $item = new \MasterShaper\Models\PipeModel(array(
+                'idx' => $id,
+                'guid' => $guid
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load PipeModel!', false, $e);
+            return false;
+        }
+
+        $tmpl->registerPlugin(
+            "function",
+            "unused_filters_select_list",
+            array(&$this, "smartyUnusedFiltersSelectList"),
+            false
+        );
+        $tmpl->registerPlugin(
+            "function",
+            "used_filters_select_list",
+            array(&$this, "smartyUsedFiltersSelectList"),
+            false
+        );
+
+        $tmpl->assign('pipe', $item);
+        return parent::showEdit($id, $guid);
+    }
+
+    public function smartyUnusedFiltersSelectList($params, &$smarty)
+    {
+        if (!array_key_exists('pipe_idx', $params)) {
+            static::raiseError("smartyUnusedFiltersSelectList: missing 'pipe_idx' parameter");
+            $repeat = false;
+            return;
+        }
+
+        global $db;
+
+        if (!isset($params['pipe_idx'])) {
+            $sth = $db->query(
+                "SELECT
+                    filter_idx, filter_name
+                FROM
+                    TABLEPREFIXfilters
+                ORDER BY
+                    filter_name"
+            );
+        } else {
+            $sth = $db->prepare(
+                "SELECT DISTINCT
+                    f.filter_idx, f.filter_name
+                FROM
+                    TABLEPREFIXfilters f
+                LEFT OUTER JOIN (
+                    SELECT DISTINCT
+                        apf_filter_idx, apf_pipe_idx
+                    FROM
+                        TABLEPREFIXassign_filters_to_pipes
+                    WHERE
+                        apf_pipe_idx LIKE ?
+                    ) apf
+                ON
+                    apf.apf_filter_idx=f.filter_idx
+                WHERE
+                    apf.apf_pipe_idx IS NULL"
+            );
+
+            $db->execute($sth, array(
+                $params['pipe_idx']
+            ));
+        }
+
+        $string = "";
+        while ($filter = $sth->fetch()) {
+            $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
+        }
+
+        $db->freeStatement($sth);
+
+        return $string;
+
+    } // smartyUnusedFiltersSelectList()
+
+    public function smartyUsedFiltersSelectList($params, &$smarty)
+    {
+        if (!array_key_exists('pipe_idx', $params)) {
+            static::raiseError("smartyUsedFiltersSelectList: missing 'pipe_idx' parameter");
+            $repeat = false;
+            return;
+        }
+
+        global $db;
+
+        $sth = $db->prepare(
+            "SELECT DISTINCT
+                f.filter_idx,
+                f.filter_name
+            FROM
+                TABLEPREFIXfilters f
+            INNER JOIN (
+                SELECT
+                    apf_filter_idx
+                FROM
+                    TABLEPREFIXassign_filters_to_pipes
+                WHERE
+                    apf_pipe_idx LIKE ?
+                ) apf
+            ON
+                apf.apf_filter_idx=f.filter_idx"
+        );
+
+        $db->execute($sth, array(
+            $params['pipe_idx']
+        ));
+
+        $string = "";
+        while ($filter = $sth->fetch()) {
+            $string.= "<option value=\"". $filter->filter_idx ."\">". $filter->filter_name ."</option>\n";
+        }
+
+        $db->freeStatement($sth);
+
+        return $string;
+
+    } // smarty_used_filters_select_list()
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
