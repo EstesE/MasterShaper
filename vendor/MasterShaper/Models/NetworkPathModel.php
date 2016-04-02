@@ -72,6 +72,7 @@ class NetworkPathModel extends DefaultModel
     {
         $this->permitRpcUpdates(true);
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
         return true;
     }
@@ -81,12 +82,12 @@ class NetworkPathModel extends DefaultModel
         try {
             $netpaths = new \MasterShaper\Models\NetworkPathsModel;
         } catch (\Exception $e) {
-            $this->raiseError(__METHOD__ .'(), failed to load NetworkPathsModel!', false, $e);
+            static::raiseError(__METHOD__ .'(), failed to load NetworkPathsModel!', false, $e);
             return false;
         }
 
         if (!$netpaths->updatePositions()) {
-            $this->raiseError(get_class($netpaths) .'::updatePositions() returned false!');
+            static::raiseError(get_class($netpaths) .'::updatePositions() returned false!');
             return false;
         }
 
@@ -98,12 +99,12 @@ class NetworkPathModel extends DefaultModel
         global $session, $db;
 
         if (($host_idx = $session->getCurrentHostProfile()) === false) {
-            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
             return false;
         }
 
         if (!is_numeric($host_idx)) {
-            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned invalid data!');
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned invalid data!');
             return false;
         }
 
@@ -145,22 +146,22 @@ class NetworkPathModel extends DefaultModel
         global $session, $db;
 
         if (($host_idx = $session->getCurrentHostProfile()) === false) {
-            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
             return false;
         }
 
         if (!is_numeric($host_idx)) {
-            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned invalid data!');
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned invalid data!');
             return false;
         }
 
         if (($netpath_idx = $this->getId()) === false) {
-            $this->raiseError(__CLASS__ .'::getId() returned false!');
+            static::raiseError(__CLASS__ .'::getId() returned false!');
             return false;
         }
 
         if (!is_numeric($netpath_idx)) {
-            $this->raiseError(__CLASS__ .'::getId() returned invalid data!');
+            static::raiseError(__CLASS__ .'::getId() returned invalid data!');
             return false;
         }
 
@@ -193,12 +194,12 @@ class NetworkPathModel extends DefaultModel
         global $session, $db;
 
         if (($host_idx = $session->getCurrentHostProfile()) === false) {
-            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
             return false;
         }
 
         if (!is_numeric($host_idx)) {
-            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned invalid data!');
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned invalid data!');
             return false;
         }
 
@@ -239,6 +240,99 @@ class NetworkPathModel extends DefaultModel
 
             $db->db_sth_free($sth);
             $chain_position++;
+        }
+
+        return true;
+    }
+
+    public function isImq()
+    {
+        if (!$this->hasValue('imq')) {
+            return false;
+        }
+
+        if (($value = $this->getValue('imq')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        if ($value != 'Y') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getInterface1()
+    {
+        if (!$this->hasValue('if1')) {
+            static::raiseError(__METHOD__ .'::hasValue() returned false!');
+            return false;
+        }
+
+        if (($if1 = $this->getValue('if1')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $if1;
+    }
+
+    public function isInterface1InsideGre()
+    {
+        if (!$this->hasValue('if1_inside_gre')) {
+            return false;
+        }
+
+        if (($inside_gre = $this->getValue('if1_inside_gre')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        if ($inside_gre != 'Y') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getInterface2()
+    {
+        if (!$this->hasValue('if2')) {
+            static::raiseError(__METHOD__ .'::hasValue() returned false!');
+            return false;
+        }
+
+        if (($if2 = $this->getValue('if2')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $if2;
+    }
+
+    public function isInterface2InsideGre()
+    {
+        if (!$this->hasValue('if2_inside_gre')) {
+            return false;
+        }
+
+        if (($inside_gre = $this->getValue('if2_inside_gre')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        if ($inside_gre != 'Y') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function hasInterface2()
+    {
+        if (!$this->hasValue('if2')) {
+            return false;
         }
 
         return true;
