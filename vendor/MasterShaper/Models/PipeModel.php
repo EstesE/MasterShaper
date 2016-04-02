@@ -65,6 +65,7 @@ class PipeModel extends DefaultModel
     {
         $this->permitRpcUpdates(true);
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
         return true;
     }
@@ -203,6 +204,102 @@ class PipeModel extends DefaultModel
         $this->pipe_dst_target = $tmp;
         return true;
 
+    }
+
+    public function hasSourceTarget()
+    {
+        if (!$this->hasValue('src_target')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getSourceTarget()
+    {
+        if (!$this->hasSourceTarget()) {
+            static::raiseError(__CLASS__ .'::hasSourceTarget() returned false!');
+            return false;
+        }
+
+        if (($target_idx = $this->getValue('src_target')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $target_idx;
+    }
+
+    public function hasDestinationTarget()
+    {
+        if (!$this->hasValue('dst_target')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getDestinationTarget()
+    {
+        if (!$this->hasDestinationTarget()) {
+            static::raiseError(__CLASS__ .'::hasDestinationTarget() returned false!');
+            return false;
+        }
+
+        if (($target_idx = $this->getValue('dst_target')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $target_idx;
+    }
+
+    public function hasDirection()
+    {
+        if (!$this->hasValue('direction')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getDirection()
+    {
+        if (!$this->hasDirection()) {
+            static::raiseError(__CLASS__ .'::hasDirection() returned false!');
+            return false;
+        }
+
+        if (($direction = $this->getValue('direction')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $direction;
+    }
+
+    public function hasServiceLevel()
+    {
+        if (!$this->hasValue('sl_idx')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getServiceLevel()
+    {
+        if (!$this->hasServiceLevel()) {
+            static::raiseError(__CLASS__ .'::hasServiceLevel() returned false!');
+            return false;
+        }
+
+        if (($sl_idx = $this->getValue('sl_idx')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $sl_idx;
     }
 }
 
