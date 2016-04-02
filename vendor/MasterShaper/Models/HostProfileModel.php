@@ -49,6 +49,7 @@ class HostProfileModel extends DefaultModel
     protected function __init()
     {
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->permitRpcUpdates(true);
         $this->addRpcEnabledField('name');
         return true;
