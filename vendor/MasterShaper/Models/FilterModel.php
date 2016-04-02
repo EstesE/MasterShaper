@@ -112,6 +112,7 @@ class FilterModel extends DefaultModel
     {
         $this->permitRpcUpdates(true);
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
         return true;
     }
@@ -245,6 +246,78 @@ class FilterModel extends DefaultModel
 
         $db->freeStatement($sth);
         return true;
+    }
+
+    public function hasProtocol()
+    {
+        if (!$this->hasValue('protocol_id')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getProtocol()
+    {
+        if (!$this->hasProtocol()) {
+            static::raiseError(__CLASS__ .'::hasProtocol() returned false!');
+            return false;
+        }
+
+        if (($proto_idx = $this->getValue('protocol_id')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $proto_idx;
+    }
+
+    public function hasTos()
+    {
+        if (!$this->hasValue('tos')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getTos()
+    {
+        if (!$this->hasTos()) {
+            static::raiseError(__CLASS__ .'::hasTos() returned false!');
+            return false;
+        }
+
+        if (($tos = $this->getValue('tos')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $tos;
+    }
+
+    public function hasDscp()
+    {
+        if (!$this->hasValue('dscp')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getDscp()
+    {
+        if (!$this->hasDscp()) {
+            static::raiseError(__CLASS__ .'::hasDscp() returned false!');
+            return false;
+        }
+
+        if (($dscp = $this->getValue('dscp')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $dscp;
     }
 }
 
