@@ -28,15 +28,39 @@ class NetworkPathsView extends DefaultView
     protected static $view_default_mode = 'list';
     protected static $view_class_name = 'network_paths';
     private $network_paths;
+    private $chains;
+    private $host_idx;
 
     public function __construct()
     {
+        global $tmpl, $session;
+
         try {
             $this->network_paths = new \MasterShaper\Models\NetworkPathsModel;
         } catch (\Exception $e) {
-            $this->raiseError(__METHOD__ .'(), failed to load NetworkPathsModel!', false, $e);
+            static::raiseError(__METHOD__ .'(), failed to load NetworkPathsModel!', false, $e);
             return false;
         }
+
+        if (($this->host_idx = $session->getCurrentHostProfile()) === false) {
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
+            $repeat  = false;
+            return false;
+        }
+
+        $tmpl->registerPlugin(
+            "function",
+            "if_select_list",
+            array(&$this, "smartyIfSelectList"),
+            false
+        );
+
+        $tmpl->registerPlugin(
+            "block",
+            "chain_list",
+            array(&$this, "smartyChainList"),
+            false
+        );
 
         parent::__construct();
         return;
@@ -47,7 +71,7 @@ class NetworkPathsView extends DefaultView
         global $session, $tmpl;
 
         if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
-            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+            if (($current_page = $this->getSessionVar("current_page")) === false) {
                 $current_page = 1;
             }
         } else {
@@ -55,7 +79,7 @@ class NetworkPathsView extends DefaultView
         }
 
         if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
-            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+            if (($current_items_limit = $this->getSessionVar("current_items_limit")) === false) {
                 $current_items_limit = -1;
             }
         } else {
@@ -71,22 +95,22 @@ class NetworkPathsView extends DefaultView
                 'delta' => 2,
             ));
         } catch (\Exception $e) {
-            $this->raiseError(__METHOD__ .'(), failed to load PagingController!');
+            static::raiseError(__METHOD__ .'(), failed to load PagingController!');
             return false;
         }
 
         if (!$pager->setPagingData($this->network_paths->getItems())) {
-            $this->raiseError(get_class($pager) .'::setPagingData() returned false!');
+            static::raiseError(get_class($pager) .'::setPagingData() returned false!');
             return false;
         }
 
         if (!$pager->setCurrentPage($current_page)) {
-            $this->raiseError(get_class($pager) .'::setCurrentPage() returned false!');
+            static::raiseError(get_class($pager) .'::setCurrentPage() returned false!');
             return false;
         }
 
         if (!$pager->setItemsLimit($current_items_limit)) {
-            $this->raiseError(get_class($pager) .'::setItemsLimit() returned false!');
+            static::raiseError(get_class($pager) .'::setItemsLimit() returned false!');
             return false;
         }
 
@@ -94,95 +118,31 @@ class NetworkPathsView extends DefaultView
         $tmpl->assign('pager', $pager);
 
         if (($data = $pager->getPageData()) === false) {
-            $this->raiseError(get_class($pager) .'::getPageData() returned false!');
+            static::raiseError(get_class($pager) .'::getPageData() returned false!');
             return false;
         }
 
         if (!isset($data) || empty($data) || !is_array($data)) {
-            $this->raiseError(get_class($pager) .'::getPageData() returned invalid data!');
+            static::raiseError(get_class($pager) .'::getPageData() returned invalid data!');
             return false;
         }
 
         $this->avail_items = array_keys($data);
         $this->items = $data;
 
-        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
-            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+        if (!$this->setSessionVar("current_page", $current_page)) {
+            static::raiseError(get_class($session) .'::setVariable() returned false!');
             return false;
         }
 
-        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
-            $this->raiseError(get_class($session) .'::setVariable() returned false!');
+        if (!$this->setSessionVar("current_items_limit", $current_items_limit)) {
+            static::raiseError(get_class($session) .'::setVariable() returned false!');
             return false;
         }
 
         return parent::showList();
 
     } // showList()
-
-    /**
-     * interface for handling
-     */
-    public function showEdit()
-    {
-        if ($this->is_storing()) {
-            $this->store();
-        }
-
-        global $ms, $db, $tmpl, $page;
-
-        $this->avail_chains = array();
-        $this->chains = array();
-
-        if (isset($page->id) && $page->id != 0) {
-            $np = new Network_Path($page->id);
-            $tmpl->assign('is_new', false);
-        } else {
-            $np = new Network_Path;
-            $tmpl->assign('is_new', true);
-            $page->id = null;
-        }
-
-        $sth = $db->prepare("
-                SELECT DISTINCT
-                c.chain_idx,
-                c.chain_name,
-                c.chain_active,
-                c.chain_position IS NULL as pos_null
-                FROM
-                TABLEPREFIXchains c
-                WHERE
-                c.chain_netpath_idx LIKE ?
-                AND
-                c.chain_host_idx LIKE ?
-                ORDER BY
-                pos_null DESC,
-                chain_position ASC
-                ");
-
-        $db->execute($sth, array(
-                    $page->id,
-                    $ms->get_current_host_profile(),
-                    ));
-
-        $cnt_chains = 0;
-
-        while ($chain = $sth->fetch()) {
-            $this->avail_chains[$cnt_chains] = $chain->chain_idx;
-            $this->chains[$chain->chain_idx] = $chain;
-            $cnt_chains++;
-        }
-
-        $db->db_sth_free($sth);
-
-        $tmpl->assign('np', $np);
-        $tmpl->registerPlugin("function", "if_select_list", array(&$this, "smartyIfSelectList"), false);
-
-        $tmpl->registerPlugin("block", "chain_list", array(&$this, "smartyChainList"), false);
-
-        return $tmpl->fetch("network_paths_edit.tpl");
-
-    } // showEdit()
 
     /**
      * template function which will be called from the netpath listing template
@@ -218,88 +178,28 @@ class NetworkPathsView extends DefaultView
     }
 
     /**
-     * handle updates
-     */
-    public function store()
-    {
-        global $ms, $db, $rewriter;
-
-        isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = null;
-
-        /* load network path */
-        if (isset($new)) {
-            $np = new Network_Path;
-        } else {
-            $np = new Network_Path($_POST['netpath_idx']);
-        }
-
-        if (!isset($_POST['netpath_name']) || $_POST['netpath_name'] == "") {
-            $ms->raiseError(_("Please specify a network path name!"));
-        }
-        if (isset($new) && $ms->check_object_exists('netpath', $_POST['netpath_name'])) {
-            $ms->raiseError(_("A network path with that name already exists!"));
-        }
-        if (!isset($new) && $np->netpath_name != $_POST['netpath_name'] &&
-                $ms->check_object_exists('netpath', $_POST['netpath_name'])) {
-            $ms->raiseError(_("A network path with that name already exists!"));
-        }
-        if ($_POST['netpath_if1'] == $_POST['netpath_if2']) {
-            $ms->raiseError(
-                _("An interface within a network path can not be used "
-                    ."twice! Please select different interfaces")
-            );
-        }
-
-        if (!isset($_POST['netpath_if1_inside_gre']) || empty($_POST['netpath_if1_inside_gre'])) {
-            $_POST['netpath_if1_inside_gre'] = 'N';
-        }
-
-        if (!isset($_POST['netpath_if2_inside_gre']) || empty($_POST['netpath_if2_inside_gre'])) {
-            $_POST['netpath_if2_inside_gre'] = 'N';
-        }
-
-        $np_data = $ms->filter_form_data($_POST, 'netpath_');
-
-        if (!$np->update($np_data)) {
-            return false;
-        }
-
-        if (!$np->save()) {
-            return false;
-        }
-
-        if (isset($_POST['add_another']) && $_POST['add_another'] == 'Y') {
-            return true;
-        }
-
-        $ms->set_header('Location', $rewriter->get_page_url('Network Paths List'));
-        return true;
-
-    } // store()
-
-    /**
      * this function will return a select list full of interfaces
      */
     public function smartyIfSelectList($params, &$smarty)
     {
-        global $ms, $db;
+        global $ms, $db, $session;
 
         if (!array_key_exists('if_idx', $params)) {
-            $smarty->trigger_error("getSLList: missing 'if_idx' parameter", E_USER_WARNING);
+            static::raiseError("getSLList: missing 'if_idx' parameter", E_USER_WARNING);
             $repeat = false;
             return;
         }
 
-        $result = $db->query("
-                SELECT
+        $result = $db->query(
+            "SELECT
                 *
-                FROM
+            FROM
                 TABLEPREFIXinterfaces
-                WHERE
-                if_host_idx LIKE '". $ms->get_current_host_profile() ."'
-                ORDER BY
-                if_name ASC
-                ");
+            WHERE
+                if_host_idx LIKE '{$this->host_idx}'
+            ORDER BY
+                if_name ASC"
+        );
 
         $string = "";
         while ($row = $result->fetch()) {
@@ -319,28 +219,64 @@ class NetworkPathsView extends DefaultView
      */
     public function smartyChainList($params, $content, &$smarty, &$repeat)
     {
-        $index = $smarty->getTemplateVars('smarty.IB.chain_list.index');
-        if (!$index) {
+        $index = $smarty->getTemplateVars('smarty.IB.chains_list.index');
+
+        if (!isset($index) || empty($index)) {
             $index = 0;
         }
 
-        if ($index < count($this->avail_chains)) {
-
-            $chain_idx = $this->avail_chains[$index];
-            $chain =  $this->chains[$chain_idx];
-
-            $smarty->assign('chain', $chain);
-
-            $index++;
-            $smarty->assign('smarty.IB.chain_list.index', $index);
-            $repeat = true;
-        } else {
-            $repeat =  false;
+        if (!isset($this->chains) || empty($this->chains)) {
+            $repeat = false;
+            return $content;
         }
+
+        if ($index >= count($this->chains)) {
+            $repeat = false;
+            return $content;
+        }
+
+        $chain =  $this->chains[$index];
+        $smarty->assign("chain", $chain);
+
+        $index++;
+        $smarty->assign('smarty.IB.chains_list.index', $index);
+        $repeat = true;
 
         return $content;
 
     } // smartyChainList()
-} // class Page_Network_Paths
+
+    public function showEdit($id, $guid)
+    {
+        global $tmpl;
+
+        try {
+            $item = new \MasterShaper\Models\NetworkPathModel(array(
+                'idx' => $id,
+                'guid' => $guid
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load NetworkPathModel!', false, $e);
+            return false;
+        }
+
+        try {
+            $chains = new \MasterShaper\Models\ChainsModel(array(
+                'host_idx' => $id,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load ChainsModel!', false, $e);
+            return false;
+        }
+
+        if (($this->chains = $chains->getItems()) === false) {
+            static::raiseError(get_class($chains) .'::getItems() returned false!');
+            return false;
+        }
+
+        $tmpl->assign('netpath', $item);
+        return parent::showEdit($id, $guid);
+    }
+}
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
