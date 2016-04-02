@@ -46,7 +46,7 @@ class HostProfilesView extends DefaultView
         global $session, $tmpl;
 
         if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
-            if (($current_page = $session->getVariable("{$this->class_name}_current_page")) === false) {
+            if (($current_page = $this->getSessionVar("current_page")) === false) {
                 $current_page = 1;
             }
         } else {
@@ -54,7 +54,7 @@ class HostProfilesView extends DefaultView
         }
 
         if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
-            if (($current_items_limit = $session->getVariable("{$this->class_name}_current_items_limit")) === false) {
+            if (($current_items_limit = $this->getSessionVar("current_items_limit")) === false) {
                 $current_items_limit = -1;
             }
         } else {
@@ -105,12 +105,12 @@ class HostProfilesView extends DefaultView
         $this->avail_items = array_keys($data);
         $this->items = $data;
 
-        if (!$session->setVariable("{$this->class_name}_current_page", $current_page)) {
+        if (!$this->setSessionVar("current_page", $current_page)) {
             $this->raiseError(get_class($session) .'::setVariable() returned false!');
             return false;
         }
 
-        if (!$session->setVariable("{$this->class_name}_current_items_limit", $current_items_limit)) {
+        if (!$this->setSessionVar("current_items_limit", $current_items_limit)) {
             $this->raiseError(get_class($session) .'::setVariable() returned false!');
             return false;
         }
@@ -118,35 +118,6 @@ class HostProfilesView extends DefaultView
         return parent::showList();
 
     } // showList()
-
-    /**
-     * interface for handling
-     */
-    public function showEdit()
-    {
-        if ($this->is_storing()) {
-            $this->store();
-        }
-
-        global $db, $tmpl, $page;
-
-        $this->avail_chains = array();
-        $this->chains = array();
-
-        if (isset($page->id) && $page->id != 0) {
-            $hostprofile = new Host_Profile($page->id);
-            $tmpl->assign('is_new', false);
-        } else {
-            $hostprofile = new Host_Profile;
-            $tmpl->assign('is_new', true);
-            $page->id = null;
-        }
-
-        $tmpl->assign('host', $hostprofile);
-
-        return $tmpl->fetch("host_profiles_edit.tpl");
-
-    } // showEdit()
 
     /**
      * template function which will be called from the host listing template
@@ -181,51 +152,23 @@ class HostProfilesView extends DefaultView
         return $content;
     }
 
-    /**
-     * handle updates
-     */
-    public function store()
+    public function showEdit($id, $guid)
     {
-        global $ms, $db, $rewriter;
+        global $tmpl;
 
-        isset($_POST['new']) && $_POST['new'] == 1 ? $new = 1 : $new = null;
-
-        /* load host profile */
-        if (isset($new)) {
-            $hostprofile = new Host_Profile;
-        } else {
-            $hostprofile = new Host_Profile($_POST['host_idx']);
-        }
-
-        if (!isset($_POST['host_name']) || $_POST['host_name'] == "") {
-            $ms->raiseError(_("Please specify a host profile name!"));
-        }
-        if (isset($new) && $ms->check_object_exists('hostprofile', $_POST['host_name'])) {
-            $ms->raiseError(_("A host profile with that name already exists!"));
-        }
-        if (!isset($new) && $hostprofile->host_name != $_POST['host_name'] &&
-                $ms->check_object_exists('hostprofile', $_POST['host_name'])) {
-            $ms->raiseError(_("A host profile with that name already exists!"));
-        }
-
-        $hostprofile_data = $ms->filter_form_data($_POST, 'host_');
-
-        if (!$hostprofile->update($hostprofile_data)) {
+        try {
+            $item = new \MasterShaper\Models\HostProfileModel(array(
+                'idx' => $id,
+                'guid' => $guid
+            ));
+        } catch (\Exception $e) {
+            $this->raiseError(__METHOD__ .'(), failed to load HostProfileModel!', false, $e);
             return false;
         }
 
-        if (!$hostprofile->save()) {
-            return false;
-        }
-
-        if (isset($_POST['add_another']) && $_POST['add_another'] == 'Y') {
-            return true;
-        }
-
-        $ms->set_header('Location', $rewriter->get_page_url('Host Profiles List'));
-        return true;
-
-    } // store()
+        $tmpl->assign('host', $item);
+        return parent::showEdit($id, $guid);
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
