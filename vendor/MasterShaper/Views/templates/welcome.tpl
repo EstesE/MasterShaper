@@ -18,7 +18,7 @@
 There is no active <img src="{$icon_interfaces}" title="network path icon" />&nbsp;<a href="{get_url page='network-paths'}" title="List Network Paths">Network Path</a> in this configuration!<br />
 <br />
 If you are entering <img src="{$icon_users}" alt="mastershaper icon" />&nbsp;<a href="{get_url page='about'}" title="About MasterShaper">MasterShaper</a> for the first time:<br />
-<ul>1. Define <img src="{$icon_interfaces}" alt="interface icon" />&nbsp;<a href="{get_url page='network-interfaces'}" title="List Interfaces">Interfaces</a></ul>
+<ul>1. Define <img src="{$icon_interfaces}" alt="interface icon" />&nbsp;<a href="{get_url page='network-interfaces'}" title="List Interfaces">Network Interfaces</a></ul>
 <ul>2. Define a <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{get_url page='network-paths'}" title="List Network Paths">Network Path</a>&nbsp;between your <img src="{$icon_interfaces}" alt="interface icon" />&nbsp;<a href="{get_url page='network-interfaces'}" title="List Network Interfaces">Network Interfaces</a></ul>
 <ul>3. Define <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='service-levels'}" title="List Service Levels">Service Levels</a> to guarantee, limit or priorize your traffic.</ul>
 <ul>4. Create <img src="{$icon_filters}" alt="filter icon" />&nbsp;<a href="{get_url page='filters'}" title="List Filters">Filters</a> to match on ports, protocols, DSCP bits, ...</ul>
