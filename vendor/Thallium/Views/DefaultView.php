@@ -67,13 +67,15 @@ abstract class DefaultView
             $params = $query->params;
         }
 
-        if ((!isset($params) || empty($params)) &&
+        if ((!isset($params) ||
+            empty($params)) &&
             static::$view_default_mode == "list"
         ) {
             $mode = "list";
         } elseif (isset($params) && !empty($params)) {
-            if (isset($params[0]) && !empty($params[0]) &&
-                static::isKnownMode($params[0])
+            if (isset($params[0]) &&
+                !empty($params[0]) &&
+                $this->isValidMode($params[0])
             ) {
                 $mode = $params[0];
             }
@@ -179,15 +181,6 @@ abstract class DefaultView
         }
 
         return $tmpl->fetch($template_name);
-    }
-
-    protected static function isKnownMode($mode)
-    {
-        if (!in_array($mode, static::$view_modes)) {
-            return false;
-        }
-
-        return true;
     }
 
     protected static function raiseError($string, $stop_execution = false, $exception = null)
