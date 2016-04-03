@@ -24,8 +24,8 @@
    <br />
 	<hr />
 	<br />
-	<i><b>Licensed under GPL2</b></i><br />
-	(<a href="http://www.gnu.org/copyleft/gpl.html">http://www.gnu.org/copyleft/gpl.html</a>)<br />
+	<i><b>Licensed under AGPL3</b></i><br />
+	(<a href="http://www.gnu.org/licenses/agpl-3.0.en.html">http://www.gnu.org/licenses/agpl-3.0.en.html</a>)<br />
 	<br />
 	Feedback and help are always appreciated!
 	<br />
