@@ -21,58 +21,18 @@ namespace MasterShaper\Views;
 
 abstract class DefaultView extends \Thallium\Views\DefaultView
 {
-    public $class_name = "main";
-    public $supported_modes = array (
-        'list',
-        'show',
-        'edit',
-        'delete',
-        'add',
-        'upload',
-        'truncate',
-    );
-    public $default_mode = "list";
+    protected static $view_class_name = "main";
 
-    public function __construct()
-    {
-        global $ms, $config, $session, $tmpl;
-
-        if (!isset($this->class_name) || empty($this->class_name)) {
-            $ms->raiseError("Class has not defined property 'class_name'. Something is wrong with it", true);
-            return false;
-        }
-
-        /*if ($session->isLoggedIn()) {
-
+    /*
+        if ($session->isLoggedIn()) {
           if (!($user = $session->getUserDetails())) {
           $ms->raiseError(get_class($session) .'::getUserDetails() returned false!', true);
           return false;
-          }
-
+      }
           $this->assign('user_name', $user->user_name);
           return true;
-          }*/
-
-        return true;
-    }
-
-    /**
-     * returns true if storing is requested
-     *
-     * @return bool
-     */
-    public function isStoring()
-    {
-        if (!isset($_POST['action']) || empty($_POST['action'])) {
-            return false;
-        }
-
-        if ($_POST['action'] == 'store') {
-            return true;
-        }
-
-        return false;
-    }
+          }
+    */
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
