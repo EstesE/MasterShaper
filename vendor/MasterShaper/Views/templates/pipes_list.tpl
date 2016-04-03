@@ -1,6 +1,6 @@
 {*
  * This file is part of MasterShaper.
- *
+
  * MasterShaper, a web application to handle Linux's traffic shaping
  * Copyright (C) 2007-2016 Andreas Unterkircher <unki@netshadow.net>
  *
