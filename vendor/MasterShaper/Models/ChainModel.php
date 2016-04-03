@@ -78,6 +78,7 @@ class ChainModel extends DefaultModel
     {
         $this->permitRpcUpdates(true);
         $this->addRpcAction('delete');
+        $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
         return true;
     }
@@ -96,7 +97,7 @@ class ChainModel extends DefaultModel
         }
 
         if (($host_idx = $session->getCurrentHostProfile()) === false) {
-            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
             return false;
         }
 
@@ -240,16 +241,160 @@ class ChainModel extends DefaultModel
         try {
             $chains = new \MasterShaper\Models\ChainsModel;
         } catch (\Exception $e) {
-            $this->raiseError(__METHOD__ .'(), failed to load ChainsModel!', false, $e);
+            static::raiseError(__METHOD__ .'(), failed to load ChainsModel!', false, $e);
             return false;
         }
 
         if (!$chains->updatePositions($this->chain_netpath_idx)) {
-            $this->raiseError(get_class($chains) .'::updatePositions() returned false!');
+            static::raiseError(get_class($chains) .'::updatePositions() returned false!');
             return false;
         }
 
         return true;
+    }
+
+    public function hasServiceLevel()
+    {
+        if (!$this->hasValue('sl_idx')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getServiceLevel()
+    {
+        if (!$this->hasServiceLevel()) {
+            static::raiseError(__CLASS__ .'::hasServiceLevel() returned false!');
+            return false;
+        }
+
+        if (($sl_idx = $this->getValue('sl_idx')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $sl_idx;
+    }
+
+    public function hasFallbackServiceLevel()
+    {
+        if (!$this->hasValue('fallback_idx')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getFallbackServiceLevel()
+    {
+        if (!$this->hasFallbackServiceLevel()) {
+            static::raiseError(__CLASS__ .'::hasFallbackServiceLevel() returned false!');
+            return false;
+        }
+
+        if (($sl_idx = $this->getValue('fallback_idx')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $sl_idx;
+    }
+
+    public function hasNetworkPath()
+    {
+        if (!$this->hasValue('netpath_idx')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getNetworkPath()
+    {
+        if (!$this->hasNetworkPath()) {
+            static::raiseError(__CLASS__ .'::hasNetworkPath() returned false!');
+            return false;
+        }
+
+        if (($sl_idx = $this->getValue('netpath_idx')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $sl_idx;
+    }
+
+    public function hasSourceTarget()
+    {
+        if (!$this->hasValue('src_target')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getSourceTarget()
+    {
+        if (!$this->hasSourceTarget()) {
+            static::raiseError(__CLASS__ .'::hasSourceTarget() returned false!');
+            return false;
+        }
+
+        if (($host_idx = $this->getValue('src_target')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $host_idx;
+    }
+
+    public function hasDestinationTarget()
+    {
+        if (!$this->hasValue('dst_target')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getDestinationTarget()
+    {
+        if (!$this->hasDestinationTarget()) {
+            static::raiseError(__CLASS__ .'::hasDestinationTarget() returned false!');
+            return false;
+        }
+
+        if (($host_idx = $this->getValue('dst_target')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $host_idx;
+    }
+
+    public function hasDirection()
+    {
+        if (!$this->hasValue('direction')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getDirection()
+    {
+        if (!$this->hasDirection()) {
+            static::raiseError(__CLASS__ .'::hasDirection() returned false!');
+            return false;
+        }
+
+        if (($host_idx = $this->getValue('direction')) === false) {
+            static::raiseError(__CLASS__ .'::getValue() returned false!');
+            return false;
+        }
+
+        return $host_idx;
     }
 }
 
