@@ -15,7 +15,7 @@
  * GNU Affero General Public License for more details.
 *}
 {start_table icon=$icon_process alt="host profile icon" title="Manage Tasks"}
-<table style="width: 100%;" class="withborder"> 
+<table style="width: 100%;" class="withborder">
  <tr>
   <td colspan="6">&nbsp;</td>
  </tr>
