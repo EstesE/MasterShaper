@@ -1,9 +1,9 @@
 <div class="ui teal inverted secondary fixed main menu">
 <!--<div class="ui teal inverted fixed menu">-->
  <div class="header brand item">
-  <a href="{get_url page=overview}"><i class="gamepad icon"></i>MasterShaper</a>
+  <a href="{get_url page='overview'}"><i class="gamepad icon"></i>MasterShaper</a>
  </div>
- <a href="{get_url page=overview}" class="item {get_menu_state page=overview}"><i class="database icon"></i>Overview</a>
+ <a href="{get_url page='overview'}" class="item {get_menu_state page=overview}"><i class="database icon"></i>Overview</a>
  <div class="ui dropdown item">
   Manage<i class="dropdown icon"></i>
   <div class="menu">
@@ -21,17 +21,17 @@
    <!--<div class="menu_help">add or modify TCP/UDP port list</div>-->
    <a href="{$app_web_path}/protocols/" class="item {get_menu_state page='Protocols List'}"><img src="{$icon_protocols}" />&nbsp;Protocols</a>
    <!--<div class="menu_help">add or modify protocol list</div>-->
-   <a href="{$app_web_path}/servicelevels/" class="item {get_menu_state page='Service Levels List'}"><img src="{$icon_servicelevels}" />&nbsp;Service Levels</a>
+   <a href="{$app_web_path}/service-levels/" class="item {get_menu_state page='Service Levels List'}"><img src="{$icon_servicelevels}" />&nbsp;Service Levels</a>
    <!--<div class="menu_help">bandwidth control class</div>-->
    <a href="{$app_web_path}/options/" class="item {get_menu_state page='Options'}"><img src="{$icon_options}" />&nbsp;Options</a>
    <!--<div class="menu_help">general MasterShaper options</div>-->
    <a href="{$app_web_path}/users/" class="item {get_menu_state page='Users List'}"><img src="{$icon_users}" />&nbsp;Users</a>
    <!--<div class="menu_help">add or modify MasterShaper users</div>-->
-   <a href="{$app_web_path}/interfaces/" class="item {get_menu_state page='Interfaces List'}"><img src="{$icon_interfaces}" />&nbsp;Interfaces</a>
+   <a href="{$app_web_path}/network-interfaces/" class="item {get_menu_state page='Interfaces List'}"><img src="{$icon_interfaces}" />&nbsp;Network Interfaces</a>
    <!--<div class="menu_help">add or modify network interfaces</div>-->
-   <a href="{$app_web_path}/networkpaths/" class="item {get_menu_state page='Network Paths List'}"><img src="{$icon_interfaces}" />&nbsp;Network Paths</a>
+   <a href="{$app_web_path}/network-paths/" class="item {get_menu_state page='Network Paths List'}"><img src="{$icon_interfaces}" />&nbsp;Network Paths</a>
    <!--<div class="menu_help">form interfaces into network-paths</div>-->
-   <a href="{$app_web_path}/hostprofiles/" class="item {get_menu_state page='Host Profiles List'}"><img src="{$icon_hosts}" />&nbsp;Host Profiles</a>
+   <a href="{$app_web_path}/host-profiles/" class="item {get_menu_state page='Host Profiles List'}"><img src="{$icon_hosts}" />&nbsp;Host Profiles</a>
    <!--<div class="menu_help">add or modify host profiles</div>-->
   </div>
  </div>
@@ -77,7 +77,7 @@
    <a href="logout.html" class="item">Logout</a>
   </div>
   <div class="item">
-   <form class="ui form search" method="POST" action="{get_url page=search}">
+   <form class="ui form search" method="POST" action="{get_url page='search'}">
     <div class="ui icon input">
      <input type="text" name="search" placeholder="Search...">
      <i class="search link icon"></i>
