@@ -24,6 +24,7 @@
 ; if you installed MasterShaper directly into the document root.
 ;
 base_web_path = /shaper/
+page_title = "MasterShaper"
 
 tc_bin = /sbin/tc
 ipt_bin = /sbin/iptables
