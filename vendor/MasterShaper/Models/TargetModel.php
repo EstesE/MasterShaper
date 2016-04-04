@@ -154,12 +154,12 @@ class TargetModel extends DefaultModel
     public function setMatch($match)
     {
         if (!isset($match) || empty($match) || !is_string($match)) {
-            $this->raiseError(__METHOD__ .'(), $match parameter is invalid!');
+            static::raiseError(__METHOD__ .'(), $match parameter is invalid!');
             return false;
         }
 
         if (!in_array(strtoupper($match), static::$valid_matches)) {
-            $this->raiseError(__METHOD__ .'(), $match parameter contains an invalid match!');
+            static::raiseError(__METHOD__ .'(), $match parameter contains an invalid match!');
             return false;
         }
 
@@ -182,12 +182,12 @@ class TargetModel extends DefaultModel
     public function getMatch()
     {
         if (!$this->hasMatch()) {
-            $this->raiseError(__CLASS__ .'::hasMatch() returned false!');
+            static::raiseError(__CLASS__ .'::hasMatch() returned false!');
             return false;
         }
 
         if (!in_array($this->model_values['match'], static::$valid_matches)) {
-            $this->raiseError(__METHOD__ .'(), target_match contains an invalid match!');
+            static::raiseError(__METHOD__ .'(), target_match contains an invalid match!');
             return false;
         }
 
@@ -201,12 +201,105 @@ class TargetModel extends DefaultModel
             return true;
         }
 
-        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
-            $this->raiseError(__METHOD__ .'(), $ip is not an valid IP address!');
+        if (!static::isValidIp($ip)) {
+            static::raiseError(__METHOD__ .'(), $ip is not valid!');
             return false;
         }
 
         $this->model_values['ip'] = $ip;
+        return true;
+    }
+
+    public static function isValidIp($ip)
+    {
+        if (!isset($ip) || empty($ip) || !is_string($ip)) {
+            static::raiseError(__METHOD__ .'(), $ip parameter is invalid!');
+            return false;
+        }
+
+        //
+        // ranges
+        //
+        if (strstr($ip, '-') !== false) {
+            if (($range = explode('-', $ip)) === false ||
+                !isset($range) ||
+                empty($range) ||
+                !is_array($range) ||
+                count($range) < 2 ||
+                count($range) > 2 ||
+                !isset($range[0]) ||
+                empty($range[0]) ||
+                !is_string($range[0]) ||
+                !isset($range[1]) ||
+                empty($range[1]) ||
+                !is_string($range[1])
+            ) {
+                static::raiseError(__METHOD__ .'(), explode() $ip parameter failed!');
+                return false;
+            }
+
+            if (!static::isIpv4Address($range[0]) && !static::isIpv6Address($range[0])) {
+                static::raiseError(
+                    __METHOD__ .'(), starting address in range is neither a valid v4 nor v6 IP address!'
+                );
+                return false;
+            }
+
+            if (!static::isIpv4Address($range[1]) && !static::isIpv6Address($range[1])) {
+                static::raiseError(
+                    __METHOD__ .'(), ending address in range is neither a valid v4 nor v6 IP address!'
+                );
+                return false;
+            }
+        //
+        // CIDR x.x.x.x/x.x.x.x or x.x.x.x/y
+        //
+        } elseif (strstr($ip, '/') !== false) {
+            if (($cidr = explode('/', $ip)) === false ||
+                !isset($cidr) ||
+                empty($cidr) ||
+                !is_array($cidr) ||
+                count($cidr) < 2 ||
+                count($cidr) > 2 ||
+                !isset($cidr[0]) ||
+                empty($cidr[0]) ||
+                !is_string($cidr[0]) ||
+                !isset($cidr[1]) ||
+                is_null($cidr[1]) || /* because a netmask of 0 is valid! */
+                (!is_string($cidr[1]) && !is_numeric($cidr[1]))
+            ) {
+                static::raiseError(__METHOD__ .'(), explode() $ip parameter failed!');
+                return false;
+            }
+
+            if (!static::isIpv4Address($cidr[0]) && !static::isIpv6Address($cidr[0])) {
+                static::raiseError(__METHOD__ .'(), IP address is neither a valid v4 nor v6 IP address!');
+                return false;
+            }
+
+            if (is_numeric($cidr[1]) && (
+                $cidr[1] < 0 ||
+                $cidr[1] > 32 ||
+                !is_int((int) $cidr[1])
+            )) {
+                static::raiseError(__METHOD__ .'(), $ip parameter contains an invalid netmask!');
+                return false;
+            } elseif (!is_numeric($cidr[1]) &&
+                is_string($cidr[1]) &&
+                !static::isIpv4Address($cidr[1]) &&
+                !static::isIpv6Address($cidr[1])
+            ) {
+                static::raiseError(__METHOD__ .'(), netmask is neither a valid v4 nor v6 IP address!');
+                return false;
+            }
+        //
+        // pure v4 or v6 IP addresses
+        //
+        } elseif (!static::isIpv4Address($ip) && !static::isIpv6Address($ip)) {
+            static::raiseError(__METHOD__ .'(), IP address is neither a valid v4 nor v6 IP address!');
+            return false;
+        }
+
         return true;
     }
 
@@ -225,12 +318,12 @@ class TargetModel extends DefaultModel
     public function getIP()
     {
         if (!$this->hasIP()) {
-            $this->raiseError(__CLASS__ .'::hasIP() returned false!');
+            static::raiseError(__CLASS__ .'::hasIP() returned false!');
             return false;
         }
 
-        if (!filter_var($this->model_values['ip'], FILTER_VALIDATE_IP)) {
-            $this->raiseError(__METHOD__ .'(), target_ip contains an valid IP address!');
+        if (!static::isValidIp($this->model_values['ip'])) {
+            static::raiseError(__METHOD__ .'(), isValidIp() returned false!');
             return false;
         }
 
@@ -245,7 +338,7 @@ class TargetModel extends DefaultModel
         }
 
         if (!preg_match('/([a-fA-F0-9]{2}[:|\-]?){6}/', $mac)) {
-            $this->raiseError(__METHOD__ .'(), $mac is not an valid MAC address!');
+            static::raiseError(__METHOD__ .'(), $mac is not an valid MAC address!');
             return false;
         }
 
@@ -268,16 +361,56 @@ class TargetModel extends DefaultModel
     public function getMAC()
     {
         if (!$this->hasMAC()) {
-            $this->raiseError(__CLASS__ .'::hasMAC() returned false!');
+            static::raiseError(__CLASS__ .'::hasMAC() returned false!');
             return false;
         }
 
         if (!preg_match('/([a-fA-F0-9]{2}[:|\-]?){6}/', $this->model_values['mac'])) {
-            $this->raiseError(__METHOD__ .'(), target_mac contains an valid MAC address!');
+            static::raiseError(__METHOD__ .'(), target_mac contains an valid MAC address!');
             return false;
         }
 
         return $this->model_values['mac'];
+    }
+
+    public static function isIpv4Address($address)
+    {
+        if (!isset($address) || empty($address) || !is_string($address)) {
+            static::raiseError(__METHOD__ .'(), $address parameter is invalid!', true);
+            return false;
+        }
+
+        if (!preg_match('/^\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}$/', $address)) {
+            return false;
+        }
+
+        if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isIpv6Address($address)
+    {
+        if (!isset($address) || empty($address) || !is_string($address)) {
+            static::raiseError(__METHOD__ .'(), $address parameter is invalid!', true);
+            return false;
+        }
+
+        if (!preg_match(
+            '/^(((?=.*(::))(?!.*\3.+\3))\3?|([\dA-F]{1,4}(\3|:\b|$)|\2))'
+            .'(?4){5}((?4){2}|(((2[0-4]|1\d|[1-9])?\d|25[0-5])\.?\b){4})\z/i',
+            $address
+        )) {
+            return false;
+        }
+
+        if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            return false;
+        }
+
+        return true;
     }
 }
 
