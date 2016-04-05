@@ -51,6 +51,8 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('service_levels', 'ServiceLevelsModel');
             $this->registerModel('target', 'TargetModel');
             $this->registerModel('user', 'UserModel');
+            $this->registerModel('atg', 'AssignTargetToGroupModel');
+            $this->registerModel('atgs', 'AssignTargetToGroupsModel');
         } catch (\Exception $e) {
             $this->raiseError(__CLASS__ .'::__construct(), error on registering models!"', true);
             return false;
