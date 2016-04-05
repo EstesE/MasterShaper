@@ -24,52 +24,24 @@ var autoload = undefined;
 var jqp = undefined;
 
 function addOption(theSel, theText, theValue)
-{		
+{
 	var newOpt = new Option(theText, theValue);
 	var selLength = theSel.length;
 	theSel.options[selLength] = newOpt;
-}	
-	
-function deleteOption(theSel, theIndex)
-{		
-	var selLength = theSel.length;
-	if(selLength>0) {	
-		theSel.options[theIndex] = null;
-	}	
-}	
-	
-function moveOptions(theSelFrom, theSelTo)
-{	
-	var selLength = theSelFrom.length;
-	var selectedText = new Array();
-	var selectedValues = new Array();
-	var selectedCount = 0;
-	
-	var i;
-	
-	// Find the selected Options in reverse order
-	// and delete them from the 'from' Select.
-	for(i=selLength-1; i>=0; i--) {	
-		if(theSelFrom.options[i].selected) {	
+}
 
-		        if(theSelFrom.options[i].value != "") {
-				selectedText[selectedCount] = theSelFrom.options[i].text;
-				selectedValues[selectedCount] = theSelFrom.options[i].value;
-				deleteOption(theSelFrom, i);
-				selectedCount++;
-			}
-		}	
-	}	
-		
-	// Add the selected text/values in reverse order.
-	// This will add the Options to the 'to' Select
-	// in the same order as they were in the 'from' Select.
-	for(i=selectedCount-1; i>=0; i--) {	
-		addOption(theSelTo, selectedText[i], selectedValues[i]);
-	}	
-		
-	if(NetScape4) history.go(0);
-}	
+function deleteOption(theSel, theIndex)
+{
+	var selLength = theSel.length;
+	if(selLength>0) {
+		theSel.options[theIndex] = null;
+	}
+}
+
+function moveOptions(theSelFrom, theSelTo)
+{
+   $('#' + theSelFrom + ' option:selected').remove().appendTo('#' + theSelTo).removeAttr('selected');
+}
 
 /**
  * this function will select all available
@@ -484,7 +456,7 @@ function currentCheckbox(obj)
    if(obj.checked == true) {
       return obj.value;
    }
-   
+
    return;
 }
 
@@ -909,7 +881,7 @@ function parse_json(values)
             )
          ) && eval('(' + values + ')');
    }
-   
+
    return data;
 }
 
