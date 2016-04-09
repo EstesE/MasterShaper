@@ -208,7 +208,7 @@ class PipeModel extends DefaultModel
 
     public function hasSourceTarget()
     {
-        if (!$this->hasValue('src_target')) {
+        if (!$this->hasFieldValue('src_target')) {
             return false;
         }
 
@@ -222,8 +222,8 @@ class PipeModel extends DefaultModel
             return false;
         }
 
-        if (($target_idx = $this->getValue('src_target')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($target_idx = $this->getFieldValue('src_target')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -232,7 +232,7 @@ class PipeModel extends DefaultModel
 
     public function hasDestinationTarget()
     {
-        if (!$this->hasValue('dst_target')) {
+        if (!$this->hasFieldValue('dst_target')) {
             return false;
         }
 
@@ -246,8 +246,8 @@ class PipeModel extends DefaultModel
             return false;
         }
 
-        if (($target_idx = $this->getValue('dst_target')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($target_idx = $this->getFieldValue('dst_target')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -256,7 +256,7 @@ class PipeModel extends DefaultModel
 
     public function hasDirection()
     {
-        if (!$this->hasValue('direction')) {
+        if (!$this->hasFieldValue('direction')) {
             return false;
         }
 
@@ -270,8 +270,8 @@ class PipeModel extends DefaultModel
             return false;
         }
 
-        if (($direction = $this->getValue('direction')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($direction = $this->getFieldValue('direction')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -280,7 +280,7 @@ class PipeModel extends DefaultModel
 
     public function hasServiceLevel()
     {
-        if (!$this->hasValue('sl_idx')) {
+        if (!$this->hasFieldValue('sl_idx')) {
             return false;
         }
 
@@ -294,8 +294,8 @@ class PipeModel extends DefaultModel
             return false;
         }
 
-        if (($sl_idx = $this->getValue('sl_idx')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($sl_idx = $this->getFieldValue('sl_idx')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
