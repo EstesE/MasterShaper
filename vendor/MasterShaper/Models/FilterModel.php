@@ -250,7 +250,7 @@ class FilterModel extends DefaultModel
 
     public function hasProtocol()
     {
-        if (!$this->hasValue('protocol_id')) {
+        if (!$this->hasFieldValue('protocol_id')) {
             return false;
         }
 
@@ -264,8 +264,8 @@ class FilterModel extends DefaultModel
             return false;
         }
 
-        if (($proto_idx = $this->getValue('protocol_id')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($proto_idx = $this->getFieldValue('protocol_id')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -274,7 +274,7 @@ class FilterModel extends DefaultModel
 
     public function hasTos()
     {
-        if (!$this->hasValue('tos')) {
+        if (!$this->hasFieldValue('tos')) {
             return false;
         }
 
@@ -288,8 +288,8 @@ class FilterModel extends DefaultModel
             return false;
         }
 
-        if (($tos = $this->getValue('tos')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($tos = $this->getFieldValue('tos')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -298,7 +298,7 @@ class FilterModel extends DefaultModel
 
     public function hasDscp()
     {
-        if (!$this->hasValue('dscp')) {
+        if (!$this->hasFieldValue('dscp')) {
             return false;
         }
 
@@ -312,8 +312,8 @@ class FilterModel extends DefaultModel
             return false;
         }
 
-        if (($dscp = $this->getValue('dscp')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($dscp = $this->getFieldValue('dscp')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
