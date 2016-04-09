@@ -104,7 +104,7 @@ class UserModel extends DefaultModel
 
     public function hasPassword()
     {
-        if (!$this->hasValue('password')) {
+        if (!$this->hasFieldValue('password')) {
             return false;
         }
 
@@ -137,8 +137,8 @@ class UserModel extends DefaultModel
             return false;
         }
 
-        if (!$this->setValue('password', $hashed)) {
-            static::raiseError(__CLASS__ .'::setValue() returned false!');
+        if (!$this->setFieldValue('password', $hashed)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
             return false;
         }
 
@@ -157,12 +157,12 @@ class UserModel extends DefaultModel
             return false;
         }
 
-        if (!$this->hasValue($permission)) {
+        if (!$this->hasFieldValue($permission)) {
             return false;
         }
 
-        if (($value = $this->getValue($permission)) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($value = $this->getFieldValue($permission)) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
