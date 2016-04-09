@@ -29,9 +29,39 @@ ThalliumMessage.prototype.setCommand = function (command) {
     return true;
 }
 
+ThalliumMessage.prototype.hasCommand = function () {
+    if (typeof this.command === 'undefined' || this.command === '') {
+        return false;
+    }
+    return true;
+}
+
+ThalliumMessage.prototype.getCommand = function () {
+    if (!this.hasCommand()) {
+        throw new Error('ThalliumMessage.hasCommand() returned false!');
+        return false;
+    }
+    return this.command;
+}
+
 ThalliumMessage.prototype.setMessage = function (message) {
     this.message = message;
     return true;
+}
+
+ThalliumMessage.prototype.hasMessage = function () {
+    if (typeof this.message === 'undefined' || this.message === '') {
+        return false;
+    }
+    return true;
+}
+
+ThalliumMessage.prototype.getMessage = function () {
+    if (!this.hasMessage()) {
+        throw new Error('ThalliumMessage.hasMessage() returned false!');
+        return false;
+    }
+    return this.message;
 }
 
 // vim: set filetype=javascript expandtab softtabstop=4 tabstop=4 shiftwidth=4:
