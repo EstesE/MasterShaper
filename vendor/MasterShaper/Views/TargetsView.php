@@ -28,6 +28,8 @@ class TargetsView extends DefaultView
     protected static $view_default_mode = 'list';
     protected static $view_class_name = 'targets';
     private $targets;
+    private $targets_avail;
+    private $targets_used;
 
     public function __construct()
     {
@@ -164,7 +166,7 @@ class TargetsView extends DefaultView
         }
 
         $tmpl->registerPlugin(
-            "function",
+            "block",
             "target_group_select_list",
             array(&$this, "smartyTargetGroupSelectLists"),
             false
@@ -172,33 +174,73 @@ class TargetsView extends DefaultView
 
         $tmpl->assign('target', $item);
 
+        if (($this->targets_avail = $this->getTargets('avail', $item->getId())) === false) {
+            static::raiseError(__CLASS__ .'::getTargets() returned false!');
+            return false;
+        }
+
+        if (($this->targets_used = $this->getTargets('used', $item->getId())) === false) {
+            static::raiseError(__CLASS__ .'::getTargets() returned false!');
+            return false;
+        }
+
         return parent::showEdit($id, $guid);
     }
 
-    public function smartyTargetGroupSelectLists($params, &$smarty)
+    public function smartyTargetGroupSelectLists($params, $content, &$smarty, &$repeat)
     {
         if (!array_key_exists('group', $params)) {
-            $this->raiseError(__METHOD__ .'(), missing "group" parameter!');
+            static::raiseError(__METHOD__ .'(), group parameter is missing!');
             $repeat = false;
+            return false;
+        }
+
+        if ($params['group'] != 'avail' && $params['group'] != 'used') {
+            static::raiseError(__METHOD__ .'(), group parameter is invalid!');
+            $repeat = false;
+            return false;
+        }
+
+        $index = $smarty->getTemplateVars("smarty.IB.{$params['group']}_item_list.index");
+
+        if (!isset($index) || empty($index)) {
+            $index = 0;
+        }
+
+        if ($params['group'] == 'avail') {
+            $targets =& $this->targets_avail;
+        } elseif ($params['group'] == 'used') {
+            $targets =& $this->targets_used;
+        }
+
+        if (!isset($targets) || empty($targets) || $index >= count($targets)) {
+            $repeat = false;
+            return $content;
+        }
+
+        $smarty->assign("item", $targets[$index]);
+
+        $index++;
+        $smarty->assign("smarty.IB.{$params['group']}_item_list.index", $index);
+        $repeat = true;
+
+        return $content;
+    }
+
+    protected function getTargets($group, $idx)
+    {
+        if (!isset($group) || empty($group) || !is_string($group)) {
+            static::raiseError(__METHOD__ .'(), $group parameter is invalid!');
             return;
         }
 
         global $db;
 
-        /* either "used" or "unused" */
-        $group = $params['group'];
-
-        if (isset($params['idx']) && is_numeric($params['idx'])) {
-            $idx = $params['idx'];
-        } else {
-            $idx = 0;
-        }
-
         switch ($group) {
-            case 'unused':
+            case 'avail':
                 $sql = "SELECT
                         t.target_idx,
-                        t.target_name
+                        t.target_guid
                     FROM
                         TABLEPREFIXtargets t
                     LEFT JOIN
@@ -215,7 +257,7 @@ class TargetsView extends DefaultView
             case 'used':
                 $sql = "SELECT
                         t.target_idx,
-                        t.target_name
+                        t.target_guid
                     FROM
                         TABLEPREFIXassign_targets_to_targets atg
                     LEFT JOIN
@@ -235,13 +277,24 @@ class TargetsView extends DefaultView
             $idx
         ));
 
-        $string = "";
+        $result = array();
+
         while ($row = $sth->fetch()) {
-            $string.= "<option value=\"". $row->target_idx ."\">". $row->target_name ."</option>";
+            try {
+                $target = new \MasterShaper\Models\TargetModel(array(
+                    'idx' => $row->target_idx,
+                    'guid' => $row->target_guid
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load TargetModel!');
+                return false;
+            }
+
+            array_push($result, $target);
         }
 
         $db->freeStatement($sth);
-        return $string;
+        return $result;
     }
 }
 
