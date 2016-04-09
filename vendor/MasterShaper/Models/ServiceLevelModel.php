@@ -183,7 +183,7 @@ class ServiceLevelModel extends DefaultModel
 
     public function hasHtbBandwidthInRate()
     {
-        if (!$this->hasValue('htb_bw_in_rate')) {
+        if (!$this->hasFieldValue('htb_bw_in_rate')) {
             return false;
         }
 
@@ -197,12 +197,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('htb_bw_in_rate');
+        return $this->getFieldValue('htb_bw_in_rate');
     }
 
     public function hasHtbBandwidthInCeil()
     {
-        if (!$this->hasValue('htb_bw_in_ceil')) {
+        if (!$this->hasFieldValue('htb_bw_in_ceil')) {
             return false;
         }
 
@@ -216,12 +216,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('htb_bw_in_ceil');
+        return $this->getFieldValue('htb_bw_in_ceil');
     }
 
     public function hasHtbBandwidthInBurst()
     {
-        if (!$this->hasValue('htb_bw_in_burst')) {
+        if (!$this->hasFieldValue('htb_bw_in_burst')) {
             return false;
         }
 
@@ -235,12 +235,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('htb_bw_in_burst');
+        return $this->getFieldValue('htb_bw_in_burst');
     }
 
     public function hasHtbBandwidthOutRate()
     {
-        if (!$this->hasValue('htb_bw_out_rate')) {
+        if (!$this->hasFieldValue('htb_bw_out_rate')) {
             return false;
         }
 
@@ -254,12 +254,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('htb_bw_out_rate');
+        return $this->getFieldValue('htb_bw_out_rate');
     }
 
     public function hasHtbBandwidthOutCeil()
     {
-        if (!$this->hasValue('htb_bw_out_ceil')) {
+        if (!$this->hasFieldValue('htb_bw_out_ceil')) {
             return false;
         }
 
@@ -273,12 +273,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('htb_bw_out_ceil');
+        return $this->getFieldValue('htb_bw_out_ceil');
     }
 
     public function hasHtbBandwidthOutBurst()
     {
-        if (!$this->hasValue('htb_bw_out_burst')) {
+        if (!$this->hasFieldValue('htb_bw_out_burst')) {
             return false;
         }
 
@@ -292,12 +292,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('htb_bw_out_burst');
+        return $this->getFieldValue('htb_bw_out_burst');
     }
 
     public function hasHtbPriority()
     {
-        if (!$this->hasValue('htb_priority')) {
+        if (!$this->hasFieldValue('htb_priority')) {
             return false;
         }
 
@@ -311,12 +311,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('htb_priority');
+        return $this->getFieldValue('htb_priority');
     }
 
     public function hasHfscInUmax()
     {
-        if (!$this->hasValue('hfsc_in_umax')) {
+        if (!$this->hasFieldValue('hfsc_in_umax')) {
             return false;
         }
 
@@ -330,12 +330,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('hfsc_in_umax');
+        return $this->getFieldValue('hfsc_in_umax');
     }
 
     public function hasHfscInDmax()
     {
-        if (!$this->hasValue('hfsc_in_dmax')) {
+        if (!$this->hasFieldValue('hfsc_in_dmax')) {
             return false;
         }
 
@@ -349,12 +349,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('hfsc_in_dmax');
+        return $this->getFieldValue('hfsc_in_dmax');
     }
 
     public function hasHfscInRate()
     {
-        if (!$this->hasValue('hfsc_in_rate')) {
+        if (!$this->hasFieldValue('hfsc_in_rate')) {
             return false;
         }
 
@@ -368,12 +368,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('hfsc_in_rate');
+        return $this->getFieldValue('hfsc_in_rate');
     }
 
     public function hasHfscInUlrate()
     {
-        if (!$this->hasValue('hfsc_in_ulrate')) {
+        if (!$this->hasFieldValue('hfsc_in_ulrate')) {
             return false;
         }
 
@@ -387,12 +387,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('hfsc_in_ulrate');
+        return $this->getFieldValue('hfsc_in_ulrate');
     }
 
     public function hasHfscOutUmax()
     {
-        if (!$this->hasValue('hfsc_out_umax')) {
+        if (!$this->hasFieldValue('hfsc_out_umax')) {
             return false;
         }
 
@@ -406,12 +406,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('hfsc_out_umax');
+        return $this->getFieldValue('hfsc_out_umax');
     }
 
     public function hasHfscOutDmax()
     {
-        if (!$this->hasValue('hfsc_out_dmax')) {
+        if (!$this->hasFieldValue('hfsc_out_dmax')) {
             return false;
         }
 
@@ -425,12 +425,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('hfsc_out_dmax');
+        return $this->getFieldValue('hfsc_out_dmax');
     }
 
     public function hasHfscOutRate()
     {
-        if (!$this->hasValue('hfsc_out_rate')) {
+        if (!$this->hasFieldValue('hfsc_out_rate')) {
             return false;
         }
 
@@ -444,12 +444,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('hfsc_out_rate');
+        return $this->getFieldValue('hfsc_out_rate');
     }
 
     public function hasHfscOutUlrate()
     {
-        if (!$this->hasValue('hfsc_out_ulrate')) {
+        if (!$this->hasFieldValue('hfsc_out_ulrate')) {
             return false;
         }
 
@@ -463,12 +463,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('hfsc_out_ulrate');
+        return $this->getFieldValue('hfsc_out_ulrate');
     }
 
     public function hasQdisc()
     {
-        if (!$this->hasValue('qdisc')) {
+        if (!$this->hasFieldValue('qdisc')) {
             return false;
         }
 
@@ -482,12 +482,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('qdisc');
+        return $this->getFieldValue('qdisc');
     }
 
     public function hasSfqPerturb()
     {
-        if (!$this->hasValue('sfq_perturb')) {
+        if (!$this->hasFieldValue('sfq_perturb')) {
             return false;
         }
 
@@ -501,12 +501,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('sfq_perturb');
+        return $this->getFieldValue('sfq_perturb');
     }
 
     public function hasSfqQuantum()
     {
-        if (!$this->hasValue('sfq_quantum')) {
+        if (!$this->hasFieldValue('sfq_quantum')) {
             return false;
         }
 
@@ -520,12 +520,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('sfq_quantum');
+        return $this->getFieldValue('sfq_quantum');
     }
 
     public function hasEsfqPerturb()
     {
-        if (!$this->hasValue('esfq_perturb')) {
+        if (!$this->hasFieldValue('esfq_perturb')) {
             return false;
         }
 
@@ -539,12 +539,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('esfq_perturb');
+        return $this->getFieldValue('esfq_perturb');
     }
 
     public function hasEsfqLimit()
     {
-        if (!$this->hasValue('esfq_limit')) {
+        if (!$this->hasFieldValue('esfq_limit')) {
             return false;
         }
 
@@ -558,12 +558,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('esfq_limit');
+        return $this->getFieldValue('esfq_limit');
     }
 
     public function hasEsfqDepth()
     {
-        if (!$this->hasValue('esfq_depth')) {
+        if (!$this->hasFieldValue('esfq_depth')) {
             return false;
         }
 
@@ -577,12 +577,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('esfq_depth');
+        return $this->getFieldValue('esfq_depth');
     }
 
     public function hasEsfqDivisor()
     {
-        if (!$this->hasValue('esfq_divisor')) {
+        if (!$this->hasFieldValue('esfq_divisor')) {
             return false;
         }
 
@@ -596,12 +596,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('esfq_divisor');
+        return $this->getFieldValue('esfq_divisor');
     }
 
     public function hasEsfqHash()
     {
-        if (!$this->hasValue('esfq_hash')) {
+        if (!$this->hasFieldValue('esfq_hash')) {
             return false;
         }
 
@@ -615,13 +615,13 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('esfq_hash');
+        return $this->getFieldValue('esfq_hash');
     }
 
 
     public function hasNetemDelay()
     {
-        if (!$this->hasValue('netem_delay')) {
+        if (!$this->hasFieldValue('netem_delay')) {
             return false;
         }
 
@@ -635,12 +635,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_delay');
+        return $this->getFieldValue('netem_delay');
     }
 
     public function hasNetemJitter()
     {
-        if (!$this->hasValue('netem_jitter')) {
+        if (!$this->hasFieldValue('netem_jitter')) {
             return false;
         }
 
@@ -654,12 +654,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_jitter');
+        return $this->getFieldValue('netem_jitter');
     }
 
     public function hasNetemRandom()
     {
-        if (!$this->hasValue('netem_random')) {
+        if (!$this->hasFieldValue('netem_random')) {
             return false;
         }
 
@@ -673,12 +673,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_random');
+        return $this->getFieldValue('netem_random');
     }
 
     public function hasNetemLoss()
     {
-        if (!$this->hasValue('netem_loss')) {
+        if (!$this->hasFieldValue('netem_loss')) {
             return false;
         }
 
@@ -692,12 +692,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_loss');
+        return $this->getFieldValue('netem_loss');
     }
 
     public function hasNetemDuplication()
     {
-        if (!$this->hasValue('netem_duplication')) {
+        if (!$this->hasFieldValue('netem_duplication')) {
             return false;
         }
 
@@ -711,12 +711,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_duplication');
+        return $this->getFieldValue('netem_duplication');
     }
 
     public function hasNetemGap()
     {
-        if (!$this->hasValue('netem_gap')) {
+        if (!$this->hasFieldValue('netem_gap')) {
             return false;
         }
 
@@ -730,12 +730,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_gap');
+        return $this->getFieldValue('netem_gap');
     }
 
     public function hasNetemReorderPercentage()
     {
-        if (!$this->hasValue('netem_reorder_percentage')) {
+        if (!$this->hasFieldValue('netem_reorder_percentage')) {
             return false;
         }
 
@@ -749,12 +749,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_reorder_percentage');
+        return $this->getFieldValue('netem_reorder_percentage');
     }
 
     public function hasNetemReorderCorrelation()
     {
-        if (!$this->hasValue('netem_reorder_correlation')) {
+        if (!$this->hasFieldValue('netem_reorder_correlation')) {
             return false;
         }
 
@@ -768,12 +768,12 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_reorder_correlation');
+        return $this->getFieldValue('netem_reorder_correlation');
     }
 
     public function hasNetemDistribution()
     {
-        if (!$this->hasValue('netem_distribution')) {
+        if (!$this->hasFieldValue('netem_distribution')) {
             return false;
         }
 
@@ -787,7 +787,7 @@ class ServiceLevelModel extends DefaultModel
             return false;
         }
 
-        return $this->getValue('netem_distribution');
+        return $this->getFieldValue('netem_distribution');
     }
 }
 
