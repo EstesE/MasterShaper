@@ -31,6 +31,7 @@ define('FIELD_YESNO', 'yesno');
 define('FIELD_DATE', 'date');
 define('FIELD_GUID', 'guid');
 define('FIELD_IDX', 'idx');
+define('FIELD_LENGTH', 'length');
 
 if (!constant('LOG_ERR')) {
     define('LOG_ERR', 1);

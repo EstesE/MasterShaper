@@ -162,6 +162,16 @@ abstract class DefaultModel
                     static::raiseError(__METHOD__ .'(), unknown field type found!', true);
                     return false;
                 }
+                if (array_key_exists(FIELD_LENGTH, $params)) {
+                    if (!is_int($params[FIELD_LENGTH])) {
+                        static::raiseError(__METHOD__ ."(), FIELD_LENGTH of {$field} is not an integer!", true);
+                        return false;
+                    }
+                    if ($params[FIELD_LENGTH] < 0 && $params[FIELD_LENGTH] < 16384) {
+                        static::raiseError(__METHOD__ ."(), FIELD_LENGTH of {$field} is out of bound!", true);
+                        return false;
+                    }
+                }
             }
         }
 
@@ -390,8 +400,11 @@ abstract class DefaultModel
                     static::raiseError(__CLASS__ ."::validateField() returned false for field {$field}!");
                     return false;
                 }
+                if (!$this->setFieldValue($field, $value)) {
+                    static::raiseError(__CLASS__ ."::setFieldValue() returned false for field {$field}!");
+                    return false;
+                }
                 $this->model_init_values[$field] = $value;
-                $this->model_values[$field] = $value;
             }
         } elseif (static::isHavingItems()) {
             while (($row = $sth->fetch(\PDO::FETCH_ASSOC)) !== false) {
@@ -467,13 +480,25 @@ abstract class DefaultModel
                 static::raiseError(__METHOD__ .'(), unknown field found!');
                 return false;
             }
-            if (!static::hasField($field)) {
-                static::raiseError(__METHOD__ .'(), model has no field like that!');
-                return false;
+            if (static::hasField($field)) {
+                // this will trigger the __set() method.
+                $this->$key = $value;
+                continue;
             }
-
-            // this will trigger the __set() method.
-            $this->$key = $value;
+            if ($this->hasVirtualFields() && $this->hasVirtualField($field)) {
+                $set_method = sprintf("set%s", ucwords($field));
+                if (!is_callable(array($this, $set_method))) {
+                    static::raiseError(__CLASS__ ."::{$set_method}() is not callable!");
+                    return false;
+                }
+                if (!call_user_func(array($this, $set_method), $value)) {
+                    static::raiseError(__CLASS__ ."::{$set_method}() returned false!");
+                    return false;
+                }
+                continue;
+            }
+            static::raiseError(__METHOD__ .'(), model has no field like that!');
+            return false;
         }
 
         return true;
@@ -582,8 +607,6 @@ abstract class DefaultModel
                 static::raiseError(get_class($item) .'::delete() returned false!');
                 return false;
             }
-            static::raiseError(get_class($item) .'::delete() returned false!');
-            return false;
         }
 
         return true;
@@ -769,7 +792,7 @@ abstract class DefaultModel
             }
 
             if (($this->model_values[$field] = $this->getDefaultValue($field)) === false) {
-                $this->raiseError(__CLASS__ .'::getDefaultValue() returned false!');
+                static::raiseError(__CLASS__ .'::getDefaultValue() returned false!');
                 return false;
             }
         }
@@ -814,10 +837,12 @@ abstract class DefaultModel
             return;
         }
 
-        if (!$this->hasField($field) &&
-            ($this->hasVirtualFields() && !$this->hasVirtualField($field)) &&
-            $field != 'id'
-        ) {
+        // virtual fields have to validate themself via their get/set methods.
+        if ($this->hasVirtualFields() && $this->hasVirtualField($field)) {
+            return;
+        }
+
+        if (!$this->hasField($field) && $field != 'id') {
             static::raiseError(__METHOD__ ."(), unknown key in ". __CLASS__ ."::__set(): {$field}", true);
             return;
         }
@@ -891,12 +916,12 @@ abstract class DefaultModel
         }
 
         if (!is_callable(array($this, $set_method))) {
-            $this->raiseError(__CLASS__ ."::{$set_method}() is not callable!", true);
+            static::raiseError(__CLASS__ ."::{$set_method}() is not callable!", true);
             return;
         }
 
         if (!call_user_func(array($this, $set_method), $value)) {
-            $this->raiseError(__CLASS__ ."::{$set_method}() returned false!", true);
+            static::raiseError(__CLASS__ ."::{$set_method}() returned false!", true);
             return;
         }
     }
@@ -915,18 +940,18 @@ abstract class DefaultModel
                 return $this->model_values[$field];
             }
 
-            if (($set_method = static::getFieldGetMethod($field)) === false) {
+            if (($get_method = static::getFieldGetMethod($field)) === false) {
                 static::raiseError(__CLASS__ .'::getFieldGetMethod() returned false!', true);
                 return;
             }
 
-            if (!is_callable(array($this, $set_method))) {
-                $this->raiseError(__CLASS__ ."::{$set_method}() is not callable!", true);
+            if (!is_callable(array($this, $get_method))) {
+                static::raiseError(__CLASS__ ."::{$get_method}() is not callable!", true);
                 return;
             }
 
-            if (($retval = call_user_func(array($this, $set_method), $value)) === false) {
-                $this->raiseError(__CLASS__ ."::{$set_method}() returned false!", true);
+            if (($retval = call_user_func(array($this, $get_method), $value)) === false) {
+                static::raiseError(__CLASS__ ."::{$get_method}() returned false!", true);
                 return;
             }
 
@@ -1918,7 +1943,45 @@ abstract class DefaultModel
             return false;
         }
 
-        return static::$model_fields[$field_name]['type'];
+        return static::$model_fields[$field_name][FIELD_TYPE];
+    }
+
+    public static function getFieldLength($field_name)
+    {
+        if (!isset($field_name) || empty($field_name) || !is_string($field_name)) {
+            static::raiseError(__METHOD__ .'(), $field_name parameter is invalid!');
+            return false;
+        }
+
+        if (!static::hasField($field_name)) {
+            static::raiseError(__METHOD__ ."(), model has no field {$field_name}!");
+            return false;
+        }
+
+        if (!static::hasFieldLength($field_name) && static::getFieldType($field_name) === FIELD_STRING) {
+            return 255;
+        }
+
+        return static::$model_fields[$field_name][FIELD_LENGTH];
+    }
+
+    public static function hasFieldLength($field_name)
+    {
+        if (!isset($field_name) || empty($field_name) || !is_string($field_name)) {
+            static::raiseError(__METHOD__ .'(), $field_name parameter is invalid!');
+            return false;
+        }
+
+        if (!static::hasField($field_name)) {
+            static::raiseError(__METHOD__ ."(), model has no field {$field_name}!");
+            return false;
+        }
+
+        if (!array_key_exists(FIELD_LENGTH, static::$model_fields[$field_name])) {
+            return false;
+        }
+
+        return true;
     }
 
     public function getTableName()
@@ -2194,7 +2257,7 @@ abstract class DefaultModel
         return true;
     }
 
-    public function hasValue($field)
+    final public function hasFieldValue($field)
     {
         if (!static::hasFields()) {
             static::raiseError(__METHOD__ .'(), this model has no fields!');
@@ -2215,7 +2278,7 @@ abstract class DefaultModel
         return true;
     }
 
-    public function setValue($field, $value)
+    final public function setFieldValue($field, $value)
     {
         if (!isset($field) || empty($field) || !is_string($field)) {
             static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
@@ -2232,21 +2295,42 @@ abstract class DefaultModel
             return false;
         }
 
+        if (!isset($value)) {
+            $this->model_values[$field] = null;
+            return true;
+        }
+
+        if ($this->hasFieldLength($field)) {
+            if ($this->getFieldType($field) === FIELD_STRING) {
+                if (($field_length = $this->getFieldLength($field)) === false) {
+                    static::raiseError(__CLASS__ .'::getFieldLength() returned false!');
+                    return false;
+                }
+                $value_length = strlen($value);
+                if ($value_length > $field_length) {
+                    static::raiseError(
+                        __METHOD__ ."(), values length ({$value_length}) exceeds fields length ({$field_length})!"
+                    );
+                    return false;
+                }
+            }
+        }
+
         $this->model_values[$field] = $value;
         return true;
     }
 
-    public function getValue($field)
+    final public function getFieldValue($field)
     {
-        if (!$this->hasValue($field)) {
-            static::raiseError(__CLASS__ .'::hasValue() returned false!');
+        if (!$this->hasFieldValue($field)) {
+            static::raiseError(__CLASS__ .'::hasFieldValue() returned false!');
             return false;
         }
 
         return $this->model_values[$field];
     }
 
-    public function hasDefaultValue($field)
+    final public function hasDefaultValue($field)
     {
         if (!static::hasFields()) {
             static::raiseError(__METHOD__ .'(), this model has no fields!');
@@ -2265,7 +2349,7 @@ abstract class DefaultModel
         return true;
     }
 
-    public function getDefaultValue($field)
+    final public function getDefaultValue($field)
     {
         if (!$this->hasDefaultValue($field)) {
             static::raiseError(__CLASS__ .'::hasDefaultValue() returned false!');
@@ -2273,6 +2357,83 @@ abstract class DefaultModel
         }
 
         return $this->model_model_fields[$field][FIELD_DEFAULT];
+    }
+
+    public static function exists($load_by = array())
+    {
+        global $db;
+
+        if (!isset($load_by) || empty($load_by) || (!is_array($load_by) && !is_null($load_by))) {
+            static::raiseError(__METHOD__ .'(), parameter $load_by has to be an array!', true);
+            return;
+        }
+
+        if (($idx = static::column('idx')) === false) {
+            static::raiseError(__CLASS__ .'::column() returned false!');
+            return false;
+        }
+
+        $query_columns = array(
+            $idx
+        );
+
+        $query_where = array();
+
+        foreach ($load_by as $field => $value) {
+            if (($column = static::column($field)) === false) {
+                static::raiseError(__CLASS__ .'::column() returned false!');
+                return false;
+            }
+            $query_where[$column] = $value;
+        }
+
+        $bind_params = array();
+
+        if (($sql = $db->buildQuery(
+            "SELECT",
+            self::getTableName(),
+            $query_columns,
+            $query_where,
+            $bind_params
+        )) === false) {
+            static::raiseError(get_class($db) .'::buildQuery() returned false!');
+            return false;
+        }
+
+        try {
+            $sth = $db->prepare($sql);
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), unable to prepare database query!');
+            return false;
+        }
+
+        if (!$sth) {
+            static::raiseError(get_class($db) ."::prepare() returned invalid data!");
+            return false;
+        }
+
+        foreach ($bind_params as $key => $value) {
+            $sth->bindParam($key, $value);
+        }
+
+        if (!$db->execute($sth, $bind_params)) {
+            static::raiseError(__METHOD__ ."(), unable to execute query!");
+            return false;
+        }
+
+        $num_rows = $sth->rowCount();
+        $db->freeStatement($sth);
+
+        if ($num_rows < 1) {
+            return false;
+        }
+
+        if ($num_rows > 1) {
+            static::raiseError(__METHOD__ .'(), more than one object found!');
+            return false;
+        }
+
+        return true;
     }
 }
 

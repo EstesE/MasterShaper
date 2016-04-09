@@ -31,7 +31,16 @@ class AuditLogModel extends DefaultModel
 
     public function getLog()
     {
-        return $this->model_values['log'];
+        if (!$this->hasFieldValue('log')) {
+            return false;
+        }
+
+        if (($log = $this->getFieldValue('log')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $log;
     }
 }
 

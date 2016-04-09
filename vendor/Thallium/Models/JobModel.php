@@ -56,32 +56,41 @@ class JobModel extends DefaultModel
     public function setSessionId($sessionid)
     {
         if (empty($sessionid)) {
-            static::raiseError(__METHOD__ .', an empty session id is not allowed!');
+            static::raiseError(__METHOD__ .'(), an empty session id is not allowed!');
             return false;
         }
 
         if (!is_string($sessionid)) {
-            static::raiseError(__METHOD__ .', parameter has to be a string!');
+            static::raiseError(__METHOD__ .'(), parameter has to be a string!');
             return false;
         }
 
-        $this->model_values['session_id'] = $sessionid;
+        if (!$this->setFieldValue('session_id', $sessionid)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
     public function getSessionId()
     {
-        if (!isset($this->model_values['session_id'])) {
-            static::raiseError(__METHOD__ .', \$job_session_id has not been set yet!');
+        if (!$this->hasFieldValue('session_id')) {
+            static::raiseError(__METHOD__ .'(), \$job_session_id has not been set yet!');
             return false;
         }
 
-        return $this->model_values['session_id'];
+        if (($session_id = $this->getFieldValue('session_id')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $session_id;
     }
 
     public function hasSessionId()
     {
-        if (!isset($this->model_values['session_id']) || empty($this->model_values['session_id'])) {
+        if (!$this->hasFieldValue('session_id')) {
             return false;
         }
 
@@ -90,31 +99,44 @@ class JobModel extends DefaultModel
 
     public function setProcessingFlag($value = true)
     {
-        if (!$value) {
-            $this->model_values['in_processing'] = 'N';
+        if (!isset($value) || empty($value) || !$value) {
+            if (!$this->setFieldValue('in_processing', 'N')) {
+                static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+                return false;
+            }
             return true;
         }
 
-        $this->model_values['in_processing'] = 'Y';
+        if (!$this->setFieldValue('in_processing', 'Y')) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
     public function getProcessingFlag()
     {
-        if (!isset($this->model_values['in_processing'])) {
+        if (!$this->hasFieldValue('in_processing')) {
             return 'N';
         }
 
-        return $this->model_values['in_processing'];
+        if (($flag = $this->getFieldValue('in_processing')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $flag;
     }
 
     public function isProcessing()
     {
-        if (!isset($this->getProcessingFlag)) {
+        if (($flag = $this->getProcessingFlag()) === false) {
+            static::raiseError(__CLASS__ .'::getProcessingFlag() returned false!');
             return false;
         }
 
-        if ($this->model_values['in_processing'] != 'Y') {
+        if ($flag != 'Y') {
             return false;
         }
 
@@ -123,8 +145,11 @@ class JobModel extends DefaultModel
 
     protected function preSave()
     {
-        if (!isset($this->model_values['in_processing']) || empty($this->model_values['in_processing'])) {
-            $this->model_values['in_processing'] = 'N';
+        if (!$this->hasFieldValue('in_processing')) {
+            if (!$this->setFieldValue('in_processing', 'N')) {
+                static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+                return false;
+            }
         }
 
         return true;
@@ -135,31 +160,46 @@ class JobModel extends DefaultModel
         global $thallium;
 
         if (empty($guid) || !$thallium->isValidGuidSyntax($guid)) {
-            static::raiseError(__METHOD__ .', first parameter needs to be a valid GUID!');
+            static::raiseError(__METHOD__ .'(), first parameter needs to be a valid GUID!');
             return false;
         }
 
-        $this->model_values['request_guid'] = $guid;
+        if (!$this->setFieldValue('request_guid', $guid)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
     public function getRequestGuid()
     {
-        if (!isset($this->model_values['request_guid'])) {
-            static::raiseError(__METHOD__ .', \$job_request_guid has not been set yet!');
+        if (!$this->hasFieldValue('request_guid')) {
+            static::raiseError(__CLASS__ .'::hasFieldValue() returned false!');
             return false;
         }
 
-        return $this->model_values['request_guid'];
+        if (($request_guid = $this->getFieldValue('request_guid')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $request_guid;
     }
 
     public function getCommand()
     {
-        if (!isset($this->model_values['command'])) {
+        if (!$this->hasFieldValue('command')) {
+            static::raiseError(__CLASS__ .'::hasFieldValue() returned false!');
             return false;
         }
 
-        return $this->model_values['command'];
+        if (($command = $this->getFieldValue('command')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $command;
     }
 
     public function setCommand($command)
@@ -169,7 +209,11 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        $this->model_values['command'] = $command;
+        if (!$this->setFieldValue('command', $command)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
@@ -180,7 +224,12 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        if (($params = base64_decode($this->model_values['parameters'])) === false) {
+        if (($parameters = $this->getFieldValue('parameters')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        if (($params = base64_decode($parameters)) === false) {
             static::raiseError(__METHOD__ .'(), base64_decode() failed on job_parameters!');
             return false;
         }
@@ -200,13 +249,17 @@ class JobModel extends DefaultModel
             return false;
         }
 
-        $this->model_values['parameters'] = base64_encode(serialize($parameters));
+        if (!$this->setFieldValue('parameters', base64_encode(serialize($parameters)))) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
     public function hasParameters()
     {
-        if (!isset($this->model_values['parameters']) || empty($this->model_values['parameters'])) {
+        if (!$this->hasFieldValue('parameters')) {
             return false;
         }
 

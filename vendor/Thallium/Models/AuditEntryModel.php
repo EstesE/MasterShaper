@@ -51,7 +51,11 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->model_values['time'] = $time;
+        if (!$this->setFieldValue('time', $time)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
@@ -68,7 +72,11 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->model_values['guid'] = $guid;
+        if (!$this->setFieldValue('guid', $guid)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
@@ -88,7 +96,11 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->model_values['message'] = $message;
+        if (!$this->setFieldValue('message', $message)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
@@ -108,7 +120,11 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->model_values['type'] = $entry_type;
+        if (!$this->setFieldValue('type', $entry_type)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 
@@ -128,7 +144,11 @@ class AuditEntryModel extends DefaultModel
             return false;
         }
 
-        $this->model_values['scene'] = $scene;
+        if (!$this->setFieldValue('scene', $scene)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 }

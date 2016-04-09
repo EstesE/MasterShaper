@@ -933,7 +933,7 @@ class MainController extends DefaultController
         ob_flush();
         flush();
 
-        error_log(__METHOD__ .'(), background jobs issued output!');
+        error_log(__METHOD__ .'(), background jobs have issued output! output follows:');
         error_log(__METHOD__ .'(), '. $buffer);
         return true;
     }
