@@ -115,11 +115,11 @@ class NetworkInterfaceModel extends DefaultModel
 
     public function isIfb()
     {
-        if (!$this->hasValue('ifb')) {
+        if (!$this->hasFieldValue('ifb')) {
             return false;
         }
 
-        if ($this->getValue('ifb') != 'Y') {
+        if ($this->getFieldValue('ifb') != 'Y') {
             return false;
         }
 
