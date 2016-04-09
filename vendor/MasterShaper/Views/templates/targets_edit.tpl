@@ -43,14 +43,14 @@
  </div>
  <h4 class="ui block header">Match Parameters</h4>
  <div class="ui fluid accordion">
-  <div class="active title">
+  <div class="title {if $target->hasMatch() && $target->getMatch() == "IP"}active{/if}">
    <i class="dropdown icon"></i>
    <div class="ui radio checkbox">
     <input type="radio" name="target_match" value="IP" {if $target->hasMatch() && $target->getMatch() == "IP"} checked="checked" {/if} />
     <label>IP address</label>
    </div>
   </div>
-  <div class="active content">
+  <div class="content {if $target->hasMatch() && $target->getMatch() == "IP"}active{/if}">
    <div class="extra">Enter an IP address in the following forms: 1.1.1.1, 1.1.1.3-1.1.1.254, 1.1.1.0/24, 1.1.1.1/255.255.248.0</div>
    <div class="description field">
     <div class="ui input">
@@ -58,14 +58,14 @@
     </div>
    </div>
   </div>
-  <div class="title">
+  <div class="title {if $target->hasMatch() && $target->getMatch() == "MAC"}active{/if}">
    <i class="dropdown icon"></i>
    <div class="ui radio checkbox">
     <input type="radio" name="target_match" value="MAC" {if $target->hasMatch() && $target->getMatch() == "MAC"} checked="checked" {/if} />
     <label>MAC address</label>
    </div>
   </div>
-  <div class="content">
+  <div class="content {if $target->hasMatch() && $target->getMatch() == "MAC"}active{/if}">
    <div class="extra">Enter a MAC address in the following forms: 00:00:00:00:00:00 or 00-00-00-00-00-00</div>
    <div class="field">
     <label>MAC</label>
@@ -74,28 +74,32 @@
     </div>
    </div>
   </div>
-  <div class="title">
+  <div class="title {if $target->hasMatch() && $target->getMatch() == "GROUP"}active{/if}">
    <i class="dropdown icon"></i>
    <div class="ui radio checkbox">
     <input type="radio" name="target_match" value="GROUP" {if $target->hasMatch() && $target->getMatch() == "GROUP"} checked="checked" {/if} />
     <label>Group of targets:</label>
    </div>
   </div>
-  <div class="content">
+  <div class="content {if $target->hasMatch() && $target->getMatch() == "GROUP"}active{/if}">
    <div class="extra">Group targets together into a group.</div>
    <div class="ui three column grid">
     <div class="column">
-     <select name="avail[]" multiple="multiple">
-      {target_group_select_list group=unused idx=$target->getId()}
+     <select id="targets_avail" name="avail[]" multiple="multiple">
+      {target_group_select_list group=avail}
+       <option value="{$item->getId()}" data-id="{$item->getId()}" data-guid="{$item->getGuid()}">{$item->getName()}</option>
+      {/target_group_select_list}
      </select>
     </div>
     <div class="three wide center aligned column">
-     <input type="button" value="&lt;&lt;" onclick="moveOptions(document.forms['targets'].elements['used[]'], document.forms['targets'].elements['avail[]']);" />
-     <input type="button" value="&gt;&gt;" onclick="moveOptions(document.forms['targets'].elements['avail[]'], document.forms['targets'].elements['used[]']);" />
+     <input type="button" value="&lt;&lt;" onclick="moveOptions('targets_used', 'targets_avail');" />
+     <input type="button" value="&gt;&gt;" onclick="moveOptions('targets_avail', 'targets_used');" />
     </div>
     <div class="column">
-     <select name="used[]" multiple="multiple">
-      {target_group_select_list group=used idx=$target->getId()}
+     <select id="targets_used" name="target_members" multiple="multiple">
+      {target_group_select_list group=used}
+       <option value="{$item->getId()}" data-id="{$item->getId()}" data-guid="{$item->getGuid()}">{$item->getName()}</option>
+      {/target_group_select_list}
      </select>
     </div>
    </div>
@@ -166,7 +170,7 @@ $(document).ready(function () {
          throw new Error('failed to locate data-model attribute!');
          return false;
       }
-      if (!(input = $(this).find('input[name^="target_"], textarea[name^="target_"]'))) {
+      if (!(input = $(this).find('input[name^="target_"], textarea[name^="target_"], select[name^="target_"]'))) {
          throw new Error('failed to locate any form elements!');
          return false;
       }
@@ -198,6 +202,14 @@ $(document).ready(function () {
          } else if (element.prop('nodeName') === 'TEXTAREA') {
             values[name] = element.text();
             return;
+         } else if (element.prop('nodeName') === 'SELECT') {
+            var options = new Array;
+            values[name] = element.find('option').each(function (idx, opt) {
+               var id = $(opt).attr('data-id');
+               var guid = $(opt).attr('data-guid');
+               options.push(id+':'+guid);
+            });
+            values[name] = options.join(',');
          } else {
             throw new Error('unsupported nodeName!');
             return false;
@@ -209,8 +221,14 @@ $(document).ready(function () {
       values['model'] = model;
 
       var msg = new ThalliumMessage;
-      msg.setCommand('save-request');
-      msg.setMessage(values);
+      if (!msg.setCommand('save-request')) {
+         throw new Error('ThalliumMessage.setCommand() returned false!');
+         return false;
+      }
+      if (!msg.setMessage(values)) {
+         throw new Error('ThalliumMessage.setMessage() returned false!');
+         return false;
+      }
       if (!mbus.add(msg)) {
          throw new Error('ThalliumMessageBus.add() returned false!');
          return false;
