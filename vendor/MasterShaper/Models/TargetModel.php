@@ -54,6 +54,11 @@ class TargetModel extends DefaultModel
             FIELD_TYPE => FIELD_YESNO,
         ),
     );
+    protected static $model_links = array(
+        'TargetToGroupModel/target_idx',
+        'TargetToGroupsModel/group_idx',
+    );
+
     protected static $valid_matches = array(
         'IP',
         'MAC',
@@ -66,57 +71,9 @@ class TargetModel extends DefaultModel
         $this->addRpcAction('delete');
         $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
+        $this->addVirtualField('members');
 
         return true;
-    }
-
-    public function postSave()
-    {
-        global $db;
-
-        $sth = $db->prepare(
-            "DELETE FROM
-                TABLEPREFIXassign_targets_to_targets
-            WHERE
-                atg_group_idx LIKE ?"
-        );
-
-        $db->execute($sth, array(
-            $this->id
-        ));
-
-        $db->freeStatement($sth);
-
-        if (!isset($_POST['used']) || empty($_POST['used'])) {
-            return true;
-        }
-
-        $sth = $db->prepare(
-            "INSERT INTO TABLEPREFIXassign_targets_to_targets (
-                atg_group_idx,
-                atg_target_idx
-            ) VALUES (
-                ?,
-                ?
-            )"
-        );
-
-        foreach ($_POST['used'] as $use) {
-
-            if (empty($use)) {
-                continue;
-            }
-
-            $db->execute($sth, array(
-                $this->id,
-                $use
-            ));
-
-        }
-        $db->freeStatement($sth);
-
-        return true;
-
     }
 
     public function postDelete()
@@ -408,6 +365,101 @@ class TargetModel extends DefaultModel
 
         if (!filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
             return false;
+        }
+
+        return true;
+    }
+
+    public function getMembers()
+    {
+
+    }
+
+    public function setMembers($members)
+    {
+        global $ms;
+
+        if (!isset($members) || (!empty($members) && !is_string($members))) {
+            static::raiseError(__METHOD__ .'(), $members parameter is invalid!');
+            return false;
+        }
+
+        if (!empty($members) && ($pairs = explode(',', $members)) === false) {
+            static::raiseError(__METHOD__ .'(), explode() returned false!');
+            return false;
+        }
+
+        if (!empty($members) && (!isset($pairs) || !is_array($pairs))) {
+            static::raiseError(__METHOD__ .'(), explode() returned invalid data!');
+            return false;
+        }
+
+        try {
+            $atgs = new \MasterShaper\Models\AssignTargetToGroupsModel(array(
+                'group_idx' => $this->getId()
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load AssignTargetToGroupsModel!', false, $e);
+            return false;
+        }
+
+        if (!$atgs->delete()) {
+            static::raiseError(get_class($atgs) .'::delete() returned false!');
+            return false;
+        }
+
+        if (empty($members)) {
+            return true;
+        }
+
+        foreach ($pairs as $pair) {
+            if (!isset($pair) || empty($pair) || !is_string($pair)) {
+                static::raiseError(__METHOD__ .'(), received an invalid pair!');
+                return false;
+            }
+            if ((list($idx, $guid) = explode(':', $pair)) === false) {
+                static::raiseError(__METHOD__ .'(), explode() returned false!');
+                return false;
+            }
+            if (!isset($idx) || empty($idx) || !is_numeric($idx) || !$ms->isValidId($idx) ||
+                !isset($guid) || empty($guid) || !is_string($guid) || !$ms->isValidGuidSyntax($guid)
+            ) {
+                static::raiseError(__METHOD__ .'(), explode() returned invalid data!');
+                return false;
+            }
+            if ($idx === $this->getId()) {
+                static::raiseError(__METHOD__ .'(), target can not be its own group member!');
+                return false;
+            }
+            if (!\MasterShaper\Models\TargetModel::exists(array(
+                'idx' => $idx,
+                'guid' => $guid
+            ))) {
+                static::raiseError(__METHOD__ .'(), no such target model exists!');
+                return false;
+            }
+
+            try {
+                $atg = new \MasterShaper\Models\AssignTargetToGroupModel;
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load AssignTargetToGroupModel!');
+                return false;
+            }
+
+            if (!$atg->setGroup($this->getId())) {
+                static::raiseError(get_class($atg) .'::setGroup() returned false!');
+                return false;
+            }
+
+            if (!$atg->setTarget($idx)) {
+                static::raiseError(get_class($atg) .'::setTarget() returned false!');
+                return false;
+            }
+
+            if (!$atg->save()) {
+                static::raiseError(get_class($atg) .'::save() returned false!');
+                return false;
+            }
         }
 
         return true;
