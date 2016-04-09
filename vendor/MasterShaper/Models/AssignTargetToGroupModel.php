@@ -41,12 +41,81 @@ class AssignTargetToGroupModel extends DefaultModel
         ),
     );
 
-    protected function __init()
+    public function hasGroup()
     {
-        $this->permitRpcUpdates(true);
-        $this->addRpcAction('delete');
-        $this->addRpcAction('update');
-        //$this->addRpcEnabledField('name');
+        if (!$this->hasFieldValue('group_idx')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getGroup()
+    {
+        if (!$this->hasGroup()) {
+            static::raiseError(__CLASS__ .'::hasGroup() returned false!');
+            return false;
+        }
+
+        if (($value = $this->getFieldValue('group_idx')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $value;
+    }
+
+    public function setGroup($idx)
+    {
+        if (!isset($idx) || empty($idx) || !is_numeric($idx)) {
+            static::raiseError(__METHOD__ .'(), $idx parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->setFieldValue('group_idx', $idx)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function hasTarget()
+    {
+        if (!$this->hasFieldValue('target_idx')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getTarget()
+    {
+        if (!$this->hasTarget()) {
+            static::raiseError(__CLASS__ .'::hasTarget() returned false!');
+            return false;
+        }
+
+        if (($value = $this->getFieldValue('target_idx')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $value;
+    }
+
+    public function setTarget($idx)
+    {
+        if (!isset($idx) || empty($idx) || !is_numeric($idx)) {
+            static::raiseError(__METHOD__ .'(), $idx parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->setFieldValue('target_idx', $idx)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
         return true;
     }
 }
