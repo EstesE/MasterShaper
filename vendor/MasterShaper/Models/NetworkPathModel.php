@@ -247,12 +247,12 @@ class NetworkPathModel extends DefaultModel
 
     public function isImq()
     {
-        if (!$this->hasValue('imq')) {
+        if (!$this->hasFieldValue('imq')) {
             return false;
         }
 
-        if (($value = $this->getValue('imq')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($value = $this->getFieldValue('imq')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -265,13 +265,13 @@ class NetworkPathModel extends DefaultModel
 
     public function getInterface1()
     {
-        if (!$this->hasValue('if1')) {
-            static::raiseError(__METHOD__ .'::hasValue() returned false!');
+        if (!$this->hasFieldValue('if1')) {
+            static::raiseError(__METHOD__ .'::hasFieldValue() returned false!');
             return false;
         }
 
-        if (($if1 = $this->getValue('if1')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($if1 = $this->getFieldValue('if1')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -280,12 +280,12 @@ class NetworkPathModel extends DefaultModel
 
     public function isInterface1InsideGre()
     {
-        if (!$this->hasValue('if1_inside_gre')) {
+        if (!$this->hasFieldValue('if1_inside_gre')) {
             return false;
         }
 
-        if (($inside_gre = $this->getValue('if1_inside_gre')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($inside_gre = $this->getFieldValue('if1_inside_gre')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -298,13 +298,13 @@ class NetworkPathModel extends DefaultModel
 
     public function getInterface2()
     {
-        if (!$this->hasValue('if2')) {
-            static::raiseError(__METHOD__ .'::hasValue() returned false!');
+        if (!$this->hasFieldValue('if2')) {
+            static::raiseError(__METHOD__ .'::hasFieldValue() returned false!');
             return false;
         }
 
-        if (($if2 = $this->getValue('if2')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($if2 = $this->getFieldValue('if2')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -313,12 +313,12 @@ class NetworkPathModel extends DefaultModel
 
     public function isInterface2InsideGre()
     {
-        if (!$this->hasValue('if2_inside_gre')) {
+        if (!$this->hasFieldValue('if2_inside_gre')) {
             return false;
         }
 
-        if (($inside_gre = $this->getValue('if2_inside_gre')) === false) {
-            static::raiseError(__CLASS__ .'::getValue() returned false!');
+        if (($inside_gre = $this->getFieldValue('if2_inside_gre')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
@@ -331,7 +331,7 @@ class NetworkPathModel extends DefaultModel
 
     public function hasInterface2()
     {
-        if (!$this->hasValue('if2')) {
+        if (!$this->hasFieldValue('if2')) {
             return false;
         }
 
