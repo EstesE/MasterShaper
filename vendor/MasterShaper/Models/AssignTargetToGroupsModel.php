@@ -31,8 +31,8 @@ class AssignTargetToGroupsModel extends DefaultModel
 
     protected function __init()
     {
-        $this->permitRpcUpdates(true);
-        $this->addRpcAction('delete');
+        //$this->permitRpcUpdates(true);
+        //$this->addRpcAction('delete');
         return true;
     }
 }
