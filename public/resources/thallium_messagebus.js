@@ -59,6 +59,29 @@ ThalliumMessageBus.prototype.add = function (message) {
         return false;
     }
 
+    if (!message.hasCommand()) {
+        throw new Error('Message has no command!');
+        return false;
+    }
+
+    if (!message.hasMessage()) {
+        throw new Error('Message has no message body!');
+        return false;
+    }
+
+    var command;
+    var body;
+
+    if ((command = message.getCommand()) !== false && command.length > 64) {
+        throw new Error('Message command is too long!');
+        return false;
+    }
+
+    if ((body = message.getMessage()) !== false && body.length > 16384) {
+        throw new Error('Message body is too long!');
+        return false;
+    }
+
     this.messages.push(message);
     return true;
 }
