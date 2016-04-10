@@ -53,6 +53,8 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('user', 'UserModel');
             $this->registerModel('atg', 'AssignTargetToGroupModel');
             $this->registerModel('atgs', 'AssignTargetToGroupsModel');
+            $this->registerModel('apf', 'AssignPortToFilterModel');
+            $this->registerModel('apfs', 'AssignPortToFiltersModel');
         } catch (\Exception $e) {
             $this->raiseError(__CLASS__ .'::__construct(), error on registering models!"', true);
             return false;
