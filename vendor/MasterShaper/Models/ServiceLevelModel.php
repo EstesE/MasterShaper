@@ -147,6 +147,7 @@ class ServiceLevelModel extends DefaultModel
         $this->addRpcAction('delete');
         $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
+        $this->addRpcEnabledField('active');
         return true;
     }
 
