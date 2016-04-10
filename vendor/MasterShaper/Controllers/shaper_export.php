@@ -167,22 +167,6 @@ class MASTERSHAPER_EXPORT {
          }
       }
 
-      /* L7 Protocol definitions */
-      $l7protocols = $this->addRootChild('l7protocols');
-      $result = $this->db->db_query("
-         SELECT *
-         FROM ". MYSQL_PREFIX ."l7_protocols
-         ORDER BY l7proto_name ASC
-      ");
-
-      while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-         $l7proto = $this->addSubChild('l7protocol', $l7protocols);
-         $keys = array_keys($row);
-         foreach($keys as $key) {
-            $this->addValue($l7proto, htmlspecialchars($key), htmlspecialchars($row[$key]));
-         }
-      }
-
       /* filter definition */
       $filters = $this->addRootChild('filters');
       $result = $this->db->db_query("
@@ -204,20 +188,8 @@ class MASTERSHAPER_EXPORT {
             WHERE afp.afp_filter_idx='". $row['filter_idx'] ."'
          ");
 
-         $l7protos = $this->db->db_query("
-            SELECT l7.l7proto_name
-            FROM ". MYSQL_PREFIX ."l7_protocols l7
-            INNER JOIN ". MYSQL_PREFIX ."assign_l7_protocols_to_filters afl7
-               ON l7.l7proto_idx=afl7.afl7_l7proto_idx
-            WHERE afl7.afl7_filter_idx='". $row['filter_idx'] ."' 
-         ");
-
          if($ports = $ports->fetchCol(0)) {
             $row['filter_ports'] = implode('#', $ports);
-         }
-
-         if($l7protos = $l7protos->fetchCol(0)) {
-            $row['l7_protocols'] = implode('#', $l7protos);
          }
 
          $filter = $this->addSubChild('filter', $filters);

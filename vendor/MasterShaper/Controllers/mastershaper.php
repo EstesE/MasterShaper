@@ -819,63 +819,6 @@ class MasterShaperController extends DefaultController
     } // getConnmarkId()
 
     /**
-     * return all assigned l7 protocols
-     *
-     * this function will return all assigned l7 protocol which
-     * are assigned to the provided filter
-     */
-    public function getL7Protocols($filter_idx)
-    {
-        global $db;
-
-        $list = null;
-        $numbers = "";
-
-        if (!isset($this->sth_get_l7_protocols)) {
-            $this->sth_get_l7_protocols = $db->prepare("
-                    SELECT
-                    afl7_l7proto_idx
-                    FROM
-                    TABLEPREFIXassign_l7_protocols_to_filters
-                    WHERE
-                    afl7_filter_idx LIKE ?
-                    ");
-        }
-
-        $db->execute($this->sth_get_l7_protocols, array(
-                    $filter_idx
-                    ));
-
-        while ($protocol = $this->sth_get_l7_protocols->fetch()) {
-            $numbers.= $protocol->afl7_l7proto_idx .",";
-        }
-
-        $db->db_sth_free($this->sth_get_l7_protocols);
-
-        if (empty($numbers)) {
-            return null;
-        }
-
-        $numbers = substr($numbers, 0, strlen($numbers)-1);
-        $sth = $db->prepare("
-                SELECT
-                l7proto_name
-                FROM
-                TABLEPREFIXl7_protocols
-                WHERE
-                l7proto_idx IN (?)
-                ");
-
-        $list = $db->execute($sth, array(
-                    $numbers
-                    ));
-
-        $db->db_sth_free($sth);
-        return $list;
-
-    } // getL7Protocols
-
-    /**
      * return content around monitor
      */
     public function monitor($mode)

@@ -50,7 +50,6 @@ class MASTERSHAPER_PAGE {
          case 'about':
          case 'tasklist':
          case 'update-iana':
-         case 'update-l7':
          case 'list':
             $content = $this->showList();
             break;

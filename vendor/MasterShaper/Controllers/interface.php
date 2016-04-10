@@ -1396,18 +1396,6 @@ class Ruleset_Interface {
             else
                array_push($proto_ary, "");
 
-            // Layer7 protocol matching
-            if($l7protocols = $ms->getL7Protocols($filter->filter_idx)) {
-
-               $l7_cnt = 0;
-               $l7_protos = array();
-
-               while($l7proto = $l7protocols->fetch()) {
-                  array_push($l7_protos, $l7proto->l7proto_name);
-                  $l7_cnt++;
-               }
-            }
-
             // TOS flags matching
             if($filter->filter_tos > 0)
                $match_str.= " -m tos --tos ". $filter->filter_tos;
@@ -1495,15 +1483,7 @@ class Ruleset_Interface {
                      break;
 
                   default:
-
-                     // is there any l7 filter protocol we have to attach to the filter?
-                     if(isset($l7_cnt) && $l7_cnt > 0) {
-                        foreach($l7_protos as $l7_proto) {
-                           array_push($match_ary, $match_str ." -m layer7 --l7proto ". $l7_proto);
-                        }
-                     }
-                     else
-                        array_push($match_ary, $match_str);
+                     array_push($match_ary, $match_str);
                      break;
                }
             }
