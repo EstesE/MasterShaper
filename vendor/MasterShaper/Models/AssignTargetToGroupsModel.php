@@ -28,13 +28,6 @@ class AssignTargetToGroupsModel extends DefaultModel
     protected static $model_column_prefix = 'atg';
     protected static $model_has_items = true;
     protected static $model_items_model = 'AssignTargetToGroupModel';
-
-    protected function __init()
-    {
-        //$this->permitRpcUpdates(true);
-        //$this->addRpcAction('delete');
-        return true;
-    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
