@@ -87,6 +87,10 @@
    <div class="ui icon buttons">
     <a id="edit_link_{$item->getId()}" href="{get_url page='service-levels' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
     <a id="delete_link_{$item->getId()}" class="delete item ui icon button action link" data-action-title="Deleting {$item->getName()|escape}" data-modal-title="Delete {$item->getName()|escape}" data-modal-text="Please confirm to delete {$item->getName()|escape}" data-id="{$item->getId()}" data-guid="{$item->getGuid()}" data-model="service_level" data-content="Delete {$item->getName()|escape}" data-variation="wide"><i class="remove circle icon"></i></a>
+    <div class="ui icon button slider checkbox item state" data-target="sl_state_{$item->getId()}">
+     <input name="sl_state_{$item->getId()}" type="checkbox" data-action="update" data-model="service_level" data-key="sl_active" data-id="{$item->getId()}" data-guid="{$item->getGuid()}" value="Y" {if $item->isActive()}checked="checked"{/if}/>
+     <label></label>
+    </div>
    </div>
   </td>
  </tr>
