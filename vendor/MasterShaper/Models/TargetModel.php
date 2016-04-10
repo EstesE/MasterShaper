@@ -55,8 +55,8 @@ class TargetModel extends DefaultModel
         ),
     );
     protected static $model_links = array(
-        'TargetToGroupModel/target_idx',
-        'TargetToGroupsModel/group_idx',
+        'AssignTargetToGroupsModel/target_idx',
+        'AssignTargetToGroupsModel/group_idx',
     );
 
     protected static $valid_matches = array(
