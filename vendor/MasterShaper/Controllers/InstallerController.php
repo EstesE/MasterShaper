@@ -39,7 +39,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -56,7 +56,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -71,7 +71,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -90,7 +90,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -116,7 +116,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -153,7 +153,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -172,7 +172,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -194,7 +194,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -215,7 +215,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -233,7 +233,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -251,7 +251,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -298,20 +298,22 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
 
         if (!$db->checkTableExists('TABLEPREFIXsettings')) {
             $table_sql = "CREATE TABLE `TABLEPREFIXsettings` (
+                `setting_idx` int(11) NOT NULL auto_increment,
+                `setting_guid` VARCHAR(255) DEFAULT NULL,
                 `setting_key` varchar(255) NOT NULL default '',
                 `setting_value` varchar(255) default NULL,
-                PRIMARY KEY  (`setting_key`)
+                PRIMARY KEY  (`setting_idx`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -325,7 +327,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -343,7 +345,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -365,7 +367,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MEMORY DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -393,7 +395,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
 
@@ -431,7 +433,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
 
@@ -460,7 +462,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
+                static::raiseError("Failed to create 'archive' table");
                 return false;
             }
         }
@@ -479,7 +481,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `apf_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `apf_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -488,7 +490,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `afp_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `afp_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -497,7 +499,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `atg_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `atg_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -506,7 +508,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `apc_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `apc_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -515,7 +517,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `chain_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `chain_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -524,7 +526,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `filter_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `filter_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -533,7 +535,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `if_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `if_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -542,7 +544,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `netpath_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `netpath_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -551,7 +553,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `pipe_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `pipe_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -560,7 +562,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `port_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `port_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -569,7 +571,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `proto_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `proto_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -578,7 +580,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `sl_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `sl_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -587,7 +589,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `target_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `target_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -596,7 +598,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `user_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `user_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -605,7 +607,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `host_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `host_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -614,7 +616,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `task_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `task_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(23);
         return true;
@@ -665,7 +667,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `target_active` VARCHAR(1) DEFAULT NULL
             AFTER
                 `target_mac`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(25);
         return true;
@@ -682,7 +684,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `port_active` char(1) default NULL
             AFTER
                 `port_user_defined`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
             "ALTER TABLE
@@ -691,7 +693,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `proto_active` char(1) default NULL
             AFTER
                 `proto_user_defined`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(26);
         return true;
@@ -708,7 +710,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `sl_active` char(1) default NULL
             AFTER
                 `sl_name`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(27);
         return true;
@@ -723,7 +725,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 TABLEPREFIXusers
             CHANGE
                 `user_pass` `user_password` varchar(32) default NULL"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(28);
         return true;
@@ -738,7 +740,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 TABLEPREFIXusers
             MODIFY
                 `user_password` varchar(255) default NULL"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(29);
         return true;
@@ -752,9 +754,62 @@ class InstallerController extends \Thallium\Controllers\InstallerController
             "DROP TABLE
                 TABLEPREFIXassign_l7_protocols_to_filters,
                 TABLEPREFIXl7_protocols"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(30);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV31()
+    {
+        global $ms, $db;
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXsettings
+            DROP
+                PRIMARY KEY"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXsettings
+            ADD
+                `setting_idx` int(11) NOT NULL auto_increment PRIMARY KEY FIRST,
+            ADD
+                `setting_guid` VARCHAR(255) DEFAULT NULL
+            AFTER
+                `setting_idx`"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+        $result = $db->query(
+            "SELECT
+                *
+            FROM
+                TABLEPREFIXsettings"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+        $sth = $db->prepare(
+            "UPDATE
+                TABLEPREFIXsettings
+            SET
+                setting_guid=?
+            WHERE
+                setting_idx=?
+            AND
+                setting_key=?"
+        ) or static::raiseError(__METHOD__ .'(), SQL statement prepare failure!');
+
+        while ($row = $result->fetch()) {
+            $db->execute($sth, array(
+                $ms->createGuid(),
+                $row->setting_idx,
+                $row->setting_key
+            )) or static::raiseError(__METHOD__ .'(), SQL statement execute failure!');
+        }
+
+        $db->freeStatement($sth);
+        $db->setDatabaseSchemaVersion(31);
         return true;
     }
 }
