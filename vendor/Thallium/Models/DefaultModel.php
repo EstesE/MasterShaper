@@ -28,6 +28,7 @@ abstract class DefaultModel
     protected static $model_fields = array();
     protected static $model_has_items = false;
     protected static $model_items_model;
+    protected static $model_links = array();
     protected $model_load_by = array();
     protected $model_sort_order = array();
     protected $model_items = array();
@@ -226,6 +227,39 @@ abstract class DefaultModel
                 }
             }
         }
+
+        if (isset(static::$model_links) || !empty(static::$model_links)) {
+            if (!is_array(static::$model_links)) {
+                static::raiseError(__METHOD__ .'(), $model_links is not an array!', true);
+                return false;
+            }
+            foreach (static::$model_links as $link) {
+                if (!isset($link) || empty($link) || !is_string($link)) {
+                    static::raiseError(__METHOD__ .'(), $model_links contains invalid member!', true);
+                    return false;
+                }
+                if ((list($model, $field) = explode('/', $link)) === false) {
+                    static::raiseError(__METHOD__ .'(), failed to explode() $model_links member!', true);
+                    return false;
+                }
+                if (!isset($model) || empty($model) || !is_string($model)) {
+                    static::raiseError(__METHOD__ .'(), $model_links member model value is invalid!', true);
+                    return false;
+                }
+                if (!$thallium->isValidModel($model)) {
+                    static::raiseError(
+                        __METHOD__ .'(), $model_links member model value refers an unknown model!',
+                        true
+                    );
+                    return false;
+                }
+                if (!isset($field) || empty($field) || !is_string($field)) {
+                    static::raiseError(__METHOD__ .'(), $model_links member model field is invalid!', true);
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
@@ -537,6 +571,13 @@ abstract class DefaultModel
             }
         }
 
+        if (static::hasModelLinks()) {
+            if (!$this::deleteModelLinks()) {
+                static::raiseError(__CLASS__ .'::deleteModelLinks() returned false!');
+                return false;
+            }
+        }
+
         if (static::isHavingItems()) {
             if (!$this->deleteItems()) {
                 static::raiseError(__CLASS__ .'::deleteItems() returned false!');
@@ -751,7 +792,6 @@ abstract class DefaultModel
                     $db->freeStatement($child_sth);
                 }
                 $db->freeStatement($sth);
-
             }
         }
 
@@ -807,7 +847,6 @@ abstract class DefaultModel
         global $ms;
 
         if ($this->hasVirtualFields() && $this->hasVirtualField($name)) {
-
             if (($name = static::getFieldNamefromColumn($name)) === false) {
                 static::raiseError(__CLASS__ .'::getFieldNameFromColumn() returned false!', true);
                 return;
@@ -871,7 +910,7 @@ abstract class DefaultModel
            sometimes we have to cast values to their field types.
         */
         if ($value_type == 'string' &&
-            $field_type == 'int' &&
+            $field_type == FIELD_INT &&
             ctype_digit($value) &&
             is_numeric($value)
         ) {
@@ -885,13 +924,13 @@ abstract class DefaultModel
             $value_type = FIELD_GUID;
         /* distinguish YESNO */
         } elseif ($value_type == 'string' &&
-            $field_type == 'yesno' &&
+            $field_type == FIELD_YESNO &&
             in_array($value, array('yes', 'no', 'Y', 'N'))
         ) {
             $value_type = 'yesno';
         /* distinguish timestamps */
         } elseif ($value_type == 'string' &&
-            $field_type == 'timestamp'
+            $field_type == FIELD_TIMESTAMP
         ) {
             $value_type = 'timestamp';
         }
@@ -935,7 +974,6 @@ abstract class DefaultModel
         }
 
         if (isset($this->model_values[$field])) {
-
             if (!static::hasFieldGetMethod($field)) {
                 return $this->model_values[$field];
             }
@@ -2431,6 +2469,47 @@ abstract class DefaultModel
         if ($num_rows > 1) {
             static::raiseError(__METHOD__ .'(), more than one object found!');
             return false;
+        }
+
+        return true;
+    }
+
+    protected static function hasModelLinks()
+    {
+        if (!isset(static::$model_links) ||
+            empty(static::$model_links)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function deleteModelLinks()
+    {
+        global $thallium;
+
+        foreach (static::$model_links as $link) {
+            list($model, $field) = explode('/', $link);
+
+            if (($model_name = $thallium->getFullModelName($model)) === false) {
+                static::raiseError(get_class($thallium) .'::getFullModelName() returned false!');
+                return false;
+            }
+
+            try {
+                $model = new $model_name(array(
+                    $field => $this->getId()
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ ."(), failed to load {$model_name}!");
+                return false;
+            }
+
+            if (!$model->delete()) {
+                static::raiseError(get_class($model) .'::delete() returned false!');
+                return false;
+            }
         }
 
         return true;
