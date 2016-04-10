@@ -80,8 +80,6 @@
   <div class="menu">
    <a href="{$app_web_path}/others/updateiana/" class="item {get_menu_state page='Others Update IANA'}"><img src="{$icon_rules_update}" />&nbsp;Update Ports &amp; Protocols</a>
    <!--<div class="menu_help">update list of IANA-assigned ports and protocols</div>-->
-   <a href="{$app_web_path}/others/updatel7/" class="item {get_menu_state page='Others Update L7'}"><img src="{$icon_rules_update}" />&nbsp;Update L7 Protocols</a>
-   <!--<div class="menu_help">update internal list of known L7-filter patterns</div>-->
    <a href="http://www.mastershaper.org" class="item" target="_blank">mastershaper.org</a>
    <!--<div class="menu_help">PDF document on mastershaper.org</div>-->
    <a href="{$app_web_path}/about/" class="item {get_menu_state page='About'}"><img src="{$icon_users}" />&nbsp;About</a>
