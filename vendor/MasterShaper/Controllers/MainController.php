@@ -46,7 +46,9 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('pipe', 'PipeModel');
             $this->registerModel('pipes', 'PipesModel');
             $this->registerModel('port', 'PortModel');
+            $this->registerModel('ports', 'PortsModel');
             $this->registerModel('protocol', 'ProtocolModel');
+            $this->registerModel('protocols', 'ProtocolsModel');
             $this->registerModel('service_level', 'ServiceLevelModel');
             $this->registerModel('service_levels', 'ServiceLevelsModel');
             $this->registerModel('target', 'TargetModel');
