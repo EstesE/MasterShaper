@@ -30,7 +30,6 @@ class FiltersView extends DefaultView
     private $filters;
     private $protocols;
     private $ports;
-    private $l7_filters;
 
     public function __construct()
     {
@@ -178,12 +177,6 @@ class FiltersView extends DefaultView
             array(&$this, "smarty_port_select_list"),
             false
         );
-        $tmpl->registerPlugin(
-            "function",
-            "l7_select_list",
-            array(&$this, "smarty_l7_select_list"),
-            false
-        );
 
         if (!$this->loadProtocols()) {
             static::raiseError(__CLASS__ .'::loadProtocols() returned false!');
@@ -207,7 +200,6 @@ class FiltersView extends DefaultView
         }
 
         if ($index < count($this->avail_filters)) {
-
             $filter_idx = $this->avail_filters[$index];
             $filter =  $this->filters[$filter_idx];
 
@@ -264,7 +256,6 @@ class FiltersView extends DefaultView
         return true;
     }
 
-
     public function smarty_protocol_select_list($params, &$smarty)
     {
         if (!array_key_exists('proto_idx', $params)) {
@@ -302,7 +293,6 @@ class FiltersView extends DefaultView
         global $ms, $db;
 
         switch ($params['mode']) {
-
             case 'unused':
                 $sth = $db->prepare(
                     "SELECT
@@ -366,86 +356,6 @@ class FiltersView extends DefaultView
 
         return $string;
 
-    }
-
-    public function smarty_l7_select_list($params, &$smarty)
-    {
-        if (!array_key_exists('filter_idx', $params)) {
-            $tmpl->trigger_error("getSLList: missing 'filter_idx' parameter", E_USER_WARNING);
-            $repeat = false;
-            return;
-        }
-        if (!array_key_exists('mode', $params)) {
-            $tmpl->trigger_error("getSLList: missing 'mode' parameter", E_USER_WARNING);
-            $repeat = false;
-            return;
-        }
-
-        global $ms, $db;
-
-        switch ($params['mode']) {
-
-            case 'unused':
-                $sth = $db->prepare(
-                    "SELECT
-                        l7proto_idx,
-                        l7proto_name
-                    FROM
-                        TABLEPREFIXl7_protocols
-                    LEFT JOIN
-                        TABLEPREFIXassign_l7_protocols_to_filters
-                    ON
-                        l7proto_idx=afl7_l7proto_idx
-                    AND
-                        afl7_filter_idx LIKE ?
-                    WHERE
-                        afl7_filter_idx <> ?
-                    OR
-                        ISNULL(afl7_filter_idx)
-                    ORDER BY
-                        l7proto_name ASC"
-                );
-
-                $l7protos = $db->execute($sth, array(
-                    $params['filter_idx'],
-                    $params['filter_idx']
-                ));
-                break;
-
-            case 'used':
-                $sth = $db->prepare(
-                    "SELECT
-                        l7proto_idx,
-                        l7proto_name
-                    FROM
-                        TABLEPREFIXassign_l7_protocols_to_filters
-                    LEFT JOIN
-                        TABLEPREFIXl7_protocols
-                    ON
-                        l7proto_idx=afl7_l7proto_idx
-                    WHERE
-                        afl7_filter_idx LIKE ?
-                    ORDER BY
-                        l7proto_name ASC"
-                );
-
-                $l7protos = $db->db_execute($sth, array(
-                    $params['filter_idx']
-                ));
-                break;
-
-            default:
-                static::raiseError('unknown mode', true);
-                break;
-        }
-
-        while ($l7proto = $sth->fetch()) {
-            $string.= "<option value=\"" . $l7proto->l7proto_idx ."\">". $l7proto->l7proto_name ."</option>\n";
-        }
-
-        $db->freeStatement($sth);
-
-        return $string;
     }
 }
 
