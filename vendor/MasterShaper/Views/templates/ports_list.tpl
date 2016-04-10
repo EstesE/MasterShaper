@@ -45,6 +45,7 @@
     </div>
    </th>
    <th>Port</th>
+   <th>Number</th>
    <th class="no-sort three wide column">
     <div class="two column ui grid">
      <div class="column">Actions</div>
@@ -65,13 +66,32 @@
    </div>
   </td>
   <td>
-   <div name="port_{$item->getId()}" class="filterable inline editable content" data-current-value="{$item->getName()}" data-orig-value="{$item->getName()}" style="float: left;">{$item->getName()}</div>&nbsp;
+   <div name="port_{$item->getId()}" class="filterable inline editable content" data-current-value="{if $item->hasName()}{$item->getName()}{/if}" data-orig-value="{if $item->hasName()}{$item->getName()}{/if}" style="float: left;">{if $item->hasName()}{$item->getName()}{/if}</div>&nbsp;
    <a name="port_{$item->getId()}" class="inline editable edit link" data-inline-name="port_{$item->getId()}"><i class="tiny edit icon"></i></a>
    <div name="port_{$item->getId()}" class="inline editable formsrc" style="display: none;">
     <form class="ui form" onsubmit="return false;">
      <div class="fields">
       <div class="field small ui input">
-       <input type="text" name="port_{$item->getId()}" value="{$item->getName()}" data-action="update" data-model="port" data-key="port_name" data-id="{$item->getId()}" />
+       <input type="text" name="port_{$item->getId()}" value="{if $item->hasName()}{$item->getName()}{/if}" data-action="update" data-model="port" data-key="port_name" data-id="{$item->getId()}" />
+      </div>
+      <div class="field">
+       <button class="circular ui icon button inline editable save" type="submit"><i class="save icon"></i></button>
+      </div>
+      <div class="field">
+       <button class="circular ui icon button inline editable cancel"><i class="cancel icon"></i></button>
+      </div>
+     </div>
+    </form>
+   </div>
+  </td>
+  <td>
+   <div name="number_{$item->getId()}" class="filterable inline editable content" data-current-value="{if $item->hasNumber()}{$item->getNumber()}{/if}" data-orig-value="{if $item->hasNumber()}{$item->getNumber()}{/if}" style="float: left;">{if $item->hasNumber()}{$item->getNumber()}{/if}</div>&nbsp;
+   <a name="number_{$item->getId()}" class="inline editable edit link" data-inline-name="number_{$item->getId()}"><i class="tiny edit icon"></i></a>
+   <div name="number_{$item->getId()}" class="inline editable formsrc" style="display: none;">
+    <form class="ui form" onsubmit="return false;">
+     <div class="fields">
+      <div class="field small ui input">
+       <input type="text" name="number_{$item->getId()}" value="{if $item->hasNumber()}{$item->getNumber()}{/if}" data-action="update" data-model="port" data-key="port_number" data-id="{$item->getId()}" />
       </div>
       <div class="field">
        <button class="circular ui icon button inline editable save" type="submit"><i class="save icon"></i></button>
@@ -98,7 +118,7 @@
  </tbody>
  <tfoot>
   <tr>
-   <th colspan="3">
+   <th colspan="4">
     <div class="ui left floated borderless small menu">
      <a class="delete item" data-action-title="Deleting selected ports" data-modal-title="Delete selected ports" data-modal-text="Do you really want to delete selected ports?" data-id="selected" data-guid="selected" data-model="ports"><i class="remove circle icon"></i>Delete selected</a>
      <a class="delete item" data-action-title="Deleting all ports" data-modal-title="Delete all ports" data-modal-text="Do you really want to delete all ports?" data-id="all" data-guid="all" data-model="ports"><i class="remove circle icon"></i>Delete all</a>
