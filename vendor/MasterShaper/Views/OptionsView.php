@@ -111,18 +111,16 @@ class OptionsView extends DefaultView
     {
         /* If authentication is enabled, check permissions */
         if ($ms->getOption("authentication") == "Y" &&
-                !$ms->checkPermissions("user_manage_options")) {
-
+            !$ms->checkPermissions("user_manage_options")
+        ) {
             $ms->printError(
                 "<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;".  _("Manage Options"),
                 _("You do not have enough permissions to access this module!")
             );
             return 0;
-
         }
 
         if (!isset($_GET['restoreit'])) {
-
             $ms->startTable(
                 "<img src=\"". ICON_OPTIONS ."\" alt=\"option icon\" />&nbsp;".
                 _("Restore MasterShaper Configuration")
@@ -149,21 +147,15 @@ class OptionsView extends DefaultView
 <?php
                 $ms->closeTable();
         } else {
-
             $this->resetConfig(1);
 
             $config = array();
 
             if ($_FILES['ms_config']) {
-
                 if ($config = fopen($_FILES['ms_config']['tmp_name'], "r")) {
-
                     while ($line = fgets($config, 2048)) {
-
                         $line = trim($line);
-
                         if (($line != "") && (!preg_match("/^#/", $line))) {
-
                             list($set, $parameters) = preg_split("/:/", $line, 2);
 
                             $object = unserialize(stripslashes($parameters));
@@ -174,9 +166,7 @@ class OptionsView extends DefaultView
                     fclose($config);
                 }
             }
-
             $ms->goStart();
-
         }
 
     } // restoreConfig()
@@ -268,10 +258,6 @@ class OptionsView extends DefaultView
                             ."VALUES ('". $id ."', '". $ms->getTargetByName($member) ."')");
                 }
                 break;
-            case 'L7Proto':
-                $db->query("INSERT INTO TABLEPREFIXl7_protocols (l7proto_idx, l7proto_name) "
-                        ."VALUES ('". $object->l7proto_idx ."', '". $object->l7proto_name ."')");
-                break;
             case 'Filters':
                 $db->query("INSERT INTO TABLEPREFIXfilters (filter_idx, filter_name, filter_protocol_id, filter_tos, "
                         ."filter_tcpflag_syn, filter_tcpflag_ack, filter_tcpflag_fin, "
@@ -311,11 +297,6 @@ class OptionsView extends DefaultView
                     $db->query("INSERT INTO TABLEPREFIXassign_ports_to_filters (afp_filter_idx, afp_port_idx) "
                             ."VALUES ('". $id ."', '". $ms->getPortByName($port) ."')");
                 }
-                $l7protos = preg_split('/#/', $object->l7_protocols);
-                foreach ($l7protos as $l7proto) {
-                    $db->query("INSERT INTO TABLEPREFIXassign_l7_protocols_to_filters (afl7_filter_idx, afl7_l7proto_idx) "
-                            ."VALUES ('". $id ."', '". $ms->getL7ProtocolByName($l7proto) ."')");
-                }
                 break;
             case 'Chains':
                 $db->query("INSERT INTO TABLEPREFIXchains (chain_name, chain_active, chain_sl_idx, "
@@ -329,11 +310,22 @@ class OptionsView extends DefaultView
                         ."', '". $ms->getServiceLevelByName($object->fb_name) ."')");
                 break;
             case 'Pipes':
-                $db->query("INSERT INTO TABLEPREFIXpipes (pipe_name, pipe_sl_idx, "
-                        ."pipe_src_target, pipe_dst_target, pipe_direction, pipe_active)
-                    VALUES ('". $object->pipe_name
-                            ."', '". $ms->getServiceLevelByName($object->sl_name)
-                            ."', '". $object->pipe_src_target ."', '". $object->pipe_dst_target ."', '". $object->pipe_direction ."', '". $object->pipe_active ."')");
+                $db->query(
+                    "INSERT INTO TABLEPREFIXpipes (
+                        pipe_name,
+                        pipe_sl_idx,
+                        pipe_src_target,
+                        pipe_dst_target,
+                        pipe_direction,
+                        pipe_active
+                    ) VALUES (
+                        '". $object->pipe_name
+                    ."', '". $ms->getServiceLevelByName($object->sl_name)
+                    ."', '". $object->pipe_src_target
+                    ."', '". $object->pipe_dst_target
+                    ."', '". $object->pipe_direction
+                    ."', '". $object->pipe_active ."')"
+                );
                 $id = $db->db_getid();
                 $filters = preg_split('/#/', $object->filters);
                 foreach ($filters as $filter) {
@@ -358,7 +350,6 @@ class OptionsView extends DefaultView
                 _("You do not have enough permissions to access this module!")
             );
             return 0;
-
         }
 
         if (!isset($_GET['doit']) && !$doit) {
@@ -371,7 +362,6 @@ class OptionsView extends DefaultView
                 ."forwarded to MasterShaper Installer after you have confirmed this procedure.")
             );
         } else {
-
             $db->db_truncate_table("TABLEPREFIXassign_ports_to_filters");
             $db->db_truncate_table("TABLEPREFIXassign_filters_to_pipes");
             $db->db_truncate_table("TABLEPREFIXassign_targets_to_targets");
@@ -383,8 +373,6 @@ class OptionsView extends DefaultView
             $db->db_truncate_table("TABLEPREFIXstats");
             $db->db_truncate_table("TABLEPREFIXtargets");
             $db->db_truncate_table("TABLEPREFIXtc_ids");
-            $db->db_truncate_table("TABLEPREFIXl7_protocols");
-            $db->db_truncate_table("TABLEPREFIXassign_l7_protocols_to_filters");
             $db->db_truncate_table("TABLEPREFIXusers");
             $db->db_truncate_table("TABLEPREFIXinterfaces");
             $db->db_truncate_table("TABLEPREFIXnetwork_paths");
@@ -395,7 +383,6 @@ class OptionsView extends DefaultView
             if (isset($_GET['doit'])) {
                 $ms->goBack();
             }
-
         }
 
     } // resetConfig()
@@ -407,148 +394,24 @@ class OptionsView extends DefaultView
 
     } // add()
 
-    public function updateL7Protocols()
-    {
-
-        /* If authentication is enabled, check permissions */
-        if ($ms->getOption("authentication") == "Y" &&
-            !$ms->checkPermissions("user_manage_options")) {
-
-            $ms->printError(
-                "<img src=\"". ICON_OPTIONS ."\" alt=\"options icon\" />&nbsp;". _("Manage Options"),
-                _("You do not have enough permissions to access this module!")
-            );
-            return 0;
-
-        }
-
-        if (!isset($_GET['doit'])) {
-
-            $ms->startTable(
-                "<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;"
-                . _("Update Layer7 Protocols")
-            );
-?>
-                <form action="<?php print $ms->self ."?mode=". $ms->mode ."&amp;doit=1"; ?>" method="POST">
-                <table style="width: 100%; text-align: center;" class="withborder2">
-                <tr>
-                <td>
-                <?php print _("Please enter the path in the local filesystem, where to find .pat files of layer7 iptables match."); ?>
-                </td>
-                </tr>
-                <tr>
-                <td>
-                <input type="text" name="basedir" size="30" value="/etc/l7-protocols">
-                <input type="submit" value="Submit">
-                </td>
-                </tr>
-                </table>
-                </form>
-                <?php
-                $ms->closeTable();
-
-        } else {
-
-            $ms->startTable("<img src=\"". ICON_UPDATE ."\" alt=\"option icon\" />&nbsp;". _("Update Layer7 Protocols"));
-?>
-                <table style="width: 100%; text-align: center;" class="withborder2">
-                <tr>
-                <td>
-<?php
-            $protocols = array();
-            $retval = $this->findPatFiles($protocols, $_POST['basedir']);
-            if ($retval == "") {
-?>
-Updating...<br />
-<br />
-<?php
-                $new = 0;
-                $deleted = 0;
-
-                foreach ($protocols as $protocol) {
-
-                    // Check if already in database
-                    if (!$db->db_fetchSingleRow(
-                        "SELECT l7proto_idx FROM TABLEPREFIXl7_protocols WHERE "
-                                ."l7proto_name LIKE '". $protocol ."'"
-                    )) {
-                        $db->query(
-                            "INSERT INTO TABLEPREFIXl7_protocols (l7proto_name) VALUES "
-                                ."('". $protocol ."')"
-                        );
-
-                        $new++;
-                    }
-                }
-
-                if (count($protocols) > 0) {
-
-                    $result = $db->query("SELECT l7proto_idx, l7proto_name FROM TABLEPREFIXl7_protocols");
-                    while ($row = $result->fetch()) {
-
-                        if (!in_array($row->l7proto_name, $protocols)) {
-
-                            $db->query(
-                                "DELETE FROM TABLEPREFIXl7_protocols WHERE l7proto_idx='". $row->l7proto_idx ."'"
-                            );
-                            $deleted++;
-
-                        }
-                    }
-                }
-                ?>
-                    <?php print $new ." ". _("Protocols have been added."); ?><br />
-                    <?php print $deleted ." ". _("Protocols have been deleted."); ?><br />
-                    <?php
-            } else {
-                ?>
-                    <?php print $retval; ?>
-                    <?php
-            }
-            ?>
-                <br />
-                <a href="<?php print $ms->self; ?>"><? print _("Back"); ?></a>
-                </td>
-                </tr>
-                </table>
-                <?php
-                $ms->closeTable();
-
-        }
-
-    } // updateL7Protocols()
-
     private function findPatFiles(&$files, $path)
     {
 
         if (is_dir($path) && $dir = opendir($path)) {
-
             while ($file = readdir($dir)) {
-
                 if ($file != "." && $file != "..") {
-
                     if (is_dir($path ."/". $file)) {
-
                         $this->findPatFiles($files, $path ."/". $file);
-
                     }
 
                     if (preg_match("/\.pat$/", $file)) {
-
                         array_push($files, str_replace(".pat", "", $file));
-
                     }
-
                 }
-
             }
-
             return "";
-
         } else {
-
             return "<font style=\"color: '#FF0000';\">". _("Can't access directory") ." ". $path ."!</font><br />\n";
-
         }
 
     } // findPatFiles()
