@@ -44,27 +44,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
             }
         }
 
-        if (!$db->checkTableExists('TABLEPREFIXassign_l7_protocols_to_filters')) {
-
-            $table_sql = "CREATE TABLE `TABLEPREFIXassign_l7_protocols_to_filters` (
-                `afl7_idx` int(11) NOT NULL auto_increment,
-                `afl7_guid` VARCHAR(255) DEFAULT NULL,
-                `afl7_filter_idx` int(11) NOT NULL,
-                `afl7_l7proto_idx` int(11) NOT NULL,
-                PRIMARY KEY  (`afl7_idx`),
-                KEY `afl7_filter_idx` (`afl7_filter_idx`),
-                KEY `afl7_l7proto_idx` (`afl7_l7proto_idx`)
-                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-
-            if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
-                return false;
-            }
-
-        }
-
         if (!$db->checkTableExists('TABLEPREFIXassign_ports_to_filters')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_ports_to_filters` (
                 `afp_idx` int(11) NOT NULL auto_increment,
                 `afp_guid` VARCHAR(255) DEFAULT NULL,
@@ -82,7 +62,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXassign_targets_to_targets')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_targets_to_targets` (
                 `atg_idx` int(11) NOT NULL auto_increment,
                 `atg_guid` VARCHAR(255) DEFAULT NULL,
@@ -98,7 +77,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXassign_pipes_to_chains')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_pipes_to_chains` (
                 `apc_idx` int(11) NOT NULL auto_increment,
                 `apc_guid` VARCHAR(255) DEFAULT NULL,
@@ -118,7 +96,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXchains')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXchains` (
                 `chain_idx` int(11) NOT NULL auto_increment,
                 `chain_guid` VARCHAR(255) DEFAULT NULL,
@@ -145,7 +122,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXfilters')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXfilters` (
                 `filter_idx` int(11) NOT NULL auto_increment,
                 `filter_guid` VARCHAR(255) DEFAULT NULL,
@@ -183,7 +159,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXinterfaces')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXinterfaces` (
                 `if_idx` int(11) NOT NULL auto_increment,
                 `if_guid` VARCHAR(255) DEFAULT NULL,
@@ -202,23 +177,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
             }
         }
 
-        if (!$db->checkTableExists('TABLEPREFIXl7_protocols')) {
-
-            $table_sql = "CREATE TABLE `TABLEPREFIXl7_protocols` (
-                `l7proto_idx` int(11) NOT NULL auto_increment,
-                `l7proto_guid` VARCHAR(255) DEFAULT NULL,
-                `l7proto_name` varchar(255) default NULL,
-                PRIMARY KEY  (`l7proto_idx`)
-                ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-
-            if ($db->query($table_sql) === false) {
-                $this->raiseError("Failed to create 'archive' table");
-                return false;
-            }
-        }
-
         if (!$db->checkTableExists('TABLEPREFIXnetwork_paths')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXnetwork_paths` (
                 `netpath_idx` int(11) NOT NULL auto_increment,
                 `netpath_guid` VARCHAR(255) DEFAULT NULL,
@@ -241,7 +200,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXpipes')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXpipes` (
                 `pipe_idx` int(11) NOT NULL auto_increment,
                 `pipe_guid` VARCHAR(255) DEFAULT NULL,
@@ -263,7 +221,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXports')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXports` (
                 `port_idx` int(11) NOT NULL auto_increment,
                 `port_guid` VARCHAR(255) DEFAULT NULL,
@@ -282,7 +239,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXprotocols')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXprotocols` (
                 `proto_idx` int(11) NOT NULL auto_increment,
                 `proto_guid` VARCHAR(255) DEFAULT NULL,
@@ -301,7 +257,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXservice_levels')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXservice_levels` (
                 `sl_idx` int(11) NOT NULL auto_increment,
                 `sl_guid` VARCHAR(255) DEFAULT NULL,
@@ -349,7 +304,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXsettings')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXsettings` (
                 `setting_key` varchar(255) NOT NULL default '',
                 `setting_value` varchar(255) default NULL,
@@ -363,7 +317,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXstats')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXstats` (
                 `stat_time` int(11) NOT NULL default '0',
                 `stat_data` text,
@@ -378,7 +331,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXtargets')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXtargets` (
                 `target_idx` int(11) NOT NULL auto_increment,
                 `target_guid` VARCHAR(255) DEFAULT NULL,
@@ -397,7 +349,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXtc_ids')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXtc_ids` (
                 `id_pipe_idx` int(11) default NULL,
                 `id_chain_idx` int(11) default NULL,
@@ -420,7 +371,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXusers')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXusers` (
                 `user_idx` int(11) NOT NULL auto_increment,
                 `user_guid` VARCHAR(255) DEFAULT NULL,
@@ -471,7 +421,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXhost_profiles')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXhost_profiles` (
                 `host_idx` int(11) NOT NULL auto_increment,
                 `host_guid` VARCHAR(255) DEFAULT NULL,
@@ -498,7 +447,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         if (!$db->checkTableExists('TABLEPREFIXtasks')) {
-
             $table_sql = "CREATE TABLE `TABLEPREFIXtasks` (
                 `task_idx` int(11) NOT NULL auto_increment,
                 `task_guid` VARCHAR(255) DEFAULT NULL,
@@ -531,15 +479,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `apf_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `apf_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
-
-        $db->query(
-            "ALTER TABLE
-                TABLEPREFIXassign_l7_protocols_to_filters
-            ADD
-                `afl7_guid` VARCHAR(255) DEFAULT NULL
-            AFTER
-                `afl7_idx`"
         ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
@@ -594,15 +533,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `if_guid` VARCHAR(255) DEFAULT NULL
             AFTER
                 `if_idx`"
-        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
-
-        $db->query(
-            "ALTER TABLE
-                TABLEPREFIXl7_protocols
-            ADD
-                `l7proto_guid` VARCHAR(255) DEFAULT NULL
-            AFTER
-                `l7proto_idx`"
         ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->query(
@@ -811,6 +741,20 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
 
         $db->setDatabaseSchemaVersion(29);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV30()
+    {
+        global $db;
+
+        $db->query(
+            "DROP TABLE
+                TABLEPREFIXassign_l7_protocols_to_filters,
+                TABLEPREFIXl7_protocols"
+        ) or $this->raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->setDatabaseSchemaVersion(30);
         return true;
     }
 }
