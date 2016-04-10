@@ -57,6 +57,7 @@ class PortModel extends DefaultModel
         $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
         $this->addRpcEnabledField('active');
+        $this->addRpcEnabledField('number');
         return true;
     }
 
