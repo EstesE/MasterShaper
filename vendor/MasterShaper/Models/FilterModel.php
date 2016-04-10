@@ -154,50 +154,9 @@ class FilterModel extends DefaultModel
                     $this->id,
                     $use
                 ));
-
             }
 
             $db->freeStatment($sth);
-        }
-
-        /* is our work done? */
-        if (isset($_POST['filter_l7_used']) && !empty($_POST['filter_l7_used'])) {
-
-            $sth = $db->prepare(
-                "DELETE FROM
-                    TABLEPREFIXassign_l7_protocols_to_filters
-                WHERE
-                    afl7_filter_idx LIKE ?"
-            );
-
-            $db->execute($sth, array(
-                $this->id
-            ));
-
-            $db->freeStatement($sth);
-
-            foreach ($_POST['filter_l7_used'] as $use) {
-                $sth = $db->prepare(
-                    "INSERT INTO TABLEPREFIXassign_l7_protocols_to_filters (
-                        afl7_filter_idx,
-                        afl7_l7proto_idx
-                    ) VALUES (
-                        ?,
-                        ?
-                    )"
-                );
-
-                if (empty($use)) {
-                    continue;
-                }
-
-                $db->execute($sth, array(
-                    $this->id,
-                    $use
-                ));
-
-            }
-            $db->freeStatement($sth);
         }
 
         return true;
@@ -212,19 +171,6 @@ class FilterModel extends DefaultModel
                 TABLEPREFIXassign_ports_to_filters
             WHERE
                 afp_filter_idx LIKE ?"
-        );
-
-        $db->execute($sth, array(
-            $this->id
-        ));
-
-        $db->freeStatement($sth);
-
-        $sth = $db->prepare(
-            "DELETE FROM
-                TABLEPREFIXassign_l7_protocols_to_filters
-            WHERE
-                afl7_filter_idx LIKE ?"
         );
 
         $db->execute($sth, array(
