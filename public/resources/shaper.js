@@ -970,4 +970,9 @@ $(document).ready(function() {
    // immediately update our host state
    setTimeout("get_host_state()", 250);
    //$.jqplot.config.enablePlugins = true;
+
+   $('.item.state').click(function () {
+      rpc_object_update($(this));
+      return true;
+   });
 });
