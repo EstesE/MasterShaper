@@ -172,9 +172,9 @@ function rpc_object_delete(elements, successMethod)
     return true;
 }
 
-function rpc_object_update(element, successMethod)
+function rpc_object_update(element, successMethod, customData)
 {
-    var target, input, action, model, key, id, value, url;
+    var target, input, action, model, key, id, value, url, data;
 
     if (!(element instanceof jQuery) ) {
         throw new Error("element is not a jQuery object!");
@@ -213,8 +213,20 @@ function rpc_object_update(element, successMethod)
         return false;
     }
 
-    if (typeof (value = input.val()) === 'undefined') {
-        return false;
+    if (input.attr('type') === 'checkbox') {
+        if (input.prop('checked')) {
+            if ((value = input.attr('data-checked')) === undefined) {
+                value = 'Y';
+            }
+        } else {
+            if ((value = input.attr('data-unchecked')) === undefined) {
+                value = 'N';
+            }
+        }
+    } else {
+        if (typeof (value = input.val()) === 'undefined') {
+            return false;
+        }
     }
 
     action = safe_string(action);
@@ -232,18 +244,24 @@ function rpc_object_update(element, successMethod)
         url = 'rpc.html';
     }
 
+    data = ({
+        type   : 'rpc',
+        action : action,
+        model  : model,
+        id     : id,
+        key    : key,
+        value  : value
+    });
+
+    if (typeof customData !== 'undefined') {
+        data.customData = customData;
+    }
+
     $.ajax({
         type: 'POST',
         url: url,
         retries: 0,
-        data: ({
-            type   : 'rpc',
-            action : action,
-            model  : model,
-            id     : id,
-            key    : key,
-            value  : value
-        }),
+        data: data,
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             if (textStatus == 'timeout') {
                 this.retries++;
@@ -302,8 +320,7 @@ function rpc_object_delete2(element)
     id = safe_string(id);
     guid = safe_string(guid);
 
-    if (
-        typeof window.location.pathname !== 'undefined' &&
+    if (typeof window.location.pathname !== 'undefined' &&
         window.location.pathname != '' &&
         !window.location.pathname.match(/\/$/)
     ) {
