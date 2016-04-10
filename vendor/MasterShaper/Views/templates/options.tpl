@@ -161,7 +161,7 @@
     <input type="radio" name="filter" value="ipt" {if $filter == "ipt"} checked="checked" {/if} />iptables
    </td>
    <td>
-    Mechanism which filters your traffic. tc-filter is the tc-builtin filter technic. Good performance, but less options. iptables has many options for matching traffic, l7 protocols, and many more things. But this will add a second needed subsystem for shaping. Make tests if your Linux machine is powerful enough for this.
+    Mechanism which filters your traffic. tc-filter is the tc-builtin filter technic. Good performance, but less options. iptables has many options for matching traffic. But this will add a second needed subsystem for shaping. Make tests if your Linux machine is powerful enough for this.
    </td>
   </tr>
   {if $filter == "tc" }
