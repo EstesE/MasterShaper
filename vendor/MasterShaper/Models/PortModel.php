@@ -49,6 +49,9 @@ class PortModel extends DefaultModel
             FIELD_TYPE => FIELD_YESNO,
         ),
     );
+    protected static $model_links = array(
+        'AssignPortToFiltersModel/port_idx',
+    );
 
     protected function __init()
     {
