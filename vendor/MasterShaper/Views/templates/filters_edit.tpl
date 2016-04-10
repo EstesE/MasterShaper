@@ -135,32 +135,6 @@
  </div>
  <h4 class="ui block header">Other matches</h4>
  <div class="field">
-  <label>layer7:</label>
-  <table class="noborder">
-   <tr>
-    <td>
-     <select size="10" name="filter_l7_avail[]" multiple="multiple">
-      <option value="">********* Unused *********</option>
-      {l7_select_list filter_idx=$filter->getId() mode=unused}
-     </select>
-    </td>
-    <td>&nbsp;</td>
-    <td>
-     <input type="button" value="&gt;&gt;" onclick="moveOptions(document.forms['filters'].elements['filter_l7_avail[]'], document.forms['filters'].elements['filter_l7_used[]']);"/><br />
-     <input type="button" value="&lt;&lt;" onclick="moveOptions(document.forms['filters'].elements['filter_l7_used[]'], document.forms['filters'].elements['filter_l7_avail[]']);"/>
-    </td>
-    <td>&nbsp;</td>
-    <td>
-     <select size="10" name="filter_l7_used[]" multiple="multiple">
-      <option value="">********* Used *********</option>
-      {l7_select_list filter_idx=$filter->getId() mode=used}
-     </select>
-    </td>
-   </tr>
-  </table>
-  <div class="extra">Match on specific protocols. This uses the layer7 iptables module. It has to be available on your iptables installation. Refer <a http="http://l7-filter.sourceforge.net" onclick="window.open('http://l7-filter.sourceforge.net'); return false;">l7-filter.sf.net</a> for more informations.<br /><br />Use Other-&gt;Update L7 Protocols to load current available l7 pat files.</div>
- </div>
- <div class="field">
   <label>Time</label>
   <table class="noborder">
    <tr>
