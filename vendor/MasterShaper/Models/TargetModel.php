@@ -71,8 +71,8 @@ class TargetModel extends DefaultModel
         $this->addRpcAction('delete');
         $this->addRpcAction('update');
         $this->addRpcEnabledField('name');
+        $this->addRpcEnabledField('active');
         $this->addVirtualField('members');
-
         return true;
     }
 
