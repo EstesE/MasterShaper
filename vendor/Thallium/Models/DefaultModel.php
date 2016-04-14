@@ -901,8 +901,9 @@ abstract class DefaultModel
             return;
         }
 
-        if (is_null($value) || empty($value)) {
-            $this->model_values[$field] = null;
+        // NULL values can not be checked closer.
+        if (is_null($value)) {
+            $this->model_values[$field] = $value;
             return;
         }
 
