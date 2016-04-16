@@ -23,11 +23,13 @@ class MainController extends \Thallium\Controllers\MainController
 {
     const VERSION = "1.0";
 
+    private $ms_settings = array();
+
     public function __construct($mode = null)
     {
         if (!$this->setNamespacePrefix('MasterShaper')) {
-            $this->raiseError(__METHOD__ .'(), unable to set namespace prefix!', true);
-            return false;
+            static::raiseError(__METHOD__ .'(), unable to set namespace prefix!', true);
+            return;
         }
 
         try {
@@ -60,48 +62,86 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('setting', 'SettingModel');
             $this->registerModel('settings', 'SettingsModel');
         } catch (\Exception $e) {
-            $this->raiseError(__CLASS__ .'::__construct(), error on registering models!"', true);
-            return false;
+            static::raiseError(__CLASS__ .'::__construct(), error on registering models!"', true);
+            return;
         }
 
         $GLOBALS['ms'] =& $this;
 
         parent::__construct();
+
+        if (!$this->loadSettings()) {
+            static::raiseError(__CLASS__ .'::loadSettings() returned false!', true);
+            return false;
+        }
+
         return;
     }
 
-    public function getOption($object)
+    protected function loadSettings()
     {
-        global $db;
-
-        $result = $db->fetchSingleRow(
-            "SELECT
-                setting_value
-            FROM
-                TABLEPREFIXsettings
-            WHERE
-                setting_key LIKE '". $object ."'"
-        );
-
-        if (isset($result->setting_value)) {
-            return $result->setting_value;
+        try {
+            $settings = new \MasterShaper\Models\SettingsModel;
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load SettingsModel!');
+            return false;
         }
 
-        /* return default options if not set yet */
-        if ($object == "filter") {
-            return "HTB";
+        if (!$settings->hasItems()) {
+            return true;
         }
 
-        if ($object == "msmode") {
-            return "router";
+        if (($items = $settings->getItems()) === false) {
+            static::raiseError(get_class($settings) .'::getItems() returned false!');
+            return false;
         }
 
-        if ($object == "authentication") {
-            return "Y";
+        if (!isset($items) || empty($items) || !is_array($items)) {
+            return true;
         }
 
-        return "unknown";
+        foreach ($items as $item) {
+            if (!$item->hasKey()) {
+                continue;
+            }
 
+            if (($key = $item->getKey()) === false) {
+                static::raiseError(get_class($item) .'::getKey() returned false!');
+                return false;
+            }
+
+            $this->ms_settings[$key] = $item;
+        }
+
+        return true;
+    }
+
+    public function hasOption($option)
+    {
+        if (!array_key_exists($option, $this->ms_settings)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getOption($option)
+    {
+        if (!$this->hasOption($option)) {
+            static::raiseError(__CLASS__ .'::hasOption() returned false!');
+            return false;
+        }
+
+        if (!$this->ms_settings[$option]->hasValue()) {
+            return false;
+        }
+
+        if (($value = $this->ms_settings[$option]->getValue()) === false) {
+            static::raiseError(get_class($this->ms_settings[$option]) .'::getValue() returned false!');
+            return false;
+        }
+
+        return $value;
     }
 
     public function checkPermissions($permission)
