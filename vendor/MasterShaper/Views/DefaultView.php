@@ -23,16 +23,53 @@ abstract class DefaultView extends \Thallium\Views\DefaultView
 {
     protected static $view_class_name = "main";
 
-    /*
-        if ($session->isLoggedIn()) {
-          if (!($user = $session->getUserDetails())) {
-          $ms->raiseError(get_class($session) .'::getUserDetails() returned false!', true);
-          return false;
-      }
-          $this->assign('user_name', $user->user_name);
-          return true;
-          }
-    */
+    public function __construct()
+    {
+        parent::__construct();
+
+        global $tmpl;
+
+        $tmpl->assign('view', $this);
+        return;
+    }
+
+    public function hasOption($option)
+    {
+        global $ms;
+
+        if (!isset($option) || empty($option) || !is_string($option)) {
+            static::raiseError(__METHOD__ .'(), $option parameter is invalid!');
+            return false;
+        }
+
+        if (!$ms->hasOption($option)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getOption($option)
+    {
+        global $ms;
+
+        if (!isset($option) || empty($option) || !is_string($option)) {
+            static::raiseError(__METHOD__ .'(), $option parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasOption($option)) {
+            static::raiseError(__CLASS__ .'::hasOption() returned false!');
+            return false;
+        }
+
+        if (($value = $ms->getOption($option)) === false) {
+            static::raiseError(get_class($ms) .'::getOption() returned false!');
+            return false;
+        }
+
+        return $value;
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
