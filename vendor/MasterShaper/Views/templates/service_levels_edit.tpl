@@ -42,8 +42,8 @@
  </div>
  <h4 class="ui block header">Classifier Settings</h4>
  <div class="ui accordion">
-  <div class="title"><i class="dropdown icon"></i>HTB Settings</div>
-  <div class="content">
+  <div class="title {if $view->hasOption('classifier') && $view->getOption('classifier') == 'HTB'}active{/if}"><i class="dropdown icon"></i>HTB Settings</div>
+  <div class="content {if $view->hasOption('classifier') && $view->getOption('classifier') == 'HTB'}active{/if}">
    <h5><img src="{$icon_servicelevels}" alt="servicelevel icon" />&nbsp;Interface 1 -&gt; Interface 2</h5>
    <div class="field">
     <label>Bandwidth</label>
@@ -108,8 +108,8 @@
     <div class="extra">The service levels with a higher priority are favoured by the scheduler. Also pipes with service levels with a higher priority can lean more unused bandwidth from their chains. If priority is specified without in- or outbound rate, the maximum interface bandwidth can be used.</div>
    </div>
   </div>
-  <div class="title"><i class="dropdown icon"></i>HFSC Settings</div>
-  <div class="content">
+  <div class="title {if $view->hasOption('classifier') && $view->getOption('classifier') == 'HFSC'}active{/if}"><i class="dropdown icon"></i>HFSC Settings</div>
+  <div class="content {if $view->hasOption('classifier') && $view->getOption('classifier') == 'HFSC'}active{/if}">
    <h5><img src="{$icon_servicelevels}" alt="servicelevel icon" />&nbsp;Interface 1 -&gt; Interface 2</h5>
    <div class="field">
     <label>Work-Unit</label>
