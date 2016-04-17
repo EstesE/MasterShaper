@@ -907,6 +907,14 @@ abstract class DefaultModel
             return;
         }
 
+        /* if an empty string has been provided as value and the field type is
+         * an integer value, cast the value to 0 instead.
+         */
+        if ($value_type == 'string' && $value === '' && $field_type == FIELD_INT) {
+            $value_type = FIELD_INT;
+            $value = 0;
+        }
+
         /* values have been validated already by validateField(), but
            sometimes we have to cast values to their field types.
         */
