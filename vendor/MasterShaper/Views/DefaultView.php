@@ -30,6 +30,12 @@ abstract class DefaultView extends \Thallium\Views\DefaultView
         global $tmpl;
 
         $tmpl->assign('view', $this);
+        $tmpl->registerPlugin(
+            "function",
+            "form_buttons",
+            array(&$this, "smartyFormButtons"),
+            false
+        );
         return;
     }
 
@@ -69,6 +75,23 @@ abstract class DefaultView extends \Thallium\Views\DefaultView
         }
 
         return $value;
+    }
+
+    public function smartyFormButtons($params, &$smarty)
+    {
+        global $db;
+
+        if (array_key_exists('submit', $params) && $params['submit']) {
+            $smarty->assign('submit', true);
+        }
+        if (array_key_exists('discard', $params) && $params['discard']) {
+            $smarty->assign('discard', true);
+        }
+        if (array_key_exists('reset', $params) && $params['reset']) {
+            $smarty->assign('reset', true);
+        }
+
+        return $smarty->fetch('form_buttons.tpl');
     }
 }
 
