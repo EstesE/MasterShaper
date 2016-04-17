@@ -617,6 +617,15 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `task_idx`"
         ) or static::raiseError(__METHOD__ .'(), SQL failure!');
 
+        $db->query(
+            "UPDATE
+                TABLEPREFIXmeta
+            SET
+                meta_key = 'schema_version'
+            WHERE
+                meta_key LIKE 'schema version'"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
         $db->setDatabaseSchemaVersion(23);
         return true;
     }
