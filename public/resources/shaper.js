@@ -25,63 +25,15 @@ var NetScape4 = (navigator.appName == "Netscape" && parseInt(navigator.appVersio
 var autoload = undefined;
 var jqp = undefined;
 
-function addOption(theSel, theText, theValue)
-{
-	var newOpt = new Option(theText, theValue);
-	var selLength = theSel.length;
-	theSel.options[selLength] = newOpt;
-}
-
-function deleteOption(theSel, theIndex)
-{
-	var selLength = theSel.length;
-	if(selLength>0) {
-		theSel.options[theIndex] = null;
-	}
-}
-
 function moveOptions(theSelFrom, theSelTo)
 {
-   $('#' + theSelFrom + ' option:selected').remove().appendTo('#' + theSelTo).removeAttr('selected');
+    $('#' + theSelFrom + ' option:selected')
+        .remove()
+        .appendTo('#' + theSelTo)
+        .removeAttr('selected');
+
+    return true;
 }
-
-/**
- * this function will select all available
- * options within a select-form
- */
-function selectAll(obj)
-{
-   if(el = document.getElementsByName(obj)) {
-      if(el.item(0)) {
-         var lent = el.item(0).length ;
-         for (var i=0; i<lent; i++) {
-            el.item(0).options[i].selected = true;
-         }
-      }
-   }
-} // selectAll
-
-function setBackGrdColor(item, color)
-{
-	if(color == 'mouseover')
-		item.style.backgroundColor='#c6e9ff';
-	if(color == 'mouseout')
-		item.style.backgroundColor='transparent';
-	if(color == 'mouseclick')
-		item.style.backgroundColor='#93A8CA';
-}
-
-function click(object)
-{
-   if(object.blur)
-      object.blur();
-
-}
-
-function init_shaper()
-{
-
-} // init_shaper()
 
 function draw_jqplot()
 {
@@ -427,40 +379,6 @@ function obj_clone(element, target, idx)
    });
 
 } // obj_clone()
-
-function currentRadio(obj)
-{
-   for(cnt = 0; cnt < obj.length; cnt++) {
-      if(obj[cnt].checked)
-         return obj[cnt].value;
-   }
-}
-
-/**
- * get current selected value from a HTML select item
- *
- * @param obj object
- * @return string
- */
-function currentSelect(obj)
-{
-   if(!obj)
-      return;
-
-   for(cnt = 0; cnt < obj.length; cnt++) {
-      if(obj[cnt].selected)
-         return obj[cnt].value;
-   }
-}
-
-function currentCheckbox(obj)
-{
-   if(obj.checked == true) {
-      return obj.value;
-   }
-
-   return;
-}
 
 function obj_toggle_status(element)
 {
@@ -846,8 +764,6 @@ function get_selected_chain()
 
    return currentSelect(showchain[0]);
 }
-
-
 
 /**
  * set focus to specified object
