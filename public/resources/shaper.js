@@ -981,26 +981,26 @@ function obj_save(form)
         return false;
     }
 
-    input.each (function (index, element) {
-        var id, guid, model, name, key, field;
+    input.each (function (index, input_element) {
+        var id, guid, model, name, key, field, element;
 
         if (typeof form_has_model === 'undefined') {
             values = new Object;
         }
 
-        if (typeof (element = $(element)) === 'undefined') {
+        if (typeof (element = $(input_element)) === 'undefined') {
             throw new Error('failed to retrieve jQuery object on element!');
             return false;
         }
 
-        if (element.is('.ui.radio.checkbox')) {
-            if (typeof (name = element.find('input[type="radio"]').attr('name')) === 'undefined') {
-                throw new Error('do not know how to identify element '+ element.html +'!');
+        if (element.is('.ui.checkbox')) {
+            if (typeof (name = element.find('input[type="radio"],input[type="checkbox"]').attr('name')) === 'undefined') {
+                throw new Error('do not know how to identify element '+ input_element + '!');
                 return false;
             }
         } else {
             if (typeof (name = element.attr('name')) === 'undefined') {
-                throw new Error('do not know how to identify element '+ element.html +'!');
+                throw new Error('do not know how to identify element '+ input_element + '!');
                 return false;
             }
         }
@@ -1035,9 +1035,11 @@ function obj_save(form)
          */
         if (element.prop('nodeName') === 'INPUT') {
             /*
-             * text fields
+             * text or password fields
              */
             if (element.attr('type') === 'text') {
+                values[field] = element.val();
+            } else if (field.attr('type') === 'password') {
                 values[field] = element.val();
             /*
              * checkbox fields
