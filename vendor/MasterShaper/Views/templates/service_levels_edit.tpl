@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $servicelevel->hasName()}{$servicelevel->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" data-id="{$servicelevel->getId()}" data-guid="{$servicelevel->getGuid()}" data-model="service_level" data-url-next="{get_url page='service-levels'}" data-url-discard="{get_url page='service-levels'}">
+<form class="thallium ui form" method="POST" data-id="{$servicelevel->getId()}" data-guid="{$servicelevel->getGuid()}" data-model="service_level" data-url-next="{get_url page='service-levels'}" data-url-discard="{get_url page='service-levels'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>
