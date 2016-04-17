@@ -820,6 +820,138 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         $db->setDatabaseSchemaVersion(31);
         return true;
     }
+
+    protected function upgradeApplicationDatabaseSchemaV32()
+    {
+        global $ms, $db;
+
+        $db->query(
+            "DROP TABLE IF EXISTS
+                TABLEPREFIXpages"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+        $db->setDatabaseSchemaVersion(32);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV33()
+    {
+        global $ms, $db;
+
+        /* the old GUID value is not compatible with the Thallium GUID,
+         * so we are going to flush it first.
+         */
+        $db->query(
+            "UPDATE
+                TABLEPREFIXchains
+            SET
+                chain_guid=NULL
+            WHERE
+                chain_guid IS NOT NULL"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+        $tables = array(
+            "TABLEPREFIXassign_filters_to_pipes",
+            "TABLEPREFIXassign_pipes_to_chains",
+            "TABLEPREFIXassign_ports_to_filters",
+            "TABLEPREFIXassign_targets_to_targets",
+            "TABLEPREFIXaudit",
+            "TABLEPREFIXchains",
+            "TABLEPREFIXfilters",
+            "TABLEPREFIXhost_profiles",
+            "TABLEPREFIXinterfaces",
+            "TABLEPREFIXjobs",
+            "TABLEPREFIXmessage_bus",
+            "TABLEPREFIXmeta",
+            "TABLEPREFIXnetwork_paths",
+            "TABLEPREFIXpipes",
+            "TABLEPREFIXports",
+            "TABLEPREFIXprotocols",
+            "TABLEPREFIXservice_levels",
+            "TABLEPREFIXsettings",
+            "TABLEPREFIXstats",
+            "TABLEPREFIXtargets",
+            "TABLEPREFIXtasks",
+            "TABLEPREFIXusers",
+        );
+
+        foreach ($tables as $table) {
+            // check if table has a _guid column
+            $columns = $db->getColumns($table);
+
+            $guid_column = null;
+            if (!isset($columns) or empty($columns) or !is_array($columns)) {
+                continue;
+            }
+
+            foreach ($columns as $column) {
+                if (!preg_match('/^([[:graph:]]+)_guid$/i', $column[0])) {
+                    continue;
+                }
+                $guid_column = $column[0];
+                break;
+            }
+
+            if (!isset($guid_column) || is_null($guid_column)) {
+                continue;
+            }
+
+            $idx_column = str_replace("_guid", "_idx", $guid_column);
+
+            $result = $db->query(
+                "SELECT
+                    *
+                FROM
+                    {$table}"
+            ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+            $db->query(
+                "ALTER TABLE {$table} DISABLE KEYS"
+            ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+            $db->query(
+                "TRUNCATE TABLE {$table}"
+            ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+            $db->newTransaction() or static::raiseError(__METHOD__ .'(), transaction failure!');
+
+            $sql = "INSERT DELAYED INTO {$table} VALUES (";
+            $data = array();
+            for ($i = 0; $i < count($columns); $i++) {
+                array_push($data, '?');
+            }
+            $sql.= sprintf("%s", implode(",", $data));
+            $sql.= ')';
+
+            $sth = $db->prepare($sql) or static::raiseError(__METHOD__ .'(), SQL statement prepare failure!');
+
+            while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
+                if (!isset($row[$guid_column]) ||
+                    empty($row[$guid_column]) ||
+                    !$ms->isValidGuidSyntax($row[$guid_column])
+                ) {
+                    $row[$guid_column] = $ms->createGuid();
+                }
+
+                $data = array();
+                foreach ($row as $col) {
+                    $data[] = $col;
+                }
+                
+                $db->execute($sth, $data) or static::raiseError(__METHOD__ .'(), SQL statement execute failure!');
+            }
+
+            $db->freeStatement($sth);
+            $db->closeTransaction() or static::raiseError(__METHOD__ .'(), transaction failure!');
+
+            $db->query(
+                "ALTER TABLE {$table} ENABLE KEYS"
+            ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+        }
+
+        $db->setDatabaseSchemaVersion(33);
+        return true;
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
