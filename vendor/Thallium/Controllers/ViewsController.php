@@ -94,6 +94,11 @@ class ViewsController extends DefaultController
             return false;
         }
 
+        if (!isset($view_class) || empty($view_class) || !is_string($view_class)) {
+            static::raiseError(__CLASS__ .'::getViewName() returned invalid data!');
+            return false;
+        }
+
         if ($this->isLoadedView($view_class)) {
             return $this->getLoadedView($view_class);
         }
