@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $user->hasName()}{$user->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" data-id="{$user->getId()}" data-guid="{$user->getGuid()}" data-model="user" method="POST" data-url-next="{get_url page='users'}" data-url-discard="{get_url page='users'}">
+<form class="thallium ui form" method="POST" data-id="{$user->getId()}" data-guid="{$user->getGuid()}" data-model="user" data-url-next="{get_url page='users'}" data-url-discard="{get_url page='users'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>
