@@ -823,7 +823,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
     protected function upgradeApplicationDatabaseSchemaV32()
     {
-        global $ms, $db;
+        global $db;
 
         $db->query(
             "DROP TABLE IF EXISTS
@@ -950,6 +950,50 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         }
 
         $db->setDatabaseSchemaVersion(33);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV34()
+    {
+        global $db;
+
+        $db->query(
+            "ALTER DATABASE {$db->getDatabaseName()} CHARACTER SET utf8 COLLATE utf8_unicode_ci"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+
+        $tables = array(
+            "TABLEPREFIXassign_filters_to_pipes",
+            "TABLEPREFIXassign_pipes_to_chains",
+            "TABLEPREFIXassign_ports_to_filters",
+            "TABLEPREFIXassign_targets_to_targets",
+            "TABLEPREFIXaudit",
+            "TABLEPREFIXchains",
+            "TABLEPREFIXfilters",
+            "TABLEPREFIXhost_profiles",
+            "TABLEPREFIXinterfaces",
+            "TABLEPREFIXjobs",
+            "TABLEPREFIXmessage_bus",
+            "TABLEPREFIXmeta",
+            "TABLEPREFIXnetwork_paths",
+            "TABLEPREFIXpipes",
+            "TABLEPREFIXports",
+            "TABLEPREFIXprotocols",
+            "TABLEPREFIXservice_levels",
+            "TABLEPREFIXsettings",
+            "TABLEPREFIXstats",
+            "TABLEPREFIXtargets",
+            "TABLEPREFIXtasks",
+            "TABLEPREFIXtc_ids",
+            "TABLEPREFIXusers",
+        );
+
+        foreach ($tables as $table) {
+            $db->query(
+                "ALTER TABLE {$table} CONVERT TO CHARACTER SET utf8 COLLATE utf8_unicode_ci"
+            ) or static::raiseError(__METHOD__ .'(), SQL failure!');
+        }
+
+        $db->setDatabaseSchemaVersion(34);
         return true;
     }
 }
