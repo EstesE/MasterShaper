@@ -69,18 +69,7 @@
   <div class="extra">This option enables IFB support on this interface. Make sure that IFB is compiled into your kernel or the proper kernel module is loaded!</div>
  </div>
  <div class="ui divider"></div>
- <div class="ui buttons">
-  <button class="ui labeled icon positive button save" type="submit">
-   <div class="ui inverted dimmer">
-    <div class="ui loader"></div>
-   </div>
-   <i class="save icon"></i>Save
-  </button>
-  <div class="or"></div>
-  <button class="ui button discard">
-   <i class="remove icon"></i>Discard
-  </button>
- </div>
+ {form_buttons submit=1 discard=1 reset=1}
 </form>
 
 <p class="footnote">
