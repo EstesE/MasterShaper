@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $chain->hasName()}{$chain->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" data-id="{$chain->getId()}" data-guid="{$chain->getGuid()}" data-model="chain" data-url-next="{get_url page='chains'}" data-url-discard="{get_url page='chains'}">
+<form class="thallium ui form" method="POST" data-id="{$chain->getId()}" data-guid="{$chain->getGuid()}" data-model="chain" data-url-next="{get_url page='chains'}" data-url-discard="{get_url page='chains'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>
