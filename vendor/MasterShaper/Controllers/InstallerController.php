@@ -111,7 +111,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `chain_tc_id` varchar(16) default NULL,
                 `chain_netpath_idx` int(11) default NULL,
                 `chain_host_idx` int(11) default NULL,
-                `chain_guid` varchar(36) DEFAULT NULL,
                 PRIMARY KEY  (`chain_idx`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
