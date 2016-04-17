@@ -1093,6 +1093,7 @@ function obj_save(form)
 $(document).ready(function() {
     $('.ui.checkbox').checkbox();
     $('.ui.accordion').accordion();
+    $('.thallium.ui.form').form();
     $('.thallium.ui.form').submit(function () {
         return obj_save($(this));
     });
@@ -1119,6 +1120,14 @@ $(document).ready(function() {
             .popup('hide')
             .find('.ui.inverted.dimmer')
             .addClass('active');
+    });
+    $('.thallium.ui.form .ui.button.reset').click(function () {
+        var form;
+        if (typeof (form = $(this).closest('.thallium.ui.form')) === 'undefined') {
+            return false;
+        }
+        form.form('reset');
+        return false;
     });
     $("table td a.clone").click(function(){
         obj_clone($(this));
