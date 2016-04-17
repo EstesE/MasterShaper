@@ -19,6 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+'use strict'
+
 var NetScape4 = (navigator.appName == "Netscape" && parseInt(navigator.appVersion) < 5);
 var autoload = undefined;
 var jqp = undefined;
@@ -118,10 +120,10 @@ function draw_jqplot()
       if(data.notice != undefined)
          document.getElementById("jqp_monitor").innerHTML = data.notice;
 
-      var time_end    = data.time_end;
-      var interface   = data.interface;
-      var scalemode   = data.scalemode;
-      var graphmode   = data.graphmode;
+      var time_end         = data.time_end;
+      var show_interface   = data.show_interface;
+      var scalemode        = data.scalemode;
+      var graphmode        = data.graphmode;
 
       if(data.names)
          var names_obj = parse_json(data.names);
@@ -149,7 +151,7 @@ function draw_jqplot()
       /* a default color is a must, otherwise jqplot refuses to work */
       var colors_arr = new Array('#4444aa');
 
-      var title = 'Current Bandwidth Usage - '+ time_end +" - Interface "+ interface;
+      var title = 'Current Bandwidth Usage - '+ time_end +" - Interface "+ show_interface;
       ylabel = "Bandwidth " + scalemode;
 
       /* transform object to array */
@@ -946,33 +948,288 @@ function toggle_content(element, imgobj, imgshow, imghide, imgobjoth)
 
 } // toggle_content()
 
-$(document).ready(function() {
-   $("table td a.clone").click(function(){
-      obj_clone($(this));
-   });
-   $("table td div a.toggle-off, table td div a.toggle-on").click(function(){
-      obj_toggle_status($(this));
-   });
-   $("table td a.move-up, table td a.move-down").click(function(){
-      obj_alter_position($(this));
-   });
-   $("table td a.assign-pipe-to-chains").click(function(){
-      obj_assign_pipe_to_chains($(this));
-   });
-   $('img.change_to').hover(
-      function() {
-         $(this).css('cursor','pointer');
-      },
-      function() {
-         $(this).css('cursor','auto');
-      }
-   );
-   // immediately update our host state
-   setTimeout("get_host_state()", 250);
-   //$.jqplot.config.enablePlugins = true;
+function obj_save(form)
+{
+    var input, form_next_url;
 
-   $('.item.state').click(function () {
-      rpc_object_update($(this));
-      return true;
-   });
+    if (typeof (form_next_url = form.attr('data-url-next')) === 'undefined') {
+        form_next_url = window.location.href;
+        return false;
+    }
+
+    if (typeof mbus === 'undefined') {
+        throw new Error('MessageBus is not available!');
+        return false;
+    }
+
+    /*
+     * if the <form> itself provides id, guid and model. take that one.
+     */
+    var values = new Object;
+    var form_id = form.attr('data-id');
+    var form_guid = form.attr('data-guid');
+    var form_model = form.attr('data-model');
+    if (typeof form_id !== 'undefined' &&
+        typeof form_guid !== 'undefined' &&
+        typeof form_model !== 'undefined'
+    ) {
+        var form_has_model = true;
+    }
+
+    if (!(input = form.find('.ui.checkbox, input[type="text"], textarea, select'))) {
+        throw new Error('failed to locate any form elements!');
+        return false;
+    }
+
+    input.each (function (index, element) {
+        var id, guid, model, name, key, field;
+
+        if (typeof form_has_model === 'undefined') {
+            values = new Object;
+        }
+
+        if (typeof (element = $(element)) === 'undefined') {
+            throw new Error('failed to retrieve jQuery object on element!');
+            return false;
+        }
+
+        if (element.is('.ui.radio.checkbox')) {
+            if (typeof (name = element.find('input[type="radio"]').attr('name')) === 'undefined') {
+                throw new Error('do not know how to identify element '+ element.html +'!');
+                return false;
+            }
+        } else {
+            if (typeof (name = element.attr('name')) === 'undefined') {
+                throw new Error('do not know how to identify element '+ element.html +'!');
+                return false;
+            }
+        }
+
+        if (typeof form_has_model === 'undefined') {
+            if (typeof (id = element.attr('data-id')) === 'undefined') {
+                throw new Error('failed to locate data-id attribute!');
+                return false;
+            }
+
+            if (typeof (guid = element.attr('data-guid')) === 'undefined') {
+                throw new Error('failed to locate data-guid attribute!');
+                return false;
+            }
+
+            if (typeof (model = element.attr('data-model')) === 'undefined') {
+                throw new Error('failed to locate data-model attribute!');
+                return false;
+            }
+        }
+
+        if (typeof (key = element.attr('data-key')) !== 'undefined') {
+            values[key] = name;
+        }
+
+        if (typeof (field = element.attr('data-field')) === 'undefined') {
+            field = name;
+        }
+
+        /*
+         * INPUT elements
+         */
+        if (element.prop('nodeName') === 'INPUT') {
+            /*
+             * text fields
+             */
+            if (element.attr('type') === 'text') {
+                values[field] = element.val();
+            /*
+             * checkbox fields
+             */
+            } else if (element.attr('type') === 'checkbox') {
+                if (element.is(':checked')) {
+                    values[field] = element.val();
+                }
+            /*
+             * radio checkbox fields
+             */
+            } else if (element.attr('type') === 'radio') {
+                if (element.is(':checked')) {
+                    values[field] = element.val();
+                }
+            } else {
+                throw new Error('unsupported type! ' + element.attr('type'));
+                return false;
+            }
+            /*
+             * textarea elements
+             */
+        } else if (element.prop('nodeName') === 'TEXTAREA') {
+            values[field] = element.text();
+        /*
+         * select/dropdown elements
+         */
+        } else if (element.prop('nodeName') === 'SELECT') {
+            // document.forms['servicelevels'].classifier.options[document.forms['servicelevels'].classifier.selectedIndex].value
+            values[field] = element.val();
+        /*
+         * general-purpose elements used as checkboxes
+         */
+        } else if (element.prop('nodeName') === 'DIV' && element.is('.ui.checkbox')) {
+            // if it is a radio element, skip it, if it is not checked
+            if (element.checkbox('is radio') && !element.checkbox('is checked')) {
+                return true;
+            } else if (!element.checkbox('is checked')) {
+                values[field] = 'N';
+            } else if (typeof (values[field] = element.find('input[type="radio"],input[type="checkbox"]').val()) === 'undefined') {
+                throw new Error('failed to read radio element value!');
+                return false;
+            }
+        } else {
+            throw new Error('unsupported nodeName!');
+            return false;
+        }
+
+        if (typeof values[field] === 'undefined') {
+            values[field] = '';
+        }
+
+        if (typeof form_has_model === 'undefined') {
+            values['id'] = id;
+            values['guid'] = guid;
+            values['model'] = model;
+
+            var msg = new ThalliumMessage;
+            msg.setCommand('save-request');
+            msg.setMessage(values);
+            if (!mbus.add(msg)) {
+                throw new Error('ThalliumMessageBus.add() returned false!');
+                return false;
+            }
+
+            return true;
+        }
+    });
+
+    if (typeof form_has_model !== 'undefined') {
+      values['id'] = form_id;
+      values['guid'] = form_guid;
+      values['model'] = form_model;
+
+      var msg = new ThalliumMessage;
+      msg.setCommand('save-request');
+      msg.setMessage(values);
+      if (!mbus.add(msg)) {
+         throw new Error('ThalliumMessageBus.add() returned false!');
+         return false;
+      }
+    }
+
+    var save_timeout = setTimeout(function () {
+        var save = $(this).find('.ui.button.save');
+        // turn button red
+        save.removeClass('positive').addClass('negative');
+        // unsubscribe from MessageBus
+        mbus.unsubscribe('save-replies-handler');
+        // remove the loader
+        save.find('.ui.inverted.dimmer').removeClass('active');
+        // show a popup message
+        save.popup({
+            on          : 'manual',
+            preserve    : true,
+            exclusive   : true,
+            lastResort  : true,
+            content     : 'Saving failed - 10sec timeout reached! Click the save button to try again.',
+            position    : 'top center',
+            transition  : 'slide up'
+        })
+            .addClass('flowing red')
+            .popup('show');
+    }.bind(form), 10000);
+
+    mbus.subscribe('save-replies-handler', 'save-reply', function (reply) {
+        var newData, value;
+
+        if (typeof reply === 'undefined' || !reply) {
+            throw new Error('reply is empty!');
+            return false;
+        }
+        newData = new Object;
+
+        if (reply.value && (value = reply.value.match(/([0-9]+)%$/))) {
+            newData.percent = value[1];
+        }
+        if (reply.body != 'Done') {
+            return true;
+        }
+        clearTimeout(save_timeout);
+        mbus.unsubscribe('save-replies-handler');
+        $(this).find('.ui.button.save .ui.inverted.dimmer').removeClass('active');
+        location.href = form_next_url;
+        return true;
+    }.bind(form));
+
+    if (!mbus.send()) {
+        throw 'ThalliumMessageBus.send() returned false!';
+        return false;
+    }
+    return false;
+}
+
+$(document).ready(function() {
+    $('.ui.checkbox').checkbox();
+    $('.ui.accordion').accordion();
+    $('.thallium.ui.form').submit(function () {
+        return obj_save($(this));
+    });
+    $('.thallium.ui.form .ui.button.discard').click(function () {
+        var form;
+        if (typeof (form = $(this).closest('.thallium.ui.form')) === 'undefined') {
+            window.location.href = window.location.href;
+            return false;
+        }
+        var discard_url;
+        if (typeof (discard_url = form.attr('data-url-discard')) === 'undefined') {
+            window.location.href = window.location.href;
+            return false;
+        }
+        if (new RegExp('^(?:[a-z]+:)?//', 'i').test(discard_url)) {
+            throw new Error('data-url-discard attribute contains an URL outside of '+ window.location.hostname + '!');
+            return false;
+        }
+        window.location.href = discard_url;
+        return false;
+    });
+    $('.thallium.ui.form .ui.button.save').click(function () {
+        $(this)
+            .popup('hide')
+            .find('.ui.inverted.dimmer')
+            .addClass('active');
+    });
+    $("table td a.clone").click(function(){
+        obj_clone($(this));
+    });
+    $("table td div a.toggle-off, table td div a.toggle-on").click(function(){
+        obj_toggle_status($(this));
+    });
+    $("table td a.move-up, table td a.move-down").click(function(){
+        obj_alter_position($(this));
+    });
+    $("table td a.assign-pipe-to-chains").click(function(){
+        obj_assign_pipe_to_chains($(this));
+    });
+    $('img.change_to').hover(
+        function() {
+            $(this).css('cursor','pointer');
+        },
+        function() {
+            $(this).css('cursor','auto');
+        }
+    );
+    // immediately update our host state
+    setTimeout("get_host_state()", 250);
+    //$.jqplot.config.enablePlugins = true;
+
+    $('.item.state').click(function () {
+        rpc_object_update($(this));
+        return true;
+    });
 });
+
+// vim: set filetype=javascript expandtab softtabstop=4 tabstop=4 shiftwidth=4:
