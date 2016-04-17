@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $protocol->hasName()}{$protocol->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" data-id="{$protocol->getId()}" data-guid="{$protocol->getGuid()}" data-model="protocol" data-url-next="{get_url page='protocols'}" data-url-discard="{get_url page='protocols'}">
+<form class="thallium ui form" method="POST" data-id="{$protocol->getId()}" data-guid="{$protocol->getGuid()}" data-model="protocol" data-url-next="{get_url page='protocols'}" data-url-discard="{get_url page='protocols'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>
