@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $netpath->hasName()}{$netpath->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" data-id="{$netpath->getId()}" data-guid="{$netpath->getGuid()}" data-model="network_path" method="POST" data-url-next="{get_url page='network-paths'}" data-url-discard="{get_url page='network-paths'}">
+<form class="thallium ui form" method="POST" data-id="{$netpath->getId()}" data-guid="{$netpath->getGuid()}" data-model="network_path" data-url-next="{get_url page='network-paths'}" data-url-discard="{get_url page='network-paths'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>
