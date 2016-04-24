@@ -27,129 +27,22 @@ class UsersView extends DefaultView
 {
     protected static $view_default_mode = 'list';
     protected static $view_class_name = 'users';
-    private $users;
 
     public function __construct()
     {
         try {
-            $this->users = new \MasterShaper\Models\UsersModel;
+            $users = new \MasterShaper\Models\UsersModel;
         } catch (\Exception $e) {
-            $this->raiseError(__METHOD__ .'(), failed to load UsersModel!', false, $e);
-            return false;
+            static::raiseError(__METHOD__ .'(), failed to load UsersModel!', true, $e);
+            return;
+        }
+
+        if (!$this->setViewData($users)) {
+            static::raiseError(__CLASS__ .'::setViewData() returned false!', true);
+            return;
         }
 
         parent::__construct();
-    }
-
-    public function showList($pageno = null, $items_limit = null)
-    {
-        global $session, $tmpl;
-
-        if (!isset($pageno) || empty($pageno) || !is_numeric($pageno)) {
-            if (($current_page = $this->getSessionVar("current_page")) === false) {
-                $current_page = 1;
-            }
-        } else {
-            $current_page = $pageno;
-        }
-
-        if (!isset($items_limit) || is_null($items_limit) || !is_numeric($items_limit)) {
-            if (($current_items_limit = $this->getSessionVar(
-                "current_items_limit",
-                static::$view_class_name
-            )) === false) {
-                $current_items_limit = -1;
-            }
-        } else {
-            $current_items_limit = $items_limit;
-        }
-
-        if (!$this->users->hasItems()) {
-            return parent::showList();
-        }
-
-        try {
-            $pager = new \MasterShaper\Controllers\PagingController(array(
-                'delta' => 2,
-            ));
-        } catch (\Exception $e) {
-            $this->raiseError(__METHOD__ .'(), failed to load PagingController!', false, $e);
-            return false;
-        }
-
-        if (!$pager->setPagingData($this->users->getItems())) {
-            $this->raiseError(get_class($pager) .'::setPagingData() returned false!');
-            return false;
-        }
-
-        if (!$pager->setCurrentPage($current_page)) {
-            $this->raiseError(get_class($pager) .'::setCurrentPage() returned false!');
-            return false;
-        }
-
-        if (!$pager->setItemsLimit($current_items_limit)) {
-            $this->raiseError(get_class($pager) .'::setItemsLimit() returned false!');
-            return false;
-        }
-
-        global $tmpl;
-        $tmpl->assign('pager', $pager);
-
-        if (($data = $pager->getPageData()) === false) {
-            $this->raiseError(get_class($pager) .'::getPageData() returned false!');
-            return false;
-        }
-
-        if (!isset($data) || empty($data) || !is_array($data)) {
-            $this->raiseError(get_class($pager) .'::getPageData() returned invalid data!');
-            return false;
-        }
-
-        $this->avail_items = array_keys($data);
-        $this->items = $data;
-
-        if (!$this->setSessionVar("current_page", $current_page)) {
-            $this->raiseError(get_class($session) .'::setVariable() returned false!');
-            return false;
-        }
-
-        if (!$this->setSessionVar("current_items_limit", $current_items_limit)) {
-            $this->raiseError(get_class($session) .'::setVariable() returned false!');
-            return false;
-        }
-
-        return parent::showList();
-
-    } // showList()
-
-    public function usersList($params, $content, &$smarty, &$repeat)
-    {
-        $index = $smarty->getTemplateVars('smarty.IB.item_list.index');
-
-        if (!isset($index) || empty($index)) {
-            $index = 0;
-        }
-
-        if (!isset($this->avail_items) || empty($this->avail_items)) {
-            $repeat = false;
-            return $content;
-        }
-
-        if ($index >= count($this->avail_items)) {
-            $repeat = false;
-            return $content;
-        }
-
-        $item_idx = $this->avail_items[$index];
-        $item =  $this->items[$item_idx];
-
-        $smarty->assign("item", $item);
-
-        $index++;
-        $smarty->assign('smarty.IB.item_list.index', $index);
-        $repeat = true;
-
-        return $content;
     }
 
     private function getPermissions($user_idx)
@@ -159,7 +52,6 @@ class UsersView extends DefaultView
         $string = "";
 
         if ($user = $db->db_fetchSingleRow("SELECT * FROM TABLEPREFIXusers WHERE user_idx='". $user_idx ."'")) {
-
             if ($user->user_manage_chains == "Y") {
                 $string.= "Chains, ";
             }
@@ -211,7 +103,7 @@ class UsersView extends DefaultView
                 'guid' => $guid
             ));
         } catch (\Exception $e) {
-            $this->raiseError(__METHOD__ .'(), failed to load UserModel!', false, $e);
+            static::raiseError(__METHOD__ .'(), failed to load UserModel!', false, $e);
             return false;
         }
 
