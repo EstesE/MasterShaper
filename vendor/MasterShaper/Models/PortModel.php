@@ -40,7 +40,9 @@ class PortModel extends DefaultModel
             FIELD_TYPE => FIELD_STRING,
         ),
         'number' => array(
-            FIELD_TYPE => FIELD_INT,
+            FIELD_TYPE => FIELD_STRING,
+            FIELD_GET => 'getNumber',
+            FIELD_SET => 'setNumber',
         ),
         'user_defined' => array(
             FIELD_TYPE => FIELD_YESNO,
@@ -79,7 +81,7 @@ class PortModel extends DefaultModel
     public function getDescription()
     {
         if (!$this->hasDescription()) {
-            $this->raiseError(__CLASS__ .'::hasDescription() returned false!');
+            static::raiseError(__CLASS__ .'::hasDescription() returned false!');
             return false;
         }
 
@@ -88,10 +90,34 @@ class PortModel extends DefaultModel
 
     public function hasNumber()
     {
-        if (!isset($this->model_values['number']) ||
-            empty($this->model_values['number']) ||
-            !is_string($this->model_values['number'])
-        ) {
+        if (!$this->hasFieldValue('number')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function setNumber($numbers)
+    {
+        if (!isset($number) || empty($number) || !is_string($number)) {
+            static::raiseError(__METHOD__ .'(), $number parameter is invalid!');
+            return false;
+        }
+
+        if (($ports = explode(',', $number)) === false) {
+            static::raiseError(__METHOD__ .'(), exploding $number parameter failed!');
+            return false;
+        }
+
+        foreach ($ports as $port) {
+            if (!is_numeric($port)) {
+                static::raiseError(__METHOD__ .'(), $number contains an invalid port!');
+                return false;
+            }
+        }
+
+        if (!$this->setFieldValue('number', $number)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
             return false;
         }
 
@@ -101,11 +127,28 @@ class PortModel extends DefaultModel
     public function getNumber()
     {
         if (!$this->hasNumber()) {
-            $this->raiseError(__CLASS__ .'::hasNumber() returned false!');
+            static::raiseError(__CLASS__ .'::hasNumber() returned false!');
             return false;
         }
 
-        return $this->model_values['number'];
+        if (($numbers = $this->getFieldValue('number')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        if (($ports = explode(',', $numbers)) === false) {
+            static::raiseError(__METHOD__ .'(), exploding $number parameter failed!');
+            return false;
+        }
+
+        foreach ($ports as $port) {
+            if (!is_numeric($port)) {
+                static::raiseError(__METHOD__ .'(), $number contains an invalid port!');
+                return false;
+            }
+        }
+
+        return $numbers;
     }
 }
 
