@@ -40,7 +40,7 @@ class ViewsController extends \Thallium\Controllers\ViewsController
         '/^host-profiles$/' => 'HostProfilesView',
         '/^settings$/' => 'SettingsView',
         '/^options$/' => 'OptionsView',
-        '/^rules$/' => 'RulesView',
+        '/^rules$/' => 'RulesetView',
         '/^others$/' => 'OthersView',
         '/^tasklist$/' => 'TaskListView',
         '/^monitoring$/' => 'MonitoringView',
