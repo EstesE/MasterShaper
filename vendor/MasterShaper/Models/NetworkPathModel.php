@@ -263,10 +263,19 @@ class NetworkPathModel extends DefaultModel
         return true;
     }
 
-    public function getInterface1()
+    public function hasInterface1()
     {
         if (!$this->hasFieldValue('if1')) {
-            static::raiseError(__METHOD__ .'::hasFieldValue() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getInterface1($load = false)
+    {
+        if (!$this->hasInterface1()) {
+            static::raiseError(__METHOD__ .'::hasInterface1() returned false!');
             return false;
         }
 
@@ -275,7 +284,20 @@ class NetworkPathModel extends DefaultModel
             return false;
         }
 
-        return $if1;
+        if (!$load) {
+            return $if1;
+        }
+
+        try {
+            $if = new \MasterShaper\Models\NetworkInterfaceModel(array(
+                FIELD_IDX =>  $if1,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load NetworkInterfaceModel!');
+            return false;
+        }
+
+        return $if;
     }
 
     public function isInterface1InsideGre()
@@ -296,10 +318,19 @@ class NetworkPathModel extends DefaultModel
         return true;
     }
 
-    public function getInterface2()
+    public function hasInterface2()
     {
         if (!$this->hasFieldValue('if2')) {
-            static::raiseError(__METHOD__ .'::hasFieldValue() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getInterface2($load = false)
+    {
+        if (!$this->hasInterface2()) {
+            static::raiseError(__METHOD__ .'::hasInterface2() returned false!');
             return false;
         }
 
@@ -308,7 +339,20 @@ class NetworkPathModel extends DefaultModel
             return false;
         }
 
-        return $if2;
+        if (!$load) {
+            return $if2;
+        }
+
+        try {
+            $if = new \MasterShaper\Models\NetworkInterfaceModel(array(
+                FIELD_IDX =>  $if2,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load NetworkInterfaceModel!');
+            return false;
+        }
+
+        return $if;
     }
 
     public function isInterface2InsideGre()
@@ -323,15 +367,6 @@ class NetworkPathModel extends DefaultModel
         }
 
         if ($inside_gre != 'Y') {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function hasInterface2()
-    {
-        if (!$this->hasFieldValue('if2')) {
             return false;
         }
 
