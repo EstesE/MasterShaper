@@ -61,6 +61,8 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('apfs', 'AssignPortToFiltersModel');
             $this->registerModel('setting', 'SettingModel');
             $this->registerModel('settings', 'SettingsModel');
+            $this->registerModel('tcid', 'TcIdModel');
+            $this->registerModel('tcids', 'TcIdsModel');
         } catch (\Exception $e) {
             static::raiseError(__CLASS__ .'::__construct(), error on registering models!"', true);
             return;
