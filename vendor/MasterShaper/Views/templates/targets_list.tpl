@@ -45,6 +45,7 @@
     </div>
    </th>
    <th>Target</th>
+   <th>Type</th>
    <th class="no-sort three wide column">
     <div class="two column ui grid">
      <div class="column">Actions</div>
@@ -83,6 +84,7 @@
     </form>
    </div>
   </td>
+  <td>{$item->getMatch()}</td>
   <td>
    <div class="ui icon buttons">
     <a id="edit_link_{$item->getId()}" href="{get_url page='targets' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
@@ -98,7 +100,7 @@
  </tbody>
  <tfoot>
   <tr>
-   <th colspan="3">
+   <th colspan="4">
     <div class="ui left floated borderless small menu">
      <a class="delete item" data-action-title="Deleting selected targets" data-modal-title="Delete selected targets" data-modal-text="Do you really want to delete selected targets?" data-id="selected" data-guid="selected" data-model="targets"><i class="remove circle icon"></i>Delete selected</a>
      <a class="delete item" data-action-title="Deleting all targets" data-modal-title="Delete all targets" data-modal-text="Do you really want to delete all targets?" data-id="all" data-guid="all" data-model="targets"><i class="remove circle icon"></i>Delete all</a>
