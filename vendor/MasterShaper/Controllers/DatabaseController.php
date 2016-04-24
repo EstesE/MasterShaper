@@ -21,7 +21,7 @@ namespace MasterShaper\Controllers;
 
 class DatabaseController extends \Thallium\Controllers\DatabaseController
 {
-    const SCHEMA_VERSION = 34;
+    const SCHEMA_VERSION = 35;
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
