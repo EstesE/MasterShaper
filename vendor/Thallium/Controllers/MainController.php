@@ -90,7 +90,6 @@ class MainController extends DefaultController
             }
 
             unset($import);
-
         } elseif (isset($mode) and $mode == "install") {
             $this->loadController("Installer", "installer");
             global $installer;
@@ -220,14 +219,22 @@ class MainController extends DefaultController
 
     public function isValidId($id)
     {
-        // disable for now, 20150809
-        /*$id = (int) $id;
-
-        if (is_numeric($id)) {
-            return true;
+        if (!isset($id) || is_null($id)) {
+            return false;
         }
 
-        return false;*/
+        if (gettype($id) === 'integer' && !is_int($id)) {
+            return false;
+        }
+
+        if (gettype($id) !== 'string') {
+            return false;
+        }
+
+        if (!intval($id)) {
+            return false;
+        }
+
         return true;
     }
 

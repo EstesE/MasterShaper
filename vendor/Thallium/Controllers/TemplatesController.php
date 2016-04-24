@@ -234,7 +234,7 @@ class TemplatesController extends DefaultController
             return false;
         }
 
-        if (!isset($params['page']) ||
+        if (!array_key_exists('page', $params) ||
             empty($params['page']) ||
             !is_string($params['page'])
         ) {
@@ -244,7 +244,6 @@ class TemplatesController extends DefaultController
         }
 
         if (array_key_exists('mode', $params)) {
-
             if (($view = $views->getView($params['page'])) === false) {
                 static::raiseError(get_class($views) .'::getView() returned false!');
                 $repeat = false;
@@ -276,26 +275,32 @@ class TemplatesController extends DefaultController
 
         $url.= '/'. $params['page'] .'/';
 
-        if (isset($params['mode']) &&
-            !empty($params['mode'])
-        ) {
+        if (array_key_exists('mode', $params) && !empty($params['mode'])) {
             $url.= $params['mode'] .'/';
         }
 
-        if (isset($params['id']) &&
-            !empty($params['id'])
-        ) {
+        if (array_key_exists('id', $params) && !empty($params['id'])) {
             $url.= $params['id'] .'/';
         }
 
-        if (isset($params['file']) &&
-            !empty($params['file'])
-        ) {
+        if (array_key_exists('file', $params) && !empty($params['file'])) {
             $url.= $params['file'] .'/';
         }
 
-        return $url;
+        if (!array_key_exists('number', $params) &&
+            !array_key_exists('items_per_page', $params)) {
+            return $url;
+        }
 
+        if (array_key_exists('number', $params)) {
+            $url.= "list-{$params['number']}.html";
+        }
+
+        if (array_key_exists('items_per_page', $params)) {
+            $url.= "?items-per-page=". $params['items_per_page'];
+        }
+
+        return $url;
     }
 }
 

@@ -460,15 +460,13 @@ abstract class DefaultModel
                         return false;
                     }
                 }
-                try {
-                    $item = new $child_model_name(array(
-                        FIELD_IDX => $row[$child_model_name::column(FIELD_IDX)],
-                        FIELD_GUID => $row[$child_model_name::column(FIELD_GUID)],
-                    ));
-                } catch (\Exception $e) {
-                    static::raiseError(__METHOD__ ."(), failed to load {$child_model_name}!");
-                    return false;
-                }
+
+                $item = array(
+                    FIELD_MODEL => $child_model_name,
+                    FIELD_IDX => $row[$child_model_name::column(FIELD_IDX)],
+                    FIELD_GUID => $row[$child_model_name::column(FIELD_GUID)],
+                );
+
                 if (!$this->addItem($item)) {
                     static::raiseError(__CLASS__ .'::addItem() returned false!');
                     return false;
@@ -1844,22 +1842,77 @@ abstract class DefaultModel
             return false;
         }
 
-        if (!isset($this->model_items) || !is_array($this->model_items)) {
-            static::raiseError(__METHOD__ .'(), no items available!');
+        if (!$this->hasItems()) {
+            static::raiseError(__CLASS__ .'::hasItems() returned false!');
             return false;
         }
 
         return array_keys($this->model_items);
     }
 
-    public function getItems()
+    public function getItems($offset = null, $limit = null)
     {
-        if (!isset($this->model_items)) {
-            static::raiseError(__METHOD__ .'(), no items available!');
+        if (!static::isHavingItems()) {
+            static::raiseError(__METHOD__ .'(), model '. __CLASS__ .' is not declared to have items!');
             return false;
         }
 
-        return $this->model_items;
+        if (!$this->hasItems()) {
+            static::raiseError(__CLASS__ .'::hasItems() returned false!');
+            return false;
+        }
+
+        if (($keys = $this->getItemsKeys()) === false) {
+            static::raiseError(__CLASS__ .'::getItemsKeys() returned false!');
+            return false;
+        }
+
+        if (!isset($keys) || empty($keys) || !is_array($keys)) {
+            static::raiseError(__CLASS__ .'::getItemsKeys() returned false!');
+            return false;
+        }
+
+        if (isset($offset) &&
+            !is_null($offset) &&
+            !is_int($offset)
+        ) {
+            static::raiseError(__METHOD__ .'(), $offset parameter is invalid!');
+            return false;
+        } elseif (isset($offset) && is_null($offset)) {
+            $offset = 0;
+        }
+
+        if (isset($limit) &&
+            !is_null($limit) &&
+            !is_int($limit)
+        ) {
+            static::raiseError(__METHOD__ .'(), $limit parameter is invalid!');
+            return false;
+        }
+
+        $keys = array_slice(
+            $keys,
+            $offset,
+            $limit
+        );
+
+        $result = array();
+
+        foreach ($keys as $key) {
+            if (($item = $this->getItem($key)) === false) {
+                static::raiseError(__CLASS__ .'::getItem() returned false!');
+                return false;
+            }
+            array_push($result, $item);
+            continue;
+        }
+
+        if (!isset($result) || empty($result) || !is_array($result)) {
+            static::raiseError(__METHOD__ .'(), no items retrieved!');
+            return false;
+        }
+
+        return $result;
     }
 
     final public static function isHavingItems()
@@ -1905,13 +1958,52 @@ abstract class DefaultModel
             return false;
         }
 
-        if (!method_exists($item, 'getId') && is_callable(array($item, 'getId'))) {
-            static::raiseError(__METHOD__ .'(), item model '. get_class($item) .' has no getId() method!');
+        if (!isset($item) || empty($item)) {
+            static::raiseError(__METHOD__ .'(), $item parameter is invalid!');
             return false;
         }
 
-        if (($idx = $item->getId()) === false) {
-            static::raiseError(get_class($item) .'::getId() returned false!');
+        if (is_array($item)) {
+            if (!array_key_exists(FIELD_MODEL, $item)) {
+                static::raiseError(__METHOD__ .'(), $item misses FIELD_MODEL key!');
+                return false;
+            }
+            if (!array_key_exists(FIELD_IDX, $item)) {
+                static::raiseError(__METHOD__ .'(), $item misses FIELD_IDX key!');
+                return false;
+            }
+            if (!array_key_exists(FIELD_GUID, $item)) {
+                static::raiseError(__METHOD__ .'(), $item misses FIELD_GUID key!');
+                return false;
+            }
+            if (!isset($item[FIELD_IDX]) || empty($item[FIELD_IDX]) || !is_numeric($item[FIELD_IDX])) {
+                static::raiseError(__METHOD__ .'(), $item FIELD_IDX is invalid!');
+                return false;
+            }
+            if (!isset($item[FIELD_GUID]) || empty($item[FIELD_GUID]) || !is_string($item[FIELD_GUID])) {
+                static::raiseError(__METHOD__ .'(), $item FIELD_GUID is invalid!');
+                return false;
+            }
+            if (!isset($item[FIELD_MODEL]) || empty($item[FIELD_MODEL]) || !is_string($item[FIELD_MODEL])) {
+                static::raiseError(__METHOD__ .'(), $item FIELD_MODEL is invalid!');
+                return false;
+            }
+            $idx = $item[FIELD_IDX];
+        } elseif (is_object($item)) {
+            if (!method_exists($item, 'getId') || !is_callable(array(&$item, 'getId'))) {
+                static::raiseError(__METHOD__ .'(), item model '. get_class($item) .' has no getId() method!');
+                return false;
+            }
+            if (!method_exists($item, 'getGuid') || !is_callable(array(&$item, 'getGuid'))) {
+                static::raiseError(__METHOD__ .'(), item model '. get_class($item) .' has no getGuid() method!');
+                return false;
+            }
+            if (($idx = $item->getId()) === false) {
+                static::raiseError(get_class($item) .'::getId() returned false!');
+                return false;
+            }
+        } else {
+            static::raiseError(__METHOD__ .'(), $item type is not supported!');
             return false;
         }
 
@@ -1936,7 +2028,27 @@ abstract class DefaultModel
             return false;
         }
 
-        return $this->model_items[$idx];
+        if (is_object($this->model_items[$idx])) {
+            return $this->model_items[$idx];
+        }
+
+        if (!is_array($this->model_items[$idx])) {
+            static::raiseError(__METHOD__ .'(), got an unsupported item!');
+            return false;
+        }
+
+        $item = $this->model_items[$idx];
+
+        try {
+            $child_model_name = $item[FIELD_MODEL];
+            unset($item[FIELD_MODEL]);
+            $item = new $child_model_name($item);
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ ."(), failed to load {$child_model_name}!");
+            return false;
+        }
+
+        return $item;
     }
 
     public function hasItem($idx)
