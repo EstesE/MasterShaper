@@ -4,7 +4,7 @@
  * This file is part of Thallium.
  *
  * Thallium, a PHP-based framework for web applications.
- * Copyright (C) <2015> <Andreas Unterkircher>
+ * Copyright (C) <2015-2016> <Andreas Unterkircher>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -49,7 +49,6 @@ class MainController extends DefaultController
         }
 
         $this->loadController("Requirements", "requirements");
-
         global $requirements;
 
         if (!$requirements->check()) {
@@ -66,8 +65,8 @@ class MainController extends DefaultController
             $this->loadController("HttpRouter", "router");
             global $router;
             if (($GLOBALS['query'] = $router->select()) === false) {
-                static::raiseError(__METHOD__ .'(), HttpRouterController::select() returned false!');
-                return false;
+                static::raiseError(__METHOD__ .'(), HttpRouterController::select() returned false!', true);
+                return;
             }
             global $query;
         }
@@ -77,7 +76,7 @@ class MainController extends DefaultController
         }
 
         if ($mode != "install" && $this->checkUpgrade()) {
-            return false;
+            return;
         }
 
         if (isset($mode) and $mode == "queue_only") {
@@ -85,8 +84,8 @@ class MainController extends DefaultController
             global $import;
 
             if (!$import->handleQueue()) {
-                static::raiseError("ImportController::handleQueue returned false!");
-                return false;
+                static::raiseError("ImportController::handleQueue returned false!", true);
+                return;
             }
 
             unset($import);
@@ -102,13 +101,29 @@ class MainController extends DefaultController
             exit(0);
         }
 
-        $this->loadController("Session", "session");
-        $this->loadController("Jobs", "jobs");
-        $this->loadController("MessageBus", "mbus");
+        if (!$this->loadController("Cache", "cache")) {
+            static::raiseError(__METHOD__ .'(), failed to load CacheController!', true);
+            return;
+        }
+
+        if (!$this->loadController("Session", "session")) {
+            static::raiseError(__METHOD__ .'(), failed to load SessionController!', true);
+            return;
+        }
+
+        if (!$this->loadController("Jobs", "jobs")) {
+            static::raiseError(__METHOD__ .'(), failed to load JobsController!', true);
+            return;
+        }
+
+        if (!$this->loadController("MessageBus", "mbus")) {
+            static::raiseError(__METHOD__ .'(), failed to load MessageBusController!', true);
+            return;
+        }
 
         if (!$this->processRequestMessages()) {
             static::raiseError(__CLASS__ .'::processRequestMessages() returned false!', true);
-            return false;
+            return;
         }
 
         try {
@@ -116,10 +131,10 @@ class MainController extends DefaultController
             $this->registerHandler('view', array($this, 'viewHandler'));
         } catch (\Exception $e) {
             static::raiseError(__METHOD__ .'(), failed to register handlers!', true);
-            return false;
+            return;
         }
 
-        return true;
+        return;
     }
 
     public function startup()
@@ -347,7 +362,7 @@ class MainController extends DefaultController
         try {
             $obj = new $model($load_by);
         } catch (\Exception $e) {
-            static::raiseError("Failed to load model {$object_name}! ". $e->getMessage());
+            static::raiseError("Failed to load model {$object_name}!", false, $e);
             return false;
         }
 
@@ -430,12 +445,13 @@ class MainController extends DefaultController
         }
 
         try {
-            $GLOBALS[$global_name] =& new $controller;
+            $$global_name = new $controller;
         } catch (Exception $e) {
-            static::raiseError("Failed to load {$controller_name}! ". $e->getMessage(), true);
+            static::raiseError("Failed to load {$controller_name}!", false, $e->getMessage());
             return false;
         }
 
+        $GLOBALS[$global_name] =& $$global_name;
         return true;
     }
 

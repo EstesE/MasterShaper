@@ -4,7 +4,7 @@
  * This file is part of Thallium.
  *
  * Thallium, a PHP-based framework for web applications.
- * Copyright (C) <2015> <Andreas Unterkircher>
+ * Copyright (C) <2015-2016> <Andreas Unterkircher>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -27,7 +27,20 @@ abstract class DefaultController
 
     public function __construct()
     {
+        return;
+    }
 
+    final public function __set($name, $value)
+    {
+        global $thallium;
+
+        if (!isset($thallium::$permit_undeclared_class_properties)) {
+            static::raiseError(__METHOD__ ."(), trying to set an undeclared property {$name}!", true);
+            return;
+        }
+
+        $this->$name = $value;
+        return;
     }
 
     final public function sendMessage($command, $body, $value = null)

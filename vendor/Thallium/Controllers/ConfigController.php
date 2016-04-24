@@ -4,7 +4,7 @@
  * This file is part of Thallium.
  *
  * Thallium, a PHP-based framework for web applications.
- * Copyright (C) <2015> <Andreas Unterkircher>
+ * Copyright (C) <2015-2016> <Andreas Unterkircher>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -146,7 +146,6 @@ class ConfigController extends DefaultController
             !is_array($this->config['database'])
         ) {
             return false;
-
         }
 
         return $this->config['database'];
@@ -158,7 +157,6 @@ class ConfigController extends DefaultController
             if (isset($dbconfig['type']) && !empty($dbconfig['type']) && is_string($dbconfig['type'])) {
                 return $dbconfig['type'];
             }
-
         }
 
         return false;
@@ -183,7 +181,6 @@ class ConfigController extends DefaultController
             is_string($this->config['app']['page_title'])
         ) {
             return $this->config['app']['page_title'];
-
         }
 
         return false;
