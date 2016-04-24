@@ -37,8 +37,7 @@ class OverviewView extends DefaultView
         /* If authentication is enabled, check permissions */
         if ($ms->getOption("authentication") == "Y" &&
             !$ms->checkPermissions("user_show_rules")) {
-
-            $this->raiseError("You do not have enough permissions to access this module!");
+            static::raiseError("You do not have enough permissions to access this module!");
             return false;
         }
 
@@ -56,41 +55,38 @@ class OverviewView extends DefaultView
         $this->filters = array();
 
         if (!($host_id = $session->getCurrentHostProfile())) {
-            $this->raiseError('Do not know for which host I am working for!');
+            static::raiseError('Do not know for which host I am working for!');
             return false;
         }
 
         try {
             $np = new Models\NetworkPathsModel();
         } catch (\Exception $e) {
-            $this->raiseError('Failed to load NetworkPathsModel!');
+            static::raiseError('Failed to load NetworkPathsModel!');
             return false;
         }
 
         if ($np->hasItems()) {
             if (($network_paths = $np->getNetworkPaths($host_id)) === false) {
-                $this->raiseError(get_class($np) .'::getNetworkPaths() returned false!');
+                static::raiseError(get_class($np) .'::getNetworkPaths() returned false!');
                 return false;
             }
 
             foreach ($network_paths as $network_path) {
-
                 if (($chains = $network_path->getActiveChains()) === false) {
-                    $this->raiseError(get_class($network_path) .'::getActiveChains() returned false!');
+                    static::raiseError(get_class($network_path) .'::getActiveChains() returned false!');
                     return false;
                 }
 
                 foreach ($chains as $chain) {
-
                     if (($pipes = $chain->getActivePipes()) === false) {
-                        $this->raiseError(get_class($chain) .'::getActivePipes() returned false!');
+                        static::raiseError(get_class($chain) .'::getActivePipes() returned false!');
                         return false;
                     }
 
                     foreach ($pipes as $pipe) {
-
                         if (($filters = $pipe->getActiveFilters()) === false) {
-                                $this->raiseError(get_class($pipe) .'::getActiveFilters() returned false!');
+                                static::raiseError(get_class($pipe) .'::getActiveFilters() returned false!');
                                 return false;
                         }
                     }
@@ -123,7 +119,6 @@ class OverviewView extends DefaultView
         }
 
         if ($index < count($this->avail_network_paths)) {
-
             $np_idx = $this->avail_network_paths[$index];
             $np =  $this->network_paths[$np_idx];
             $smarty->assign('netpath', $np);
@@ -143,7 +138,7 @@ class OverviewView extends DefaultView
         return false;
 
         if (!array_key_exists('np_idx', $params)) {
-            $this->raiseError("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+            static::raiseError("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
             $repeat = false;
             return;
         }
@@ -156,7 +151,6 @@ class OverviewView extends DefaultView
         }
 
         if ($index < count($this->avail_chains[$np_idx])) {
-
             $chain_idx = $this->avail_chains[$np_idx][$index];
             $chain =  $this->chains[$np_idx][$chain_idx];
 
@@ -186,12 +180,12 @@ class OverviewView extends DefaultView
         global $db, $ms;
 
         if (!array_key_exists('np_idx', $params)) {
-            $this->raiseError("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+            static::raiseError("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
             $repeat = false;
             return;
         }
         if (!array_key_exists('chain_idx', $params)) {
-            $this->raiseError("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
+            static::raiseError("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
             $repeat = false;
             return;
         }
@@ -205,7 +199,6 @@ class OverviewView extends DefaultView
         }
 
         if ($index < count($this->avail_pipes[$np_idx][$chain_idx])) {
-
             $pipe_idx = $this->avail_pipes[$np_idx][$chain_idx][$index];
             $pipe = $this->pipes[$np_idx][$chain_idx][$pipe_idx];
 
@@ -249,17 +242,17 @@ class OverviewView extends DefaultView
         global $db;
 
         if (!array_key_exists('np_idx', $params)) {
-            $this->raiseError("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+            static::raiseError("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
             $repeat = false;
             return;
         }
         if (!array_key_exists('chain_idx', $params)) {
-            $this->raiseError("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
+            static::raiseError("ov_netpath: missing 'chain_idx' parameter", E_USER_WARNING);
             $repeat = false;
             return;
         }
         if (!array_key_exists('pipe_idx', $params)) {
-            $this->raiseError("ov_netpath: missing 'pipe_idx' parameter", E_USER_WARNING);
+            static::raiseError("ov_netpath: missing 'pipe_idx' parameter", E_USER_WARNING);
             $repeat = false;
             return;
         }
@@ -274,7 +267,6 @@ class OverviewView extends DefaultView
         }
 
         if ($index < count($this->avail_filters[$np_idx][$chain_idx][$pipe_idx])) {
-
             $filter_idx = $this->avail_filters[$np_idx][$chain_idx][$pipe_idx][$index];
             $filter = $this->filters[$np_idx][$chain_idx][$pipe_idx][$filter_idx];
 
@@ -311,7 +303,6 @@ class OverviewView extends DefaultView
         }
 
         switch ($_POST['move_obj']) {
-
             case 'chain':
                 $obj_table = "chains";
                 $obj_col = "chain";
@@ -332,16 +323,15 @@ class OverviewView extends DefaultView
             default:
                 return "Unknown object-type";
                 break;
-
         }
 
         if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
-            $this->raiseError(_("Id to alter position is missing or not numeric!"));
+            static::raiseError(_("Id to alter position is missing or not numeric!"));
             return false;
         }
 
         if (!isset($_POST['to']) || !in_array($_POST['to'], array('up','down'))) {
-            $this->raiseError(_("Don't know in which direction we shall alter position!"));
+            static::raiseError(_("Don't know in which direction we shall alter position!"));
             return false;
         }
 
@@ -473,7 +463,6 @@ class OverviewView extends DefaultView
             $new_pos = 1;
         /* moving if new position is greater than 0 */
         } elseif ($new_pos > 0) {
-
             /* swap position with current position holder */
             switch ($_POST['move_obj']) {
                 case 'chain':
@@ -548,7 +537,6 @@ class OverviewView extends DefaultView
             }
 
             switch ($_POST['move_obj']) {
-
                 case 'chain':
                     $db->query("
                             UPDATE
@@ -594,7 +582,6 @@ class OverviewView extends DefaultView
 
         /* finally set objects new position */
         switch ($_POST['move_obj']) {
-
             case 'chain':
                 $sth = $db->prepare("
                         UPDATE
@@ -651,7 +638,6 @@ class OverviewView extends DefaultView
                             ));
                 $db->freeStatement($sth);
                 break;
-
         }
 
         return "ok";
@@ -666,10 +652,8 @@ class OverviewView extends DefaultView
         global $ms, $db;
 
         if (isset($_POST['chain_sl_idx']) && is_array($_POST['chain_sl_idx'])) {
-
             /* save all chain service levels */
             foreach ($_POST['chain_sl_idx'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXchains
@@ -692,10 +676,8 @@ class OverviewView extends DefaultView
         }
 
         if (isset($_POST['chain_fallback_idx']) && is_array($_POST['chain_fallback_idx'])) {
-
             /* save all chain fallback service levels */
             foreach ($_POST['chain_fallback_idx'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXchains
@@ -720,7 +702,6 @@ class OverviewView extends DefaultView
         if (isset($_POST['chain_src_target']) && is_array($_POST['chain_src_target'])) {
             /* save all chain fallback service levels */
             foreach ($_POST['chain_src_target'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXchains
@@ -745,7 +726,6 @@ class OverviewView extends DefaultView
         if (isset($_POST['chain_dst_target']) && is_array($_POST['chain_dst_target'])) {
             /* save all chain fallback service levels */
             foreach ($_POST['chain_dst_target'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXchains
@@ -770,7 +750,6 @@ class OverviewView extends DefaultView
         if (isset($_POST['chain_direction']) && is_array($_POST['chain_direction'])) {
             /* save all chain fallback service levels */
             foreach ($_POST['chain_direction'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXchains
@@ -795,7 +774,6 @@ class OverviewView extends DefaultView
         if (isset($_POST['chain_action']) && is_array($_POST['chain_action'])) {
             /* save all chain fallback service levels */
             foreach ($_POST['chain_action'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXchains
@@ -818,10 +796,8 @@ class OverviewView extends DefaultView
         }
 
         if (isset($_POST['pipe_sl_idx']) && is_array($_POST['pipe_sl_idx'])) {
-
             /* save all pipe service levels */
             foreach ($_POST['pipe_sl_idx'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXassign_pipes_to_chains
@@ -843,7 +819,6 @@ class OverviewView extends DefaultView
         if (isset($_POST['pipe_src_target']) && is_array($_POST['pipe_src_target'])) {
             /* save all pipe fallback service levels */
             foreach ($_POST['pipe_src_target'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXpipes
@@ -865,7 +840,6 @@ class OverviewView extends DefaultView
         if (isset($_POST['pipe_dst_target']) && is_array($_POST['pipe_dst_target'])) {
             /* save all pipe fallback service levels */
             foreach ($_POST['pipe_dst_target'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXpipes
@@ -887,7 +861,6 @@ class OverviewView extends DefaultView
         if (isset($_POST['pipe_direction']) && is_array($_POST['pipe_direction'])) {
             /* save all pipe fallback service levels */
             foreach ($_POST['pipe_direction'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXpipes
@@ -909,7 +882,6 @@ class OverviewView extends DefaultView
         if (isset($_POST['pipe_action']) && is_array($_POST['pipe_action'])) {
             /* save all pipe fallback service levels */
             foreach ($_POST['pipe_action'] as $k => $v) {
-
                 $sth = $db->prepare("
                         UPDATE
                         TABLEPREFIXpipes
