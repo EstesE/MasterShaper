@@ -21,6 +21,41 @@ namespace MasterShaper\Controllers;
 
 class ConfigController extends \Thallium\Controllers\ConfigController
 {
+    public function getTcPath()
+    {
+        if (!isset($this->config['app']['tc_bin']) ||
+            empty($this->config['app']['tc_bin']) ||
+            !is_string($this->config['app']['tc_bin'])
+        ) {
+            return false;
+        }
+
+        return $this->config['app']['tc_bin'];
+    }
+
+    public function getIptablesPath()
+    {
+        if (!isset($this->config['app']['ipt_bin']) ||
+            empty($this->config['app']['ipt_bin']) ||
+            !is_string($this->config['app']['ipt_bin'])
+        ) {
+            return false;
+        }
+
+        return $this->config['app']['ipt_bin'];
+    }
+
+    public function getSudoPath()
+    {
+        if (!isset($this->config['app']['sudo_bin']) ||
+            empty($this->config['app']['sudo_bin']) ||
+            !is_string($this->config['app']['sudo_bin'])
+        ) {
+            return false;
+        }
+
+        return $this->config['app']['sudo_bin'];
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
