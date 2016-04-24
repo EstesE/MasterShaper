@@ -262,7 +262,7 @@ class ChainModel extends DefaultModel
         return true;
     }
 
-    public function getServiceLevel()
+    public function getServiceLevel($load = false)
     {
         if (!$this->hasServiceLevel()) {
             static::raiseError(__CLASS__ .'::hasServiceLevel() returned false!');
@@ -274,7 +274,20 @@ class ChainModel extends DefaultModel
             return false;
         }
 
-        return $sl_idx;
+        if (!$load) {
+            return $sl_idx;
+        }
+
+        try {
+            $sl = new \MasterShaper\Models\ServiceLevelModel(array(
+                FIELD_IDX => $sl_idx,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load ServiceLevelModel!', false, $e);
+            return false;
+        }
+
+        return $sl;
     }
 
     public function hasFallbackServiceLevel()
@@ -286,7 +299,7 @@ class ChainModel extends DefaultModel
         return true;
     }
 
-    public function getFallbackServiceLevel()
+    public function getFallbackServiceLevel($load = false)
     {
         if (!$this->hasFallbackServiceLevel()) {
             static::raiseError(__CLASS__ .'::hasFallbackServiceLevel() returned false!');
@@ -298,7 +311,20 @@ class ChainModel extends DefaultModel
             return false;
         }
 
-        return $sl_idx;
+        if (!$load) {
+            return $sl_idx;
+        }
+
+        try {
+            $sl = new \MasterShaper\Models\ServiceLevelModel(array(
+                FIELD_IDX => $sl_idx,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load ServiceLevelModel!', false, $e);
+            return false;
+        }
+
+        return $sl;
     }
 
     public function hasNetworkPath()
