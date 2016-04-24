@@ -45,7 +45,7 @@ class TcIdModel extends DefaultModel
         'if' => array(
             FIELD_TYPE => FIELD_STRING,
         ),
-        't_id' => array(
+        'tc_id' => array(
             FIELD_TYPE => FIELD_STRING,
         ),
         'color' => array(
