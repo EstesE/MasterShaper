@@ -65,7 +65,7 @@
  <div class="ui dropdown item">
   Rules<i class="dropdown icon"></i>
   <div class="menu">
-   <a href="{$app_web_path}/rules/'}" class="item {get_menu_state page='Rules Show'}"><img src="{$icon_rules_show}" />&nbsp;Show</a>
+   <a href="{$app_web_path}/rules/" class="item {get_menu_state page='Rules Show'}"><img src="{$icon_rules_show}" />&nbsp;Show</a>
    <!--<div class="menu_help">display result of generated ruleset commands</div>-->
    <a href="{$app_web_path}/rules/load/" class="item {get_menu_state page='Rules Load'}"><img src="{$icon_rules_load}" />&nbsp;Load</a>
    <!--<div class="menu_help">batch load ruleset into system (fast)</div>-->
