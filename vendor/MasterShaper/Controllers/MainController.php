@@ -172,6 +172,19 @@ class MainController extends \Thallium\Controllers\MainController
 
         return false;
     }
+
+    public function getKbit($bw)
+    {
+        if (preg_match("/^(\d+)k$/i", $bw)) {
+            return preg_replace("/k/i", "", $bw);
+        }
+        if (preg_match("/^(\d+)m$/i", $bw)) {
+            return (intval(preg_replace("/m/i", "", $bw)) * 1024);
+        }
+
+        return $bw;
+
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
