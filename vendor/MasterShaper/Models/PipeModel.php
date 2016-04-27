@@ -198,11 +198,35 @@ class PipeModel extends DefaultModel
 
     public function swapTargets()
     {
-        $tmp = $this->pipe_src_target;
-        $this->pipe_src_target = $this->pipe_dst_target;
-        $this->pipe_dst_target = $tmp;
-        return true;
+        if (!$this->hasSourceTarget() && !$this->hasDestinationTarget()) {
+            return true;
+        }
 
+        if ($this->hasSourceTarget() && ($src = $this->getSourceTarget()) === false) {
+            static::raiseError(__CLASS__ .'::getSourceTarget() returned false!');
+            return false;
+        } elseif (!$this->hasSourceTarget()) {
+            $src = 0;
+        }
+
+        if ($this->hasDestinationTarget() && ($dst = $this->getDestinationTarget()) === false) {
+            static::raiseError(__CLASS__ .'::getDestinationTarget() returne false!');
+            return false;
+        } elseif (!$this->hasDestinationTarget()) {
+            $dst = 0;
+        }
+
+        if (!$this->setSourceTarget($dst)) {
+            static::raiseError(__CLASS__ .'::setSourceTarget() returned false!');
+            return false;
+        }
+
+        if (!$this->setDestinationTarget($src)) {
+            static::raiseError(__CLASS__ .'::setDestinationTarget() returned false!');
+            return false;
+        }
+
+        return true;
     }
 
     public function hasSourceTarget()
@@ -229,6 +253,28 @@ class PipeModel extends DefaultModel
         return $target_idx;
     }
 
+    public function setSourceTarget($src_idx)
+    {
+        if (!isset($src_idx) || !is_numeric($src_idx)) {
+            static::raiseError(__METHOD__ .'(), $src_idx parameter is invalid!');
+            return false;
+        }
+
+        if (!empty($src_idx) && !\MasterShaper\Models\TargetModel::exists(array(
+            FIELD_IDX => $src_idx,
+        ))) {
+            static::raiseError(__METHOD__ .'(), provided target does not exist!');
+            return false;
+        }
+
+        if (!$this->setFieldValue('src_target', $src_idx)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
     public function hasDestinationTarget()
     {
         if (!$this->hasFieldValue('dst_target')) {
@@ -253,6 +299,27 @@ class PipeModel extends DefaultModel
         return $target_idx;
     }
 
+    public function setDestinationTarget($dst_idx)
+    {
+        if (!isset($dst_idx) || !is_numeric($dst_idx)) {
+            static::raiseError(__METHOD__ .'(), $dst_idx parameter is invalid!');
+            return false;
+        }
+
+        if (!empty($dst_idx) && !\MasterShaper\Models\TargetModel::exists(array(
+            FIELD_IDX => $dst_idx,
+        ))) {
+            static::raiseError(__METHOD__ .'(), provided target does not exist!');
+            return false;
+        }
+
+        if (!$this->setFieldValue('dst_target', $dst_idx)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
+        return true;
+    }
     public function hasDirection()
     {
         if (!$this->hasFieldValue('direction')) {
