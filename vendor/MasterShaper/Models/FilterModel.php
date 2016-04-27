@@ -203,7 +203,7 @@ class FilterModel extends DefaultModel
         return true;
     }
 
-    public function getProtocol()
+    public function getProtocol($load = false)
     {
         if (!$this->hasProtocol()) {
             static::raiseError(__CLASS__ .'::hasProtocol() returned false!');
@@ -215,7 +215,20 @@ class FilterModel extends DefaultModel
             return false;
         }
 
-        return $proto_idx;
+        if (!$load) {
+            return $proto_idx;
+        }
+
+        try {
+            $proto = new \MasterShaper\Models\ProtocolModel(array(
+                FIELD_IDX => $proto_idx,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load ProtocolModel!', false, $e);
+            return false;
+        }
+
+        return $proto;
     }
 
     public function hasTos()
