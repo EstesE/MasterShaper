@@ -25,7 +25,7 @@ namespace MasterShaper\Models;
 class AssignPortToFilterModel extends DefaultModel
 {
     protected static $model_table_name = 'assign_ports_to_filters';
-    protected static $model_column_prefix = 'afp';
+    protected static $model_column_prefix = 'apf';
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
