@@ -61,6 +61,8 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('apfs', 'AssignPortToFiltersModel');
             $this->registerModel('apc', 'AssignPipeToChainModel');
             $this->registerModel('apcs', 'AssignPipeToChainsModel');
+            $this->registerModel('afp', 'AssignFilterToPipeModel');
+            $this->registerModel('afps', 'AssignFilterToPipesModel');
             $this->registerModel('setting', 'SettingModel');
             $this->registerModel('settings', 'SettingsModel');
             $this->registerModel('tcid', 'TcIdModel');
