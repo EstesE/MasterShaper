@@ -107,6 +107,7 @@ class FilterModel extends DefaultModel
             FIELD_DEFAULT => 'Y',
         ),
     );
+    private $ports;
 
     protected function __init()
     {
@@ -277,6 +278,59 @@ class FilterModel extends DefaultModel
         }
 
         return $dscp;
+    }
+
+    public function hasPorts()
+    {
+        if (isset($this->ports) && !empty($ports)) {
+            return true;
+        }
+
+        try {
+            $ports = new \MasterShaper\Models\AssignPortToFiltersModel(array(
+                'filter_idx' => $this->getId(),
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load AssignPortToFiltersModel!', false, $e);
+            return false;
+        }
+
+        $this->ports = $ports;
+
+        if (!$ports->hasItems()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getPorts($load = false)
+    {
+        if (!$this->hasPorts()) {
+            static::raiseError(__CLASS__ .'::hasPorts() returned false!');
+            return false;
+        }
+
+        if (($ports = $this->ports->getItems()) === false) {
+            static::raiseError(get_class($this->ports) .'::getItems() returned false!');
+            return false;
+        }
+
+        if (!$load) {
+            return $ports;
+        }
+
+        $result = array();
+
+        foreach ($ports as $apf) {
+            if (($port = $apf->getPort(true)) === false) {
+                static::raiseError(get_class($apf) .'::getPort() returned false!');
+                return false;
+            }
+            array_push($result, $port);
+        }
+
+        return $result;
     }
 }
 
