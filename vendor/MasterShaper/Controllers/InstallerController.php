@@ -29,13 +29,13 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
         if (!$db->checkTableExists("TABLEPREFIXassign_filters_to_pipes")) {
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_filters_to_pipes` (
-                `apf_idx` int(11) NOT NULL auto_increment,
-                `apf_guid` VARCHAR(255) DEFAULT NULL,
-                `apf_pipe_idx` int(11) default NULL,
-                `apf_filter_idx` int(11) default NULL,
-                PRIMARY KEY  (`apf_idx`),
-                KEY `apf_pipe_idx` (`apf_pipe_idx`),
-                KEY `apf_filter_idx` (`apf_filter_idx`)
+                `afp_idx` int(11) NOT NULL auto_increment,
+                `afp_guid` VARCHAR(255) DEFAULT NULL,
+                `afp_pipe_idx` int(11) default NULL,
+                `afp_filter_idx` int(11) default NULL,
+                PRIMARY KEY  (`afp_idx`),
+                KEY `afp_pipe_idx` (`afp_pipe_idx`),
+                KEY `afp_filter_idx` (`afp_filter_idx`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
@@ -46,13 +46,13 @@ class InstallerController extends \Thallium\Controllers\InstallerController
 
         if (!$db->checkTableExists('TABLEPREFIXassign_ports_to_filters')) {
             $table_sql = "CREATE TABLE `TABLEPREFIXassign_ports_to_filters` (
-                `afp_idx` int(11) NOT NULL auto_increment,
-                `afp_guid` VARCHAR(255) DEFAULT NULL,
-                `afp_filter_idx` int(11) default NULL,
-                `afp_port_idx` int(11) default NULL,
-                PRIMARY KEY  (`afp_idx`),
-                KEY `afp_filter_idx` (`afp_filter_idx`),
-                KEY `afp_port_idx` (`afp_port_idx`)
+                `apf_idx` int(11) NOT NULL auto_increment,
+                `apf_guid` VARCHAR(255) DEFAULT NULL,
+                `apf_filter_idx` int(11) default NULL,
+                `apf_port_idx` int(11) default NULL,
+                PRIMARY KEY  (`apf_idx`),
+                KEY `apf_filter_idx` (`apf_filter_idx`),
+                KEY `apf_port_idx` (`apf_port_idx`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
             if ($db->query($table_sql) === false) {
@@ -939,7 +939,7 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 foreach ($row as $col) {
                     $data[] = $col;
                 }
-                
+
                 $db->execute($sth, $data) or static::raiseError(__METHOD__ .'(), SQL statement execute failure!', true);
             }
 
@@ -1019,6 +1019,58 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `id_idx`"
         ) or static::raiseError(__METHOD__ .'(), SQL failure!', true);
         $db->setDatabaseSchemaVersion(35);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV36()
+    {
+        global $db;
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXassign_filters_to_pipes
+            DROP KEY
+                `apf_pipe_idx`,
+            DROP KEY
+                `apf_filter_idx`,
+            DROP PRIMARY KEY,
+            CHANGE
+                `apf_idx` `afp_idx` int(11) NOT NULL auto_increment PRIMARY KEY,
+            CHANGE
+                `apf_guid` `afp_guid` VARCHAR(255) DEFAULT NULL,
+            CHANGE
+                `apf_pipe_idx` `afp_pipe_idx` int(11) default NULL,
+            CHANGE
+                `apf_filter_idx` `afp_filter_idx` int(11) default NULL,
+            ADD KEY
+                `afp_pipe_idx` (`afp_pipe_idx`),
+            ADD KEY
+                `afp_filter_idx` (`afp_filter_idx`)"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!', true);
+
+        $db->query(
+            "ALTER TABLE
+                `TABLEPREFIXassign_ports_to_filters`
+            DROP KEY
+                `afp_filter_idx`,
+            DROP KEY
+                `afp_port_idx`,
+            DROP PRIMARY KEY,
+            CHANGE
+                `afp_idx` `apf_idx` int(11) NOT NULL auto_increment PRIMARY KEY,
+            CHANGE
+                `afp_guid` `apf_guid` VARCHAR(255) DEFAULT NULL,
+            CHANGE
+                `afp_filter_idx` `apf_filter_idx` int(11) default NULL,
+            CHANGE
+                `afp_port_idx` `apf_port_idx` int(11) default NULL,
+            ADD KEY
+                `apf_filter_idx` (`apf_filter_idx`),
+            ADD KEY
+                `apf_port_idx` (`apf_port_idx`)"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!', true);
+
+        $db->setDatabaseSchemaVersion(36);
         return true;
     }
 }
