@@ -89,7 +89,7 @@ class AssignPortToFilterModel extends DefaultModel
         return true;
     }
 
-    public function getPort()
+    public function getPort($load = true)
     {
         if (!$this->hasPort()) {
             static::raiseError(__CLASS__ .'::hasPort() returned false!');
@@ -101,7 +101,20 @@ class AssignPortToFilterModel extends DefaultModel
             return false;
         }
 
-        return $value;
+        if (!$load) {
+            return $value;
+        }
+
+        try {
+            $port = new \MasterShaper\Models\PortModel(array(
+                FIELD_IDX => $value,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load PortModel!', false, $e);
+            return false;
+        }
+
+        return $port;
     }
 
     public function setPort($idx)
