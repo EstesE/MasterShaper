@@ -216,7 +216,7 @@ class FilterModel extends DefaultModel
             return false;
         }
 
-        if (!$load) {
+        if (!$load || intval($proto_idx) == -1) {
             return $proto_idx;
         }
 
