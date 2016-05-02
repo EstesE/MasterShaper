@@ -206,6 +206,8 @@ class FilterModel extends DefaultModel
 
     public function getProtocol($load = false)
     {
+        global $cache;
+
         if (!$this->hasProtocol()) {
             static::raiseError(__CLASS__ .'::hasProtocol() returned false!');
             return false;
@@ -220,13 +222,24 @@ class FilterModel extends DefaultModel
             return $proto_idx;
         }
 
-        try {
-            $proto = new \MasterShaper\Models\ProtocolModel(array(
-                FIELD_IDX => $proto_idx,
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load ProtocolModel!', false, $e);
-            return false;
+        if (!$cache->has("proto_${proto_idx}")) {
+            try {
+                $proto = new \MasterShaper\Models\ProtocolModel(array(
+                    FIELD_IDX => $proto_idx,
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load ProtocolModel!', false, $e);
+                return false;
+            }
+            if (!$cache->add($proto, "proto_${proto_idx}")) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($proto = $cache->get("proto_${proto_idx}")) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
         }
 
         return $proto;
