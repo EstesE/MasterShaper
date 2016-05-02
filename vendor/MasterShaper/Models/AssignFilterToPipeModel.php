@@ -91,6 +91,8 @@ class AssignFilterToPipeModel extends DefaultModel
 
     public function getFilter($load = false)
     {
+        global $cache;
+
         if (!$this->hasFilter()) {
             static::raiseError(__CLASS__ .'::hasFilter() returned false!');
             return false;
@@ -105,13 +107,24 @@ class AssignFilterToPipeModel extends DefaultModel
             return $value;
         }
 
-        try {
-            $filter = new \MasterShaper\Models\FilterModel(array(
-                FIELD_IDX => $value,
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load FilterModel!', false, $e);
-            return false;
+        if (!$cache->has("filter_${value}")) {
+            try {
+                $filter = new \MasterShaper\Models\FilterModel(array(
+                    FIELD_IDX => $value,
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load FilterModel!', false, $e);
+                return false;
+            }
+            if (!$cache->add($filter, "filter_${value}")) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($filter = $cache->get("filter_${value}")) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
         }
 
         return $filter;
