@@ -264,6 +264,8 @@ class ChainModel extends DefaultModel
 
     public function getServiceLevel($load = false)
     {
+        global $cache;
+
         if (!$this->hasServiceLevel()) {
             static::raiseError(__CLASS__ .'::hasServiceLevel() returned false!');
             return false;
@@ -278,13 +280,24 @@ class ChainModel extends DefaultModel
             return $sl_idx;
         }
 
-        try {
-            $sl = new \MasterShaper\Models\ServiceLevelModel(array(
-                FIELD_IDX => $sl_idx,
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load ServiceLevelModel!', false, $e);
-            return false;
+        if (!$cache->has("sl_${sl_idx}")) {
+            try {
+                $sl = new \MasterShaper\Models\ServiceLevelModel(array(
+                    FIELD_IDX => $sl_idx,
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load ServiceLevelModel!', false, $e);
+                return false;
+            }
+            if (!$cache->add($sl, "sl_${sl_idx}")) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($sl = $cache->get("sl_${sl_idx}")) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
         }
 
         return $sl;
@@ -301,6 +314,8 @@ class ChainModel extends DefaultModel
 
     public function getFallbackServiceLevel($load = false)
     {
+        global $cache;
+
         if (!$this->hasFallbackServiceLevel()) {
             static::raiseError(__CLASS__ .'::hasFallbackServiceLevel() returned false!');
             return false;
@@ -315,13 +330,24 @@ class ChainModel extends DefaultModel
             return $sl_idx;
         }
 
-        try {
-            $sl = new \MasterShaper\Models\ServiceLevelModel(array(
-                FIELD_IDX => $sl_idx,
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load ServiceLevelModel!', false, $e);
-            return false;
+        if (!$cache->has("sl_${sl_idx}")) {
+            try {
+                $sl = new \MasterShaper\Models\ServiceLevelModel(array(
+                    FIELD_IDX => $sl_idx,
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load ServiceLevelModel!', false, $e);
+                return false;
+            }
+            if (!$cache->add($sl, "sl_${sl_idx}")) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($sl = $cache->get("sl_${sl_idx}")) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
         }
 
         return $sl;
