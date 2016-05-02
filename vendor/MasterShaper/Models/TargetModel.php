@@ -377,7 +377,7 @@ class TargetModel extends DefaultModel
 
     public function setMembers($members)
     {
-        global $ms;
+        global $ms, $cache;
 
         if (!isset($members) || (!empty($members) && !is_string($members))) {
             static::raiseError(__METHOD__ .'(), $members parameter is invalid!');
@@ -394,13 +394,24 @@ class TargetModel extends DefaultModel
             return false;
         }
 
-        try {
-            $atgs = new \MasterShaper\Models\AssignTargetToGroupsModel(array(
-                'group_idx' => $this->getId()
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load AssignTargetToGroupsModel!', false, $e);
-            return false;
+        if (!$cache->has("atgs_". $this->getId())) {
+            try {
+                $atgs = new \MasterShaper\Models\AssignTargetToGroupsModel(array(
+                    'group_idx' => $this->getId()
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load AssignTargetToGroupsModel!', false, $e);
+                return false;
+            }
+            if (!$cache->add($atgs, true)) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($sl = $cache->get("atgs_". $this->getId())) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
         }
 
         if (!$atgs->delete()) {
