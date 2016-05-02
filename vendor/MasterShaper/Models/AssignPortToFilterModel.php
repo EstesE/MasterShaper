@@ -91,6 +91,8 @@ class AssignPortToFilterModel extends DefaultModel
 
     public function getPort($load = true)
     {
+        global $cache;
+
         if (!$this->hasPort()) {
             static::raiseError(__CLASS__ .'::hasPort() returned false!');
             return false;
@@ -105,13 +107,24 @@ class AssignPortToFilterModel extends DefaultModel
             return $value;
         }
 
-        try {
-            $port = new \MasterShaper\Models\PortModel(array(
-                FIELD_IDX => $value,
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load PortModel!', false, $e);
-            return false;
+        if (!$cache->add($port, "port_${value}")) {
+            try {
+                $port = new \MasterShaper\Models\PortModel(array(
+                    FIELD_IDX => $value,
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load PortModel!', false, $e);
+                return false;
+            }
+            if (!$cache->add($port, "port_${value}")) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($port = $cache->get("port_${value}")) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
         }
 
         return $port;
