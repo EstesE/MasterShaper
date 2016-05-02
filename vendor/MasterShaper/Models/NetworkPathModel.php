@@ -274,6 +274,8 @@ class NetworkPathModel extends DefaultModel
 
     public function getInterface1($load = false)
     {
+        global $cache;
+
         if (!$this->hasInterface1()) {
             static::raiseError(__METHOD__ .'::hasInterface1() returned false!');
             return false;
@@ -288,13 +290,24 @@ class NetworkPathModel extends DefaultModel
             return $if1;
         }
 
-        try {
-            $if = new \MasterShaper\Models\NetworkInterfaceModel(array(
-                FIELD_IDX =>  $if1,
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load NetworkInterfaceModel!');
-            return false;
+        if (!$cache->has("if_${if1}")) {
+            try {
+                $if = new \MasterShaper\Models\NetworkInterfaceModel(array(
+                    FIELD_IDX =>  $if1,
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load NetworkInterfaceModel!');
+                return false;
+            }
+            if (!$cache->add($if, "if_${if1}")) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($if = $cache->get("if_${if1}")) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
         }
 
         return $if;
@@ -329,6 +342,8 @@ class NetworkPathModel extends DefaultModel
 
     public function getInterface2($load = false)
     {
+        global $cache;
+
         if (!$this->hasInterface2()) {
             static::raiseError(__METHOD__ .'::hasInterface2() returned false!');
             return false;
@@ -343,13 +358,24 @@ class NetworkPathModel extends DefaultModel
             return $if2;
         }
 
-        try {
-            $if = new \MasterShaper\Models\NetworkInterfaceModel(array(
-                FIELD_IDX =>  $if2,
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load NetworkInterfaceModel!');
-            return false;
+        if (!$cache->has("if_${if2}")) {
+            try {
+                $if = new \MasterShaper\Models\NetworkInterfaceModel(array(
+                    FIELD_IDX =>  $if2,
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load NetworkInterfaceModel!');
+                return false;
+            }
+            if (!$cache->add($if, "if_${if2}")) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($if = $cache->get("if_${if2}")) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
         }
 
         return $if;
