@@ -100,6 +100,8 @@ class AssignPipeToChainModel extends DefaultModel
 
     public function getPipe($load = false)
     {
+        global $cache;
+
         if (!$this->hasPipe()) {
             static::raiseError(__CLASS__ .'::hasPipe() returned false!');
             return false;
@@ -114,13 +116,28 @@ class AssignPipeToChainModel extends DefaultModel
             return $value;
         }
 
-        try {
-            $pipe = new \MasterShaper\Models\PipeModel(array(
-                FIELD_IDX => $value,
-            ));
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ .'(), failed to load PipeModel!', false, $e);
-            return false;
+        if (!$cache->has("pipe_${value}")) {
+            try {
+                $pipe = new \MasterShaper\Models\PipeModel(array(
+                    FIELD_IDX => $value,
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load PipeModel!', false, $e);
+                return false;
+            }
+            if (!$cache->add($pipe, "pipe_${value}")) {
+                static::raiseError(get_class($cache) .'::add() returned false!');
+                return false;
+            }
+        } else {
+            if (($pipe = $cache->get("pipe_${value}")) === false) {
+                static::raiseError(get_class($cache) .'::get() returned false!');
+                return false;
+            }
+            if (!$pipe->resetFields()) {
+                static::raiseError(get_class($pipe) .'::resetFields() returned false!');
+                return false;
+            }
         }
 
         return $pipe;
