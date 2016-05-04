@@ -330,6 +330,10 @@ class ChainModel extends DefaultModel
             return $sl_idx;
         }
 
+        if (!isset($sl_idx) || empty($sl_idx) || $sl_idx == -1) {
+            return null;
+        }
+
         if (!$cache->has("sl_${sl_idx}")) {
             try {
                 $sl = new \MasterShaper\Models\ServiceLevelModel(array(
