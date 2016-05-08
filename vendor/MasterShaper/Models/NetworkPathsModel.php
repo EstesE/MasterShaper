@@ -44,7 +44,6 @@ class NetworkPathsModel extends DefaultModel
         }
 
         $filtered = array_filter($this->items, function ($item) {
-            print_r($item);
             return false;
         });
 
