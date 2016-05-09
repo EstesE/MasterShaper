@@ -131,15 +131,17 @@ class MainController extends \Thallium\Controllers\MainController
         return true;
     }
 
-    public function getOption($option)
+    public function getOption($option, $no_fail = false)
     {
         if (!$this->hasOption($option)) {
-            static::raiseError(__CLASS__ .'::hasOption() returned false!');
+            if (!isset($no_fail) || !$no_fail) {
+                static::raiseError(__CLASS__ .'::hasOption() returned false!');
+            }
             return false;
         }
 
         if (!$this->ms_settings[$option]->hasValue()) {
-            return false;
+            return null;
         }
 
         if (($value = $this->ms_settings[$option]->getValue()) === false) {
