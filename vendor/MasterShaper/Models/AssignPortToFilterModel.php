@@ -125,6 +125,10 @@ class AssignPortToFilterModel extends DefaultModel
                 static::raiseError(get_class($cache) .'::get() returned false!');
                 return false;
             }
+            if (!$port->resetFields()) {
+                static::raiseError(get_class($port) .'::resetFields() returned false!');
+                return false;
+            }
         }
 
         return $port;
