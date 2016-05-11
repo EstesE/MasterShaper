@@ -125,6 +125,10 @@ class AssignFilterToPipeModel extends DefaultModel
                 static::raiseError(get_class($cache) .'::get() returned false!');
                 return false;
             }
+            if (!$filter->resetFields()) {
+                static::raiseError(get_class($filter) .'::resetFields() returned false!');
+                return false;
+            }
         }
 
         return $filter;
