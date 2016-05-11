@@ -412,6 +412,10 @@ class TargetModel extends DefaultModel
                 static::raiseError(get_class($cache) .'::get() returned false!');
                 return false;
             }
+            if (!$sl->resetFields()) {
+                static::raiseError(get_class($sl) .'::resetFields() returned false!');
+                return false;
+            }
         }
 
         if (!$atgs->delete()) {
