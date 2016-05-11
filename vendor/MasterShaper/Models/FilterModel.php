@@ -240,6 +240,10 @@ class FilterModel extends DefaultModel
                 static::raiseError(get_class($cache) .'::get() returned false!');
                 return false;
             }
+            if (!$proto->resetFields()) {
+                static::raiseError(get_class($proto) .'::resetFields() returned false!');
+                return false;
+            }
         }
 
         return $proto;
