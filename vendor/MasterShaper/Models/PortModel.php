@@ -97,9 +97,12 @@ class PortModel extends DefaultModel
         return true;
     }
 
-    public function setNumber($numbers)
+    public function setNumber($number)
     {
-        if (!isset($number) || empty($number) || !is_string($number)) {
+        if (!isset($number) ||
+            empty($number) ||
+            (!is_string($number) && !is_int($number))
+        ) {
             static::raiseError(__METHOD__ .'(), $number parameter is invalid!');
             return false;
         }
@@ -110,7 +113,19 @@ class PortModel extends DefaultModel
         }
 
         foreach ($ports as $port) {
-            if (!is_numeric($port)) {
+            if (preg_match('/^(\d+)-(\d+)$/', $port, $matches) === 1) {
+                if (!isset($matches[1]) ||
+                    empty($matches[1]) ||
+                    !is_numeric($matches[1]) ||
+                    !isset($matches[2]) ||
+                    empty($matches[2]) ||
+                    !is_numeric($matches[2]) ||
+                    (int) $matches[2] < (int) $matches[1]
+                ) {
+                    static::raiseError(__METHOD__ .'(), $number contains an invalid port-range!');
+                    return false;
+                }
+            } elseif (!is_numeric($port)) {
                 static::raiseError(__METHOD__ .'(), $number contains an invalid port!');
                 return false;
             }
