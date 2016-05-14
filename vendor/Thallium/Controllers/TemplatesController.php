@@ -204,6 +204,10 @@ class TemplatesController extends DefaultController
 
     public function registerPlugin($type, $name, $callback, $cacheable = true)
     {
+        if (isset($this->smarty->smarty->registered_plugins[$type][$name])) {
+            return true;
+        }
+
         if (!$this->smarty->registerPlugin($type, $name, $callback, $cacheable)) {
             static::raiseError(get_class($this->smarty) .'::registerPlugin() returned false!');
             return false;
@@ -221,7 +225,7 @@ class TemplatesController extends DefaultController
         return true;
     }
 
-    public function getUrl($params, &$smarty)
+    public static function getUrl($params)
     {
         global $config, $views;
 
@@ -230,7 +234,6 @@ class TemplatesController extends DefaultController
             !is_array($params)
         ) {
             static::raiseError(__METHOD__ .'(), $params parameter is invalid!');
-            $repeat = false;
             return false;
         }
 
@@ -239,33 +242,28 @@ class TemplatesController extends DefaultController
             !is_string($params['page'])
         ) {
             static::raiseError(__METHOD__ .'(), missing "page" parameter!');
-            $repeat = false;
             return false;
         }
 
         if (array_key_exists('mode', $params)) {
             if (($view = $views->getView($params['page'])) === false) {
                 static::raiseError(get_class($views) .'::getView() returned false!');
-                $repeat = false;
                 return false;
             }
 
             if (!isset($view) || empty($view) || !is_object($view)) {
                 static::raiseError(get_class($views) .'::getView() returned invalid data!');
-                $repeat = false;
                 return false;
             }
 
             if (!$view->isValidMode($params['mode'])) {
                 static::raiseError(get_class($view) .'::isValidMode() returned false!');
-                $repeat = false;
                 return false;
             }
         }
 
         if (($url = $config->getWebPath()) === false) {
             static::raiseError(get_class($config) .'::getWebPath() returned false!');
-            $repeat = false;
             return false;
         }
 

@@ -33,6 +33,8 @@ define('FIELD_GUID', 'guid');
 define('FIELD_IDX', 'idx');
 define('FIELD_LENGTH', 'length');
 define('FIELD_MODEL', 'model');
+define('FIELD_DATA', 'data');
+define('FIELD_INIT', 'initialized');
 
 if (!constant('LOG_ERR')) {
     define('LOG_ERR', 1);

@@ -21,6 +21,8 @@ namespace Thallium\Controllers;
 
 class SessionController extends DefaultController
 {
+    protected $one_time_identifiers = array();
+
     public function __construct()
     {
         if (!empty(session_id())) {
@@ -46,13 +48,14 @@ class SessionController extends DefaultController
 
     public function getOnetimeIdentifierId($name)
     {
-        if (isset($this->$name) && !empty($this->$name)) {
-            return $this->$name;
+        if (isset($this->one_time_identifiers[$name]) &&
+            !empty($this->one_time_identifiers[$name])) {
+            return $this->one_time_identifiers[$name];
         }
 
         global $thallium;
 
-        if (!($guid = $thallium->createGuid())) {
+        if (($guid = $thallium->createGuid()) === false) {
             static::raiseError(get_class($thallium) .'::createGuid() returned false!');
             return false;
         }
@@ -62,8 +65,8 @@ class SessionController extends DefaultController
             return false;
         }
 
-        $this->$name = $guid;
-        return $this->$name;
+        $this->one_time_identifiers[$name] = $guid;
+        return $guid;
     }
 
     public function getSessionId()

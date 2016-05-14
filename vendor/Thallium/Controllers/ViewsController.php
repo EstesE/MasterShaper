@@ -80,6 +80,8 @@ class ViewsController extends DefaultController
             $view = '\\'. $prefix .'\\Views\\'.static::$page_map[$entry];
             return $view;
         }
+
+        return false;
     }
 
     public function getView($view)

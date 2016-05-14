@@ -26,9 +26,11 @@ abstract class DefaultModel
     protected static $model_table_name;
     protected static $model_column_prefix;
     protected static $model_fields = array();
+    protected static $model_fields_index = array();
     protected static $model_has_items = false;
     protected static $model_items_model;
     protected static $model_links = array();
+    protected static $model_bulk_load_limit = 10;
     protected $model_load_by = array();
     protected $model_sort_order = array();
     protected $model_items = array();
@@ -74,8 +76,6 @@ abstract class DefaultModel
             $this->initFields();
             return;
         }
-
-        $this->model_init_values = array();
 
         if (!$this->load()) {
             static::raiseError(__CLASS__ ."::load() returned false!", true);
@@ -173,6 +173,18 @@ abstract class DefaultModel
                         static::raiseError(__METHOD__ ."(), FIELD_LENGTH of {$field} is out of bound!", true);
                         return false;
                     }
+                }
+            }
+        }
+
+        if (isset(static::$model_fields_index) &&
+            !empty(static::$model_fields_index) &&
+            is_array(static::$model_fields_index)
+        ) {
+            foreach (static::$model_fields_index as $field) {
+                if (!$static::hasField($field)) {
+                    static::raiseError(__CLASS__ .'::hasField() returned false!');
+                    return false;
                 }
             }
         }
@@ -390,6 +402,7 @@ abstract class DefaultModel
         }
 
         if (!$db->execute($sth, $bind_params)) {
+            $db->freeStatement($sth);
             static::raiseError(__METHOD__ ."(), unable to execute query!");
             return false;
         }
@@ -451,19 +464,18 @@ abstract class DefaultModel
         } elseif (static::isHavingItems()) {
             while (($row = $sth->fetch(\PDO::FETCH_ASSOC)) !== false) {
                 if (($child_model_name = $thallium->getFullModelName(static::$model_items_model)) === false) {
+                    $db->freeStatement($sth);
                     static::raiseError(get_class($thallium) .'::getFullModelName() returned false!');
                     return false;
                 }
                 foreach ($row as $key => $value) {
                     if (($field = $child_model_name::getFieldNameFromColumn($key)) === false) {
+                        $db->freeStatement($sth);
                         static::raiseError(__CLASS__ .'() returned false!');
                         return false;
                     }
-                    if (!in_array($field, array(FIELD_IDX, FIELD_GUID))) {
-                        static::raiseError(__METHOD__ ."(), received data for unknown field '{$field}'!");
-                        return false;
-                    }
                     if (!$child_model_name::validateField($field, $value)) {
+                        $db->freeStatement($sth);
                         static::raiseError(__CLASS__ ."::validateField() returned false for field {$field}!");
                         return false;
                     }
@@ -473,13 +485,17 @@ abstract class DefaultModel
                     FIELD_MODEL => $child_model_name,
                     FIELD_IDX => $row[$child_model_name::column(FIELD_IDX)],
                     FIELD_GUID => $row[$child_model_name::column(FIELD_GUID)],
+                    FIELD_INIT => false,
                 );
 
                 if (!$this->addItem($item)) {
+                    $db->freeStatement($sth);
                     static::raiseError(__CLASS__ .'::addItem() returned false!');
                     return false;
                 }
             }
+
+            $db->freeStatement($sth);
         }
 
         if (method_exists($this, 'postLoad') && is_callable(array($this, 'postLoad'))) {
@@ -498,6 +514,93 @@ abstract class DefaultModel
         return true;
 
     } // load();
+
+    final protected function bulkLoad($keys)
+    {
+        global $thallium, $db;
+
+        if (!isset($keys) || empty($keys) || !is_array($keys)) {
+            static::raiseError(__METHOD__ .'(), $keys parameter is invalid!');
+            return false;
+        }
+
+        $key_check_func = function ($key) {
+            if (!is_numeric($key) || !is_int($key)) {
+                static::raiseError(__METHOD__ .'(), $keys parameter contains an invalid key!');
+                return false;
+            }
+            return true;
+        };
+
+        if (!array_walk($keys, $key_check_func)) {
+            static::raiseError(__METHOD__ .'(), $keys parameter failed validation!');
+            return false;
+        }
+
+        if (($keys_str = implode(',', $keys)) === false) {
+            static::raiseError(__METHOD__ .'(), something went wrong on implode()!');
+            return false;
+        }
+
+        if (!isset($keys_str) || empty($keys_str) || !is_string($keys_str)) {
+            static::raiseError(__METHOD__ .'(), implode() returned something unexcepted!');
+            return false;
+        }
+
+        $result = $db->query(sprintf(
+            "SELECT
+                *
+            FROM
+                TABLEPREFIX%s
+            WHERE
+                %s_idx IN (%s)",
+            static::$model_table_name,
+            static::$model_column_prefix,
+            $keys_str
+        ));
+
+        if (!$result) {
+            static::raiseError(get_class($db) .'::query() returned false!');
+            return false;
+        }
+
+        if ($result->rowCount() < 1) {
+            return true;
+        }
+
+        if (($full_model = $thallium->getFullModelName(static::$model_items_model)) === false) {
+            static::raiseError(get_class($thallium) .'::getFullModelName() returned false!');
+            return false;
+        }
+
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
+            $item = array();
+
+            foreach ($row as $key => $value) {
+                if (($field = $full_model::getFieldNameFromColumn($key)) === false) {
+                    static::raiseError(__CLASS__ .'() returned false!');
+                    return false;
+                }
+                if (!$full_model::validateField($field, $value)) {
+                    static::raiseError(__CLASS__ ."::validateField() returned false for field {$field}!");
+                    return false;
+                }
+                $item[$field] = $value;
+            }
+
+            if (!array_key_exists(FIELD_IDX, $item)) {
+                static::raiseError(__METHOD__ .'(), retrieved item misses idx field!');
+                return false;
+            }
+
+            if (!$this->setItemData($item[FIELD_IDX], $item)) {
+                static::raiseError(__CLASS__ .'::setItemData() returned false!');
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /**
      * update object variables via array
@@ -520,21 +623,24 @@ abstract class DefaultModel
                 static::raiseError(__METHOD__ .'(), unknown field found!');
                 return false;
             }
+
             if (static::hasField($field)) {
                 // this will trigger the __set() method.
                 $this->$key = $value;
                 continue;
             }
+
             if ($this->hasVirtualFields() && $this->hasVirtualField($field)) {
-                $set_method = sprintf("set%s", ucwords($field));
-                if (!is_callable(array($this, $set_method))) {
-                    static::raiseError(__CLASS__ ."::{$set_method}() is not callable!");
+                if (($method_name = $this->getVirtualFieldSetMethod($field)) === false) {
+                    static::raiseError(__CLASS__ .'::getVirtualFieldSetMethod() returned false!');
                     return false;
                 }
-                if (!call_user_func(array($this, $set_method), $value)) {
-                    static::raiseError(__CLASS__ ."::{$set_method}() returned false!");
+
+                if (($retval = call_user_func(array($this, $method_name), $value)) === false) {
+                    static::raiseError(__CLASS__ ."::{$method_name}() returned false!");
                     return false;
                 }
+
                 continue;
             }
             static::raiseError(__METHOD__ .'(), model has no field like that!');
@@ -542,10 +648,57 @@ abstract class DefaultModel
         }
 
         return true;
-
     }
 
-    final public function delete()
+    /**
+     * flood object variables via array
+     *
+     * @param mixed $data
+     * @return bool
+     */
+    final protected function flood($data)
+    {
+        if (!isset($data) ||
+            empty($data) ||
+            (!is_array($data) && !is_object($data))
+        ) {
+            static::raiseError(__METHOD__ .'(), $data parameter is invalid!');
+            return false;
+        }
+
+        foreach ($data as $key => $value) {
+            if (($field = static::getFieldNameFromColumn($key)) === false) {
+                static::raiseError(__METHOD__ .'(), unknown field found!');
+                return false;
+            }
+            if (static::hasField($field)) {
+                // this will trigger the __set() method.
+                $this->$key = $value;
+                $this->model_init_values[$key] = $value;
+                continue;
+            }
+            if ($this->hasVirtualFields() && $this->hasVirtualField($field)) {
+                if (($method_name = $this->getVirtualFieldSetMethod($field)) === false) {
+                    static::raiseError(__CLASS__ .'::getVirtualFieldSetMethod() returned false!');
+                    return false;
+                }
+
+                if (($retval = call_user_func(array($this, $method_name), $value))) {
+                    static::raiseError(__CLASS__ ."::{$method_name}() returned false!");
+                    return false;
+                }
+
+                $this->model_init_values[$key] = $value;
+                continue;
+            }
+            static::raiseError(__METHOD__ .'(), model has no field like that!');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function delete()
     {
         global $db;
 
@@ -666,20 +819,39 @@ abstract class DefaultModel
         if (!isset($srcobj->id)) {
             return false;
         }
+
         if (!is_numeric($srcobj->id)) {
             return false;
         }
+
         if (!isset($srcobj::$model_fields)) {
             return false;
         }
 
-        foreach (array_keys($srcobj::model_fields) as $field) {
+        if (($src_fields = $srcobj->getFields()) === false) {
+            static::raiseError(get_class($srcobj) .'::getFields() returned false!');
+            return false;
+        }
+
+        foreach (array_keys($src_fields) as $field) {
             // check for a matching key in clone's model_fields array
             if (!static::hasField($field)) {
                 continue;
             }
 
-            $this->model_values[$field] = $srcobj->model_values[$field];
+            if (!$srcobj->hasFieldValue($field)) {
+                continue;
+            }
+
+            if (($src_value = $srcobj->getFieldValue($field)) === false) {
+                static::raiseError(get_class($srcobj) .'::getFieldValue() returned false!');
+                return false;
+            }
+
+            if (!$this->setFieldValue($field, $src_value)) {
+                static::raiseError(__CLASS__ .':setFieldValue() returned false!');
+                return false;
+            }
         }
 
         if (method_exists($this, 'preClone') && is_callable(array($this, 'preClone'))) {
@@ -858,7 +1030,7 @@ abstract class DefaultModel
             return;
         }
 
-        global $ms;
+        global $thallium;
 
         if ($this->hasVirtualFields() && $this->hasVirtualField($name)) {
             if (($name = static::getFieldNamefromColumn($name)) === false) {
@@ -866,17 +1038,16 @@ abstract class DefaultModel
                 return;
             }
 
-            $method_name = 'set'.ucwords(strtolower($name));
-
-            if (!method_exists($this, $method_name) && is_callable(array($this, $method_name))) {
-                static::raiseError(__METHOD__ .'(), virtual field exists but there is no set-method for it!', true);
+            if (($method_name = $this->getVirtualFieldSetMethod($name)) === false) {
+                static::raiseError(__CLASS__ .'::getVirtualFieldSetMethod() returned false!', true);
                 return;
             }
 
-            if (!$this->$method_name($value)) {
-                static::raiseError(__CLASS__ ."::{$method_name} returned false!", true);
+            if (($retval = call_user_func(array($this, $method_name), $value)) === false) {
+                static::raiseError(__CLASS__ ."::{$method_name}() returned false!", true);
                 return;
             }
+
             return;
         }
 
@@ -932,30 +1103,57 @@ abstract class DefaultModel
         /* values have been validated already by validateField(), but
            sometimes we have to cast values to their field types.
         */
-        if ($value_type == 'string' &&
-            $field_type == FIELD_INT &&
+
+        /* positiv integers */
+        if ($field_type == FIELD_INT &&
+            $value_type == 'string' &&
             ctype_digit($value) &&
             is_numeric($value)
         ) {
             $value = (int) $value;
             $value_type = $field_type;
-        /* distinguish GUIDs */
-        } elseif ($value_type == 'string' &&
-            $field_type == FIELD_GUID &&
-            $ms->isValidGuidSyntax($value)
+        }
+        /* negative integers */
+        if ($field_type == FIELD_INT &&
+            $value_type == 'string' &&
+            preg_match("/^-?[1-9][0-9]*$/", $value) === 1
         ) {
-            $value_type = FIELD_GUID;
+            $value = (int) $value;
+            $value_type = $field_type;
+        /* distinguish GUIDs */
+        } elseif ($field_type == FIELD_GUID &&
+            $value_type == 'string'
+        ) {
+            if (!empty($value) &&
+                $thallium->isValidGuidSyntax($value)
+            ) {
+                $value_type = FIELD_GUID;
+            } elseif (empty($value)) {
+                $value_type = FIELD_GUID;
+            }
         /* distinguish YESNO */
-        } elseif ($value_type == 'string' &&
-            $field_type == FIELD_YESNO &&
+        } elseif ($field_type == FIELD_YESNO &&
+            $value_type == 'string' &&
             in_array($value, array('yes', 'no', 'Y', 'N'))
         ) {
             $value_type = 'yesno';
+        /* distinguiѕh dates */
+        } elseif ($field_type == FIELD_DATE &&
+            $value_type == 'string' &&
+            preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $value)
+        ) {
+            $value_type = 'date';
         /* distinguish timestamps */
-        } elseif ($value_type == 'string' &&
-            $field_type == FIELD_TIMESTAMP
+        } elseif ($field_type == FIELD_TIMESTAMP &&
+            $value_type == 'string'
         ) {
             $value_type = 'timestamp';
+        } elseif ($field_type == FIELD_TIMESTAMP &&
+            $value_type == 'double'
+        ) {
+            if (is_float($value)) {
+                $value_type = 'timestamp';
+            }
         }
 
         if ($value_type !== $field_type) {
@@ -982,10 +1180,12 @@ abstract class DefaultModel
             return;
         }
 
-        if (!call_user_func(array($this, $set_method), $value)) {
+        if (($retval = call_user_func(array($this, $set_method), $value)) === false) {
             static::raiseError(__CLASS__ ."::{$set_method}() returned false!", true);
             return;
         }
+
+        return;
     }
 
     /* override PHP's __get() function */
@@ -1027,23 +1227,18 @@ abstract class DefaultModel
             return null;
         }
 
-        if (!$this->hasVirtualField($name)) {
+        if (!$this->hasVirtualField($field)) {
             return null;
         }
 
-        if (($name = static::getFieldNamefromColumn($name)) === false) {
-            static::raiseError(__CLASS__ .'::getFieldNameFromColumn() returned false!');
+        if (($method_name = $this->getVirtualFieldGetMethod($field)) === false) {
+            static::raiseError(__CLASS__ .'::getVirtualFieldGetMethod() returned false!');
             return false;
         }
 
-        $method_name = 'get'.ucwords(strtolower($name));
-
-        if (!method_exists($this, $method_name) && is_callable(array($this, $method_name))) {
-            return null;
-        }
-
-        if (($value = $this->$method_name()) === false) {
-            return null;
+        if (($value = call_user_func(array($this, $method_name), $value)) === false) {
+            static::raiseError(__CLASS__ ."::{$method_name}() returned false!", true);
+            return false;
         }
 
         return $value;
@@ -1122,7 +1317,10 @@ abstract class DefaultModel
         }
 
         if (!isset($this->id) || empty($this->id)) {
-            $this->id = $db->getid();
+            if (($this->id = $db->getId()) === false) {
+                static::raiseError(get_class($db) .'::getId() returned false!');
+                return false;
+            }
         }
 
         if (!isset($this->model_values[FIELD_IDX]) ||
@@ -1409,6 +1607,7 @@ abstract class DefaultModel
             return false;
         }
 
+        $idx_field = static::column(FIELD_IDX);
         $guid_field = static::column(FIELD_GUID);
 
         $arr_values = array();
@@ -1447,22 +1646,20 @@ abstract class DefaultModel
                 %s <> %s
             AND
                 %s",
-            static::column(FIELD_IDX),
+            $idx_field,
             static::$model_table_name,
-            static::column(FIELD_IDX),
+            $idx_field,
             $this->id,
             $where_sql
         );
 
-        $sth = $db->prepare($sql);
-
-        if (!$sth) {
-            static::raiseError(__METHOD__ ."(), unable to prepare query");
+        if (($sth = $db->prepare($sql)) === false) {
+            static::raiseError(get_class($db) .'::prepare() returned false!');
             return false;
         }
 
         if (!$db->execute($sth, $arr_values)) {
-            static::raiseError(__METHOD__ ."(), unable to execute query");
+            static::raiseError(get_class($db) .'::execute() returned false!');
             return false;
         }
 
@@ -1627,32 +1824,88 @@ abstract class DefaultModel
         return true;
     }
 
+    final public function hasIdx()
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField(FIELD_IDX)) {
+            static::raiseError(__METHOD__ .'(), this model has no idx field!');
+            return false;
+        }
+
+        if (!isset($this->model_values[FIELD_IDX]) ||
+            empty($this->model_values[FIELD_IDX])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
     final public function getId()
     {
-        if (!static::hasField(FIELD_IDX)) {
-            static::raiseError(__METHOD__ .'(), model has no idx field!');
+        error_log(__METHOD__ .'(), legacy getId() has been called, '
+            .'update your application to getIdx() to avoid this message.');
+        return $this->getIdx();
+    }
+
+    final public function getIdx()
+    {
+        if (!$this->hasIdx()) {
+            static::raiseError(__CLASS__ .'::getIdx() returned false!');
             return false;
         }
 
-        if (!isset($this->model_values[FIELD_IDX])) {
+        if (($value = $this->getFieldValue(FIELD_IDX)) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
-        return $this->model_values[FIELD_IDX];
+        return $value;
+    }
+
+    final public function hasGuid()
+    {
+        if (!static::hasFields()) {
+            static::raiseError(__METHOD__ .'(), this model has no fields!');
+            return false;
+        }
+
+        if (!static::hasField(FIELD_GUID)) {
+            static::raiseError(__METHOD__ .'(), this model has no guid field!');
+            return false;
+        }
+
+        if (!isset($this->model_values[FIELD_GUID]) ||
+            empty($this->model_values[FIELD_GUID])
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     final public function getGuid()
     {
-        if (!static::hasField(FIELD_GUID)) {
-            static::raiseError(__METHOD__ .'(), model has no guid field!');
+        if (!$this->hasGuid()) {
+            static::raiseError(__CLASS__ .'hasGuid() returned false!');
             return false;
         }
+
 
         if (!isset($this->model_values[FIELD_GUID])) {
             return false;
         }
 
-        return $this->model_values[FIELD_GUID];
+        if (($value = $this->getFieldValue(FIELD_GUID)) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $value;
     }
 
     final public function setGuid($guid)
@@ -1700,26 +1953,50 @@ abstract class DefaultModel
         $fields = array();
 
         foreach (static::$model_fields as $field => $sec) {
+            if ($this->hasFieldValue($field)) {
+                if (($value = $this->getFieldValue($field)) === false) {
+                    static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+                    return false;
+                }
+            } else {
+                $value = null;
+            }
+
             $field_ary = array(
                 'name' => $field,
-                'value' => $this->model_values[$field],
+                'value' => $value,
                 'privacy' => $sec,
             );
             $fields[$field] = $field_ary;
         }
 
-        if (!$this->hasVirtualFields() || (isset($no_virtual) && $no_virtual)) {
+        if (!$this->hasVirtualFields() || (isset($no_virtual) && $no_virtual === true)) {
             return $fields;
         }
 
-        foreach ($this->model_virtual_fields as $field) {
+        if (($virtual_fields = $this->getVirtualFields()) === false) {
+            static::raiseError(__CLASS__ .'::getVirtualFields() returned false!');
+            return false;
+        }
+
+        foreach ($virtual_fields as $field) {
+            if ($this->hasVirtualFieldValue($field)) {
+                if (($value = $this->getVirtualFieldValue($field)) === false) {
+                    static::raiseError(__CLASS__ .'::getVirtualFieldValue() returned false!');
+                    return false;
+                }
+            } else {
+                $value = null;
+            }
+
             $field_ary = array(
                 'name' => $field,
-                'value' => $this->model_values[$field],
+                'value' => $value,
                 'privacy' => 'public'
             );
             $fields[$field] = $field_ary;
         }
+
 
         return $fields;
     }
@@ -1800,6 +2077,133 @@ abstract class DefaultModel
         return true;
     }
 
+    final public function hasVirtualFieldValue($field)
+    {
+        if (!isset($field) && empty($field) && !is_string($field)) {
+            static::raіseError(__METHOD__. '(), $field parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasVirtualField($field)) {
+            static::raiseError(__CLASS__ .'::hasVirtualField() returned false!');
+            return false;
+        }
+
+        if (($method_name = $this->getVirtualFieldGetMethod($field)) === false) {
+            static::raiseError(__CLASS__ .'::getVirtualFieldGetMethod() returned false!');
+            return false;
+        }
+
+        if (($value = call_user_func(array($this, $method_name))) === false) {
+            static::raiseError(__CLASS__ .'::'. $method_name .'() returned false!');
+            return false;
+        }
+
+        if (!isset($value) || empty($value)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    final public function getVirtualFieldValue($field)
+    {
+        if (!isset($field) && empty($field) && !is_string($field)) {
+            static::raіseError(__METHOD__. '(), $field parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasVirtualFieldValue($field)) {
+            static::raiseError(__CLASS__ .'::hasVirtualFieldValue() returned false!');
+            return false;
+        }
+
+        if (($method_name = $this->getVirtualFieldGetMethod($field)) === false) {
+            static::raiseError(__CLASS__ .'::getVirtualFieldGetMethod() returned false!');
+            return false;
+        }
+
+        if (($value = call_user_func(array($this, $method_name))) === false) {
+            static::raiseError(__CLASS__ ."::{$method_name}() returned false!", true);
+            return;
+        }
+
+        return $value;
+    }
+
+    final public function setVirtualFieldValue($field, $value)
+    {
+        if (!isset($field) && empty($field) && !is_string($field)) {
+            static::raіseError(__METHOD__. '(), $field parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasVirtualField($field)) {
+            static::raiseError(__CLASS__ .'::getVirtualFieldValue() returned false!');
+            return false;
+        }
+
+        if (($method_name = $this->getVirtualFieldSetMethod($field)) === false) {
+            static::raiseError(__CLASS__ .'::getVirtualFieldSetMethod() returned false!');
+            return false;
+        }
+
+        if (($retval = call_user_func(array($this, $method_name), $value)) === false) {
+            static::raiseError(__CLASS__ ."::{$method_name}() returned false!", true);
+            return;
+        }
+
+        return $retval;
+    }
+
+    final public function getVirtualFieldGetMethod($field)
+    {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasVirtualField($field)) {
+            static::raiseError(__CLASS__ .'::hasVirtualField() returned false!');
+            return false;
+        }
+
+        $method_name = sprintf('get%s', ucwords(strtolower($field)));
+
+        if (!method_exists($this, $method_name) ||
+            !is_callable(array($this, $method_name))
+        ) {
+            static::raiseError(__METHOD__ .'(), there is not callable get-method for that field!');
+            return false;
+        }
+
+        return $method_name;
+    }
+
+    final public function getVirtualFieldSetMethod($field)
+    {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasVirtualField($field)) {
+            static::raiseError(__CLASS__ .'::hasVirtualField() returned false!');
+            return false;
+        }
+
+        $method_name = sprintf('set%s', ucwords(strtolower($field)));
+
+        if (!method_exists($this, $method_name) ||
+            !is_callable(array($this, $method_name))
+        ) {
+            static::raiseError(__METHOD__ .'(), there is not callable set-method for that field!');
+            return false;
+        }
+
+        return $method_name;
+    }
+
     final public function getVirtualFields()
     {
         if (!$this->hasVirtualFields()) {
@@ -1836,22 +2240,6 @@ abstract class DefaultModel
         }
 
         array_push($this->model_virtual_fields, $vfield);
-        return true;
-    }
-
-    final public function setField($field, $value)
-    {
-        if (!isset($field) || empty($field) || !is_string($field)) {
-            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
-            return false;
-        }
-
-        if (!static::hasField($field)) {
-            static::raiseError(__METHOD__ .'(), invalid field specified!');
-            return false;
-        }
-
-        $this->model_values[$field] = $value;
         return true;
     }
 
@@ -1913,8 +2301,20 @@ abstract class DefaultModel
         $keys = array_slice(
             $keys,
             $offset,
-            $limit
+            $limit,
+            true /* preserve_keys on */
         );
+
+        if (!isset($keys) || empty($keys) || !is_array($keys)) {
+            return array();
+        }
+
+        if (count($keys) > static::$model_bulk_load_limit) {
+            if (!$this->bulkLoad($keys)) {
+                static::raiseError(__CLASS__ .'::buldLoad() returned false!');
+                return false;
+            }
+        }
 
         $result = array();
 
@@ -1924,7 +2324,6 @@ abstract class DefaultModel
                 return false;
             }
             array_push($result, $item);
-            continue;
         }
 
         if (!isset($result) || empty($result) || !is_array($result)) {
@@ -2086,19 +2485,22 @@ abstract class DefaultModel
                 return false;
             }
             $idx = $item[FIELD_IDX];
+            $model = $item[FIELD_MODEL];
+            unset($item[FIELD_MODEL]);
         } elseif (is_object($item)) {
-            if (!method_exists($item, 'getId') || !is_callable(array(&$item, 'getId'))) {
-                static::raiseError(__METHOD__ .'(), item model '. get_class($item) .' has no getId() method!');
+            if (!method_exists($item, 'getIdx') || !is_callable(array(&$item, 'getIdx'))) {
+                static::raiseError(__METHOD__ .'(), item model '. get_class($item) .' has no getIdx() method!');
                 return false;
             }
             if (!method_exists($item, 'getGuid') || !is_callable(array(&$item, 'getGuid'))) {
                 static::raiseError(__METHOD__ .'(), item model '. get_class($item) .' has no getGuid() method!');
                 return false;
             }
-            if (($idx = $item->getId()) === false) {
-                static::raiseError(get_class($item) .'::getId() returned false!');
+            if (($idx = $item->getIdx()) === false) {
+                static::raiseError(get_class($item) .'::getIdx() returned false!');
                 return false;
             }
+            $model = $item::$model_column_prefix;
         } else {
             static::raiseError(__METHOD__ .'(), $item type is not supported!');
             return false;
@@ -2109,11 +2511,20 @@ abstract class DefaultModel
             return false;
         }
 
-        $this->model_items[$idx] = $item;
+        if (!$this->setItemModel($idx, $model)) {
+            static::raiseError(__CLASS__ .'::setItemModel() returned false!');
+            return false;
+        }
+
+        if (!$this->setItemData($idx, $item, false)) {
+            static::raiseError(__CLASS__ .'::setItemData() returned false!');
+            return false;
+        }
+
         return true;
     }
 
-    public function getItem($idx, $reset = true)
+    public function getItem($idx, $reset = true, $allow_cached = true)
     {
         global $cache;
 
@@ -2127,26 +2538,17 @@ abstract class DefaultModel
             return false;
         }
 
-        if (is_object($this->model_items[$idx])) {
-            return $this->model_items[$idx];
-        }
-
-        if (!is_array($this->model_items[$idx])) {
-            static::raiseError(__METHOD__ .'(), got an unsupported item!');
+        if (($item_model = $this->getItemModel($idx)) === false) {
+            static::raiseError(__CLASS__ .'::getItemData() returned false!');
             return false;
         }
 
-        $item = $this->model_items[$idx];
-        $child_model_name = $item[FIELD_MODEL];
+        $cache_key = sprintf("%s_%s", $item_model, $idx);
 
-        if (!isset($child_model_name::$model_column_prefix)) {
-            static::raiseError(__METHOD__ .'(), child model has no model_column_prefix constant!');
-            return false;
-        }
-
-        $cache_key = sprintf("%s_%s", $child_model_name::$model_column_prefix, $idx);
-
-        if ($cache->has($cache_key)) {
+        if (isset($allow_cached) &&
+            $allow_cached === true &&
+            $cache->has($cache_key)
+        ) {
             if (($item = $cache->get($cache_key)) === false) {
                 static::raiseError(get_class($cache) .'::get() returned false!');
                 return false;
@@ -2160,12 +2562,45 @@ abstract class DefaultModel
             return $item;
         }
 
-        unset($item[FIELD_MODEL]);
+        /* item fields data may be already available thru bulkloading. */
+        if ($this->hasItemData($idx)) {
+            if (($item_data = $this->getItemData($idx)) === false) {
+                static::raiseError(__CLASS__ .'::getItemData() returned false!');
+                return false;
+            }
 
-        try {
-            $item = new $child_model_name($item);
-        } catch (\Exception $e) {
-            static::raiseError(__METHOD__ ."(), failed to load {$child_model_name}!");
+            if (!isset($item_data) ||
+                empty($item_data) ||
+                !is_array($item_data)
+            ) {
+                static::raiseError(__CLASS__ .'::getItemData() returned invalid data!');
+                return flase;
+            }
+
+            try {
+                $item = new $item_model;
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ ."(), failed to load {$item_model}!", false, $e);
+                return false;
+            }
+
+            if (!$item->flood($item_data)) {
+                static::raiseError(get_class($item) .'::flood() returned false!');
+                return false;
+            }
+        } else {
+            try {
+                $item = new $item_model(array(
+                    FIELD_IDX => $idx
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ ."(), failed to load {$item_model}!", false, $e);
+                return false;
+            }
+        }
+
+        if (!isset($item) || empty($item)) {
+            static::raiseError(__METHOD__ .'(), no valid item found!');
             return false;
         }
 
@@ -2189,10 +2624,148 @@ abstract class DefaultModel
             return false;
         }
 
-        if (!in_array($idx, array_keys($this->model_items))) {
+        if (!array_key_exists($idx, $this->model_items)) {
             return false;
         }
 
+        return true;
+    }
+
+    protected function hasItemData($key)
+    {
+        if (!isset($key) ||
+            empty($key) ||
+            (!is_integer($key) && !is_numeric($key))
+        ) {
+            static::raiseError(__METHOD__ .'(), $key parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasItem($key)) {
+            static::raiseError(__CLASS__ .'::hasItem() returned false!');
+            return false;
+        }
+
+        if (!isset($this->model_items[$key][FIELD_INIT]) ||
+            !is_bool($this->model_items[$key][FIELD_INIT]) ||
+            !$this->model_items[$key][FIELD_INIT]
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function hasItemModel($key)
+    {
+        if (!isset($key) ||
+            empty($key) ||
+            (!is_integer($key) && !is_numeric($key))
+        ) {
+            static::raiseError(__METHOD__ .'(), $key parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasItem($key)) {
+            static::raiseError(__CLASS__ .'::hasItem() returned false!');
+            return false;
+        }
+
+        if (!isset($this->model_items[$key][FIELD_MODEL]) ||
+            empty($this->model_items[$key][FIELD_MODEL]) ||
+            !is_string($this->model_items[$key][FIELD_MODEL])
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getItemModel($key)
+    {
+        if (!isset($key) ||
+            empty($key) ||
+            (!is_integer($key) && !is_numeric($key))
+        ) {
+            static::raiseError(__METHOD__ .'(), $key parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasItemModel($key)) {
+            static::raiseError(__CLASS__ .'::hasItemModel() returned false!');
+            return false;
+        }
+
+        if (!array_key_exists(FIELD_MODEL, $this->model_items[$key])) {
+            static::raiseError(__METHOD__ .'(), item contains no model key!');
+            return false;
+        }
+
+        return $this->model_items[$key][FIELD_MODEL];
+    }
+
+    protected function setItemModel($key, $model)
+    {
+        if (!isset($key) ||
+            empty($key) ||
+            (!is_integer($key) && !is_numeric($key))
+        ) {
+            static::raiseError(__METHOD__ .'(), $key parameter is invalid!');
+            return false;
+        }
+
+        if (!isset($model) || empty($model) || !is_string($model)) {
+            static::raiseError(__METHOD__ .'(), $model parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasItem($key)) {
+            $this->model_items[$key] = array();
+        }
+
+        $this->model_items[$key][FIELD_MODEL] = $model;
+        return true;
+    }
+
+    protected function getItemData($key)
+    {
+        if (!isset($key) ||
+            empty($key) ||
+            (!is_integer($key) && !is_numeric($key))
+        ) {
+            static::raiseError(__METHOD__ .'(), $key parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasItemData($key)) {
+            static::raiseError(__CLASS__ .'::hasItemData() returned false!');
+            return false;
+        }
+
+        return $this->model_items[$key][FIELD_DATA];
+    }
+
+    protected function setItemData($key, $data, $init = true)
+    {
+        if (!isset($key) ||
+            empty($key) ||
+            (!is_integer($key) && !is_numeric($key))
+        ) {
+            static::raiseError(__METHOD__ .'(), $key parameter is invalid!');
+            return false;
+        }
+
+        if (!isset($data) || empty($data) || !is_array($data)) {
+            static::raiseError(__METHOD__ .'(), $data parameter is invalid!');
+            return false;
+        }
+
+        if (!$this->hasItem($key)) {
+            $this->model_items[$key] = array();
+        }
+
+        $this->model_items[$key][FIELD_DATA] = $data;
+        $this->model_items[$key][FIELD_INIT] = $init;
         return true;
     }
 
@@ -2369,7 +2942,9 @@ abstract class DefaultModel
                 }
                 break;
             case FIELD_DATE:
-                if (strtotime($value) === false) {
+                if ($value !== "0000-00-00" &&
+                    strtotime($value) === false
+                ) {
                     return false;
                 }
                 break;
@@ -2446,6 +3021,11 @@ abstract class DefaultModel
 
     protected function hasFieldSetMethod($field)
     {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
         if (!static::hasFields()) {
             static::raiseError(__METHOD__ .'(), this model has no fields!');
             return false;
@@ -2477,6 +3057,11 @@ abstract class DefaultModel
 
     protected function getFieldSetMethod($field)
     {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
         if (!static::hasFieldSetMethod($field)) {
             static::raiseError(__CLASS__ .'::hasFieldSetMethod() returned false!');
             return false;
@@ -2487,6 +3072,11 @@ abstract class DefaultModel
 
     protected function hasFieldGetMethod($field)
     {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
         if (!static::hasFields()) {
             static::raiseError(__METHOD__ .'(), this model has no fields!');
             return false;
@@ -2518,6 +3108,11 @@ abstract class DefaultModel
 
     protected function getFieldGetMethod($field)
     {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
         if (!static::hasFieldGetMethod($field)) {
             static::raiseError(__CLASS__ .'::hasFieldGetMethod() returned false!');
             return false;
@@ -2526,63 +3121,35 @@ abstract class DefaultModel
         return static::$model_fields[$field][FIELD_GET];
     }
 
-    public function hasIdx()
-    {
-        if (!static::hasFields()) {
-            static::raiseError(__METHOD__ .'(), this model has no fields!');
-            return false;
-        }
-
-        if (!static::hasField(FIELD_IDX)) {
-            static::raiseError(__METHOD__ .'(), this model has no idx field!');
-            return false;
-        }
-
-        if (!isset($this->model_values[FIELD_IDX]) ||
-            empty($this->model_values[FIELD_IDX])
-        ) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function hasGuid()
-    {
-        if (!static::hasFields()) {
-            static::raiseError(__METHOD__ .'(), this model has no fields!');
-            return false;
-        }
-
-        if (!static::hasField(FIELD_GUID)) {
-            static::raiseError(__METHOD__ .'(), this model has no guid field!');
-            return false;
-        }
-
-        if (!isset($this->model_values[FIELD_GUID]) ||
-            empty($this->model_values[FIELD_GUID])
-        ) {
-            return false;
-        }
-
-        return true;
-    }
-
     final public function hasFieldValue($field)
     {
-        if (!static::hasFields()) {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
+        if (!static::hasFields() && isset($this) && !$this->hasVirtualFields()) {
             static::raiseError(__METHOD__ .'(), this model has no fields!');
             return false;
         }
 
-        if (!static::hasField($field)) {
+        if (!static::hasField($field) && isset($this) && !$this->hasVirtualField($field)) {
             static::raiseError(__METHOD__ .'(), this model has not that field!');
             return false;
         }
 
-        if (!isset($this->model_values[$field]) ||
-            empty($this->model_values[$field])
-        ) {
+        if (static::hasField($field)) {
+            if (!isset($this->model_values[$field]) ||
+                empty($this->model_values[$field])
+            ) {
+                return false;
+            }
+        } elseif (isset($this) && !$this->hasVirtualField($field)) {
+            if (!$this->hasVirtualFieldValue($field)) {
+                return false;
+            }
+        } else {
+            static::raiseError(__METHOD__ .'(), do not know how to locate that field!');
             return false;
         }
 
@@ -2601,13 +3168,23 @@ abstract class DefaultModel
             return false;
         }
 
-        if (!static::hasField($field)) {
+        if (!static::hasField($field) && !$this->hasVirtualField($field)) {
             static::raiseError(__METHOD__ .'(), this model has not that field!');
             return false;
         }
 
         if (!isset($value)) {
-            $this->model_values[$field] = null;
+            if (static::hasField($field)) {
+                $this->model_values[$field] = null;
+            } elseif ($this->hasVirtualField($field)) {
+                if (!$this->setVirtualFieldValue($field, null)) {
+                    static::raiseError(__CLASS__ .'::setVirtualFieldValue() returned false!');
+                    return false;
+                }
+            } else {
+                static::raiseError(__METHOD__ .'(), do not know how to set that field!');
+                return false;
+            }
             return true;
         }
 
@@ -2627,12 +3204,28 @@ abstract class DefaultModel
             }
         }
 
-        $this->model_values[$field] = $value;
+        if (static::hasField($field)) {
+            $this->model_values[$field] = $value;
+        } elseif ($this->hasVirtualField($field)) {
+            if (!$this->setVirtualFieldValue($field, $value)) {
+                static::raiseError(__CLASS__ .'::setVirtualFieldValue() returned false!');
+                return false;
+            }
+        } else {
+            static::raiseError(__METHOD__ .'(), do not know how to set that field!');
+            return false;
+        }
+
         return true;
     }
 
     final public function getFieldValue($field)
     {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
         if (!$this->hasFieldValue($field)) {
             static::raiseError(__CLASS__ .'::hasFieldValue() returned false!');
             return false;
@@ -2643,6 +3236,11 @@ abstract class DefaultModel
 
     final public function hasDefaultValue($field)
     {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
         if (!static::hasFields()) {
             static::raiseError(__METHOD__ .'(), this model has no fields!');
             return false;
@@ -2662,6 +3260,11 @@ abstract class DefaultModel
 
     final public function getDefaultValue($field)
     {
+        if (!isset($field) || empty($field) || !is_string($field)) {
+            static::raiseError(__METHOD__ .'(), $field parameter is invalid!');
+            return false;
+        }
+
         if (!$this->hasDefaultValue($field)) {
             static::raiseError(__CLASS__ .'::hasDefaultValue() returned false!');
             return false;
@@ -2770,12 +3373,17 @@ abstract class DefaultModel
                 return false;
             }
 
+            if (($idx = $this->getIdx()) === false) {
+                static::raiseError(__CLASS__ .'::getIdx() returned false!');
+                return false;
+            }
+
             try {
                 $model = new $model_name(array(
-                    $field => $this->getId()
+                    $field => $idx,
                 ));
             } catch (\Exception $e) {
-                static::raiseError(__METHOD__ ."(), failed to load {$model_name}!");
+                static::raiseError(__METHOD__ ."(), failed to load {$model_name}!", false, $e);
                 return false;
             }
 
@@ -2823,30 +3431,57 @@ abstract class DefaultModel
             return false;
         }
 
+        $index_fields = array(
+            FIELD_IDX,
+            FIELD_GUID,
+        );
+
+        if (isset(static::$model_fields_index) &&
+            !empty(static::$model_fields_index) &&
+            is_array(static::$model_fields_index)
+        ) {
+            foreach (static::$model_fields_index as $field) {
+                if (!$static::hasField($field)) {
+                    static::raiseError(__CLASS__ .'::hasField() returned false!');
+                    return false;
+                }
+                array_push($index_fields, $field);
+            }
+        }
+
         if (($fields = $item->getFieldNames()) === false) {
             static::raiseError(get_class($item) .'::getFields() returned false!');
             return false;
         }
 
         foreach ($fields as $field) {
+            if (!in_array($field, $index_fields)) {
+                continue;
+            }
+
             if (!isset($this->model_items_lookup_index[$field])) {
                 $this->model_items_lookup_index[$field] = array();
             }
-            if (($idx = $item->getId()) === false) {
-                static::raiseError(get_class($item) .'::getId() returned false!');
+
+            if (($idx = $item->getIdx()) === false) {
+                static::raiseError(get_class($item) .'::getIdx() returned false!');
                 return false;
             }
+
             if (!$item->hasFieldValue($field)) {
                 continue;
             }
+
             if (($value = $item->getFieldValue($field)) === false) {
                 static::raiseError(get_class($field) .'::getFieldValue() returned false!');
                 return false;
             }
+
             if (isset($this->model_items_lookup_index[$field][$idx])) {
                 static::raiseError(__METHOD__ .'(), a lookup index entry is already present for that item!');
                 return false;
             }
+
             $this->model_items_lookup_index[$field][$idx] = $value;
         }
 

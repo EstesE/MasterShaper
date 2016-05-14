@@ -23,25 +23,8 @@ class AuditLogModel extends DefaultModel
 {
     protected static $model_table_name = 'audit';
     protected static $model_column_prefix = 'audit';
-    protected static $model_fields = array(
-        'log' => array(
-            FIELD_TYPE => FIELD_ARRAY,
-        ),
-    );
-
-    public function getLog()
-    {
-        if (!$this->hasFieldValue('log')) {
-            return false;
-        }
-
-        if (($log = $this->getFieldValue('log')) === false) {
-            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
-            return false;
-        }
-
-        return $log;
-    }
+    protected static $model_has_items = true;
+    protected static $model_items_model = 'AuditEntryModel';
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:

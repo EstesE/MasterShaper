@@ -178,12 +178,32 @@ class MessageBusController extends DefaultController
 
         $raw_messages = array();
         foreach ($messages as $message) {
+            if (!$message->hasIdx() || ($msg_idx = $message->getIdx()) === false) {
+                static::raiseError(__CLASS__ .'::getIdx() returned false!');
+                return false;
+            }
+            if (!$message->hasGuid() || ($msg_guid = $message->getGuid()) === false) {
+                static::raiseError(__CLASS__ .'::getGuid() returned false!');
+                return false;
+            }
+            if (!$message->hasCommand() || ($msg_cmd = $message->getCommand()) === false) {
+                static::raiseError(__CLASS__ .'::getCommand() returned false!');
+                return false;
+            }
+            if (!$message->hasBody() || ($msg_body = $message->getBody()) === false) {
+                static::raiseError(__CLASS__ .'::getBody() returned false!');
+                return false;
+            }
+            if (!$message->hasValue() || ($msg_value = $message->getValue()) === false) {
+                static::raiseError(__CLASS__ .'::getValue() returned false!');
+                return false;
+            }
             $raw_messages[] = array(
-                'id' => $message->getId(),
-                'guid' => $message->getGuid(),
-                'command' => $message->getCommand(),
-                'body' => $message->getBody(),
-                'value' => $message->getValue()
+                'id' => $msg_idx,
+                'guid' => $msg_guid,
+                'command' => $msg_cmd,
+                'body' => $msg_body,
+                'value' => $msg_value,
             );
 
             if (!$message->delete()) {
@@ -208,7 +228,7 @@ class MessageBusController extends DefaultController
             'json' => $json
         );
 
-        if (!($reply = json_encode($reply_raw))) {
+        if (($reply = json_encode($reply_raw)) === false) {
             static::raiseError('json_encode() returned false!');
             return false;
         }

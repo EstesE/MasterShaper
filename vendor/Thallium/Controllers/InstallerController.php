@@ -112,6 +112,7 @@ class InstallerController extends DefaultController
                 `audit_guid` varchar(255) DEFAULT NULL,
                 `audit_type` varchar(255) DEFAULT NULL,
                 `audit_scene` varchar(255) DEFAULT NULL,
+                `audit_object_guid` varchar(255) DEFAULT NULL,
                 `audit_message` text,
                 `audit_time` timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
                 PRIMARY KEY (`audit_idx`)
@@ -369,6 +370,28 @@ class InstallerController extends DefaultController
 
 
         $db->setDatabaseSchemaVersion(3, 'framework');
+        return true;
+    }
+
+    protected function upgradeFrameworkDatabaseSchemaV4()
+    {
+        global $db;
+
+        $result = $db->query(
+            "ALTER TABLE
+                TABLEPREFIXaudit
+            ADD
+                `audit_object_guid` varchar(255) DEFAULT NULL
+            AFTER
+                audit_scene"
+        );
+
+        if ($result === false) {
+            static::raiseError(__METHOD__ ." failed!");
+            return false;
+        }
+
+        $db->setDatabaseSchemaVersion(4, 'framework');
         return true;
     }
 }

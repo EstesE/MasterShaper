@@ -25,7 +25,7 @@ class PagingController extends DefaultController
     protected $pagingParameters = array();
     protected $currentPage;
     protected $currentItemsLimit;
-    protected $itemsPerPageLimits = array(
+    protected static $itemsPerPageLimits = array(
         10, 25, 50, 100, 0
     );
 
@@ -73,6 +73,10 @@ class PagingController extends DefaultController
             return false;
         }
 
+        if (!$this->pagingData->hasItems()) {
+            return array();
+        }
+
         if (($data = $this->pagingData->getItems($offset, $limit)) === false) {
             static::raiseError(get_class($this->pagingData) .'::getItems() returned false!');
             return false;
@@ -89,11 +93,15 @@ class PagingController extends DefaultController
         }
 
         if (!$this->pagingData->hasItems()) {
-            static::raiseError(get_class($this->pagingData) .'::hasItems() returned false!');
+            return 0;
+        }
+
+        if (($count = $this->pagingData->getItemsCount()) === false) {
+            static::raiseError(get_class($this->pagingData) .'::getItemsCount() returned false!');
             return false;
         }
 
-        return $this->pagingData->getItemsCount();
+        return $count;
     }
 
     final protected function setPagingParameters($params)
@@ -301,12 +309,17 @@ class PagingController extends DefaultController
 
         $start = ($page-1)*$items_per_page;
 
+        /* so that DefaultModel::getItems() actually returns all items at once */
+        if ($items_per_page === 0) {
+            $items_per_page = null;
+        }
+
         if (($data = $this->getPagingData($start, $items_per_page)) === false) {
             static::raiseError(__CLASS__ .':getPagingData() returned false!');
             return false;
         }
 
-        if (!isset($data) || empty($data) || !is_array($data)) {
+        if (!isset($data) || !is_array($data)) {
             static::raiseError(__METHOD__ .'(), slicing paging data failed!');
             return false;
         }
@@ -467,7 +480,7 @@ class PagingController extends DefaultController
     final public function getCurrentItemsLimit()
     {
         if (!isset($this->currentItemsLimit)) {
-            return $this->itemsPerPageLimits[0];
+            return static::$itemsPerPageLimits[0];
         }
 
         return $this->currentItemsLimit;
@@ -475,7 +488,7 @@ class PagingController extends DefaultController
 
     final public function getItemsLimits()
     {
-        return $this->itemsPerPageLimits;
+        return static::$itemsPerPageLimits;
     }
 
     final public function setItemsLimit($limit)

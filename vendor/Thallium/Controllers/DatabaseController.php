@@ -24,7 +24,7 @@ use \PDO;
 class DatabaseController extends DefaultController
 {
     const SCHEMA_VERSION = 1;
-    const FRAMEWORK_SCHEMA_VERSION = 3;
+    const FRAMEWORK_SCHEMA_VERSION = 4;
 
     protected $db;
     protected $db_cfg;
@@ -309,7 +309,7 @@ class DatabaseController extends DefaultController
         $query = str_replace("TABLEPREFIX", $this->getTablePrefix(), $query);
     }
 
-    public function getid()
+    public function getId()
     {
         if (!$this->getConnectionStatus()) {
             static::raiseError(__CLASS__ .'::getConnectionStatus() returned false!');

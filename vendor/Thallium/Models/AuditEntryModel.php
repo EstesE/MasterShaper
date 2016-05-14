@@ -42,12 +42,15 @@ class AuditEntryModel extends DefaultModel
         'time' => array(
             FIELD_TYPE => FIELD_TIMESTAMP,
         ),
+        'object_guid' => array(
+            FIELD_TYPE => FIELD_STRING,
+        ),
     );
 
     protected function preSave()
     {
-        if (!($time = microtime(true))) {
-            static::raiseError("microtime() returned false!");
+        if (($time = microtime(true)) === false) {
+            static::raiseError(__METHOD__ .'microtime() returned false!');
             return false;
         }
 
@@ -59,40 +62,39 @@ class AuditEntryModel extends DefaultModel
         return true;
     }
 
-    public function setEntryGuid($guid)
+    public function hasMessage()
     {
-        global $thallium;
-
-        if (empty($guid)) {
-            return true;
-        }
-
-        if (!$thallium->isValidGuidSyntax($guid)) {
-            static::raiseError(get_class($thallium) .'::isValidGuidSyntax() returned false!');
-            return false;
-        }
-
-        if (!$this->setFieldValue('guid', $guid)) {
-            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+        if (!$this->hasFieldValue('message')) {
             return false;
         }
 
         return true;
     }
 
-    public function setMessage($message)
+    public function getMessage()
     {
-        if (empty($message)) {
-            static::raiseError(__METHOD__ .", \$message can not be empty!");
+        if (!$this->hasMessage()) {
+            static::raiseError(__CLASS__ .'::hasMessage() returned false!');
             return false;
         }
-        if (!is_string($message)) {
-            static::raiseError(__METHOD__ .", \$message must be a string!");
+
+        if (($message = $this->getFieldValue('message')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $message;
+    }
+
+    public function setMessage($message)
+    {
+        if (!isset($message) || empty($message) || !is_string($message)) {
+            static::raiseError(__METHOD__ .'(), $message parameter is invalid!');
             return false;
         }
 
         if (strlen($message) > 8192) {
-            static::raiseError(__METHOD__ .", \$message is to long!");
+            static::raiseError(__METHOD__ .'(), $message is too long!');
             return false;
         }
 
@@ -104,19 +106,39 @@ class AuditEntryModel extends DefaultModel
         return true;
     }
 
-    public function setEntryType($entry_type)
+    public function hasEntryType()
     {
-        if (empty($entry_type)) {
-            static::raiseError(__METHOD__ .", \$entry_type can not be empty!");
+        if (!$this->hasFieldValue('type')) {
             return false;
         }
-        if (!is_string($entry_type)) {
-            static::raiseError(__METHOD__ .", \$entry_type must be a string!");
+
+        return true;
+    }
+
+    public function getEntryType()
+    {
+        if (!$this->hasEntryType()) {
+            static::raiseError(__CLASS__ .'::hasEntryType() returned false!');
+            return false;
+        }
+
+        if (($type = $this->getFieldValue('type')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $type;
+    }
+
+    public function setEntryType($entry_type)
+    {
+        if (!isset($entry_type) || empty($entry_type) || !is_string($entry_type)) {
+            static::raiseError(__METHOD__ .'(), $entry_type parameter is invalid!');
             return false;
         }
 
         if (strlen($entry_type) > 255) {
-            static::raiseError(__METHOD__ .", \$entry_type is to long!");
+            static::raiseError(__METHOD__ .'(), $entry_type is tooo long!');
             return false;
         }
 
@@ -128,23 +150,86 @@ class AuditEntryModel extends DefaultModel
         return true;
     }
 
-    public function setScene($scene)
+    public function hasScene()
     {
-        if (empty($scene)) {
-            static::raiseError(__METHOD__ .", \$scene can not be empty!");
+        if (!$this->hasFieldValue('scene')) {
             return false;
         }
-        if (!is_string($scene)) {
-            static::raiseError(__METHOD__ .", \$scene must be a string!");
+
+        return true;
+    }
+
+    public function getScene()
+    {
+        if (!$this->hasScene()) {
+            static::raiseError(__CLASS__ .'::hasScene() returned false!');
+            return false;
+        }
+
+        if (($scene = $this->getFieldValue('scene')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $message;
+    }
+
+    public function setScene($scene)
+    {
+        if (!isset($scene) || empty($scene) || !is_string($scene)) {
+            static::raiseError(__METHOD__ .'(), $scene parameter is invalid!');
             return false;
         }
 
         if (strlen($scene) > 255) {
-            static::raiseError(__METHOD__ .", \$scene is to long!");
             return false;
         }
 
         if (!$this->setFieldValue('scene', $scene)) {
+            static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function hasEntryGuid()
+    {
+        if (!$this->hasFieldValue('object_guid')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getEntryGuid()
+    {
+        if (!$this->hasEntryGuid()) {
+            static::raiseError(__CLASS__ .'::hasEntryGuid() returned false!');
+            return false;
+        }
+
+        if (($guid = $this->getFieldValue('object_guid')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $guid;
+    }
+
+    public function setEntryGuid($guid)
+    {
+        if (!isset($guid) || empty($guid) || !is_string($guid)) {
+            static::raiseError(__METHOD__ .'(), $guid parameter is invalid!');
+            return false;
+        }
+
+        if (strlen($guid) > 255) {
+            static::raiseError(__METHOD__ .'(), $guid is tooo long!');
+            return false;
+        }
+
+        if (!$this->setFieldValue('object_guid', $guid)) {
             static::raiseError(__CLASS__ .'::setFieldValue() returned false!');
             return false;
         }

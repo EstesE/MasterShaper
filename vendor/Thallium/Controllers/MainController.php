@@ -40,7 +40,11 @@ class MainController extends DefaultController
     {
         $GLOBALS['thallium'] =& $this;
 
-        $this->loadController("Config", "config");
+        if (!$this->loadController("Config", "config")) {
+            static::raiseError(__CLASS__ .'::loadController() returned false!', true);
+            return false;
+        }
+
         global $config;
 
         if ($config->inMaintenanceMode()) {
@@ -48,7 +52,11 @@ class MainController extends DefaultController
             exit(0);
         }
 
-        $this->loadController("Requirements", "requirements");
+        if (!$this->loadController("Requirements", "requirements")) {
+            static::raiseError(__CLASS__ .'::loadController() returned false!', true);
+            return false;
+        }
+
         global $requirements;
 
         if (!$requirements->check()) {
@@ -58,11 +66,21 @@ class MainController extends DefaultController
         // no longer needed
         unset($requirements);
 
-        $this->loadController("Audit", "audit");
-        $this->loadController("Database", "db");
+        if (!$this->loadController("Audit", "audit")) {
+            static::raiseError(__CLASS__ .'::loadController() returned false!', true);
+            return false;
+        }
+
+        if (!$this->loadController("Database", "db")) {
+            static::raiseError(__CLASS__ .'::loadController() returned false!', true);
+            return false;
+        }
 
         if (!$this->isCmdline()) {
-            $this->loadController("HttpRouter", "router");
+            if (!$this->loadController("HttpRouter", "router")) {
+                static::raiseError(__CLASS__ .'::loadController() returned false!');
+                return false;
+            }
             global $router;
             if (($GLOBALS['query'] = $router->select()) === false) {
                 static::raiseError(__METHOD__ .'(), HttpRouterController::select() returned false!', true);
@@ -80,7 +98,11 @@ class MainController extends DefaultController
         }
 
         if (isset($mode) and $mode == "queue_only") {
-            $this->loadController("Import", "import");
+            if (!$this->loadController("Import", "import")) {
+                static::raiseError(__CLASS__ .'::loadController() returned false!', true);
+                return false;
+            }
+
             global $import;
 
             if (!$import->handleQueue()) {
@@ -90,7 +112,11 @@ class MainController extends DefaultController
 
             unset($import);
         } elseif (isset($mode) and $mode == "install") {
-            $this->loadController("Installer", "installer");
+            if (!$this->loadController("Installer", "installer")) {
+                static::raiseError(__CLASS__ .'::loadController() returned false!', true);
+                return false;
+            }
+
             global $installer;
 
             if (!$installer->setup()) {
@@ -119,6 +145,11 @@ class MainController extends DefaultController
         if (!$this->loadController("MessageBus", "mbus")) {
             static::raiseError(__METHOD__ .'(), failed to load MessageBusController!', true);
             return;
+        }
+
+        if (!$this->loadController("Views", "views")) {
+            static::raiseError(__CLASS__ .'::loadController() returned false!');
+            return false;
         }
 
         if (!$this->processRequestMessages()) {
@@ -207,7 +238,11 @@ class MainController extends DefaultController
 
     protected function rpcHandler()
     {
-        $this->loadController("Rpc", "rpc");
+        if (!$this->loadController("Rpc", "rpc")) {
+            static::raiseError(__CLASS__ .'::loadController() returned false!');
+            return false;
+        }
+
         global $rpc;
 
         if (!$rpc->perform()) {
@@ -220,7 +255,11 @@ class MainController extends DefaultController
 
     protected function uploadHandler()
     {
-        $this->loadController("Upload", "upload");
+        if (!$this->loadController("Upload", "upload")) {
+            static::raiseError(__CLASS__ .'::loadController() returned false!');
+            return false;
+        }
+
         global $upload;
 
         if (!$upload->perform()) {
@@ -330,12 +369,12 @@ class MainController extends DefaultController
 
     public function loadModel($model_name, $id = null, $guid = null)
     {
-        if (!($prefix = $this->getNamespacePrefix())) {
+        if (($prefix = $this->getNamespacePrefix()) === false) {
             static::raiseError(__METHOD__ .'(), failed to fetch namespace prefix!');
             return false;
         }
 
-        if (!($known_models =  $this->getRegisteredModels())) {
+        if (($known_models =  $this->getRegisteredModels()) === false) {
             static::raiseError(__METHOD__ .'(), getRegisteredModels returned false!');
             return false;
         }
@@ -377,7 +416,7 @@ class MainController extends DefaultController
     {
         global $db, $config;
 
-        if (!($base_path = $config->getWebPath())) {
+        if (($base_path = $config->getWebPath()) === false) {
             static::raiseError("ConfigController::getWebPath() returned false!");
             return false;
         }
@@ -432,7 +471,7 @@ class MainController extends DefaultController
             return true;
         }
 
-        if (!($prefix = $this->getNamespacePrefix())) {
+        if (($prefix = $this->getNamespacePrefix()) === false) {
             static::raiseError(__METHOD__ .'(), failed to fetch namespace prefix!');
             return false;
         }
@@ -457,54 +496,53 @@ class MainController extends DefaultController
 
     public function getProcessUserId()
     {
-        if ($uid = posix_getuid()) {
-            return $uid;
+        if (($uid = posix_getuid()) === false) {
+            return false;
         }
 
-        return false;
+        return $uid;
     }
 
     public function getProcessGroupId()
     {
-        if ($gid = posix_getgid()) {
-            return $gid;
+        if (($gid = posix_getgid()) === false) {
+            return false;
         }
 
-        return false;
+        return $gid;
     }
 
     public function getProcessUserName()
     {
-        if (!$uid = $this->getProcessUserId()) {
+        if (($uid = $this->getProcessUserId()) === false) {
             return false;
         }
 
-        if ($user = posix_getpwuid($uid)) {
-            return $user['name'];
+        if (($user = posix_getpwuid($uid)) === false) {
+            return false;
         }
 
-        return false;
-
+        return $user['name'];
     }
 
     public function getProcessGroupName()
     {
-        if (!$uid = $this->getProcessGroupId()) {
+        if (($uid = $this->getProcessGroupId()) === false) {
             return false;
         }
 
-        if ($group = posix_getgrgid($uid)) {
-            return $group['name'];
+        if (($group = posix_getgrgid($uid)) === false) {
+            return false;
         }
 
-        return false;
+        return $group['name'];
     }
 
     public function processRequestMessages()
     {
         global $mbus;
 
-        if (!($messages = $mbus->getRequestMessages()) || empty($messages)) {
+        if (($messages = $mbus->getRequestMessages()) === false || empty($messages)) {
             return true;
         }
 
@@ -664,7 +702,7 @@ class MainController extends DefaultController
             return true;
         }
 
-        if (!($prefix = $this->getNamespacePrefix())) {
+        if (($prefix = $this->getNamespacePrefix()) === false) {
             static::raiseError(__METHOD__ .'(), failed to fetch namespace prefix!', true);
             return false;
         }
@@ -855,7 +893,6 @@ class MainController extends DefaultController
 
     protected function viewHandler()
     {
-        $this->loadController("Views", "views");
         global $views, $query;
 
         if (!isset($query->view) || empty($query->view)) {
@@ -968,7 +1005,7 @@ class MainController extends DefaultController
             return false;
         }
 
-        if (!($prefix = $this->getNamespacePrefix())) {
+        if (($prefix = $this->getNamespacePrefix()) === false) {
             static::raiseError(__METHOD__ .'(), failed to fetch namespace prefix!');
             return false;
         }

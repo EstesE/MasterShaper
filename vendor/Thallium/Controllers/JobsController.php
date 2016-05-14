@@ -22,6 +22,7 @@ namespace Thallium\Controllers;
 class JobsController extends DefaultController
 {
     const EXPIRE_TIMEOUT = 300;
+
     protected $currentJobGuid;
     protected $registeredHandlers = array();
     protected $json_errors;
@@ -199,7 +200,7 @@ class JobsController extends DefaultController
 
     public function clearCurrentJob()
     {
-        unset($this->currentJobGuid);
+        $this->currentJobGuid = null;
         return true;
     }
 

@@ -25,8 +25,8 @@ class AuditController extends DefaultController
     {
         try {
             $entry = new \Thallium\Models\AuditEntryModel;
-        } catch (Exception $e) {
-            static::raiseError("Failed to load AuditEntryModel");
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load AuditEntryModel', false, $e);
             return false;
         }
 
@@ -68,28 +68,51 @@ class AuditController extends DefaultController
         }
 
         try {
-            $log = new \Thallium\Models\AuditLogModel($guid);
+            $log = new \Thallium\Models\AuditLogModel(array(
+                FIELD_GUID => $guid
+            ));
         } catch (\Exception $e) {
-            static::raiseError("Failed to load AuditLogModel! ". $e->getMessage());
+            static::raiseError(__METHOD__ .'(), failed to load AuditLogModel!', false, $e);
             return false;
         }
 
-        if (!$entries = $log->getLog()) {
-            static::raiseError(get_class($log) .'::getLog() returned false!');
+        if (!$log->hasItems()) {
+            return 'No audit log entries available!';
+        }
+
+        if (($entries = $log->getItems()) === false) {
+            static::raiseError(get_class($log) .'::getItemsData() returned false!');
             return false;
         }
 
         if (!is_array($entries)) {
-            static::raiseError(__METHOD__ .' invalid audit log retrieved!');
+            static::raiseError(get_class($log) .'::getItemsData() returned invalid data!');
             return false;
         }
 
         if (empty($entries)) {
-            $entries = array('No audit log entries available!');
+            return 'No audit log entries available!';
         }
 
-        $txtlog = implode('\n', $entries);
-        return $txtlog;
+        $txt_ary = array();
+
+        foreach ($entries as $entry) {
+            if (!$entry->hasMessage()) {
+                continue;
+            }
+            if (($message = $entry->getMessage()) === false) {
+                static::raiseError(get_class($entry) .'::getMessage() returned false!');
+                return false;
+            }
+            $txt_ary[] = $message;
+        }
+
+        if (empty($txt_ary)) {
+            return 'No audit log entries available!';
+        }
+
+        $txt_log = implode('\n', $txt_ary);
+        return $txt_log;
     }
 }
 

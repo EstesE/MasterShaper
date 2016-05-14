@@ -109,10 +109,19 @@ class MessageModel extends DefaultModel
         return $session_id;
     }
 
-    public function getCommand()
+    public function hasCommand()
     {
         if (!$this->hasFieldValue('command')) {
-            static::raiseError(__CLASS__ .'::hasFieldValue() returned false!');
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getCommand()
+    {
+        if (!$this->hasCommand()) {
+            static::raiseError(__CLASS__ .'::hasCommand() returned false!');
             return false;
         }
 
