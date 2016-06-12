@@ -131,7 +131,7 @@ class SettingsModel extends DefaultModel
             return false;
         }
 
-        if (($setting =& $this->getOption($option)) === false) {
+        if (($setting = $this->getOption($option)) === false) {
             static::raiseError(__CLASS__ .'::getOption() returned false!');
             return false;
         }
@@ -156,7 +156,7 @@ class SettingsModel extends DefaultModel
             return false;
         }
 
-        if (($setting =& $this->getOption($option)) === false) {
+        if (($setting = $this->getOption($option)) === false) {
             static::raiseError(__CLASS__ .'::getOption() returned false!');
             return false;
         }
@@ -181,7 +181,7 @@ class SettingsModel extends DefaultModel
             return false;
         }
 
-        if (($setting =& $this->getOption($option)) === false) {
+        if (($setting = $this->getOption($option)) === false) {
             static::raiseError(__CLASS__ .'::getOption() returned false!');
             return false;
         }
@@ -210,7 +210,7 @@ class SettingsModel extends DefaultModel
             return false;
         }
 
-        if (($setting =& $this->getOption($option)) === false) {
+        if (($setting = $this->getOption($option)) === false) {
             static::raiseError(__CLASS__ .'::getOption() returned false!');
             return false;
         }
