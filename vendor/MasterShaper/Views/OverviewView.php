@@ -29,6 +29,18 @@ class OverviewView extends DefaultView
 {
     protected static $view_default_mode = 'show';
     protected static $view_class_name = 'overview';
+    protected $cnt_network_paths = 0;
+    protected $cnt_chains = 0;
+    protected $cnt_pipes = 0;
+    protected $cnt_filters = 0;
+    protected $avail_network_paths = array();
+    protected $avail_chains = array();
+    protected $avail_pipes = array();
+    protected $avail_filters = array();
+    protected $network_paths = array();
+    protected $chains = array();
+    protected $pipes = array();
+    protected $filters = array();
 
     public function show()
     {
@@ -40,19 +52,6 @@ class OverviewView extends DefaultView
             static::raiseError("You do not have enough permissions to access this module!");
             return false;
         }
-
-        $this->cnt_network_paths = 0;
-        $this->cnt_chains = 0;
-        $this->cnt_pipes = 0;
-        $this->cnt_filters = 0;
-        $this->avail_network_paths = array();
-        $this->avail_chains = array();
-        $this->avail_pipes = array();
-        $this->avail_filters = array();
-        $this->network_paths = array();
-        $this->chains = array();
-        $this->pipes = array();
-        $this->filters = array();
 
         if (!($host_id = $session->getCurrentHostProfile())) {
             static::raiseError('Do not know for which host I am working for!');
