@@ -17,7 +17,9 @@
 <div class="ui grid">
  <div class="ten wide column">
   <div class="left aligned container">
-   <h1 class="ui header"><i class="archive icon"></i>Network Paths</h1>
+   <h1 class="ui header">
+    <img src="{$icon_interfaces}" />Network Paths
+   </h1>
   </div>
  </div>
  <div class="six wide column">
