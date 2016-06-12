@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $host->hasName()}{$host->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" method="POST" data-id="{$host->getId()}" data-guid="{$host->getGuid()}" data-model="host_profile" data-url-next="{get_url page='host-profiles'}" data-url-discard="{get_url page='host-profiles'}">
+<form class="thallium ui form" method="POST" data-id="{$host->getIdx()}" data-guid="{$host->getGuid()}" data-model="host_profile" data-url-next="{get_url page='host-profiles'}" data-url-discard="{get_url page='host-profiles'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>

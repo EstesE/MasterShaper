@@ -179,7 +179,7 @@ class RulesetInterfaceModel extends DefaultModel
             return false;
         }
 
-        return $this->network_interface->getId();
+        return $this->network_interface->getIdx();
     }
 
     /**

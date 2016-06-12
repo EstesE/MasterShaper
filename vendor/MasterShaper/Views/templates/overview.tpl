@@ -84,7 +84,7 @@
      <td colspan="2">
       <a href="javascript:#" title="Collapse chain" onclick="toggle_content('#chain{$chain->chain_idx} ~ [chain={$chain->chain_idx}]', '#togglechn{$chain->chain_idx}', '{$icon_menu_down}', '{$icon_menu_right}'); return false;"><img src="{$icon_menu_right}" id="togglechn{$chain->chain_idx}" np="{$netpath->netpath_idx}" state="hidden" /></a>
       <img src="{$icon_chains}" alt="chain icon" />&nbsp;
-      <a href="{get_url page='chains' mode='edit' id=$chain->getId()}" title="Modify chain {$chain->chain_name}">{$chain->chain_name}</a>
+      <a href="{get_url page='chains' mode='edit' id=$chain->getIdx()}" title="Modify chain {$chain->chain_name}">{$chain->chain_name}</a>
      </td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}

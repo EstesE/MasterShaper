@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $target->hasName()}{$target->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" method="POST" data-id="{$target->getId()}" data-guid="{$target->getGuid()}" data-model="target" data-url-discard="{get_url page='targets'}" data-url-next="{get_url page='targets'}">
+<form class="thallium ui form" method="POST" data-id="{$target->getIdx()}" data-guid="{$target->getGuid()}" data-model="target" data-url-discard="{get_url page='targets'}" data-url-next="{get_url page='targets'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>
@@ -87,7 +87,7 @@
     <div class="column">
      <select id="targets_avail" name="avail[]" multiple="multiple">
       {target_group_select_list group=avail}
-       <option value="{$item->getId()}" data-id="{$item->getId()}" data-guid="{$item->getGuid()}">{$item->getName()}</option>
+       <option value="{$item->getIdx()}" data-id="{$item->getIdx()}" data-guid="{$item->getGuid()}">{$item->getName()}</option>
       {/target_group_select_list}
      </select>
     </div>
@@ -98,7 +98,7 @@
     <div class="column">
      <select id="targets_used" name="target_members" multiple="multiple">
       {target_group_select_list group=used}
-       <option value="{$item->getId()}" data-id="{$item->getId()}" data-guid="{$item->getGuid()}">{$item->getName()}</option>
+       <option value="{$item->getIdx()}" data-id="{$item->getIdx()}" data-guid="{$item->getGuid()}">{$item->getName()}</option>
       {/target_group_select_list}
      </select>
     </div>

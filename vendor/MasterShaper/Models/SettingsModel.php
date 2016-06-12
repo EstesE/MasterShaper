@@ -136,8 +136,8 @@ class SettingsModel extends DefaultModel
             return false;
         }
 
-        if (($id = $setting->getId()) === false) {
-            static::raiseError(get_class($setting) .'::getId() returned false!');
+        if (($id = $setting->getIdx()) === false) {
+            static::raiseError(get_class($setting) .'::getIdx() returned false!');
             return false;
         }
 

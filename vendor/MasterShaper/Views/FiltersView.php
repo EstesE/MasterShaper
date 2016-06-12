@@ -163,8 +163,8 @@ class FiltersView extends DefaultView
         $string = "";
 
         foreach ($this->protocols as $protocol) {
-            $string.= "<option value=\"". $protocol->getId() ."\"";
-            if ($protocol->getId() == $params['proto_idx']) {
+            $string.= "<option value=\"". $protocol->getIdx() ."\"";
+            if ($protocol->getIdx() == $params['proto_idx']) {
                 $string.= "selected=\"selected\"";
             }
             $string.= ">". $protocol->getName() ."</option>\n";

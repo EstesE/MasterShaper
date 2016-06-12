@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $chain->hasName()}{$chain->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" method="POST" data-id="{$chain->getId()}" data-guid="{$chain->getGuid()}" data-model="chain" data-url-next="{get_url page='chains'}" data-url-discard="{get_url page='chains'}">
+<form class="thallium ui form" method="POST" data-id="{$chain->getIdx()}" data-guid="{$chain->getGuid()}" data-model="chain" data-url-next="{get_url page='chains'}" data-url-discard="{get_url page='chains'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>
@@ -144,8 +144,8 @@
      <td style="text-align: center;">
       <input type="hidden" id="pipe-active-{$pipe->pipe_idx}" name="pipe_active[{$pipe->pipe_idx}]" value="{$pipe->apc_pipe_active}" />
       <div class="toggle" id="toggle-{$pipe->pipe_idx}" style="display: inline;">
-       <a class="toggle-off" id="pipe-{$pipe->pipe_idx}" parent="chain-{$chain->getId()}" to="off" title="Disable pipe {$pipe->pipe_name}" {if $pipe->apc_pipe_active != "Y"} style="display: none;" {/if} onclick="$('#pipe-active-{$pipe->pipe_idx}').val('N');"><img src="{$icon_active}" alt="active icon" /></a>
-       <a class="toggle-on" id="pipe-{$pipe->pipe_idx}" parent="chain-{$chain->getId()}" to="on" title="Enable pipe {$pipe->pipe_name}" {if $pipe->apc_pipe_active == "Y"} style="display: none;" {/if} onclick="$('#pipe-active-{$pipe->pipe_idx}').val('Y');"><img src="{$icon_inactive}" alt="inactive icon" /></a>
+       <a class="toggle-off" id="pipe-{$pipe->pipe_idx}" parent="chain-{$chain->getIdx()}" to="off" title="Disable pipe {$pipe->pipe_name}" {if $pipe->apc_pipe_active != "Y"} style="display: none;" {/if} onclick="$('#pipe-active-{$pipe->pipe_idx}').val('N');"><img src="{$icon_active}" alt="active icon" /></a>
+       <a class="toggle-on" id="pipe-{$pipe->pipe_idx}" parent="chain-{$chain->getIdx()}" to="on" title="Enable pipe {$pipe->pipe_name}" {if $pipe->apc_pipe_active == "Y"} style="display: none;" {/if} onclick="$('#pipe-active-{$pipe->pipe_idx}').val('Y');"><img src="{$icon_inactive}" alt="inactive icon" /></a>
       </div>
      </td>
     </tr>

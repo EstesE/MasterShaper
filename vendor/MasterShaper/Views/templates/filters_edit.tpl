@@ -20,7 +20,7 @@
  <div class="active section">Edit {if $filter->hasName()}{$filter->getName()}{/if}</div>
 </h1>
 <div class="ui divider"></div>
-<form class="thallium ui form" method="POST" data-id="{$filter->getId()}" data-guid="{$filter->getGuid()}" data-model="filter" data-url-next="{get_url page='filters'}" data-url-discard="{get_url page='filters'}">
+<form class="thallium ui form" method="POST" data-id="{$filter->getIdx()}" data-guid="{$filter->getGuid()}" data-model="filter" data-url-next="{get_url page='filters'}" data-url-discard="{get_url page='filters'}">
  <h4 class="ui block header">General Setttings</h4>
  <div class="field">
   <label>Name</label>
@@ -59,7 +59,7 @@
     <td>
      <select size="10" id="filters_avail" name="avail[]" multiple="multiple">;
       <option value="">********* Unused *********</option>
-      {port_select_list filter_idx=$filter->getId() mode=unused}
+      {port_select_list filter_idx=$filter->getIdx() mode=unused}
      </select>
     </td>
     <td>&nbsp;</td>
@@ -71,7 +71,7 @@
     <td>
      <select size="10" id="filters_used" name="used[]" multiple="multiple">
       <option value="">********* Used *********</option>
-      {port_select_list filter_idx=$filter->getId() mode=used}
+      {port_select_list filter_idx=$filter->getIdx() mode=used}
      </select>
     </td>
    </tr>

@@ -60,19 +60,19 @@
 {ports_list}
  <tr>
   <td class="center aligned">
-   <div class="ui fitted checkbox item select" id="select_{$item->getId()}">
+   <div class="ui fitted checkbox item select" id="select_{$item->getIdx()}">
     <input type="checkbox">
     <label></label>
    </div>
   </td>
   <td>
-   <div name="port_{$item->getId()}" class="filterable inline editable content" data-current-value="{if $item->hasName()}{$item->getName()}{/if}" data-orig-value="{if $item->hasName()}{$item->getName()}{/if}" style="float: left;">{if $item->hasName()}{$item->getName()}{/if}</div>&nbsp;
-   <a name="port_{$item->getId()}" class="inline editable edit link" data-inline-name="port_{$item->getId()}"><i class="tiny edit icon"></i></a>
-   <div name="port_{$item->getId()}" class="inline editable formsrc" style="display: none;">
+   <div name="port_{$item->getIdx()}" class="filterable inline editable content" data-current-value="{if $item->hasName()}{$item->getName()}{/if}" data-orig-value="{if $item->hasName()}{$item->getName()}{/if}" style="float: left;">{if $item->hasName()}{$item->getName()}{/if}</div>&nbsp;
+   <a name="port_{$item->getIdx()}" class="inline editable edit link" data-inline-name="port_{$item->getIdx()}"><i class="tiny edit icon"></i></a>
+   <div name="port_{$item->getIdx()}" class="inline editable formsrc" style="display: none;">
     <form class="ui form" onsubmit="return false;">
      <div class="fields">
       <div class="field small ui input">
-       <input type="text" name="port_{$item->getId()}" value="{if $item->hasName()}{$item->getName()}{/if}" data-action="update" data-model="port" data-key="port_name" data-id="{$item->getId()}" />
+       <input type="text" name="port_{$item->getIdx()}" value="{if $item->hasName()}{$item->getName()}{/if}" data-action="update" data-model="port" data-key="port_name" data-id="{$item->getIdx()}" />
       </div>
       <div class="field">
        <button class="circular ui icon button inline editable save" type="submit"><i class="save icon"></i></button>
@@ -85,13 +85,13 @@
    </div>
   </td>
   <td>
-   <div name="number_{$item->getId()}" class="filterable inline editable content" data-current-value="{if $item->hasNumber()}{$item->getNumber()}{/if}" data-orig-value="{if $item->hasNumber()}{$item->getNumber()}{/if}" style="float: left;">{if $item->hasNumber()}{$item->getNumber()}{/if}</div>&nbsp;
-   <a name="number_{$item->getId()}" class="inline editable edit link" data-inline-name="number_{$item->getId()}"><i class="tiny edit icon"></i></a>
-   <div name="number_{$item->getId()}" class="inline editable formsrc" style="display: none;">
+   <div name="number_{$item->getIdx()}" class="filterable inline editable content" data-current-value="{if $item->hasNumber()}{$item->getNumber()}{/if}" data-orig-value="{if $item->hasNumber()}{$item->getNumber()}{/if}" style="float: left;">{if $item->hasNumber()}{$item->getNumber()}{/if}</div>&nbsp;
+   <a name="number_{$item->getIdx()}" class="inline editable edit link" data-inline-name="number_{$item->getIdx()}"><i class="tiny edit icon"></i></a>
+   <div name="number_{$item->getIdx()}" class="inline editable formsrc" style="display: none;">
     <form class="ui form" onsubmit="return false;">
      <div class="fields">
       <div class="field small ui input">
-       <input type="text" name="number_{$item->getId()}" value="{if $item->hasNumber()}{$item->getNumber()}{/if}" data-action="update" data-model="port" data-key="port_number" data-id="{$item->getId()}" />
+       <input type="text" name="number_{$item->getIdx()}" value="{if $item->hasNumber()}{$item->getNumber()}{/if}" data-action="update" data-model="port" data-key="port_number" data-id="{$item->getIdx()}" />
       </div>
       <div class="field">
        <button class="circular ui icon button inline editable save" type="submit"><i class="save icon"></i></button>
@@ -105,10 +105,10 @@
   </td>
   <td>
    <div class="ui icon buttons">
-    <a id="edit_link_{$item->getId()}" href="{get_url page='ports' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
-    <a id="delete_link_{$item->getId()}" class="delete item ui icon button action link" data-action-title="Deleting {$item->getName()|escape}" data-modal-title="Delete {$item->getName()|escape}" data-modal-text="Please confirm to delete {$item->getName()|escape}" data-id="{$item->getId()}" data-guid="{$item->getGuid()}" data-model="port" data-content="Delete {$item->getName()|escape}" data-variation="wide"><i class="remove circle icon"></i></a>
-    <div class="ui icon button slider checkbox item state" data-target="port_state_{$item->getId()}">
-     <input name="port_state_{$item->getId()}" type="checkbox" data-action="update" data-model="port" data-key="port_active" data-id="{$item->getId()}" data-guid="{$item->getGuid()}" value="Y" {if $item->isActive()}checked="checked"{/if}/>
+    <a id="edit_link_{$item->getIdx()}" href="{get_url page='ports' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
+    <a id="delete_link_{$item->getIdx()}" class="delete item ui icon button action link" data-action-title="Deleting {$item->getName()|escape}" data-modal-title="Delete {$item->getName()|escape}" data-modal-text="Please confirm to delete {$item->getName()|escape}" data-id="{$item->getIdx()}" data-guid="{$item->getGuid()}" data-model="port" data-content="Delete {$item->getName()|escape}" data-variation="wide"><i class="remove circle icon"></i></a>
+    <div class="ui icon button slider checkbox item state" data-target="port_state_{$item->getIdx()}">
+     <input name="port_state_{$item->getIdx()}" type="checkbox" data-action="update" data-model="port" data-key="port_active" data-id="{$item->getIdx()}" data-guid="{$item->getGuid()}" value="Y" {if $item->isActive()}checked="checked"{/if}/>
      <label></label>
     </div>
    </div>

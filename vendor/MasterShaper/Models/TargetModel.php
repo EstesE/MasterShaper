@@ -394,10 +394,10 @@ class TargetModel extends DefaultModel
             return false;
         }
 
-        if (!$cache->has("atgs_". $this->getId())) {
+        if (!$cache->has("atgs_". $this->getIdx())) {
             try {
                 $atgs = new \MasterShaper\Models\AssignTargetToGroupsModel(array(
-                    'group_idx' => $this->getId()
+                    'group_idx' => $this->getIdx()
                 ));
             } catch (\Exception $e) {
                 static::raiseError(__METHOD__ .'(), failed to load AssignTargetToGroupsModel!', false, $e);
@@ -408,7 +408,7 @@ class TargetModel extends DefaultModel
                 return false;
             }
         } else {
-            if (($sl = $cache->get("atgs_". $this->getId())) === false) {
+            if (($sl = $cache->get("atgs_". $this->getIdx())) === false) {
                 static::raiseError(get_class($cache) .'::get() returned false!');
                 return false;
             }
@@ -442,7 +442,7 @@ class TargetModel extends DefaultModel
                 static::raiseError(__METHOD__ .'(), explode() returned invalid data!');
                 return false;
             }
-            if ($idx === $this->getId()) {
+            if ($idx === $this->getIdx()) {
                 static::raiseError(__METHOD__ .'(), target can not be its own group member!');
                 return false;
             }
@@ -461,7 +461,7 @@ class TargetModel extends DefaultModel
                 return false;
             }
 
-            if (!$atg->setGroup($this->getId())) {
+            if (!$atg->setGroup($this->getIdx())) {
                 static::raiseError(get_class($atg) .'::setGroup() returned false!');
                 return false;
             }

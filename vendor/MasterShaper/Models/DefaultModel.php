@@ -118,7 +118,7 @@ abstract class DefaultModel extends \Thallium\Models\DefaultModel
 
         return sprintf(
             "%s-%s",
-            $this->getId(),
+            $this->getIdx(),
             $this->getGuid()
         );
     }

@@ -70,12 +70,12 @@ class TargetsView extends DefaultView
 
         $tmpl->assign('target', $item);
 
-        if (($this->targets_avail = $this->getTargets('avail', $item->getId())) === false) {
+        if (($this->targets_avail = $this->getTargets('avail', $item->getIdx())) === false) {
             static::raiseError(__CLASS__ .'::getTargets() returned false!');
             return false;
         }
 
-        if (($this->targets_used = $this->getTargets('used', $item->getId())) === false) {
+        if (($this->targets_used = $this->getTargets('used', $item->getIdx())) === false) {
             static::raiseError(__CLASS__ .'::getTargets() returned false!');
             return false;
         }

@@ -155,13 +155,13 @@ class NetworkPathModel extends DefaultModel
             return false;
         }
 
-        if (($netpath_idx = $this->getId()) === false) {
-            static::raiseError(__CLASS__ .'::getId() returned false!');
+        if (($netpath_idx = $this->getIdx()) === false) {
+            static::raiseError(__CLASS__ .'::getIdx() returned false!');
             return false;
         }
 
         if (!is_numeric($netpath_idx)) {
-            static::raiseError(__CLASS__ .'::getId() returned invalid data!');
+            static::raiseError(__CLASS__ .'::getIdx() returned invalid data!');
             return false;
         }
 

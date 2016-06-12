@@ -48,7 +48,7 @@
   <select name="ack_sl" data-id="{if $settings->hasSetting('ack_sl')}{$settings->getSettingId('ack_sl')}{else}new{/if}" data-guid="{if $settings->hasSetting('ack_sl')}{$settings->getSettingGuid('ack_sl')}{else}new{/if}" data-model="setting" data-key="setting_key" data-field="setting_value">
    <option value="0">Ignore</option>
    {service_level_list}
-    <option value="{$sl->getId()}" {if $settings->hasSetting('ack_sl') && $settings->hasSettingValue('ack_sl') && $settings->getSettingValue('ack_sl') == $sl->getId()} selected="selected" {/if}>{if $sl->hasName()}{$sl->getName()}{/if}</option>
+    <option value="{$sl->getIdx()}" {if $settings->hasSetting('ack_sl') && $settings->hasSettingValue('ack_sl') && $settings->getSettingValue('ack_sl') == $sl->getIdx()} selected="selected" {/if}>{if $sl->hasName()}{$sl->getName()}{/if}</option>
    {/service_level_list}
   </select>
   <div class="extra">Should ACK- and other small packets (&lt;128byte) get a special service level? This is helpfull if you have a small upload bandwidth. There is no much needing for a high bandwidth for this (ex. 32kbps), but it should have a higher priority then other bulk traffic.<br />Be aware, that this may bypass some packets from later rules because smaller packets get matched here - so the traffic limits may not be strictly enforced.</div>

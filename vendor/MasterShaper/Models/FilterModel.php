@@ -305,7 +305,7 @@ class FilterModel extends DefaultModel
 
         try {
             $ports = new \MasterShaper\Models\AssignPortToFiltersModel(array(
-                'filter_idx' => $this->getId(),
+                'filter_idx' => $this->getIdx(),
             ));
         } catch (\Exception $e) {
             static::raiseError(__METHOD__ .'(), failed to load AssignPortToFiltersModel!', false, $e);

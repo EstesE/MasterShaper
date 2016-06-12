@@ -182,8 +182,8 @@ class RulesetController extends DefaultController
                 return false;
             }
 
-            if (($if1_idx = $if1->getId()) === false) {
-                static::raiseError(get_class($if1) .'::getId() returned false!');
+            if (($if1_idx = $if1->getIdx()) === false) {
+                static::raiseError(get_class($if1) .'::getIdx() returned false!');
                 return false;
             }
 
@@ -205,8 +205,8 @@ class RulesetController extends DefaultController
                 !empty($if2) &&
                 is_object($if2)
             ) {
-                if (($if2_idx = $if2->getId()) === false) {
-                    static::raiseError(get_class($if2) .'::getId() returned false!');
+                if (($if2_idx = $if2->getIdx()) === false) {
+                    static::raiseError(get_class($if2) .'::getIdx() returned false!');
                     return false;
                 }
                 if (!isset($this->interfaces[$if2_idx])) {
@@ -739,7 +739,7 @@ class RulesetController extends DefaultController
 
         $filter = array(
             'active' => 'Y',
-            'netpath_idx' => $netpath->getId(),
+            'netpath_idx' => $netpath->getIdx(),
             'host_idx' => $this->getHost(),
         );
 
@@ -753,11 +753,29 @@ class RulesetController extends DefaultController
             $if->addRuleComment("chain ". $chain->getName());
             /* chain doesn't ignore QoS? */
             if ($chain->hasServiceLevel()) {
-                $this->addClassifier($if, "1:1", "1:". $this->getCurrentChain() . $this->getCurrentClass(), $chain->getServiceLevel(true), $direction);
+                if (!$this->addClassifier(
+                    $if,
+                    "1:1",
+                    "1:". $this->getCurrentChain() . $this->getCurrentClass(),
+                    $chain->getServiceLevel(true),
+                    $direction
+                )) {
+                    static::raiseError(__CLASS__ .'::addClassifier() returned false!');
+                    return false;
+                }
             }
 
             /* remember the assigned chain id */
-            $this->setChainID($if, $chain->getId(), "1:". $this->getCurrentChain() . $this->getCurrentClass(), "dst", "src");
+            if (!$this->setChainID(
+                $if,
+                $chain->getIdx(),
+                "1:". $this->getCurrentChain() . $this->getCurrentClass(),
+                "dst",
+                "src"
+            )) {
+                static::raiseError(__CLASS__ .'::setChainID() returned false!');
+                return false;
+            }
 
             if ($ms->hasOption("filter") &&
                 $ms->getOption("filter") == "ipt"
@@ -802,7 +820,7 @@ class RulesetController extends DefaultController
             if (!$ms->hasOption("use_hashkey") ||
                 $ms->getOption("use_hashkey") != 'Y'
             ) {
-                if (!$this->buildPipes($if, $is_gre, $chain->getId(), "1:". $this->getCurrentChain() . $this->getCurrentClass(), $direction, $chain->getServiceLevel(true))) {
+                if (!$this->buildPipes($if, $is_gre, $chain->getIdx(), "1:". $this->getCurrentChain() . $this->getCurrentClass(), $direction, $chain->getServiceLevel(true))) {
                     static::raiseError(__CLASS__ .'::buildPipes() returned false!');
                     return false;
                 }
@@ -811,7 +829,7 @@ class RulesetController extends DefaultController
                     static::raiseError(__CLASS__ .'::getChainHashKey() returned false!');
                     return false;
                 }
-                if (!$this->buildPipes($if, $is_gre, $chain->getId(), "1:". $this->getCurrentChain() . $this->getCurrentClass(), $direction, $chain->getServiceLevel(true), $chain_hex_id)) {
+                if (!$this->buildPipes($if, $is_gre, $chain->getIdx(), "1:". $this->getCurrentChain() . $this->getCurrentClass(), $direction, $chain->getServiceLevel(true), $chain_hex_id)) {
                     static::raiseError(__CLASS__ .'::buildPipes() returned false!');
                     return false;
                 }
@@ -833,7 +851,7 @@ class RulesetController extends DefaultController
             } else {
                 $this->addFallbackFilter($if, "1:". $this->getCurrentChain() . $this->getCurrentClass(), "1:". $this->getCurrentChain() ."00", $chain_hex_id);
             }
-            $this->setPipeID($if, -1, $chain->getId(), "1:". $this->getCurrentChain() ."00");
+            $this->setPipeID($if, -1, $chain->getIdx(), "1:". $this->getCurrentChain() ."00");
         }
 
         return true;
@@ -1852,7 +1870,7 @@ class RulesetController extends DefaultController
                 }
 
                 $items_filter = array(
-                    'group_idx' => $target->getId(),
+                    'group_idx' => $target->getIdx(),
                 );
 
                 foreach ($atg->getItems(null, null, $items_filter) as $target) {
@@ -2066,7 +2084,7 @@ class RulesetController extends DefaultController
 
             if (!$this->setPipeId(
                 $if,
-                $pipe->getId(),
+                $pipe->getIdx(),
                 $chain_idx,
                 $my_id
             )) {
@@ -2101,7 +2119,7 @@ class RulesetController extends DefaultController
             }
 
             $items_filter = array(
-                'pipe_idx' => $pipe->getId()
+                'pipe_idx' => $pipe->getIdx()
             );
 
             foreach ($afp->getItems(null, null, $items_filter) as $afp_item) {

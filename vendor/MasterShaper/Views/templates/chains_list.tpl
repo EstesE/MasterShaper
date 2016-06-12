@@ -59,19 +59,19 @@
 {chains_list}
  <tr>
   <td class="center aligned">
-   <div class="ui fitted checkbox item select" id="select_{$item->getId()}">
+   <div class="ui fitted checkbox item select" id="select_{$item->getIdx()}">
     <input type="checkbox">
     <label></label>
    </div>
   </td>
   <td>
-   <div name="chain_{$item->getId()}" class="filterable inline editable content" data-current-value="{$item->getName()}" data-orig-value="{$item->getName()}" style="float: left;">{$item->getName()}</div>&nbsp;
-   <a name="chain_{$item->getId()}" class="inline editable edit link" data-inline-name="chain_{$item->getId()}"><i class="tiny edit icon"></i></a>
-   <div name="chain_{$item->getId()}" class="inline editable formsrc" style="display: none;">
+   <div name="chain_{$item->getIdx()}" class="filterable inline editable content" data-current-value="{$item->getName()}" data-orig-value="{$item->getName()}" style="float: left;">{$item->getName()}</div>&nbsp;
+   <a name="chain_{$item->getIdx()}" class="inline editable edit link" data-inline-name="chain_{$item->getIdx()}"><i class="tiny edit icon"></i></a>
+   <div name="chain_{$item->getIdx()}" class="inline editable formsrc" style="display: none;">
     <form class="ui form" onsubmit="return false;">
      <div class="fields">
       <div class="field small ui input">
-       <input type="text" name="chain_{$item->getId()}" value="{$item->getName()}" data-action="update" data-model="chain" data-key="chain_name" data-id="{$item->getId()}" />
+       <input type="text" name="chain_{$item->getIdx()}" value="{$item->getName()}" data-action="update" data-model="chain" data-key="chain_name" data-id="{$item->getIdx()}" />
       </div>
       <div class="field">
        <button class="circular ui icon button inline editable save" type="submit"><i class="save icon"></i></button>
@@ -85,8 +85,8 @@
   </td>
   <td>
    <div class="ui icon buttons">
-    <a id="edit_link_{$item->getId()}" href="{get_url page='chains' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
-    <a id="delete_link_{$item->getId()}" class="delete item ui icon button action link" data-action-title="Deleting {$item->getName()|escape}" data-modal-title="Delete {$item->getName()|escape}" data-modal-text="Please confirm to delete {$item->getName()|escape}" data-id="{$item->getId()}" data-guid="{$item->getGuid()}" data-model="chain" data-content="Delete {$item->getName()|escape}" data-variation="wide"><i class="remove circle icon"></i></a>
+    <a id="edit_link_{$item->getIdx()}" href="{get_url page='chains' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
+    <a id="delete_link_{$item->getIdx()}" class="delete item ui icon button action link" data-action-title="Deleting {$item->getName()|escape}" data-modal-title="Delete {$item->getName()|escape}" data-modal-text="Please confirm to delete {$item->getName()|escape}" data-id="{$item->getIdx()}" data-guid="{$item->getGuid()}" data-model="chain" data-content="Delete {$item->getName()|escape}" data-variation="wide"><i class="remove circle icon"></i></a>
     <div class="ui icon button slider checkbox">
      <input type="checkbox" {if $item->isActive()}checked="checked"{/if}/>
      <label></label>
