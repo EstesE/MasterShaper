@@ -36,7 +36,6 @@ Your MasterShaper installation bundles further open source software and librarie
 <div class="ui bulleted list">
 <div class="item">jQuery,&nbsp;<a href="http://www.jquery.com" target="_blank">http://www.jquery.com</a></div>
 <div class="item">jQuery&nbsp;UI,&nbsp;<a href="http://www.jqueryui.com" target="_blank">http://www.jquery.ui.com</a></div>
-<div class="item">DropzoneJS,&nbsp;<a href="http://www.dropzonejs.com" target="_blank">http://www.dropzonejs.com</a></div>
 <div class="item">Semantic UI,&nbsp;<a href="http://semantic-ui.com" target="_blank">http://semantic-ui.com</a></div>
 <div class="item">Forge,&nbsp;<a href="https://github.com/digitalbazaar/forge" target="_blank">https://github.com/digitalbazaar/forge</a></div>
 <div class="item">Thallium,&nbsp;<a href="http://oss.netshadow.net" target="_blank">http://oss.netshadow.net</a></div>
