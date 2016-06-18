@@ -527,22 +527,27 @@ class RulesetInterfaceModel extends DefaultModel
             case 'tc':
                 if ($this->isGRE()) {
                     $filter = sprintf(
-                        "protocol ip prio 1 u32 match u8 0x06 0xff at 33 match u8 0x05 0x0f at 24 match u16 0x0000 0xffc0 at 26 match u8 0x10 0xff at 57 flowid %s",
+                        "protocol ip prio 1 u32 match u8 0x06 0xff at 33 match u8 0x05 0x0f at 24"
+                        . "match u16 0x0000 0xffc0 at 26 match u8 0x10 0xff at 57 flowid %s",
                         $id
                     );
                 } else {
                     if (!$ms->hasOption("use_hashkey") ||
                         $ms->getOption("use_hashkey") != 'Y'
                     ) {
-                        $filter = "protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id;
+                        $filter = "protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0"
+                            ."match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid ". $id;
                     } else {
                         $filter = sprintf(
-                            "protocol all prio 2 u32 ht 10:%s match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid %s",
+                            "protocol all prio 2 u32 ht 10:%s match ip protocol 6 0xff match u8 0x05 0x0f at 0"
+                                ."match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid %s",
                             $hashtable_id,
                             $id
                         );
                     }
-                    //$this->addRule(static::$tc_bin ." filter add dev ". $this->getInterfaceName() ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff match u8 0x10 0xff at nexthdr+13 match u16 0x0000 0xffc0 at 2 flowid ". $id);
+                    //$this->addRule(static::$tc_bin ." filter add dev ". $this->getInterfaceName()
+                    //  ." parent ". $parent ." protocol ip prio 1 u32 match ip protocol 6 0xff
+                    // match u8 0x10 0xff at nexthdr+13 match u16 0x0000 0xffc0 at 2 flowid ". $id);
                 }
 
                 if (!$this->ruleset->addFilter(
@@ -557,8 +562,10 @@ class RulesetInterfaceModel extends DefaultModel
                 break;
 
             case 'ipt':
-                $this->addRule(static::$ipt_bin ." -t mangle -A ms-postrouting -p tcp -m length --length :64 -j CLASSIFY --set-class ". $id);
-                $this->addRule(static::$ipt_bin ." -t mangle -A ms-postrouting -p tcp -m length --length :64 -j RETURN");
+                $this->addIptRule("-t mangle -A ms-postrouting -p tcp -m length --length :64"
+                    ." -j CLASSIFY --set-class ". $id);
+                $this->addIptRule("-t mangle -A ms-postrouting -p tcp -m length --length :64"
+                    ." -j RETURN");
                 break;
         }
 
@@ -570,11 +577,12 @@ class RulesetInterfaceModel extends DefaultModel
         global $ms;
 
         if ($ms->getOption("msmode", true) == "router") {
-            $this->addRule(static::$ipt_bin ." -t mangle -A FORWARD -o ". $this->getInterfaceName() ." -j ms-forward");
-            $this->addRule(static::$ipt_bin ." -t mangle -A OUTPUT -o ". $this->getInterfaceName() ." -j ms-forward");
-            $this->addRule(static::$ipt_bin ." -t mangle -A POSTROUTING -o ". $this->getInterfaceName() ." -j ms-postrouting");
+            $this->addIptRule("-t mangle -A FORWARD -o ". $this->getInterfaceName() ." -j ms-forward");
+            $this->addIptRule("-t mangle -A OUTPUT -o ". $this->getInterfaceName() ." -j ms-forward");
+            $this->addIptRule("-t mangle -A POSTROUTING -o ". $this->getInterfaceName() ." -j ms-postrouting");
         } else {
-            $this->addRule(static::$ipt_bin ." -t mangle -A POSTROUTING -m physdev --physdev-out ". $this->getInterfaceName() ." -j ms-postrouting");
+            $this->addIptRule("-t mangle -A POSTROUTING -m physdev --physdev-out "
+                . $this->getInterfaceName() ." -j ms-postrouting");
         }
 
         return true;
@@ -946,6 +954,11 @@ class RulesetInterfaceModel extends DefaultModel
         }
 
         return true;
+    }
+
+    public function addIptRule($cmd, $where = null)
+    {
+        return $this->addRule(static::$ipt_bin ." ". $cmd, $where);
     }
 
     /**
