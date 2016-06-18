@@ -66,42 +66,6 @@ class FilterModel extends DefaultModel
         'packet_length' => array(
             FIELD_TYPE => FIELD_STRING,
         ),
-        'time_use_range' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'time_start' => array(
-            FIELD_TYPE => FIELD_STRING,
-        ),
-        'time_stop' => array(
-            FIELD_TYPE => FIELD_STRING,
-        ),
-        'time_day_mon' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'time_day_tue' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'time_day_wed' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'time_day_thu' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'time_day_fri' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'time_day_sat' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'time_day_sun' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'match_ftp_data' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
-        'match_sip' => array(
-            FIELD_TYPE => FIELD_YESNO,
-        ),
         'active' => array(
             FIELD_TYPE => FIELD_YESNO,
             FIELD_DEFAULT => 'Y',
