@@ -388,6 +388,30 @@ class FilterModel extends DefaultModel
 
         return true;
     }
+
+    public function hasPacketLength()
+    {
+        if (!$this->hasFieldValue('packet_length')) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getPacketLength()
+    {
+        if (!$tis->hasPacketLength()) {
+            static::raiseError(__CLASS__ .'::hasPacketLength() returned false!');
+            return false;
+        }
+
+        if (($value = $this->getFieldValue('packet_length')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $value;
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
