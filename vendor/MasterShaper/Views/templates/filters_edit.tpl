@@ -115,14 +115,14 @@
   <label>TCP flags</label>
   <table class="noborder">
    <tr>
-    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_syn]')"><input type="checkbox" name="filter_tcpflag_syn" value="Y" {if $filter->isTcpFlagSyn()} checked="checked" {/if} />SYN</td>
-    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_ack]')"><input type="checkbox" name="filter_tcpflag_ack" value="Y" {if $filter->isTcpFlagAck()} checked="checked" {/if} />ACK</td>
-    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_fin]')"><input type="checkbox" name="filter_tcpflag_fin" value="Y" {if $filter->isTcpFlagFin()} checked="checked" {/if} />FIN</td>
+    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_syn]')"><input type="checkbox" name="filter_tcpflag_syn" value="Y" {if $filter->isTcpFlagEnabled('SYN')} checked="checked" {/if} />SYN</td>
+    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_ack]')"><input type="checkbox" name="filter_tcpflag_ack" value="Y" {if $filter->isTcpFlagEnabled('ACK')} checked="checked" {/if} />ACK</td>
+    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_fin]')"><input type="checkbox" name="filter_tcpflag_fin" value="Y" {if $filter->isTcpFlagEnabled('FIN')} checked="checked" {/if} />FIN</td>
    </tr>
    <tr>
-    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_rst]')"><input type="checkbox" name="filter_tcpflag_rst" value="Y" {if $filter->isTcpFlagRst()} checked="checked" {/if} />RST</td>
-    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_urg]')"><input type="checkbox" name="filter_tcpflag_urg" value="Y" {if $filter->isTcpFlagUrg()} checked="checked" {/if} />URG</td>
-    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_psh]')"><input type="checkbox" name="filter_tcpflag_psh" value="Y" {if $filter->isTcpFlagPsh()} checked="checked" {/if} />PSH</td>
+    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_rst]')"><input type="checkbox" name="filter_tcpflag_rst" value="Y" {if $filter->isTcpFlagEnabled('RST')} checked="checked" {/if} />RST</td>
+    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_urg]')"><input type="checkbox" name="filter_tcpflag_urg" value="Y" {if $filter->isTcpFlagEnabled('URG')} checked="checked" {/if} />URG</td>
+    <td onclick="obj_toggle_checkbox('[name=filter_tcpflag_psh]')"><input type="checkbox" name="filter_tcpflag_psh" value="Y" {if $filter->isTcpFlagEnabled('PSH')} checked="checked" {/if} />PSH</td>
    </tr>
   </table>
   <div class="extra">Match on specific TCP flags combinations.</div>
