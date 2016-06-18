@@ -44,7 +44,6 @@ class RulesetController extends DefaultController
 
 
     protected static $tc_bin;
-    protected static $ipt_bin;
 
     public function __construct()
     {
@@ -60,7 +59,6 @@ class RulesetController extends DefaultController
         }
 
         static::$tc_bin = $config->getTcPath();
-        static::$ipt_bin = $config->getIptablesPath();
 
     } // __construct()
 
@@ -91,23 +89,9 @@ class RulesetController extends DefaultController
         global $ms;
 
         $this->delActiveInterfaceQdiscs();
-        $this->delIptablesRules();
         $ms->setShaperStatus(false);
 
     } // unload()
-
-    protected function iptInitRules()
-    {
-        $this->addRule(static::$ipt_bin ." -t mangle -N ms-forward", static::MS_PRE);
-        $this->addRule(static::$ipt_bin ." -t mangle -N ms-postrouting", static::MS_PRE);
-        $this->addRule(static::$ipt_bin ." -t mangle -N ms-prerouting", static::MS_PRE);
-        $this->addRule(static::$ipt_bin ." -t mangle -A PREROUTING -j ms-prerouting", static::MS_PRE);
-
-        /* We must restore the connection mark in PREROUTING table first! */
-        $this->addRule(static::$ipt_bin ." -t mangle -A ms-prerouting -j CONNMARK --restore-mark", static::MS_PRE);
-        $this->addRule(static::$ipt_bin ." -t mangle -A ms-prerouting -j CONNMARK --save-mark", static::MS_POST);
-
-    } // iptInitRules()
 
     protected function getRules($rules)
     {
@@ -144,15 +128,6 @@ class RulesetController extends DefaultController
         if (!$this->flushTcIds()) {
             static::raiseError(__CLASS__ .'::flushTcIds() returned false!');
             return false;
-        }
-
-        if ($ms->hasOption("filter") &&
-            $ms->getOption("filter") == "ipt"
-            ) {
-            if (!$this->iptInitRules()) {
-                static::raiseError(__CLASS__ .'::iptInitRules() returned false!');
-                return false;
-            }
         }
 
         if (($netpaths = $this->getActiveNetpaths()) === false) {
@@ -325,12 +300,6 @@ class RulesetController extends DefaultController
 
     } // delQdisc()
 
-    protected function delIptablesRules()
-    {
-        $this->runProc("cleanup", null, true);
-
-    } // delIptablesRules
-
     protected function doIt()
     {
         global $ms;
@@ -341,18 +310,9 @@ class RulesetController extends DefaultController
         /* Delete current root qdiscs */
         $this->delActiveInterfaceQdiscs();
 
-        $this->delIptablesRules();
-
         /* Prepare the tc batch file */
         $temp_tc  = tempnam(TEMP_PATH, "FOOTC");
         $output_tc  = fopen($temp_tc, "w");
-
-        /* If necessary prepare iptables batch files */
-        if ($ms->hasOption("filter") &&
-            $ms->getOption("filter") == "ipt") {
-            $temp_ipt = tempnam(TEMP_PATH, "FOOIPT");
-            $output_ipt = fopen($temp_ipt, "w");
-        }
 
         foreach ($this->getCompleteRuleset() as $line) {
             $line = trim($line);
@@ -362,24 +322,11 @@ class RulesetController extends DefaultController
                     $line = str_replace(static::$tc_bin ." ", "", $line);
                     fputs($output_tc, $line ."\n");
                 }
-                /* iptables task */
-                if (strstr($line, static::$ipt_bin) !== false &&
-                    $ms->hasOption("filter") &&
-                    $ms->getOption("filter") == "ipt"
-                ) {
-                    fputs($output_ipt, $line ."\n");
-                }
             }
         }
 
         /* flush batch files */
         fclose($output_tc);
-
-        if ($ms->hasOption("filter") &&
-            $ms->getOption("filter") == "ipt"
-        ) {
-            fclose($output_ipt);
-        }
 
         /* load tc filter rules */
         if (($error = $this->runProc("tc", static::$tc_bin . " -b ". $temp_tc)) != true) {
@@ -388,27 +335,6 @@ class RulesetController extends DefaultController
                 ."Try load ruleset in debug mode to figure incorrect or not supported rule."
             );
             $found_error = 1;
-        }
-
-        /* load iptables rules */
-        if ($ms->hasOption("filter") &&
-            $ms->getOption("filter") == "ipt" &&
-            !$found_error
-        ) {
-            if (($error = $this->runProc("iptables", $temp_ipt)) != true) {
-                static::raiseError(
-                    "Error on mass loading iptables rule.<br />"
-                    ."Try load ruleset in debug mode to figure incorrect or not supported rule."
-                );
-                $found_error = 1;
-            }
-        }
-
-        //unlink($temp_tc);
-        if ($ms->hasOption("filter") &&
-            $ms->getOption("filter") == "ipt"
-        ) {
-            unlink($temp_ipt);
         }
 
         if (!$found_error) {
@@ -427,9 +353,6 @@ class RulesetController extends DefaultController
 
         /* Delete current root qdiscs */
         $this->delActiveInterfaceQdiscs();
-        $this->delIptablesRules();
-
-        $ipt_lines = array();
 
         foreach ($this->getCompleteRuleset() as $line) {
             // output comments as they are
@@ -443,19 +366,6 @@ class RulesetController extends DefaultController
                 if (($tc = $this->runProc("tc", $line)) !== true) {
                     $ms->_print($tc, MSLOG_DEBUG, 'display');
                 }
-            }
-
-            // iptables output will follow later
-            if (strstr($line, static::$ipt_bin) !== false) {
-                array_push($ipt_lines, $line);
-            }
-        }
-
-        // output iptables commands
-        foreach ($ipt_lines as $line) {
-            $ms->_print($line, MSLOG_DEBUG, 'display');
-            if (($ipt = $this->runProc("iptables", $line)) !== true) {
-                $ms->_print($ipt, MSLOG_DEBUG, 'display');
             }
         }
 
@@ -549,8 +459,6 @@ class RulesetController extends DefaultController
             return "#666666";
         } elseif (strstr($text, static::$tc_bin)) {
             return "#AF0000";
-        } elseif (strstr($text, static::$ipt_bin)) {
-            return "#0000AF";
         }
 
         return "#000000";
@@ -775,13 +683,6 @@ class RulesetController extends DefaultController
             )) {
                 static::raiseError(__CLASS__ .'::setChainID() returned false!');
                 return false;
-            }
-
-            if ($ms->hasOption("filter") &&
-                $ms->getOption("filter") == "ipt"
-            ) {
-                $if->addIptRule("-t mangle -N ms-chain-". $this->getInterfaceName() ."-1:". $this->getCurrentChain() . $this->getCurrentFilter());
-                $if->addIptRule("-t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getInterfaceId(), "1:". $this->getCurrentChain() . $this->getCurrentFilter()) ." -j ms-chain-". $this->getInterfaceName() ."-1:". $this->getCurrentChain() . $this->getCurrentFilter());
             }
 
             /*if (!$chain->hasServiceLevel()) {
@@ -1509,267 +1410,177 @@ class RulesetController extends DefaultController
             return false;
         }
 
-        switch ($ms->getOption("filter", true)) {
-            default:
-            case 'tc':
-                if ($chain_direction == "out") {
-                    if (!$chain->swapTargets()) {
-                        static::raiseError(get_class($chain) .'::swapTargets() returned false!');
-                        return false;
+        if ($chain_direction == "out") {
+            if (!$chain->swapTargets()) {
+                static::raiseError(get_class($chain) .'::swapTargets() returned false!');
+                return false;
+            }
+        }
+
+        // matching on source address, but not on destination
+        if ($chain->hasSourceTarget() && !$chain->hasDestinationTarget()) {
+            if (($hosts = $this->getTargetHosts($chain->getSourceTarget())) === false) {
+                static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+                return false;
+            }
+            foreach ($hosts as $host) {
+                if (!$this->checkIfMac($host)) {
+                    if (isset($is_gre) && $is_gre === true) {
+                        $hex_host = $this->convertIpToHex($host);
+                        switch ($chain->chain_direction) {
+                            case static::UNIDIRECTIONAL:
+                                $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params;
+                                break;
+                            case static::BIDIRECTIONAL:
+                                $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params;
+                                break;
+                        }
+                    } else {
+                        switch ($chain->chain_direction) {
+                            case static::UNIDIRECTIONAL:
+                                $filter = "protocol all prio 2 u32 match ip src ". $host ." flowid ". $params;
+                                break;
+                            case static::BIDIRECTIONAL:
+                                $filter = "protocol all prio 2 u32 match ip src ". $host ." flowid ". $params;
+                                break;
+                        }
                     }
+                } else {
+                    if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host)) {
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
+                    } else {
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
+                    }
+
+                    $filter = "protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ."  0xffffffff at -8 flowid ". $params;
                 }
 
-                // matching on source address, but not on destination
-                if ($chain->hasSourceTarget() && !$chain->hasDestinationTarget()) {
-                    if (($hosts = $this->getTargetHosts($chain->getSourceTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($hosts as $host) {
-                        if (!$this->checkIfMac($host)) {
-                            if (isset($is_gre) && $is_gre === true) {
-                                $hex_host = $this->convertIpToHex($host);
-                                switch ($chain->chain_direction) {
-                                    case static::UNIDIRECTIONAL:
-                                        $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params;
-                                        break;
-                                    case static::BIDIRECTIONAL:
-                                        $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 flowid ". $params;
-                                        break;
-                                }
-                            } else {
-                                switch ($chain->chain_direction) {
-                                    case static::UNIDIRECTIONAL:
-                                        $filter = "protocol all prio 2 u32 match ip src ". $host ." flowid ". $params;
-                                        break;
-                                    case static::BIDIRECTIONAL:
-                                        $filter = "protocol all prio 2 u32 match ip src ". $host ." flowid ". $params;
-                                        break;
-                                }
-                            }
-                        } else {
-                            if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host)) {
-                                list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
-                            } else {
-                                list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
-                            }
-
-                            $filter = "protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ."  0xffffffff at -8 flowid ". $params;
-                        }
-
-                        if (!$this->addFilter(
-                            $if,
-                            $parent,
-                            $filter
-                        )) {
-                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                            return false;
-                        }
-                    }
-                // matching on destination address, but not on source
-                } elseif (!$chain->hasSourceTarget() && $chain->hasDestinationTarget()) {
-                    if (($hosts = $this->getTargetHosts($chain->getDestinationTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($hosts as $host) {
-                        if (!$this->checkIfMac($host)) {
-                            if (isset($is_gre) && $is_gre === true) {
-                                $hex_host = $this->convertIpToHex($host);
-                                switch ($chain->chain_direction) {
-                                    case static::UNIDIRECTIONAL:
-                                        $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params;
-                                        break;
-                                    case static::BIDIRECTIONAL:
-                                        $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params;
-                                        break;
-                                }
-                            } else {
-                                switch ($chain->chain_direction) {
-                                    case static::UNIDIRECTIONAL:
-                                        $filter = "protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params;
-                                        break;
-                                    case static::BIDIRECTIONAL:
-                                        $filter = "protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params;
-                                        break;
-                                }
-                            }
-                        } else {
-                            if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host)) {
-                                list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
-                            } else {
-                                list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
-                            }
-
-                            $filter = "protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params;
-                        }
-
-                        if (!$this->addFilter(
-                            $if,
-                            $parent,
-                            $filter
-                        )) {
-                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                            return false;
-                        }
-                    }
-                // matching on both, source and destination address
-                } elseif ($chain->hasSourceTarget() && $chain->hasDestinationTarget()) {
-                    if (($src_hosts = $this->getTargetHosts($chain->getSourceTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($src_hosts as $src_host) {
-                        if (!$this->checkIfMac($src_host)) {
-                            if (isset($is_gre) && $is_gre === true) {
-                                $hex_host = $this->convertIpToHex($src_host);
-                                $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 ";
-                            } else {
-                                $filter = "protocol all prio 2 u32 match ip src ". $src_host ." ";
-                            }
-                        } else {
-                            if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host)) {
-                                list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $src_host);
-                            } else {
-                                list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $src_host);
-                            }
-                            $filter = "protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ";
-                        }
-
-                        if (($dst_hosts = $this->getTargetHosts($chain->getDestinationTarget())) === false) {
-                            static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                            return false;
-                        }
-
-                        $filters = array();
-                        foreach ($dst_hosts as $dst_host) {
-                            $tmp_filter = $filter;
-
-                            if (!$this->checkIfMac($dst_host)) {
-                                if (isset($is_gre) && $is_gre === true) {
-                                    $hex_host = $this->convertIpToHex($dst_host);
-                                    $tmp_filter.= "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params;
-                                } else {
-                                    $tmp_filter.= "match ip dst ". $dst_host ." flowid ". $params;
-                                }
-                            } else {
-                                if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $dst_host)) {
-                                    list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $dst_host);
-                                } else {
-                                    list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $dst_host);
-                                }
-
-                                $tmp_filter.= "match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params;
-                            }
-
-                            array_push($filters, $tmp_filter);
-                        }
-
-                        foreach ($filters as $filter) {
-                            // unidirectional or bidirectional matches
-                            switch ($chain->chain_direction) {
-                                case static::UNIDIRECTIONAL:
-                                case static::BIDIRECTIONAL:
-                                    if (!$this->addFilter(
-                                        $if,
-                                        $parent,
-                                        $filter
-                                    )) {
-                                        static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                        return false;
-                                    }
-                                    break;
-                            }
-                        }
-                    }
+                if (!$this->addFilter(
+                    $if,
+                    $parent,
+                    $filter
+                )) {
+                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                    return false;
                 }
-                break;
+            }
+        // matching on destination address, but not on source
+        } elseif (!$chain->hasSourceTarget() && $chain->hasDestinationTarget()) {
+            if (($hosts = $this->getTargetHosts($chain->getDestinationTarget())) === false) {
+                static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+                return false;
+            }
+            foreach ($hosts as $host) {
+                if (!$this->checkIfMac($host)) {
+                    if (isset($is_gre) && $is_gre === true) {
+                        $hex_host = $this->convertIpToHex($host);
+                        switch ($chain->chain_direction) {
+                            case static::UNIDIRECTIONAL:
+                                $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params;
+                                break;
+                            case static::BIDIRECTIONAL:
+                                $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params;
+                                break;
+                        }
+                    } else {
+                        switch ($chain->chain_direction) {
+                            case static::UNIDIRECTIONAL:
+                                $filter = "protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params;
+                                break;
+                            case static::BIDIRECTIONAL:
+                                $filter = "protocol all prio 2 u32 match ip dst ". $host ." flowid ". $params;
+                                break;
+                        }
+                    }
+                } else {
+                    if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host)) {
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
+                    } else {
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
+                    }
 
-            case 'ipt':
-                if ($ms->hasOption("msmode") &&
-                    $ms->getOption("msmode") == "router"
-                ) {
-                    $string = "-t mangle -A ms-forward -o ". $this->getInterfaceName();
-                } elseif ($ms->hasOption("msmode") &&
-                    $ms->getOption("msmode") == "bridge"
-                ) {
-                    $string = "-t mangle -A ms-forward -m physdev --physdev-in ". $params5;
+                    $filter = "protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params;
                 }
 
-                if ($chain_direction == "out") {
-                    if (!$chain->swapTargets()) {
-                        static::raiseError(get_class($chain) .'::swapTargets() returned false!');
-                        return false;
+                if (!$this->addFilter(
+                    $if,
+                    $parent,
+                    $filter
+                )) {
+                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                    return false;
+                }
+            }
+        // matching on both, source and destination address
+        } elseif ($chain->hasSourceTarget() && $chain->hasDestinationTarget()) {
+            if (($src_hosts = $this->getTargetHosts($chain->getSourceTarget())) === false) {
+                static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+                return false;
+            }
+
+            foreach ($src_hosts as $src_host) {
+                if (!$this->checkIfMac($src_host)) {
+                    if (isset($is_gre) && $is_gre === true) {
+                        $hex_host = $this->convertIpToHex($src_host);
+                        $filter = "protocol all prio 2 u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36 ";
+                    } else {
+                        $filter = "protocol all prio 2 u32 match ip src ". $src_host ." ";
                     }
+                } else {
+                    if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host)) {
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $src_host);
+                    } else {
+                        list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $src_host);
+                    }
+                    $filter = "protocol all prio 2 u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ";
                 }
 
-                if ($chain->hasSourceTarget() && $chain->hasDestinationTarget()) {
-                    if (($hosts = $this->getTargetHosts($chain->getSourceTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($hosts as $host) {
-                        if ($this->checkIfMac($host)) {
-                            $if->addIptRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                            $if->addIptRule($string ." -m mac --mac-source ". $host ." -j RETURN");
+                if (($dst_hosts = $this->getTargetHosts($chain->getDestinationTarget())) === false) {
+                    static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+                    return false;
+                }
+
+                $filters = array();
+                foreach ($dst_hosts as $dst_host) {
+                    $tmp_filter = $filter;
+
+                    if (!$this->checkIfMac($dst_host)) {
+                        if (isset($is_gre) && $is_gre === true) {
+                            $hex_host = $this->convertIpToHex($dst_host);
+                            $tmp_filter.= "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40 flowid ". $params;
                         } else {
-                            if (strstr($host, "-") === false) {
-                                $if->addIptRule($string ." -s ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                $if->addIptRule($string ." -s ". $host ." -j RETURN");
-                            } else {
-                                $if->addIptRule($string ." -m iprange --src-range ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                $if->addIptRule($string ." -m iprange --src-range ". $host ." -j RETURN");
-                            }
+                            $tmp_filter.= "match ip dst ". $dst_host ." flowid ". $params;
                         }
-                    }
-                } elseif (!$chain->hasSourceTarget() && $chain->hasDestinationTarget()) {
-                    if (($hosts = $this->getTargetHosts($chain->getDestinationTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($hosts as $host) {
-                        if ($this->checkIfMac($host)) {
-                            $if->addIptRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                            $if->addIptRule($string ." -m mac --mac-source ". $host ." -j RETURN");
+                    } else {
+                        if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $dst_host)) {
+                            list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $dst_host);
                         } else {
-                            if (strstr($host, "-") === false) {
-                                $if->addIptRule($string ." -d ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                $if->addIptRule($string ." -d ". $host ." -j RETURN");
-                            } else {
-                                $if->addIptRule($string ." -m iprange --dst-range ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                $if->addIptRule($string ." -m iprange --dst-range ". $host ." -j RETURN");
-                            }
+                            list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $dst_host);
                         }
+
+                        $tmp_filter.= "match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 flowid ". $params;
                     }
-                } elseif ($chain->hasSourceTarget() && $chain->hasDestinationTarget()) {
-                    if (($src_hosts = $this->getTargetHosts($chain->getSourceTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    if (($dst_hosts = $this->getTargetHosts($chain->getDestinationTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($src_hosts as $src_host) {
-                        if (!$this->checkIfMac($src_host)) {
-                            foreach ($dst_hosts as $dst_host) {
-                                if ($this->checkIfMac($dst_host)) {
-                                    $if->addIptRule($string ." -m mac --mac-source ". $src_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                    $if->addIptRule($string ." -m mac --mac-source ". $dst_host ." -j RETURN");
-                                } else {
-                                    if (strstr($host, "-") === false) {
-                                        $if->addIptRule($string ." -s ". $src_host ." -d ". $dst_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                        $if->addIptRule($string ." -s ". $src_host ." -d ". $dst_host ." -j RETURN");
-                                    } else {
-                                        $if->addIptRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                        $if->addIptRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j RETURN");
-                                    }
-                                }
+
+                    array_push($filters, $tmp_filter);
+                }
+
+                foreach ($filters as $filter) {
+                    // unidirectional or bidirectional matches
+                    switch ($chain->chain_direction) {
+                        case static::UNIDIRECTIONAL:
+                        case static::BIDIRECTIONAL:
+                            if (!$this->addFilter(
+                                $if,
+                                $parent,
+                                $filter
+                            )) {
+                                static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                return false;
                             }
-                        }
+                            break;
                     }
                 }
-                break;
+            }
         }
 
         return true;
@@ -1817,22 +1628,14 @@ class RulesetController extends DefaultController
 
         switch ($target->getMatch()) {
             case 'IP':
-                /* for tc-filter we need to need to resolve a IP range
-                   iptables will use the IPRANGE match for this
-                 */
-                if ($ms->hasOption("filter") &&
-                    $ms->getOption("filter") == "tc"
-                ) {
-                    if (strstr($target->getIp(), "-") !== false) {
-                        list($host1, $host2) = preg_split("/-/", $target->getIp());
-                        $host1 = ip2long($host1);
-                        $host2 = ip2long($host2);
+                /* for tc-filter we need to need to resolve an IP range */
+                if (strstr($target->getIp(), "-") !== false) {
+                    list($host1, $host2) = preg_split("/-/", $target->getIp());
+                    $host1 = ip2long($host1);
+                    $host2 = ip2long($host2);
 
-                        for ($i = $host1; $i <= $host2; $i++) {
-                            array_push($hosts, long2ip($i));
-                        }
-                    } else {
-                        array_push($hosts, $target->getIp());
+                    for ($i = $host1; $i <= $host2; $i++) {
+                        array_push($hosts, long2ip($i));
                     }
                 } else {
                     array_push($hosts, $target->getIp());
@@ -2212,7 +2015,7 @@ class RulesetController extends DefaultController
     /**
      * Generate code to add a pipe filter
      *
-     * This function generates the tc/iptables code to filter traffic into a pipe
+     * This function generates the tc code to filter traffic into a pipe
      * @param string $parent
      * @param string $option
      * @param Filter $filter
@@ -2293,892 +2096,602 @@ class RulesetController extends DefaultController
         $tmp_str   = "";
         $tmp_array = array();
 
-        switch ($ms->getOption("filter", true)) {
-            default:
-            case 'tc':
-                if (!$ms->hasOption("use_hashkey") ||
-                    $ms->getOption("use_hashkey") != 'Y'
-                ) {
-                    $match = "protocol all prio 1 [HOST_DEFS] ";
-                } else {
-                    $parent = "1:0";
-                    $match = "protocol all prio 2 u32 ht 10:". $chain_hex_id ." [HOST_DEFS] ";
+        if (!$ms->hasOption("use_hashkey") ||
+            $ms->getOption("use_hashkey") != 'Y'
+        ) {
+            $match = "protocol all prio 1 [HOST_DEFS] ";
+        } else {
+            $parent = "1:0";
+            $match = "protocol all prio 2 u32 ht 10:". $chain_hex_id ." [HOST_DEFS] ";
+        }
+
+        if (isset($filter)) {
+            if (isset($is_gre) && $is_gre === true) {
+                if ($filter->hasTos()) {
+                    $match.= "match u8 ". sprintf("%02x", $filter->getTos()) ." 0xff at 25 ";
                 }
-
-                if (isset($filter)) {
-                    if (isset($is_gre) && $is_gre === true) {
-                        if ($filter->hasTos()) {
-                            $match.= "match u8 ". sprintf("%02x", $filter->getTos()) ." 0xff at 25 ";
-                        }
-                        if ($filter->hasDscp()) {
-                            $match.= "match u8 0x". $this->getDscpHexValue($filter->getDscp()) ." 0xfc at 25 ";
-                        }
-                    } else {
-                        if ($filter->hasTos()) {
-                            $match.= "match ip tos ". $filter->getTos() ." 0xff ";
-                        }
-                        if ($filter->hasDscp()) {
-                            $match.= "match u8 0x". $this->getDscpHexValue($filter->getDscp()) ." 0xfc at 1 ";
-                        }
-                    }
+                if ($filter->hasDscp()) {
+                    $match.= "match u8 0x". $this->getDscpHexValue($filter->getDscp()) ." 0xfc at 25 ";
                 }
-
-                /* filter matches a specific network protocol */
-                if (isset($filter) && $filter->hasProtocol()) {
-                    if (($proto = $filter->getProtocol(true)) === false) {
-                        static::raiseError(get_class($filter) .'::getProtocol() returned false!');
-                        return false;
-                    }
-                    if (is_object($proto) && $proto->hasNumber() && ($proto_num = $proto->getNumber()) === false) {
-                        static::raiseError(get_class($proto) .'::getNumber() returned false!');
-                        return false;
-                    } else {
-                        $proto_num = 0;
-                    }
-                    switch (intval($proto_num)) {
-                        /* TCP */
-                        case 6:
-                            /* UDP */
-                        case 17:
-                            /* IP */
-                        case 4:
-                            if ($filter->hasPorts()) {
-                                if (($ports = $filter->getPorts(true)) === false) {
-                                    static::raiseError(get_class($filter) .'::getPorts() returned false!');
-                                    return false;
-                                }
-                                if (isset($is_gre) && $is_gre === true) {
-                                    $match.= "match u16 ";
-                                } else {
-                                    $match.= "match ip ";
-                                }
-                                $str_ports = "";
-                                $cnt_ports = 0;
-
-                                foreach ($ports as $port) {
-                                    if ($port->hasNumber()) {
-                                        continue;
-                                    }
-                                    if (($dst_ports = $port->getNumber()) === false) {
-                                        static::raiseError(get_class($port) .'::getNumber() returned false!');
-                                        return false;
-                                    }
-                                    foreach ($dst_ports as $dst_port) {
-                                        if (isset($is_gre) && $is_gre === true) {
-                                            $port_hex = $this->convertPortToHex($dst_port);
-                                            $tmp_str = $match ." 0x". $port_hex ." 0xffff at [DIRECTION]";
-
-                                            switch ($pipe->getDirection()) {
-                                                case static::UNIDIRECTIONAL:
-                                                    array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
-                                                    break;
-                                                case static::BIDIRECTIONAL:
-                                                    array_push($tmp_array, str_replace("[DIRECTION]", "44", $tmp_str));
-                                                    array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
-                                                    break;
-                                            }
-                                        } else {
-                                            $tmp_str = $match ." [DIRECTION] ". $dst_port ." 0xffff ";
-
-                                            switch ($pipe->getDirection()) {
-                                                case static::UNIDIRECTIONAL:
-                                                    array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
-                                                    break;
-                                                case static::BIDIRECTIONAL:
-                                                    array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
-                                                    array_push($tmp_array, str_replace("[DIRECTION]", "sport", $tmp_str));
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                }
-                                // we break here if there where ports selected.
-                                // otherwise we go to the default: clause
-                                // to match on IP, TCP and UDP protocols only.
-                                break;
-                            }
-                            // there is no break; here for IP, TCP and UDP withouts ports. we use
-                            // the default clause now!
-
-                        default:
-                            if (isset($is_gre) && $is_gre === true) {
-                                $proto_hex = $this->convertProtoToHex($proto_num);
-                                $match.= "match u8 0x". $proto_hex ." 0xff at 33";
-                            } else {
-                                $match.= "match ip protocol ". $proto_num ." 0xff ";
-                            }
-                            array_push($tmp_array, $match);
-                            break;
-                        case 0:
-                        case false:
-                            break;
-                    }
-                } else {
-                    array_push($tmp_array, $match);
+            } else {
+                if ($filter->hasTos()) {
+                    $match.= "match ip tos ". $filter->getTos() ." 0xff ";
                 }
+                if ($filter->hasDscp()) {
+                    $match.= "match u8 0x". $this->getDscpHexValue($filter->getDscp()) ." 0xfc at 1 ";
+                }
+            }
+        }
 
-                if ($pipe->hasSourceTarget() && !$pipe->hasDestinationTarget()) {
-                    if (($hosts = $this->getTargetHosts($pipe->getSourceTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($hosts as $host) {
-                        if (!$this->checkIfMac($host)) {
-                            if (isset($is_gre) && $is_gre === true) {
-                                foreach ($tmp_array as $tmp_arr) {
-                                    $hex_host = $this->convertIpToHex($host);
-                                    switch ($pipe->getDirection()) {
-                                        case static::UNIDIRECTIONAL:
-                                            if (!$ms->hasOption("use_hashkey") ||
-                                                $ms->getOption("use_hashkey") != 'Y'
-                                            ) {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            } else {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            }
-                                            break;
-                                        case static::BIDIRECTIONAL:
-                                            if (!$ms->hasOption("use_hashkey") ||
-                                                $ms->getOption("use_hashkey") != 'Y'
-                                            ) {
-                                                foreach (array(36, 40) as $pos) {
-                                                    if (!$this->addFilter(
-                                                        $if,
-                                                        $parent,
-                                                        str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at ". $pos, $tmp_arr) ." flowid ". $my_id
-                                                    )) {
-                                                        static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                        return false;
-                                                    }
-                                                }
-                                            } else {
-                                                foreach (array(36, 40) as $pos) {
-                                                    if (!$this->addFilter(
-                                                        $if,
-                                                        $parent,
-                                                        str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at ". $pos, $tmp_arr) ." flowid ". $my_id
-                                                    )) {
-                                                        static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                        return false;
-                                                    }
-                                                }
-                                            }
-                                            break;
-                                    }
-                                }
-                            } else {
-                                foreach ($tmp_array as $tmp_arr) {
-                                    switch ($pipe->getDirection()) {
-                                        case static::UNIDIRECTIONAL:
-                                            if (!$ms->hasOption("use_hashkey") ||
-                                                $ms->getOption("use_hashkey") != 'Y'
-                                            ) {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            } else {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "match ip src ". $host, $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            }
-                                            break;
-                                        case static::BIDIRECTIONAL:
-                                            if (!$ms->hasOption("use_hashkey") ||
-                                                $ms->getOption("use_hashkey") != 'Y'
-                                            ) {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            } else {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "match ip src ". $host, $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            }
-                                            break;
-                                    }
-                                }
-                            }
-                        } else {
-                            foreach ($tmp_array as $tmp_arr) {
-                                if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host)) {
-                                    list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
-                                } else {
-                                    list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
-                                }
-
-                                switch ($pipe->getDirection()) {
-                                    case static::UNIDIRECTIONAL:
-                                        if (!$this->addFilter(
-                                            $if,
-                                            $parent,
-                                            str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ", $tmp_arr) ." flowid ". $my_id
-                                        )) {
-                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                            return false;
-                                        }
-                                        break;
-                                    case static::BIDIRECTIONAL:
-                                        if (!$this->addFilter(
-                                            $if,
-                                            $parent,
-                                            str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ", $tmp_arr) ." flowid ". $my_id
-                                        )) {
-                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                            return false;
-                                        }
-                                        if (!$this->addFilter(
-                                            $if,
-                                            $parent,
-                                            str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 ", $tmp_arr) ." flowid ". $my_id
-                                        )) {
-                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                            return false;
-                                        }
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                } elseif (!$pipe->hasSourceTarget() && $pipe->hasDestinationTarget()) {
-                    if (($hosts = $this->getTargetHosts($pipe->getDestinationTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($hosts as $host) {
-                        if (!$this->checkIfMac($host)) {
-                            if (isset($is_gre) && $is_gre === true) {
-                                foreach ($tmp_array as $tmp_arr) {
-                                    $hex_host = $this->convertIpToHex($host);
-                                    switch ($pipe->getDirection()) {
-                                        case static::UNIDIRECTIONAL:
-                                            if (!$ms->hasOption("use_hashkey") ||
-                                                $ms->getOption("use_hashkey") != 'Y'
-                                            ) {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            } else {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            }
-                                            break;
-                                        case static::BIDIRECTIONAL:
-                                            if (!$ms->hasOption("use_hashkey") ||
-                                                $ms->getOption("use_hashkey") != 'Y'
-                                            ) {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            } else {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            }
-                                            break;
-                                    }
-                                }
-                            } else {
-                                foreach ($tmp_array as $tmp_arr) {
-                                    switch ($pipe->getDirection()) {
-                                        case static::UNIDIRECTIONAL:
-                                            if (!$ms->hasOption("use_hashkey") ||
-                                                $ms->getOption("use_hashkey") != 'Y'
-                                            ) {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            } else {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "match ip dst ". $host, $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            }
-                                            break;
-                                        case static::BIDIRECTIONAL:
-                                            if (!$ms->hasOption("use_hashkey") ||
-                                                $ms->getOption("use_hashkey") != 'Y'
-                                            ) {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            } else {
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    str_replace("[HOST_DEFS]", "match ip dst ". $host, $tmp_arr) ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                            }
-                                            break;
-                                    }
-                                }
-                            }
-                        } else {
-                            foreach ($tmp_array as $tmp_arr) {
-                                if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host)) {
-                                    list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
-                                } else {
-                                    list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
-                                }
-                                switch ($pipe->getDirection()) {
-                                    case static::UNIDIRECTIONAL:
-                                        if (!$this->addFilter(
-                                            $if,
-                                            $parent,
-                                            str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 ", $tmp_arr) ." flowid ". $my_id
-                                        )) {
-                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                            return false;
-                                        }
-                                        break;
-                                    case static::BIDIRECTIONAL:
-                                        if (!$this->addFilter(
-                                            $if,
-                                            $parent,
-                                            str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 ", $tmp_arr) ." flowid ". $my_id
-                                        )) {
-                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                            return false;
-                                        }
-                                        if (!$this->addFilter(
-                                            $if,
-                                            $parent,
-                                            str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ", $tmp_arr) ." flowid ". $my_id
-                                        )) {
-                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                            return false;
-                                        }
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                } elseif ($pipe->hasSourceTarget() && $pipe->hasDestinationTarget()) {
-                    if (($src_hosts = $this->getTargetHosts($pipe->getSourceTarget())) === false) {
-                        static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                        return false;
-                    }
-                    foreach ($src_hosts as $src_host) {
-                        if (!$this->checkIfMac($src_host)) {
-                            if (isset($is_gre) && $is_gre === true) {
-                                $hex_host = $this->convertIpToHex($src_host);
-                                $tmp_str = "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR1] ";
-                            } else {
-                                if (!$ms->hasOption("use_hashkey") ||
-                                    $ms->getOption("use_hashkey") != 'Y'
-                                ) {
-                                    $tmp_str = "u32 match ip [DIR1] ". $src_host ." ";
-                                } else {
-                                    $tmp_str = "match ip [DIR1] ". $src_host ." ";
-                                }
-                            }
-                        } else {
-                            if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host)) {
-                                list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = preg_split("/:/", $src_host);
-                            } else {
-                                list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = preg_split("/-/", $src_host);
-                            }
-
-                            $tmp_str = "u32 [DIR1] [DIR2]";
-                        }
-
-                        if (($dst_hosts = $this->getTargetHosts($pipe->getDestinationTarget())) === false) {
-                            static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+        /* filter matches a specific network protocol */
+        if (isset($filter) && $filter->hasProtocol()) {
+            if (($proto = $filter->getProtocol(true)) === false) {
+                static::raiseError(get_class($filter) .'::getProtocol() returned false!');
+                return false;
+            }
+            if (is_object($proto) && $proto->hasNumber() && ($proto_num = $proto->getNumber()) === false) {
+                static::raiseError(get_class($proto) .'::getNumber() returned false!');
+                return false;
+            } else {
+                $proto_num = 0;
+            }
+            switch (intval($proto_num)) {
+                /* TCP */
+                case 6:
+                /* UDP */
+                case 17:
+                /* IP */
+                case 4:
+                    if ($filter->hasPorts()) {
+                        if (($ports = $filter->getPorts(true)) === false) {
+                            static::raiseError(get_class($filter) .'::getPorts() returned false!');
                             return false;
                         }
+                        if (isset($is_gre) && $is_gre === true) {
+                            $match.= "match u16 ";
+                        } else {
+                            $match.= "match ip ";
+                        }
+                        $str_ports = "";
+                        $cnt_ports = 0;
 
-                        foreach ($dst_hosts as $dst_host) {
-                            if (!$this->checkIfMac($dst_host)) {
+                        foreach ($ports as $port) {
+                            if ($port->hasNumber()) {
+                                continue;
+                            }
+                            if (($dst_ports = $port->getNumber()) === false) {
+                                static::raiseError(get_class($port) .'::getNumber() returned false!');
+                                return false;
+                            }
+                            foreach ($dst_ports as $dst_port) {
                                 if (isset($is_gre) && $is_gre === true) {
-                                    foreach ($tmp_array as $tmp_arr) {
-                                        $hex_host = $this->convertIpToHex($dst_host);
-                                        switch ($pipe->getDirection()) {
-                                            case static::UNIDIRECTIONAL:
-                                                $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
-                                                $string = str_replace("[DIR1]", "36", $string);
-                                                $string = str_replace("[DIR2]", "40", $string);
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    $string ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                                break;
+                                    $port_hex = $this->convertPortToHex($dst_port);
+                                    $tmp_str = $match ." 0x". $port_hex ." 0xffff at [DIRECTION]";
 
-                                            case static::BIDIRECTIONAL:
-                                                $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
-                                                $string = str_replace("[DIR1]", "36", $string);
-                                                $string = str_replace("[DIR2]", "40", $string);
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    $string ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                                break;
-                                        }
-                                    }
-                                } else {
-                                    foreach ($tmp_array as $tmp_arr) {
-                                        switch ($pipe->getDirection()) {
-                                            case static::UNIDIRECTIONAL:
-                                                $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
-                                                $string = str_replace("[DIR1]", "src", $string);
-                                                $string = str_replace("[DIR2]", "dst", $string);
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    $string ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                                break;
-
-                                            case static::BIDIRECTIONAL:
-                                                $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
-                                                $string = str_replace("[DIR1]", "src", $string);
-                                                $string = str_replace("[DIR2]", "dst", $string);
-                                                if (!$this->addFilter(
-                                                    $if,
-                                                    $parent,
-                                                    $string ." flowid ". $my_id
-                                                )) {
-                                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                    return false;
-                                                }
-                                                break;
-                                        }
-                                    }
-                                }
-                            } else {
-                                if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $dst_host)) {
-                                    list($dm1, $dm2, $dm3, $dm4, $dm5, $dm6) = preg_split("/:/", $dst_host);
-                                } else {
-                                    list($dm1, $dm2, $dm3, $dm4, $dm5, $dm6) = preg_split("/-/", $dst_host);
-                                }
-
-                                foreach ($tmp_array as $tmp_arr) {
                                     switch ($pipe->getDirection()) {
                                         case static::UNIDIRECTIONAL:
-                                            $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
-                                            $string = str_replace("[DIR1]", "src", $string);
-                                            $string = str_replace("[DIR2]", "dst", $string);
-                                            if (!$this->addFilter(
-                                                $if,
-                                                $parent,
-                                                $string ." flowid ". $my_id
-                                            )) {
-                                                static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                return false;
-                                            }
+                                            array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
                                             break;
-
                                         case static::BIDIRECTIONAL:
-                                            $string = str_replace("[HOST_DEFS]", $tmp_str, $tmp_arr);
-                                            $string = str_replace("[DIR1]", "match u16 0x0800 0xffff at -2 match u16 0x". $sm5 . $sm6 ." 0xffff at -4 match u32 0x". $sm1 . $sm2 . $sm3 . $sm4 ." 0xffffffff at -8", $string);
-                                            $string = str_replace("[DIR2]", "match u16 0x0800 0xffff at -2 match u32 0x". $dm3 . $dm4 . $dm5 .$dm6 ." 0xffffffff at -12 match u16 0x". $dm1 . $dm2 ." 0xffff at -14", $string);
+                                            array_push($tmp_array, str_replace("[DIRECTION]", "44", $tmp_str));
+                                            array_push($tmp_array, str_replace("[DIRECTION]", "46", $tmp_str));
+                                            break;
+                                    }
+                                } else {
+                                    $tmp_str = $match ." [DIRECTION] ". $dst_port ." 0xffff ";
 
-                                            if (!$this->addFilter(
-                                                $if,
-                                                $parent,
-                                                $string ." flowid ". $my_id
-                                            )) {
-                                                static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                                return false;
-                                            }
+                                    switch ($pipe->getDirection()) {
+                                        case static::UNIDIRECTIONAL:
+                                            array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
+                                            break;
+                                        case static::BIDIRECTIONAL:
+                                            array_push($tmp_array, str_replace("[DIRECTION]", "dport", $tmp_str));
+                                            array_push($tmp_array, str_replace("[DIRECTION]", "sport", $tmp_str));
                                             break;
                                     }
                                 }
+                            }
+                        }
+                        // we break here if there where ports selected.
+                        // otherwise we go to the default: clause
+                        // to match on IP, TCP and UDP protocols only.
+                        break;
+                    }
+                    // there is no break; here for IP, TCP and UDP withouts ports. we use
+                    // the default clause now!
+
+                default:
+                    if (isset($is_gre) && $is_gre === true) {
+                        $proto_hex = $this->convertProtoToHex($proto_num);
+                        $match.= "match u8 0x". $proto_hex ." 0xff at 33";
+                    } else {
+                        $match.= "match ip protocol ". $proto_num ." 0xff ";
+                    }
+                    array_push($tmp_array, $match);
+                    break;
+                case 0:
+                case false:
+                    break;
+            }
+        } else {
+            array_push($tmp_array, $match);
+        }
+
+        if ($pipe->hasSourceTarget() && !$pipe->hasDestinationTarget()) {
+            if (($hosts = $this->getTargetHosts($pipe->getSourceTarget())) === false) {
+                static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+                return false;
+            }
+            foreach ($hosts as $host) {
+                if (!$this->checkIfMac($host)) {
+                    if (isset($is_gre) && $is_gre === true) {
+                        foreach ($tmp_array as $tmp_arr) {
+                            $hex_host = $this->convertIpToHex($host);
+                            switch ($pipe->getDirection()) {
+                                case static::UNIDIRECTIONAL:
+                                    if (!$ms->hasOption("use_hashkey") ||
+                                        $ms->getOption("use_hashkey") != 'Y'
+                                    ) {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    } else {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 36", $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    }
+                                    break;
+                                case static::BIDIRECTIONAL:
+                                    if (!$ms->hasOption("use_hashkey") ||
+                                        $ms->getOption("use_hashkey") != 'Y'
+                                    ) {
+                                        foreach (array(36, 40) as $pos) {
+                                            if (!$this->addFilter(
+                                                $if,
+                                                $parent,
+                                                str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at ". $pos, $tmp_arr) ." flowid ". $my_id
+                                            )) {
+                                                static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                                return false;
+                                            }
+                                        }
+                                    } else {
+                                        foreach (array(36, 40) as $pos) {
+                                            if (!$this->addFilter(
+                                                $if,
+                                                $parent,
+                                                str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at ". $pos, $tmp_arr) ." flowid ". $my_id
+                                            )) {
+                                                static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                                return false;
+                                            }
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                    } else {
+                        foreach ($tmp_array as $tmp_arr) {
+                            switch ($pipe->getDirection()) {
+                                case static::UNIDIRECTIONAL:
+                                    if (!$ms->hasOption("use_hashkey") ||
+                                        $ms->getOption("use_hashkey") != 'Y'
+                                    ) {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    } else {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "match ip src ". $host, $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    }
+                                    break;
+                                case static::BIDIRECTIONAL:
+                                    if (!$ms->hasOption("use_hashkey") ||
+                                        $ms->getOption("use_hashkey") != 'Y'
+                                    ) {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "u32 match ip src ". $host, $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    } else {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "match ip src ". $host, $tmp_arr) ." flowid ". $my_id
+                                            )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    }
+                                    break;
                             }
                         }
                     }
                 } else {
                     foreach ($tmp_array as $tmp_arr) {
+                        if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host)) {
+                            list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
+                        } else {
+                            list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
+                        }
+
+                        switch ($pipe->getDirection()) {
+                            case static::UNIDIRECTIONAL:
+                                if (!$this->addFilter(
+                                    $if,
+                                    $parent,
+                                    str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ", $tmp_arr) ." flowid ". $my_id
+                                )) {
+                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                    return false;
+                                }
+                                break;
+                            case static::BIDIRECTIONAL:
+                                if (!$this->addFilter(
+                                    $if,
+                                    $parent,
+                                    str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ", $tmp_arr) ." flowid ". $my_id
+                                )) {
+                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                    return false;
+                                }
+                                if (!$this->addFilter(
+                                    $if,
+                                    $parent,
+                                    str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 ", $tmp_arr) ." flowid ". $my_id
+                                )) {
+                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                    return false;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+        } elseif (!$pipe->hasSourceTarget() && $pipe->hasDestinationTarget()) {
+            if (($hosts = $this->getTargetHosts($pipe->getDestinationTarget())) === false) {
+                static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+                return false;
+            }
+            foreach ($hosts as $host) {
+                if (!$this->checkIfMac($host)) {
+                    if (isset($is_gre) && $is_gre === true) {
+                        foreach ($tmp_array as $tmp_arr) {
+                            $hex_host = $this->convertIpToHex($host);
+                            switch ($pipe->getDirection()) {
+                                case static::UNIDIRECTIONAL:
+                                    if (!$ms->hasOption("use_hashkey") ||
+                                        $ms->getOption("use_hashkey") != 'Y'
+                                    ) {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    } else {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    }
+                                    break;
+                                case static::BIDIRECTIONAL:
+                                    if (!$ms->hasOption("use_hashkey") ||
+                                        $ms->getOption("use_hashkey") != 'Y'
+                                    ) {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    } else {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at 40", $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                    } else {
+                        foreach ($tmp_array as $tmp_arr) {
+                            switch ($pipe->getDirection()) {
+                                case static::UNIDIRECTIONAL:
+                                    if (!$ms->hasOption("use_hashkey") ||
+                                        $ms->getOption("use_hashkey") != 'Y'
+                                    ) {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    } else {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "match ip dst ". $host, $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    }
+                                    break;
+                                case static::BIDIRECTIONAL:
+                                    if (!$ms->hasOption("use_hashkey") ||
+                                        $ms->getOption("use_hashkey") != 'Y'
+                                    ) {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "u32 match ip dst ". $host, $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    } else {
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            str_replace("[HOST_DEFS]", "match ip dst ". $host, $tmp_arr) ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                } else {
+                    foreach ($tmp_array as $tmp_arr) {
+                        if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $host)) {
+                            list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/:/", $host);
+                        } else {
+                            list($m1, $m2, $m3, $m4, $m5, $m6) = preg_split("/-/", $host);
+                        }
+                        switch ($pipe->getDirection()) {
+                            case static::UNIDIRECTIONAL:
+                                if (!$this->addFilter(
+                                    $if,
+                                    $parent,
+                                    str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 ", $tmp_arr) ." flowid ". $my_id
+                                )) {
+                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                    return false;
+                                }
+                                break;
+                            case static::BIDIRECTIONAL:
+                                if (!$this->addFilter(
+                                    $if,
+                                    $parent,
+                                    str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u32 0x". $m3 . $m4 . $m5 .$m6 ." 0xffffffff at -12 match u16 0x". $m1 . $m2 ." 0xffff at -14 ", $tmp_arr) ." flowid ". $my_id
+                                )) {
+                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                    return false;
+                                }
+                                if (!$this->addFilter(
+                                    $if,
+                                    $parent,
+                                    str_replace("[HOST_DEFS]", "u32 match u16 0x0800 0xffff at -2 match u16 0x". $m5 . $m6 ." 0xffff at -4 match u32 0x". $m1 . $m2 . $m3 . $m4 ." 0xffffffff at -8 ", $tmp_arr) ." flowid ". $my_id
+                                )) {
+                                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                    return false;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+        } elseif ($pipe->hasSourceTarget() && $pipe->hasDestinationTarget()) {
+            if (($src_hosts = $this->getTargetHosts($pipe->getSourceTarget())) === false) {
+                static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+                return false;
+            }
+            foreach ($src_hosts as $src_host) {
+                if (!$this->checkIfMac($src_host)) {
+                    if (isset($is_gre) && $is_gre === true) {
+                        $hex_host = $this->convertIpToHex($src_host);
+                        $tmp_str = "u32 match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR1] ";
+                    } else {
                         if (!$ms->hasOption("use_hashkey") ||
                             $ms->getOption("use_hashkey") != 'Y'
                         ) {
-                            if (!$this->addFilter(
-                                $if,
-                                $parent,
-                                str_replace("[HOST_DEFS]", "u32 match u32 0 0", $tmp_arr) ." flowid ". $my_id
-                            )) {
-                                static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                return false;
+                            $tmp_str = "u32 match ip [DIR1] ". $src_host ." ";
+                        } else {
+                            $tmp_str = "match ip [DIR1] ". $src_host ." ";
+                        }
+                    }
+                } else {
+                    if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $src_host)) {
+                        list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = preg_split("/:/", $src_host);
+                    } else {
+                        list($sm1, $sm2, $sm3, $sm4, $sm5, $sm6) = preg_split("/-/", $src_host);
+                    }
+
+                    $tmp_str = "u32 [DIR1] [DIR2]";
+                }
+
+                if (($dst_hosts = $this->getTargetHosts($pipe->getDestinationTarget())) === false) {
+                    static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
+                    return false;
+                }
+
+                foreach ($dst_hosts as $dst_host) {
+                    if (!$this->checkIfMac($dst_host)) {
+                        if (isset($is_gre) && $is_gre === true) {
+                            foreach ($tmp_array as $tmp_arr) {
+                                $hex_host = $this->convertIpToHex($dst_host);
+                                switch ($pipe->getDirection()) {
+                                    case static::UNIDIRECTIONAL:
+                                        $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
+                                        $string = str_replace("[DIR1]", "36", $string);
+                                        $string = str_replace("[DIR2]", "40", $string);
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            $string ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                        break;
+
+                                    case static::BIDIRECTIONAL:
+                                        $string = str_replace("[HOST_DEFS]", $tmp_str . "match u32 0x". $hex_host['ip'] ." ". $hex_host['netmask'] ." at [DIR2] ", $tmp_arr);
+                                        $string = str_replace("[DIR1]", "36", $string);
+                                        $string = str_replace("[DIR2]", "40", $string);
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            $string ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                        break;
+                                }
                             }
                         } else {
-                            if (!$this->addFilter(
-                                $if,
-                                $parent,
-                                str_replace("[HOST_DEFS]", " match u32 0 0", $tmp_arr) ." flowid ". $my_id
-                            )) {
-                                static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                                return false;
+                            foreach ($tmp_array as $tmp_arr) {
+                                switch ($pipe->getDirection()) {
+                                    case static::UNIDIRECTIONAL:
+                                        $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
+                                        $string = str_replace("[DIR1]", "src", $string);
+                                        $string = str_replace("[DIR2]", "dst", $string);
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            $string ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                        break;
+
+                                    case static::BIDIRECTIONAL:
+                                        $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
+                                        $string = str_replace("[DIR1]", "src", $string);
+                                        $string = str_replace("[DIR2]", "dst", $string);
+                                        if (!$this->addFilter(
+                                            $if,
+                                            $parent,
+                                            $string ." flowid ". $my_id
+                                        )) {
+                                            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                            return false;
+                                        }
+                                        break;
+                                }
                             }
                         }
-                    }
-                }
-                break;
-            case 'ipt':
-                $match_str = "";
-                $cnt= 0;
-                $match_ary = array();
-                $proto_ary = array();
-
-                // Construct a string with all used ipt matches
-
-                /* If this filter should match on ftp data connections add the rules here */
-                if ($filter->isMatchFtpData()) {
-                    $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto tcp --ctstate RELATED,ESTABLISHED --match helper --helper ftp -j CLASSIFY --set-class ". $my_id);
-                    $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto tcp --ctstate RELATED,ESTABLISHED --match helper --helper ftp -j RETURN");
-                }
-
-                /* If this filter should match on SIP data streans (RTP / RTCP) add the rules here */
-                if ($filter->isMatchSip()) {
-                    $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto udp --ctstate RELATED,ESTABLISHED --match helper --helper sip -j CLASSIFY --set-class ". $my_id);
-                    $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto udp --ctstate RELATED,ESTABLISHED --match helper --helper sip -j RETURN");
-                }
-
-                // filter matches on protocols
-                if ($filter->hasProtocol()) {
-                    if (($proto = $filter->getProtocol(true)) === false) {
-                        static::raiseError(get_class($filter) .'::getProtocol() returned false!');
-                        return false;
-                    }
-                    if (is_object($proto) && $proto->hasNumber() && ($proto_num = $proto->getNumber()) === false) {
-                        static::raiseError(get_class($proto) .'::getNumber() returned false!');
-                        return false;
                     } else {
-                        $proto_num = 0;
-                    }
-                    switch (intval($proto_num)) {
-                        /* IP */
-                        case 4:
-                            array_push($proto_ary, " -p 6");
-                            array_push($proto_ary, " -p 17");
-                            break;
-                        default:
-                            array_push($proto_ary, " -p ". $proto_num);
-                            break;
-                    }
-
-                    // Select for TCP flags (only valid for TCP protocol)
-                    if ($proto_num == 6) {
-                        $str_tcpflags = "";
-                        if ($filter->isMatchTcpFlagSyn()) {
-                            $str_tcpflags.= "SYN,";
-                        }
-                        if ($filter->isMatchTcpFlagAck()) {
-                            $str_tcpflags.= "ACK,";
-                        }
-                        if ($filter->isMatchTcpFlagFin()) {
-                            $str_tcpflags.= "FIN,";
-                        }
-                        if ($filter->isMatchTcpFlagRst()) {
-                            $str_tcpflags.= "RST,";
-                        }
-                        if ($filter->isMatchTcpFlagUrg()) {
-                            $str_tcpflags.= "URG,";
-                        }
-                        if ($filter->isMatchTcpFlagPsh()) {
-                            $str_tcpflags.= "PSH,";
+                        if (preg_match("/(.*):(.*):(.*):(.*):(.*):(.*)/", $dst_host)) {
+                            list($dm1, $dm2, $dm3, $dm4, $dm5, $dm6) = preg_split("/:/", $dst_host);
+                        } else {
+                            list($dm1, $dm2, $dm3, $dm4, $dm5, $dm6) = preg_split("/-/", $dst_host);
                         }
 
-                        if (!empty($str_tcpflags)) {
-                            $match_str.= " --tcp-flags ". substr($str_tcpflags, 0, strlen($str_tcpflags)-1) ." ". substr($str_tcpflags, 0, strlen($str_tcpflags)-1);
-                        }
-                    }
-
-                    // Get all the used ports for IP, TCP or UDP
-                    switch ($proto_num) {
-                        case 4:  // IP
-                        case 6:  // TCP
-                        case 17: // UDP
-                            $all_ports = array();
-                            $cnt_ports = 0;
-
-                            if ($filter->hasPorts()) {
-                                if (($ports = $filter->getPorts(true)) === false) {
-                                    static::raiseError(get_class($filter) .'::getPorts() returned false!');
-                                    return false;
-                                }
-                                foreach ($ports as $port) {
-                                    if ($port->hasNumber()) {
-                                        continue;
-                                    }
-                                    if (($dst_ports = $port->getNumber()) === false) {
-                                        static::raiseError(get_class($port) .'::getNumber() returned false!');
+                        foreach ($tmp_array as $tmp_arr) {
+                            switch ($pipe->getDirection()) {
+                                case static::UNIDIRECTIONAL:
+                                    $string = str_replace("[HOST_DEFS]", $tmp_str . "match ip [DIR2] ". $dst_host, $tmp_arr);
+                                    $string = str_replace("[DIR1]", "src", $string);
+                                    $string = str_replace("[DIR2]", "dst", $string);
+                                    if (!$this->addFilter(
+                                        $if,
+                                        $parent,
+                                        $string ." flowid ". $my_id
+                                    )) {
+                                        static::raiseError(__CLASS__ .'::addFilter() returned false!');
                                         return false;
                                     }
-                                    // If this port is definied as range or list get all the single ports
-                                    if (!empty($dst_ports)) {
-                                        foreach ($dst_ports as $dst_port) {
-                                            array_push($all_ports, $dst_port);
-                                            $cnt_ports++;
-                                        }
+                                    break;
+
+                                case static::BIDIRECTIONAL:
+                                    $string = str_replace("[HOST_DEFS]", $tmp_str, $tmp_arr);
+                                    $string = str_replace("[DIR1]", "match u16 0x0800 0xffff at -2 match u16 0x". $sm5 . $sm6 ." 0xffff at -4 match u32 0x". $sm1 . $sm2 . $sm3 . $sm4 ." 0xffffffff at -8", $string);
+                                    $string = str_replace("[DIR2]", "match u16 0x0800 0xffff at -2 match u32 0x". $dm3 . $dm4 . $dm5 .$dm6 ." 0xffffffff at -12 match u16 0x". $dm1 . $dm2 ." 0xffff at -14", $string);
+
+                                    if (!$this->addFilter(
+                                        $if,
+                                        $parent,
+                                        $string ." flowid ". $my_id
+                                    )) {
+                                        static::raiseError(__CLASS__ .'::addFilter() returned false!');
+                                        return false;
                                     }
-                                }
+                                    break;
                             }
-                            break;
-                    }
-                } else {
-                    array_push($proto_ary, "");
-                }
-
-                // TOS flags matching
-                if ($filter->hasTos()) {
-                    $match_str.= " -m tos --tos ". $filter->getTos();
-                }
-
-                // DSCP flags matching
-                if ($filter->hasDscp()) {
-                    $match_str.= " -m dscp --dscp-class ". $filter->getDscp();
-                }
-
-                // packet length matching
-                if ($filter->hasPacketLength()) {
-                    $match_str.= " -m length --length ". $filter->getPacketLength();
-                }
-
-                // time range matching
-                if ($filter->hasTimeRange()) {
-                    $start = strftime("%Y:%m:%d:%H:%M:00", $filter->hasTimeRangeStart());
-                    $stop = strftime("%Y:%m:%d:%H:%M:00", $filter->hasTimeRangeStop());
-                    $match_str.= " -m time --datestart ". $start ." --datestop ". $stop;
-                } else {
-                    $str_days = "";
-                    if ($filter->hasTimeRangeDayMon()) {
-                        $str_days.= "Mon,";
-                    }
-                    if ($filter->hasTimeRangeDayTue()) {
-                        $str_days.= "Tue,";
-                    }
-                    if ($filter->hasTimeRangeDayWed()) {
-                        $str_days.= "Wed,";
-                    }
-                    if ($filter->hasTimeRangeDayThu()) {
-                        $str_days.= "Thu,";
-                    }
-                    if ($filter->hasTimeRangeDayFri()) {
-                        $str_days.= "Fri,";
-                    }
-                    if ($filter->hasTimeRangeDaySat()) {
-                        $str_days.= "Sat,";
-                    }
-                    if ($filter->hasTimeRangeDaySun()) {
-                        $str_days.= "Sun,";
-                    }
-
-                    if (!empty($str_days)) {
-                        $match_str.= " -m time --days ". substr($str_days, 0, strlen($str_days)-1);
+                        }
                     }
                 }
-
-                // End of match string
-
-                /* All port matches will be matched with the iptables multiport */
-                /* (advantage is that src&dst matches can be done with a simple */
-                /* --port */
-
-                /* filter matches a specific network protocol */
-                if ($filter->hasProtocol()) {
-                    if (($proto = $filter->getProtocol(true)) === false) {
-                        static::raiseError(get_class($filter) .'::getProtocol() returned false!');
+            }
+        } else {
+            foreach ($tmp_array as $tmp_arr) {
+                if (!$ms->hasOption("use_hashkey") ||
+                    $ms->getOption("use_hashkey") != 'Y'
+                ) {
+                    if (!$this->addFilter(
+                        $if,
+                        $parent,
+                        str_replace("[HOST_DEFS]", "u32 match u32 0 0", $tmp_arr) ." flowid ". $my_id
+                    )) {
+                        static::raiseError(__CLASS__ .'::addFilter() returned false!');
                         return false;
                     }
-                    if (is_object($proto) && $proto->hasNumber() && ($proto_num = $proto->getNumber()) === false) {
-                        static::raiseError(get_class($proto) .'::getNumber() returned false!');
+                } else {
+                    if (!$this->addFilter(
+                        $if,
+                        $parent,
+                        str_replace("[HOST_DEFS]", " match u32 0 0", $tmp_arr) ." flowid ". $my_id
+                    )) {
+                        static::raiseError(__CLASS__ .'::addFilter() returned false!');
                         return false;
-                    } else {
-                        $proto_num = 0;
-                    }
-
-                    switch (intval($proto_num)) {
-                        /* TCP, UDP or IP */
-                        case 4:
-                        case 6:
-                        case 17:
-                            if ($cnt_ports > 0) {
-                                switch ($pipe->getDirection()) {
-                                    /* 1 = incoming, 3 = both */
-                                    case static::UNIDIRECTIONAL:
-                                        $match_str.= " -m multiport --dport ";
-                                        break;
-                                    case static::BIDIRECTIONAL:
-                                        $match_str.= " -m multiport --port ";
-                                        break;
-                                }
-
-                                $j = 0;
-                                for ($i = 0; $i <= $cnt_ports; $i++) {
-                                    if ($j == 0) {
-                                        $tmp_ports = "";
-                                    }
-
-                                    if (isset($all_ports[$i])) {
-                                        $tmp_ports.= $all_ports[$i] .",";
-                                    }
-
-                                    // with one multiport match iptables can max. match 14 single ports
-                                    if ($j == 14 || $i == $cnt_ports-1) {
-                                        $tmp_str = $match_str . substr($tmp_ports, 0, strlen($tmp_ports)-1);
-                                        array_push($match_ary, $tmp_str);
-                                        $j = 0;
-                                    } else {
-                                        $j++;
-                                    }
-                                }
-                            }
-                            break;
-
-                        default:
-                            array_push($match_ary, $match_str);
-                            break;
                     }
                 }
-
-                foreach ($match_ary as $match_str) {
-                    $ipt_tmpl = "-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent;
-
-                    if ($pipe->hasSourceTarget() && !$pipe->hasDestinationTarget()) {
-                        if (($src_hosts = $this->getTargetHosts($pipe->getSourceTarget())) === false) {
-                            static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                            return false;
-                        }
-                        foreach ($src_hosts as $src_host) {
-                            foreach ($proto_ary as $proto_str) {
-                                if (strstr("-", $src_host) === false) {
-                                    $if->addIptRule($ipt_tmpl ." -s ". $src_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                    $if->addIptRule($ipt_tmpl ." -s ". $src_host ." ". $proto_str ." ". $match_str ." -j RETURN");
-                                } else {
-                                    $if->addIptRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                    $if->addIptRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." ". $proto_str ." ". $match_str ." -j RETURN");
-                                }
-                            }
-                        }
-                    } elseif (!$pipe->hasSourceTarget() && $pipe->hasDestinationTarget()) {
-                        if (($dst_hosts = $this->getTargetHosts($pipe->getDestinationTarget())) === false) {
-                            static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                            return false;
-                        }
-                        foreach ($dst_hosts as $dst_host) {
-                            foreach ($proto_ary as $proto_str) {
-                                if (strstr("-", $dst_host) === false) {
-                                    $if->addIptRule($ipt_tmpl ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                    $if->addIptRule($ipt_tmpl ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
-                                } else {
-                                    $if->addIptRule($ipt_tmpl ." -m iprange --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                    $if->addIptRule($ipt_tmpl ." -m iprange --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
-                                }
-                            }
-                        }
-                    } elseif ($pipe->hasSourceTarget() && $pipe->hasDestinationTarget()) {
-                        if (($src_hosts = $this->getTargetHosts($pipe->getSourceTarget())) === false) {
-                            static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                            return false;
-                        }
-                        if (($dst_hosts = $this->getTargetHosts($pipe->getDestinationTarget())) === false) {
-                            static::raiseError(__CLASS__ .'::getTargetHosts() returned false!');
-                            return false;
-                        }
-                        foreach ($src_hosts as $src_host) {
-                            foreach ($dst_hosts as $dst_host) {
-                                foreach ($proto_ary as $proto_str) {
-                                    if (strstr("-", $dst_host) === false) {
-                                        $if->addIptRule($ipt_tmpl ." -s ". $src_host ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                        $if->addIptRule($ipt_tmpl ." -s ". $src_host ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
-                                    } else {
-                                        $if->addIptRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                        $if->addIptRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
-                                    }
-                                }
-                            }
-                        }
-                    } elseif (!$pipe->hasSourceTarget() && !$pipe->hasDestinationTarget()) {
-                        foreach ($proto_ary as $proto_str) {
-                            $if->addIptRule($ipt_tmpl ." ". $proto_str ." ". $match_str
-                                ." -j CLASSIFY --set-class ". $my_id);
-                            $if->addIptRule($ipt_tmpl ." ". $proto_str ." ". $match_str
-                                ." -j RETURN");
-                        }
-                    }
-                }
-                break;
+            }
         }
 
         return true;
@@ -3396,32 +2909,21 @@ class RulesetController extends DefaultController
 
         global $ms;
 
-        switch ($ms->getOption("filter", true)) {
-            default:
-            case 'tc':
-                if (!$ms->getOption("use_hashkey") ||
-                    $ms->getOption("use_hashkey") != 'Y'
-                ) {
-                    $match = "protocol all prio 5 u32 match u32 0 0 flowid ". $filter;
-                } else {
-                    $parent = "1:0";
-                    $match = "protocol all prio 5 u32 ht 10:". $chain_hex_id ." match u32 0 0 flowid ". $filter;
-                }
-                if (!$this->addFilter(
-                    $if,
-                    $parent,
-                    $match
-                )) {
-                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                    return false;
-                }
-                break;
-            case 'ipt':
-                $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName()
-                    ."-". $parent ." -j CLASSIFY --set-class ". $filter);
-                $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName()
-                    ."-". $parent ." -j RETURN");
-                break;
+        if (!$ms->getOption("use_hashkey") ||
+            $ms->getOption("use_hashkey") != 'Y'
+        ) {
+            $match = "protocol all prio 5 u32 match u32 0 0 flowid ". $filter;
+        } else {
+            $parent = "1:0";
+            $match = "protocol all prio 5 u32 ht 10:". $chain_hex_id ." match u32 0 0 flowid ". $filter;
+        }
+        if (!$this->addFilter(
+            $if,
+            $parent,
+            $match
+        )) {
+            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+            return false;
         }
 
         return true;
@@ -3431,35 +2933,13 @@ class RulesetController extends DefaultController
     {
         global $ms;
 
-        switch ($ms->getOption("filter", true)) {
-            default:
-            case 'tc':
-                if (!$this->addFilter(
-                    $if,
-                    $parent,
-                    " protocol all prio 2 u32 match u32 0 0 classid ". $filter
-                )) {
-                    static::raiseError(__CLASS__ .'::addFilter() returned false!');
-                    return false;
-                }
-                break;
-
-            case 'ipt':
-                if ($ms->hasOption("msmode") && $ms->getOption("msmode") == "router") {
-                    //$if->addIptRule("-t mangle -A ms-forward -o ". $this->getInterfaceName()
-                    //  ." -j ms-chain-". $this->getInterfaceName() ."-". $filter);
-                    $if->addIptRule("-t mangle -A ms-forward -o ". $this->getInterfaceName()
-                        ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $filter));
-                    $if->addIptRule("-t mangle -A ms-forward -o ". $this->getInterfaceName()
-                        ." -j RETURN");
-                } elseif ($ms->hasOption("msmode") && $ms->getOption("msmode") == "bridge") {
-                    $if->addIptRule("-t mangle -A ms-forward -m physdev --physdev-in "
-                        . $this->getInterfaceName() ." -j MARK --set-mark "
-                        . $ms->getConnmarkId($this->getInterfaceId(), $filter));
-                    $if->addIptRule("-t mangle -A ms-forward -m physdev --physdev-in "
-                        . $this->getInterfaceName() ." -j RETURN");
-                }
-                break;
+        if (!$this->addFilter(
+            $if,
+            $parent,
+            " protocol all prio 2 u32 match u32 0 0 classid ". $filter
+        )) {
+            static::raiseError(__CLASS__ .'::addFilter() returned false!');
+            return false;
         }
 
         return true;
