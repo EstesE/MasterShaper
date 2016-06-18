@@ -33,18 +33,6 @@ class ConfigController extends \Thallium\Controllers\ConfigController
         return $this->config['app']['tc_bin'];
     }
 
-    public function getIptablesPath()
-    {
-        if (!isset($this->config['app']['ipt_bin']) ||
-            empty($this->config['app']['ipt_bin']) ||
-            !is_string($this->config['app']['ipt_bin'])
-        ) {
-            return false;
-        }
-
-        return $this->config['app']['ipt_bin'];
-    }
-
     public function getSudoPath()
     {
         if (!isset($this->config['app']['sudo_bin']) ||
