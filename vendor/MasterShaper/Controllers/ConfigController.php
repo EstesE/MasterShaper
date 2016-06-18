@@ -56,6 +56,18 @@ class ConfigController extends \Thallium\Controllers\ConfigController
 
         return $this->config['app']['sudo_bin'];
     }
+
+    public function getScriptTimeout()
+    {
+        if (!isset($this->config['app']['script_timeout']) ||
+            empty($this->config['app']['script_timeout']) ||
+            !is_string($this->config['app']['script_timeout'])
+        ) {
+            return false;
+        }
+
+        return $this->config['app']['script_timeout'];
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
