@@ -135,18 +135,6 @@ class InstallerController extends \Thallium\Controllers\InstallerController
                 `filter_tcpflag_urg` char(1) default NULL,
                 `filter_tcpflag_psh` char(1) default NULL,
                 `filter_packet_length` varchar(255) default NULL,
-                `filter_time_use_range` char(1) default NULL,
-                `filter_time_start` int(11) default NULL,
-                `filter_time_stop` int(11) default NULL,
-                `filter_time_day_mon` char(1) default NULL,
-                `filter_time_day_tue` char(1) default NULL,
-                `filter_time_day_wed` char(1) default NULL,
-                `filter_time_day_thu` char(1) default NULL,
-                `filter_time_day_fri` char(1) default NULL,
-                `filter_time_day_sat` char(1) default NULL,
-                `filter_time_day_sun` char(1) default NULL,
-                `filter_match_ftp_data` char(1) default NULL,
-                `filter_match_sip` char(1) default NULL,
                 `filter_active` char(1) default NULL,
                 PRIMARY KEY  (`filter_idx`)
                 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
@@ -1071,6 +1059,43 @@ class InstallerController extends \Thallium\Controllers\InstallerController
         ) or static::raiseError(__METHOD__ .'(), SQL failure!', true);
 
         $db->setDatabaseSchemaVersion(36);
+        return true;
+    }
+
+    protected function upgradeApplicationDatabaseSchemaV37()
+    {
+        global $db;
+
+        $db->query(
+            "ALTER TABLE
+                TABLEPREFIXfilters
+            DROP COLUMN
+                `filter_time_use_range`,
+            DROP COLUMN
+                `filter_time_start`,
+            DROP COLUMN
+                `filter_time_stop`,
+            DROP COLUMN
+                `filter_time_day_mon`,
+            DROP COLUMN
+                `filter_time_day_tue`,
+            DROP COLUMN
+                `filter_time_day_wed`,
+            DROP COLUMN
+                `filter_time_day_thu`,
+            DROP COLUMN
+                `filter_time_day_fri`,
+            DROP COLUMN
+                `filter_time_day_sat`,
+            DROP COLUMN
+                `filter_time_day_sun`,
+            DROP COLUMN
+                `filter_match_ftp_data`,
+            DROP COLUMN
+                `filter_match_sip`"
+        ) or static::raiseError(__METHOD__ .'(), SQL failure!', true);
+
+        $db->setDatabaseSchemaVersion(37);
         return true;
     }
 }
