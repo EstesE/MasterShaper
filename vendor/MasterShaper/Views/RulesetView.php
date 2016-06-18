@@ -39,7 +39,8 @@ class RulesetView extends DefaultView
         global $ms, $tmpl;
 
         /* If authentication is enabled, check permissions */
-        if ($ms->getOption("authentication") == "Y" &&
+        if ($ms->hasOption("authentication") &&
+            $ms->getOption("authentication") == "Y" &&
             !$ms->checkPermissions("user_show_rules")
         ) {
             $ms->printError(
