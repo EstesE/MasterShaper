@@ -73,8 +73,13 @@ class MainController extends \Thallium\Controllers\MainController
         }
 
         $GLOBALS['ms'] =& $this;
-
         parent::__construct();
+
+        global $config;
+
+        if (($timeout = $config->getScriptTimeout()) !== false) {
+            set_time_limit($timeout);
+        }
 
         if (!$this->loadSettings()) {
             static::raiseError(__CLASS__ .'::loadSettings() returned false!', true);
