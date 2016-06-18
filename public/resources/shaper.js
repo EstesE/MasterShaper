@@ -1154,7 +1154,16 @@ $(document).ready(function() {
     //$.jqplot.config.enablePlugins = true;
 
     $('.item.state').click(function () {
-        rpc_object_update($(this));
+        $(this).find('.ui.inverted.dimmer').addClass('active');
+        return rpc_object_update($(this), function (element, data) {
+            if (data != "ok") {
+                $(this).find('.ui.inverted.dimmer').removeClass('active');
+                $(this).checkbox('toggle');
+                return true;
+            }
+            $(this).find('.ui.inverted.dimmer').removeClass('active');
+            return true;
+        }.bind(this));
         return true;
     });
 });
