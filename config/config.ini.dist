@@ -33,6 +33,12 @@ temp_path = /tmp
 host_profile = default
 runas_user = www-data
 runas_group = www-data
+;
+; if you local node is not the quickest, you may receive a PHP error
+; like: Fatal error: Maximum execution time of 30 seconds exceeded...
+; You may increase this timeout here or in your php.ini configuration.
+;
+; script_timeout = 60
 
 [database]
 
