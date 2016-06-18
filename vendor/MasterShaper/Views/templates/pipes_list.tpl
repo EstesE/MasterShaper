@@ -90,6 +90,9 @@
     <a id="edit_link_{$item->getIdx()}" href="{get_url page='pipes' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
     <a id="delete_link_{$item->getIdx()}" class="delete item ui icon button action link" data-action-title="Deleting {$item->getName()|escape}" data-modal-title="Delete {$item->getName()|escape}" data-modal-text="Please confirm to delete {$item->getName()|escape}" data-id="{$item->getIdx()}" data-guid="{$item->getGuid()}" data-model="pipe" data-content="Delete {$item->getName()|escape}" data-variation="wide"><i class="remove circle icon"></i></a>
     <div class="ui icon button slider checkbox">
+     <div class="ui inverted dimmer">
+      <div class="ui loader"></div>
+     </div>
      <input type="checkbox" {if $item->isActive()}checked="checked"{/if}/>
      <label></label>
    </div>
