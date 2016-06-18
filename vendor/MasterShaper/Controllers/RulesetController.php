@@ -780,8 +780,8 @@ class RulesetController extends DefaultController
             if ($ms->hasOption("filter") &&
                 $ms->getOption("filter") == "ipt"
             ) {
-                $if->addRule(static::$ipt_bin ." -t mangle -N ms-chain-". $this->getInterfaceName() ."-1:". $this->getCurrentChain() . $this->getCurrentFilter());
-                $if->addRule(static::$ipt_bin ." -t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getInterfaceId(), "1:". $this->getCurrentChain() . $this->getCurrentFilter()) ." -j ms-chain-". $this->getInterfaceName() ."-1:". $this->getCurrentChain() . $this->getCurrentFilter());
+                $if->addIptRule("-t mangle -N ms-chain-". $this->getInterfaceName() ."-1:". $this->getCurrentChain() . $this->getCurrentFilter());
+                $if->addIptRule("-t mangle -A ms-postrouting -m connmark --mark ". $ms->getConnmarkId($this->getInterfaceId(), "1:". $this->getCurrentChain() . $this->getCurrentFilter()) ." -j ms-chain-". $this->getInterfaceName() ."-1:". $this->getCurrentChain() . $this->getCurrentFilter());
             }
 
             /*if (!$chain->hasServiceLevel()) {
@@ -1689,11 +1689,11 @@ class RulesetController extends DefaultController
                 if ($ms->hasOption("msmode") &&
                     $ms->getOption("msmode") == "router"
                 ) {
-                    $string = static::$ipt_bin ." -t mangle -A ms-forward -o ". $this->getInterfaceName();
+                    $string = "-t mangle -A ms-forward -o ". $this->getInterfaceName();
                 } elseif ($ms->hasOption("msmode") &&
                     $ms->getOption("msmode") == "bridge"
                 ) {
-                    $string = static::$ipt_bin ." -t mangle -A ms-forward -m physdev --physdev-in ". $params5;
+                    $string = "-t mangle -A ms-forward -m physdev --physdev-in ". $params5;
                 }
 
                 if ($chain_direction == "out") {
@@ -1710,15 +1710,15 @@ class RulesetController extends DefaultController
                     }
                     foreach ($hosts as $host) {
                         if ($this->checkIfMac($host)) {
-                            $if->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                            $if->addRule($string ." -m mac --mac-source ". $host ." -j RETURN");
+                            $if->addIptRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                            $if->addIptRule($string ." -m mac --mac-source ". $host ." -j RETURN");
                         } else {
                             if (strstr($host, "-") === false) {
-                                $if->addRule($string ." -s ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                $if->addRule($string ." -s ". $host ." -j RETURN");
+                                $if->addIptRule($string ." -s ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                                $if->addIptRule($string ." -s ". $host ." -j RETURN");
                             } else {
-                                $if->addRule($string ." -m iprange --src-range ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                $if->addRule($string ." -m iprange --src-range ". $host ." -j RETURN");
+                                $if->addIptRule($string ." -m iprange --src-range ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                                $if->addIptRule($string ." -m iprange --src-range ". $host ." -j RETURN");
                             }
                         }
                     }
@@ -1729,15 +1729,15 @@ class RulesetController extends DefaultController
                     }
                     foreach ($hosts as $host) {
                         if ($this->checkIfMac($host)) {
-                            $if->addRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                            $if->addRule($string ." -m mac --mac-source ". $host ." -j RETURN");
+                            $if->addIptRule($string ." -m mac --mac-source ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                            $if->addIptRule($string ." -m mac --mac-source ". $host ." -j RETURN");
                         } else {
                             if (strstr($host, "-") === false) {
-                                $if->addRule($string ." -d ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                $if->addRule($string ." -d ". $host ." -j RETURN");
+                                $if->addIptRule($string ." -d ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                                $if->addIptRule($string ." -d ". $host ." -j RETURN");
                             } else {
-                                $if->addRule($string ." -m iprange --dst-range ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                $if->addRule($string ." -m iprange --dst-range ". $host ." -j RETURN");
+                                $if->addIptRule($string ." -m iprange --dst-range ". $host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                                $if->addIptRule($string ." -m iprange --dst-range ". $host ." -j RETURN");
                             }
                         }
                     }
@@ -1754,15 +1754,15 @@ class RulesetController extends DefaultController
                         if (!$this->checkIfMac($src_host)) {
                             foreach ($dst_hosts as $dst_host) {
                                 if ($this->checkIfMac($dst_host)) {
-                                    $if->addRule($string ." -m mac --mac-source ". $src_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                    $if->addRule($string ." -m mac --mac-source ". $dst_host ." -j RETURN");
+                                    $if->addIptRule($string ." -m mac --mac-source ". $src_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                                    $if->addIptRule($string ." -m mac --mac-source ". $dst_host ." -j RETURN");
                                 } else {
                                     if (strstr($host, "-") === false) {
-                                        $if->addRule($string ." -s ". $src_host ." -d ". $dst_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                        $if->addRule($string ." -s ". $src_host ." -d ". $dst_host ." -j RETURN");
+                                        $if->addIptRule($string ." -s ". $src_host ." -d ". $dst_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                                        $if->addIptRule($string ." -s ". $src_host ." -d ". $dst_host ." -j RETURN");
                                     } else {
-                                        $if->addRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
-                                        $if->addRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j RETURN");
+                                        $if->addIptRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $params));
+                                        $if->addIptRule($string ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." -j RETURN");
                                     }
                                 }
                             }
@@ -1981,7 +1981,7 @@ class RulesetController extends DefaultController
 
         if (!$cache->has("apcs")) {
             try {
-                $chain = new \MasterShaper\Models\AssignPipeToChainsModel(
+                $apcs = new \MasterShaper\Models\AssignPipeToChainsModel(
                     array(),
                     array('pipe_pos' => 'ASC')
                 );
@@ -1989,18 +1989,18 @@ class RulesetController extends DefaultController
                 static::raiseError(__METHOD__ .'(), failed to load AssignPipeToChainsModel model!', false, $e);
                 return false;
             }
-            if (!$cache->add($chain, "apcs")) {
+            if (!$cache->add($apcs, "apcs")) {
                 static::raiseError(get_class($cache) .'::add() returned false!');
                 return false;
             }
         } else {
-            if (($chain = $cache->get("apcs")) === false) {
+            if (($apcs = $cache->get("apcs")) === false) {
                 static::raiseError(get_class($cache) .'::get() returned false!');
                 return false;
             }
         }
 
-        if (!$chain->hasItems()) {
+        if (!$apcs->hasItems()) {
             return true;
         }
 
@@ -2036,7 +2036,7 @@ class RulesetController extends DefaultController
             'pipe_active' => 'Y',
         );
 
-        foreach ($chain->getItems(null, null, $items_filter) as $apc) {
+        foreach ($apcs->getItems(null, null, $items_filter) as $apc) {
             // if pipe has been locally (for this chain) disabled, we can skip it.
             if (!$apc->isPipeActive()) {
                 continue;
@@ -2904,14 +2904,14 @@ class RulesetController extends DefaultController
 
                 /* If this filter should match on ftp data connections add the rules here */
                 if ($filter->isMatchFtpData()) {
-                    $if->addRule(static::$ipt_bin ." -t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto tcp --ctstate RELATED,ESTABLISHED --match helper --helper ftp -j CLASSIFY --set-class ". $my_id);
-                    $if->addRule(static::$ipt_bin ." -t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto tcp --ctstate RELATED,ESTABLISHED --match helper --helper ftp -j RETURN");
+                    $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto tcp --ctstate RELATED,ESTABLISHED --match helper --helper ftp -j CLASSIFY --set-class ". $my_id);
+                    $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto tcp --ctstate RELATED,ESTABLISHED --match helper --helper ftp -j RETURN");
                 }
 
                 /* If this filter should match on SIP data streans (RTP / RTCP) add the rules here */
                 if ($filter->isMatchSip()) {
-                    $if->addRule(static::$ipt_bin ." -t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto udp --ctstate RELATED,ESTABLISHED --match helper --helper sip -j CLASSIFY --set-class ". $my_id);
-                    $if->addRule(static::$ipt_bin ." -t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto udp --ctstate RELATED,ESTABLISHED --match helper --helper sip -j RETURN");
+                    $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto udp --ctstate RELATED,ESTABLISHED --match helper --helper sip -j CLASSIFY --set-class ". $my_id);
+                    $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." --match conntrack --ctproto udp --ctstate RELATED,ESTABLISHED --match helper --helper sip -j RETURN");
                 }
 
                 // filter matches on protocols
@@ -3113,7 +3113,7 @@ class RulesetController extends DefaultController
                 }
 
                 foreach ($match_ary as $match_str) {
-                    $ipt_tmpl = static::$ipt_bin ." -t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent;
+                    $ipt_tmpl = "-t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent;
 
                     if ($pipe->hasSourceTarget() && !$pipe->hasDestinationTarget()) {
                         if (($src_hosts = $this->getTargetHosts($pipe->getSourceTarget())) === false) {
@@ -3123,11 +3123,11 @@ class RulesetController extends DefaultController
                         foreach ($src_hosts as $src_host) {
                             foreach ($proto_ary as $proto_str) {
                                 if (strstr("-", $src_host) === false) {
-                                    $if->addRule($ipt_tmpl ." -s ". $src_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                    $if->addRule($ipt_tmpl ." -s ". $src_host ." ". $proto_str ." ". $match_str ." -j RETURN");
+                                    $if->addIptRule($ipt_tmpl ." -s ". $src_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
+                                    $if->addIptRule($ipt_tmpl ." -s ". $src_host ." ". $proto_str ." ". $match_str ." -j RETURN");
                                 } else {
-                                    $if->addRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                    $if->addRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." ". $proto_str ." ". $match_str ." -j RETURN");
+                                    $if->addIptRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
+                                    $if->addIptRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." ". $proto_str ." ". $match_str ." -j RETURN");
                                 }
                             }
                         }
@@ -3139,11 +3139,11 @@ class RulesetController extends DefaultController
                         foreach ($dst_hosts as $dst_host) {
                             foreach ($proto_ary as $proto_str) {
                                 if (strstr("-", $dst_host) === false) {
-                                    $if->addRule($ipt_tmpl ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                    $if->addRule($ipt_tmpl ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
+                                    $if->addIptRule($ipt_tmpl ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
+                                    $if->addIptRule($ipt_tmpl ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
                                 } else {
-                                    $if->addRule($ipt_tmpl ." -m iprange --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                    $if->addRule($ipt_tmpl ." -m iprange --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
+                                    $if->addIptRule($ipt_tmpl ." -m iprange --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
+                                    $if->addIptRule($ipt_tmpl ." -m iprange --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
                                 }
                             }
                         }
@@ -3160,19 +3160,21 @@ class RulesetController extends DefaultController
                             foreach ($dst_hosts as $dst_host) {
                                 foreach ($proto_ary as $proto_str) {
                                     if (strstr("-", $dst_host) === false) {
-                                        $if->addRule($ipt_tmpl ." -s ". $src_host ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                        $if->addRule($ipt_tmpl ." -s ". $src_host ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
+                                        $if->addIptRule($ipt_tmpl ." -s ". $src_host ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
+                                        $if->addIptRule($ipt_tmpl ." -s ". $src_host ." -d ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
                                     } else {
-                                        $if->addRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                                        $if->addRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
+                                        $if->addIptRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
+                                        $if->addIptRule($ipt_tmpl ." -m iprange --src-range ". $src_host ." --dst-range ". $dst_host ." ". $proto_str ." ". $match_str ." -j RETURN");
                                     }
                                 }
                             }
                         }
                     } elseif (!$pipe->hasSourceTarget() && !$pipe->hasDestinationTarget()) {
                         foreach ($proto_ary as $proto_str) {
-                            $if->addRule($ipt_tmpl ." ". $proto_str ." ". $match_str ." -j CLASSIFY --set-class ". $my_id);
-                            $if->addRule($ipt_tmpl ." ". $proto_str ." ". $match_str ." -j RETURN");
+                            $if->addIptRule($ipt_tmpl ." ". $proto_str ." ". $match_str
+                                ." -j CLASSIFY --set-class ". $my_id);
+                            $if->addIptRule($ipt_tmpl ." ". $proto_str ." ". $match_str
+                                ." -j RETURN");
                         }
                     }
                 }
@@ -3415,8 +3417,10 @@ class RulesetController extends DefaultController
                 }
                 break;
             case 'ipt':
-                $if->addRule(static::$ipt_bin ." -t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." -j CLASSIFY --set-class ". $filter);
-                $if->addRule(static::$ipt_bin ." -t mangle -A ms-chain-". $this->getInterfaceName() ."-". $parent ." -j RETURN");
+                $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName()
+                    ."-". $parent ." -j CLASSIFY --set-class ". $filter);
+                $if->addIptRule("-t mangle -A ms-chain-". $this->getInterfaceName()
+                    ."-". $parent ." -j RETURN");
                 break;
         }
 
@@ -3442,12 +3446,18 @@ class RulesetController extends DefaultController
 
             case 'ipt':
                 if ($ms->hasOption("msmode") && $ms->getOption("msmode") == "router") {
-                    //$if->addRule(static::$ipt_bin ." -t mangle -A ms-forward -o ". $this->getInterfaceName() ." -j ms-chain-". $this->getInterfaceName() ."-". $filter);
-                    $if->addRule(static::$ipt_bin ." -t mangle -A ms-forward -o ". $this->getInterfaceName() ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $filter));
-                    $if->addRule(static::$ipt_bin ." -t mangle -A ms-forward -o ". $this->getInterfaceName() ." -j RETURN");
+                    //$if->addIptRule("-t mangle -A ms-forward -o ". $this->getInterfaceName()
+                    //  ." -j ms-chain-". $this->getInterfaceName() ."-". $filter);
+                    $if->addIptRule("-t mangle -A ms-forward -o ". $this->getInterfaceName()
+                        ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $filter));
+                    $if->addIptRule("-t mangle -A ms-forward -o ". $this->getInterfaceName()
+                        ." -j RETURN");
                 } elseif ($ms->hasOption("msmode") && $ms->getOption("msmode") == "bridge") {
-                    $if->addRule(static::$ipt_bin ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getInterfaceName() ." -j MARK --set-mark ". $ms->getConnmarkId($this->getInterfaceId(), $filter));
-                    $if->addRule(static::$ipt_bin ." -t mangle -A ms-forward -m physdev --physdev-in ". $this->getInterfaceName() ." -j RETURN");
+                    $if->addIptRule("-t mangle -A ms-forward -m physdev --physdev-in "
+                        . $this->getInterfaceName() ." -j MARK --set-mark "
+                        . $ms->getConnmarkId($this->getInterfaceId(), $filter));
+                    $if->addIptRule("-t mangle -A ms-forward -m physdev --physdev-in "
+                        . $this->getInterfaceName() ." -j RETURN");
                 }
                 break;
         }
