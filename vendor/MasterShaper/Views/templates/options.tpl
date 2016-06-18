@@ -111,18 +111,6 @@
  </div>
 
  <h4 class="ui block header">Quality of Service Settings</h4>
- <div class="field">
-  <label>Traffic filter</label>
-  <div class="ui radio checkbox" name="filter" data-id="{if $settings->hasSetting('filter')}{$settings->getSettingId('filter')}{else}new{/if}" data-guid="{if $settings->hasSetting('filter')}{$settings->getSettingGuid('filter')}{else}new{/if}" data-model="setting" data-key="setting_key" data-field="setting_value">
-   <input type="radio" name="filter" value="tc" {if !$settings->hasSetting('filter') || ($settings->hasSetting('filter') && $settings->hasSettingValue('filter') && $settings->getSettingValue('filter') == "tc") } checked="checked" {/if} />
-   <label>tc-filter</label>
-  </div>
-  <div class="ui radio checkbox" name="filter" data-id="{if $settings->hasSetting('filter')}{$settings->getSettingId('filter')}{else}new{/if}" data-guid="{if $settings->hasSetting('filter')}{$settings->getSettingGuid('filter')}{else}new{/if}" data-model="setting" data-key="setting_key" data-field="setting_value">
-    <input type="radio" name="filter" value="ipt" {if $settings->hasSetting('filter') && $settings->hasSettingValue('filter') && $settings->getSettingValue('filter') == "ipt"} checked="checked" {/if} />
-    <label>iptables</label>
-  </div>
-  <div class="extra">Mechanism which filters your traffic. tc-filter is the tc-builtin filter technic. Good performance, but less options. iptables has many options for matching traffic. But this will add a second needed subsystem for shaping. Make tests if your Linux machine is powerful enough for this.</div>
- </div>
 
  <div class="ui accordion">
   <div class="title"><i class="dropdown icon"></i>TC Advanced Settings</div>
