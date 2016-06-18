@@ -349,6 +349,45 @@ class FilterModel extends DefaultModel
 
         return $result;
     }
+
+    public function isTcpFlagEnabled($flag)
+    {
+        $known_flags = array(
+            'SYN',
+            'ACK',
+            'FIN',
+            'RST',
+            'URG',
+            'PSH',
+        );
+
+        if (!in_array(strtoupper($flag), $known_flags)) {
+            static::raiseError(__METHOD__ .'(), unknown flag requested!');
+            return false;
+        }
+
+        $flag_field = sprintf("tcpflag_%s", strtolower($flag));
+
+        if (!$this->hasField($flag_field)) {
+            static::raiseError(__METHOD__ .'(), unknown field requested!');
+            return false;
+        }
+
+        if (!$this->hasFieldValue($flag_field)) {
+            return false;
+        }
+
+        if (($value = $this->getFieldValue($flag_field)) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        if ($value !== 'Y') {
+            return false;
+        }
+
+        return true;
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
