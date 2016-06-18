@@ -111,7 +111,6 @@
   </select>
   <div class="extra">Match a specific DSCP flag. Expedited Forwarding (EF), Assured Forwarding (AF), Default is Best Effort (BE).</div>
  </div>
- {if isset($filter_mode) && $filter_mode == "ipt"}
  <div class="field">
   <label>TCP flags</label>
   <table class="noborder">
@@ -133,99 +132,6 @@
   <input type="text" name="filter_packet_length" size="30" value="{if $filter->hasPacketLength()}{$filter->getPacketLength()}{/if}" />
   <div class="extra">Match a packet against a defined size. Enter a size \"64\" or a range \"64:128\".</div>
  </div>
- <h4 class="ui block header">Other matches</h4>
- <div class="field">
-  <label>Time</label>
-  <table class="noborder">
-   <tr>
-    <td colspan="2" onclick="obj_toggle_checkbox('[name=filter_time_use_range]')"><input type="checkbox" name="filter_time_use_range" value="Y" {if $filter->isTimeRange()} checked="checked" {/if} />Use time range:</td>
-   </tr>
-   <tr>
-    <td colspan="2">&nbsp;</td>
-   </tr>
-   <tr>
-    <td>
-     Start:
-    </td>
-    <td>
-     <select name="filter_time_start_year">
-      {year_select current=($filter->hasTimeStart()) ? $filter->getTimeStart() : null}
-     </select>
-     -
-     <select name="filter_time_start_month">
-      {month_select current=($filter->hasTimeStart()) ? $filter->getTimeStart() : null}
-     </select>
-     -
-     <select name="filter_time_start_day">
-      {day_select current=($filter->hasTimeStart()) ? $filter->getTimeStart() : null}
-     </select>
-     &nbsp;
-     <select name="filter_time_start_hour">
-      {hour_select current=($filter->hasTimeStart()) ? $filter->getTimeStart() : null}
-     </select>
-     :
-     <select name="filter_time_start_minute">
-      {minute_select current=($filter->hasTimeStart()) ? $filter->getTimeStart() : null}
-     </select>
-    </td>
-   </tr>
-   <tr>
-    <td>
-     Stop:
-    </td>
-    <td>
-     <select name="filter_time_stop_year">
-      {year_select current=($filter->hasTimeStop()) ? $filter->getTimeStop() : null}
-     </select>
-     -
-     <select name="filter_time_stop_month">
-      {month_select current=($filter->hasTimeStop()) ? $filter->getTimeStop() : null}
-     </select>
-     -
-     <select name="filter_time_stop_day">
-      {day_select current=($filter->hasTimeStop()) ? $filter->getTimeStop() : null}
-     </select>
-     &nbsp;
-     <select name="filter_time_stop_hour">
-      {hour_select current=($filter->hasTimeStop()) ? $filter->getTimeStop() : null}
-     </select>
-     :
-     <select name="filter_time_stop_minute">
-      {minute_select current=($filter->hasTimeStop()) ? $filter->getTimeStop() : null}
-     </select>
-    </td>
-   </tr>
-   <tr>
-    <td colspan="2">&nbsp;</td>
-   </tr>
-   <tr>
-    <td>
-     Days:
-    </td>
-    <td>
-     <input type="checkbox" name="filter_time_day_mon" value="Y" {if $filter->isTimeDayMon()} chkeced="checked" {/if} /><label onclick="obj_toggle_checkbox('[name=filter_time_day_mon]')">Mon</label>
-     <input type="checkbox" name="filter_time_day_tue" value="Y" {if $filter->isTimeDayTue()} chkeced="checked" {/if} /><label onclick="obj_toggle_checkbox('[name=filter_time_day_tue]')">Tue</label>
-     <input type="checkbox" name="filter_time_day_wed" value="Y" {if $filter->isTimeDayWed()} chkeced="checked" {/if} /><label onclick="obj_toggle_checkbox('[name=filter_time_day_wed]')">Wed</label>
-     <input type="checkbox" name="filter_time_day_thu" value="Y" {if $filter->isTimeDayThu()} chkeced="checked" {/if} /><label onclick="obj_toggle_checkbox('[name=filter_time_day_thu]')">Thu</label>
-     <input type="checkbox" name="filter_time_day_fri" value="Y" {if $filter->isTimeDayFri()} chkeced="checked" {/if} /><label onclick="obj_toggle_checkbox('[name=filter_time_day_fri]')">Fri</label>
-     <input type="checkbox" name="filter_time_day_sat" value="Y" {if $filter->isTimeDaySat()} chkeced="checked" {/if} /><label onclick="obj_toggle_checkbox('[name=filter_time_day_sat]')">Sat</label>
-     <input type="checkbox" name="filter_time_day_sun" value="Y" {if $filter->isTimeDaySun()} chkeced="checked" {/if} /><label onclick="obj_toggle_checkbox('[name=filter_time_day_sun]')">Sun</label>
-    </td>
-   </tr>
-  </table>
-  <div class="extra">Match if the packet is within a defined timerange. Nice for file transfer operations, which you want to limit during the day, but have full bandwidth in the night for backup. This uses the time iptables match which has to be available on your iptables installation and supported by your running kernel.</div>
- </div>
- <div class="field">
-  <label>Match FTP data channel</label>
-  <input type="checkbox" name="filter_match_ftp_data" value="Y" {if $filter->isMatchFtpData()} checked="checked" {/if} />
-  <div class="extra">A FTP file transfer needs two connections: command channel (21/tcp) and a data channel. If you use active FTP the port for data channel is 20/tcp. If you use passive FTP, the port of the data channel is not predictable and is choosen by the ftp server (high port). But with the help of the iptables kernel module ip_conntrack_ftp you get the data channel which belongs to the command channel! Don't forget to load the ip_conntrack_ftp module!</div>
- </div>
- <div class="field">
-  <label>Match SIP connections</label>
-  <input type="checkbox" name="filter_match_sip" value="Y" {if $filter->isMatchSip()} checked="checked" {/if} />
-  <div class="extra">This match allows you to match of dynamic RTP/RTCP data streams of sip sessions as well as SIP request/responses. Don't forget to load the ip_conntrack_sip module!</div>
- </div>
- {/if}
  <div class="ui divider"></div>
  {form_buttons submit=1 discard=1 reset=1}
 </form>
