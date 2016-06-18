@@ -88,6 +88,9 @@
     <a id="edit_link_{$item->getIdx()}" href="{get_url page='protocols' mode='edit' id=$item->getSafeLink()}" class="edit item ui icon button action link"><i class="edit icon"></i></a>
     <a id="delete_link_{$item->getIdx()}" class="delete item ui icon button action link" data-action-title="Deleting {$item->getName()|escape}" data-modal-title="Delete {$item->getName()|escape}" data-modal-text="Please confirm to delete {$item->getName()|escape}" data-id="{$item->getIdx()}" data-guid="{$item->getGuid()}" data-model="protocol" data-content="Delete {$item->getName()|escape}" data-variation="wide"><i class="remove circle icon"></i></a>
     <div class="ui icon button slider checkbox item state" data-target="protocol_state_{$item->getIdx()}">
+     <div class="ui inverted dimmer">
+      <div class="ui loader"></div>
+     </div>
      <input name="protocol_state_{$item->getIdx()}" type="checkbox" data-action="update" data-model="protocol" data-key="proto_active" data-id="{$item->getIdx()}" data-guid="{$item->getGuid()}" value="Y" {if $item->isActive()}checked="checked"{/if}/>
      <label></label>
     </div>
