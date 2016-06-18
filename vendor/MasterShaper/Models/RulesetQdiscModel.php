@@ -32,15 +32,12 @@ class RulesetQdiscModel extends DefaultModel
     protected $params;
 
     static protected $tc_bin;
-    static protected $ipt_bin;
 
     public function __construct()
     {
         global $config;
 
         static::$tc_bin = $config->getTcPath();
-        static::$ipt_bin = $config->getIptablesPath();
-
         return;
     }
 
