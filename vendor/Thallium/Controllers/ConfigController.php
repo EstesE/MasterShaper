@@ -186,7 +186,7 @@ class ConfigController extends DefaultController
         return false;
     }
 
-    public function isEnabled($value)
+    protected function isEnabled($value)
     {
         if (!in_array($value, array('yes','y','true','on','1'))) {
             return false;
@@ -195,7 +195,7 @@ class ConfigController extends DefaultController
         return true;
     }
 
-    public function isDisabled($value)
+    protected function isDisabled($value)
     {
         if (!in_array($value, array('no','n','false','off','0'))) {
             return false;
