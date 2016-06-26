@@ -23,7 +23,8 @@ class MainController extends \Thallium\Controllers\MainController
 {
     const VERSION = "1.0";
 
-    private $ms_settings = array();
+    protected $ms_settings = array();
+    protected $zend_opcache_available = true;
 
     public function __construct($mode = null)
     {
@@ -84,6 +85,10 @@ class MainController extends \Thallium\Controllers\MainController
         if (!$this->loadSettings()) {
             static::raiseError(__CLASS__ .'::loadSettings() returned false!', true);
             return false;
+        }
+
+        if (!extension_loaded('Zend OPcache')) {
+            $this->zend_opcache_available = false;
         }
 
         return;
@@ -195,6 +200,19 @@ class MainController extends \Thallium\Controllers\MainController
 
         return $bw;
 
+    }
+
+    public function isZendOpcacheAvailable()
+    {
+        if (!isset($this->zend_opcache_available) ||
+            empty($this->zend_opcache_available) ||
+            !is_bool($this->zend_opcache_available) ||
+            !$this->zend_opcache_available
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }
 
