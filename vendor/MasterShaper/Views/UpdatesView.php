@@ -66,14 +66,14 @@ class UpdateIanaView extends DefaultView
          */
 
         if (!file_exists(MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml")) {
-            $ms->raiseError(
+            static::raiseError(
                 "Can not locate protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml"
             );
             return false;
         }
 
         if (!is_readable(MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml")) {
-            $ms->raiseError(
+            static::raiseError(
                 "Can not read protocol-numbers.xml file at: ". MASTERSHAPER_BASE ."/contrib/protocol-numbers.xml"
             );
             return false;
@@ -84,7 +84,6 @@ class UpdateIanaView extends DefaultView
         $xml_reg = $xml->registry;
 
         foreach ($xml_reg->record as $xml_rec) {
-
             if (!isset($xml_rec->name) || !is_string((string)$xml_rec->name)) {
                 continue;
             }
@@ -116,7 +115,6 @@ class UpdateIanaView extends DefaultView
                 ");
 
         foreach ($protocols as $proto) {
-
             $db->execute($sth, array(
                         $proto[0],
                         $proto[1],
@@ -131,7 +129,7 @@ class UpdateIanaView extends DefaultView
          */
 
         if (!file_exists(MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml")) {
-            $ms->raiseError(
+            static::raiseError(
                 "Can not locate protocol-numbers.xml file at: ". MASTERSHAPER_BASE
                 ."/contrib/service-names-port-numbers.xml"
             );
@@ -139,7 +137,7 @@ class UpdateIanaView extends DefaultView
         }
 
         if (!is_readable(MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml")) {
-            $ms->raiseError(
+            static::raiseError(
                 "Can not read protocol-numbers.xml file at: ". MASTERSHAPER_BASE
                 ."/contrib/service-names-port-numbers.xml"
             );
@@ -149,7 +147,6 @@ class UpdateIanaView extends DefaultView
         $xml = simplexml_load_file(MASTERSHAPER_BASE ."/contrib/service-names-port-numbers.xml");
 
         foreach ($xml->record as $xml_rec) {
-
             if (!isset($xml_rec->name) || !is_string((string)$xml_rec->name)) {
                 continue;
             }
@@ -178,7 +175,6 @@ class UpdateIanaView extends DefaultView
                 ");
 
         foreach ($ports as $port) {
-
             $db->execute($sth, array(
                         $port[0],
                         $port[1],
