@@ -20,6 +20,14 @@
 {include "header.tpl"}
 </head>
 <body>
+{if !$zend_opcache_available}
+<div class="ui inline cookie nag zendopcache missing">
+ <span class="title">
+  Your PHP installation does not seem to use PHP7 OPcache. This can speed up MasterShaper a lot!
+ </span>
+ <i class="close icon"></i>
+</div>
+{/if}
 {include "menu.tpl"}
  <div class="ui main container">
 {$page_content}
