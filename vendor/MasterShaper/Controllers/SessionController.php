@@ -112,7 +112,10 @@ class SessionController extends \Thallium\Controllers\SessionController
     public function getCurrentHostProfile()
     {
         if (isset($_SESSION['host_profile']) &&
-            !empty($_SESSION['host_profile'])) {
+            !empty($_SESSION['host_profile']) &&
+            is_numeric($_SESSION['host_profile']) &&
+            $_SESSION['host_profile'] > 0
+        ) {
             return $_SESSION['host_profile'];
         }
 
