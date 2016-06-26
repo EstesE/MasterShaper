@@ -30,7 +30,7 @@ class RequirementsController extends \Thallium\Controllers\RequirementsControlle
         ini_set('track_errors', 1);
         @include_once 'Net/IPv4.php';
         if (isset($php_errormsg) && preg_match('/Failed opening.*for inclusion/i', $php_errormsg)) {
-            $ms->raiseError("PEAR Net_IPv4 package is missing!");
+            static::raiseError("PEAR Net_IPv4 package is missing!");
             $missing = true;
             unset($php_errormsg);
         }
