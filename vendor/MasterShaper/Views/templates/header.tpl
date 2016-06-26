@@ -36,6 +36,8 @@
   <!-- jQuery -->
   <script type="text/javascript" src="{$app_web_path}/resources/jQuery/jquery-2.2.1.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$app_web_path}/resources/jQuery/plugins/jquery.color.js"></script>
+  <!-- jquery.cookie -->
+  <script type="text/javascript" src="{$app_web_path}/resources/jQuery/plugins/jquery.cookie-1.4.1.min.js">
   <!-- Thallium JavaScript -->
   <script type="text/javascript" src="{$app_web_path}/resources/thallium.js"></script>
   <script type="text/javascript" src="{$app_web_path}/resources/thallium_rpc.js"></script>
@@ -50,7 +52,6 @@
   <script type="text/javascript" src="{$app_web_path}/resources/forge/js/forge.js"></script>
   <script type="text/javascript" src="{$app_web_path}/resources/forge/js/util.js"></script>
   <script type="text/javascript" src="{$app_web_path}/resources/forge/js/sha1.js"></script>
-
   <!-- jqPlot -->
   <!--[if IE]><script language="javascript" type="text/javascript" src="{$app_web_path}/resources/jqPlot/resources/jqPlot/excanvas.js"></script><![endif]-->
   <!--<link rel="stylesheet" type="text/css" href="{$app_web_path}/resources/jqPlot/jquery.jqplot.css" />
