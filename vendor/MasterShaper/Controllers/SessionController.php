@@ -27,7 +27,7 @@ class SessionController extends \Thallium\Controllers\SessionController
 
         if (!isset($user_name) || empty($user_name)) {
             if (!($user_name = $this->getUserName())) {
-                $ms->raiseError(__METHOD__ .', have no user_name to check!');
+                static::raiseError(__METHOD__ .', have no user_name to check!');
                 return false;
             }
         }
@@ -44,19 +44,19 @@ class SessionController extends \Thallium\Controllers\SessionController
                 user_active='Y'";
 
         if (!($sth = $db->prepare($sql))) {
-            $ms->raiseError(get_class($db) .'::prepare() returned false!');
+            static::raiseError(get_class($db) .'::prepare() returned false!');
             return false;
         }
 
         if (!$db->execute($sth, array($user_name))) {
             $db->freeStatement($sth);
-            $ms->raiseError(get_class($db) .'::execute() returned false!');
+            static::raiseError(get_class($db) .'::execute() returned false!');
             return false;
         }
 
         if (!($user = $sth->fetch())) {
             $db->freeStatement($sth);
-            $ms->raiseError(__METHOD__ .', found no matching user!');
+            static::raiseError(__METHOD__ .', found no matching user!');
             return false;
         }
 
@@ -96,11 +96,11 @@ class SessionController extends \Thallium\Controllers\SessionController
     public function loginRequest($login_name, $login_pass)
     {
         if (!($user = $this->getUserDetails($login_name))) {
-            $this->raiseError(__METHOD__ .', '. _("Invalid or inactive User."));
+            static::raiseError(__METHOD__ .', '. _("Invalid or inactive User."));
         }
 
         if ($user->user_pass != md5($_POST['user_pass'])) {
-            $this->raiseError(_("Invalid Password."));
+            static::raiseError(_("Invalid Password."));
         }
 
         $_SESSION['user_name'] = $_POST['user_name'];
