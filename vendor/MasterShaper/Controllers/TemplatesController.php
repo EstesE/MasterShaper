@@ -34,7 +34,7 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
 
     public function __construct()
     {
-        global $config;
+        global $ms, $config;
 
         parent::__construct();
 
@@ -88,6 +88,12 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
         $this->assign('icon_ready', $base_web_path .'/resources/icons/ready.png');
         $this->assign('icon_process', $base_web_path .'/resources/icons/task.png');
         $this->assign('web_path', $base_web_path);
+
+        if (!$ms->isZendOpcacheAvailable()) {
+            $this->assign('zend_opcache_available', true);
+        } else {
+            $this->assign('zend_opcache_available', false);
+        }
 
         $this->registerPlugin("function", "start_table", array(&$this, "smartyStartTable"), false);
         $this->registerPlugin("function", "page_end", array(&$this, "smartyPageEnd"), false);
@@ -280,7 +286,6 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
 
         $string = "";
         while ($row = $result->fetch()) {
-
             $string.= "<option value=\"". $row->sl_idx ."\"";
 
             if (isset($params['sl_idx']) && $row->sl_idx == $params['sl_idx']) {
@@ -295,7 +300,6 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
             $string.= $row->sl_name;
 
             if ($params['details'] == 'yes') {
-
                 switch ($ms->getOption("classifier")) {
                     case 'HTB':
                         $string.= "(in: ".
@@ -394,7 +398,6 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
         }
 
         switch ($params['type']) {
-
             case 'sl':
                 $table = 'service_levels';
                 $column_prefix = 'sl';
