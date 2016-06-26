@@ -1166,6 +1166,9 @@ $(document).ready(function() {
         }.bind(this));
         return true;
     });
+
+    // Automatically shows on init if cookie isnt set
+    $('.cookie.nag.zendopcache.missing').nag('show');
 });
 
 // vim: set filetype=javascript expandtab softtabstop=4 tabstop=4 shiftwidth=4:
