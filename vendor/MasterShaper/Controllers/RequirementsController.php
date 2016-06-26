@@ -21,7 +21,7 @@ namespace MasterShaper\Controllers;
 
 class RequirementsController extends \Thallium\Controllers\RequirementsController
 {
-    public function checkExternalLibraries()
+    protected function checkExternalLibraries()
     {
         global $ms;
 
