@@ -106,16 +106,15 @@ abstract class DefaultModel
             return false;
         }
 
-        if (static::hasFields() && static::isHavingItems()) {
+        if (static::hasFields() && static::hasModelItems()) {
             static::raiseError(__METHOD__ .'(), model must no have fields and items at the same times!', true);
             return false;
         }
 
-        if (static::isHavingItems()) {
-            if (!isset(static::$model_items_model) ||
-                empty(static::$model_items_model) ||
-                !is_string(static::$model_items_model) ||
-                !$thallium->isRegisteredModel(null, static::$model_items_model)
+        if (static::hasModelItems()) {
+            if (!static::hasModelItemsModel() ||
+                ($items_model = static::getModelItemsModel()) === false ||
+                !$thallium->isRegisteredModel(null, $items_model)
             ) {
                 static::raiseError(__METHOD__ .'(), $model_items_model is invalid!', true);
                 return false;
@@ -205,8 +204,9 @@ abstract class DefaultModel
                 }
                 if ((isset($this) && $this->hasVirtualFields() && !$this->hasVirtualField($field)) &&
                     !static::hasField($field) &&
-                    (static::isHavingItems() &&
-                    ($full_model = $thallium->getFullModelName(static::$model_items_model)) !== false &&
+                    (static::hasModelItems() &&
+                    ($items_model = static::getModelItemsModel()) !== false &&
+                    ($full_model = $thallium->getFullModelName($items_model)) !== false &&
                     !$full_model::hasField($field))
                 ) {
                     static::raiseError(__METHOD__ .'(), $model_load_by contains an unknown field!', true);
@@ -221,7 +221,11 @@ abstract class DefaultModel
 
         if (!empty($this->model_sort_order)) {
             foreach ($this->model_sort_order as $field => $mode) {
-                if (($full_model = $thallium->getFullModelName(static::$model_items_model)) === false) {
+                if (($items_model = static::getModelItemsModel()) === false) {
+                    static::raiseError(__CLASS__ .'::getModelItemsModel() returned false!');
+                    return false;
+                }
+                if (($full_model = $thallium->getFullModelName($items_model)) === false) {
                     static::raiseError(get_class($thallium) .'::getFullModelName() returned false!', true);
                     return false;
                 }
@@ -241,33 +245,65 @@ abstract class DefaultModel
             }
         }
 
-        if (isset(static::$model_links) || !empty(static::$model_links)) {
+        if (static::hasModelLinks()) {
             if (!is_array(static::$model_links)) {
                 static::raiseError(__METHOD__ .'(), $model_links is not an array!', true);
                 return false;
             }
-            foreach (static::$model_links as $link) {
-                if (!isset($link) || empty($link) || !is_string($link)) {
-                    static::raiseError(__METHOD__ .'(), $model_links contains invalid member!', true);
+            foreach (static::$model_links as $target => $field) {
+                if (!isset($target) || empty($target) || !is_string($target)) {
+                    static::raiseError(__METHOD__ .'(), $model_links link target is invalid!', true);
                     return false;
                 }
-                if ((list($model, $field) = explode('/', $link)) === false) {
-                    static::raiseError(__METHOD__ .'(), failed to explode() $model_links member!', true);
+
+                if (!isset($field) || empty($field) || !is_string($field)) {
+                    static::raiseError(__METHOD__ .'(), $model_links link field is invalid!', true);
                     return false;
                 }
-                if (!isset($model) || empty($model) || !is_string($model)) {
+
+                if (!static::hasField($field)) {
+                    static::raiseError(__METHOD__ .'(), $model_links link field is unknown!', true);
+                    return false;
+                }
+
+                if (($parts = explode('/', $target)) === false) {
+                    static::raiseError(__METHOD__ .'(), failed to explode() $model_links target!', true);
+                    return false;
+                }
+
+                if (count($parts) < 2) {
+                    static::raiseError(__METHOD__ .'(), link information incorrectly declared!');
+                    return false;
+                }
+
+                $target_model = $parts[0];
+                $target_field = $parts[1];
+
+                if (!isset($target_model) || empty($target_model) || !is_string($target_model)) {
                     static::raiseError(__METHOD__ .'(), $model_links member model value is invalid!', true);
                     return false;
                 }
-                if (!$thallium->isValidModel($model)) {
+
+                if (!$thallium->isValidModel($target_model)) {
                     static::raiseError(
                         __METHOD__ .'(), $model_links member model value refers an unknown model!',
                         true
                     );
                     return false;
                 }
-                if (!isset($field) || empty($field) || !is_string($field)) {
+
+                if (($target_full_model = $thallium->getFullModelName($target_model)) === false) {
+                    static::raiseError(get_class($thallium) .'::getFullModelName() returned false!', true);
+                    return false;
+                }
+
+                if (!isset($target_field) || empty($target_field) || !is_string($target_field)) {
                     static::raiseError(__METHOD__ .'(), $model_links member model field is invalid!', true);
+                    return false;
+                }
+
+                if (!$target_full_model::hasModelItems() && !$target_full_model::hasField($target_field)) {
+                    static::raiseError(sprintf('%s::hasField() returned false!', $target_full_model), true);
                     return false;
                 }
             }
@@ -284,7 +320,7 @@ abstract class DefaultModel
     {
         global $thallium, $db;
 
-        if (!static::hasFields() && !static::isHavingItems()) {
+        if (!static::hasFields() && !static::hasModelItems()) {
             return true;
         }
 
@@ -333,7 +369,7 @@ abstract class DefaultModel
                 static::raiseError(__CLASS__ .'::getFieldNames() returned false!');
                 return false;
             }
-        } elseif (static::isHavingItems()) {
+        } elseif (static::hasModelItems()) {
             $fields = array(
                 FIELD_IDX,
                 FIELD_GUID,
@@ -461,9 +497,13 @@ abstract class DefaultModel
                 }
                 $this->model_init_values[$field] = $value;
             }
-        } elseif (static::isHavingItems()) {
+        } elseif (static::hasModelItems()) {
             while (($row = $sth->fetch(\PDO::FETCH_ASSOC)) !== false) {
-                if (($child_model_name = $thallium->getFullModelName(static::$model_items_model)) === false) {
+                if (($items_model = static::getModelItemsModel()) === false) {
+                    static::raiseError(__CLASS__ .'::getModelItemsModel() returned false!');
+                    return false;
+                }
+                if (($child_model_name = $thallium->getFullModelName($items_model)) === false) {
                     $db->freeStatement($sth);
                     static::raiseError(get_class($thallium) .'::getFullModelName() returned false!');
                     return false;
@@ -568,7 +608,12 @@ abstract class DefaultModel
             return true;
         }
 
-        if (($full_model = $thallium->getFullModelName(static::$model_items_model)) === false) {
+        if (($items_model = static::getModelItemsModel()) === false) {
+            static::raiseError(__CLASS__ .'::getModelItemsModel() returned false!');
+            return false;
+        }
+
+        if (($full_model = $thallium->getFullModelName($items_model)) === false) {
             static::raiseError(get_class($thallium) .'::getFullModelName() returned false!');
             return false;
         }
@@ -716,7 +761,7 @@ abstract class DefaultModel
             return true;
         }
 
-        if (static::isHavingItems() && !$this->hasItems()) {
+        if (static::hasModelItems() && !$this->hasItems()) {
             return true;
         }
 
@@ -734,7 +779,7 @@ abstract class DefaultModel
             }
         }
 
-        if (static::isHavingItems()) {
+        if (static::hasModelItems()) {
             if (!$this->deleteItems()) {
                 static::raiseError(__CLASS__ .'::deleteItems() returned false!');
                 return false;
@@ -781,7 +826,7 @@ abstract class DefaultModel
 
     public function deleteItems()
     {
-        if (!static::isHavingItems()) {
+        if (!static::hasModelItems()) {
             static::raiseError(__METHOD__ .'(), model '. __CLASS__ .' is not declared to have items!');
             return false;
         }
@@ -1021,7 +1066,7 @@ abstract class DefaultModel
     {
         global $thallium;
 
-        if (!static::hasFields() && !static::isHavingItems()) {
+        if (!static::hasFields() && !static::hasModelItems()) {
             if (!isset($thallium::$permit_undeclared_class_properties)) {
                 static::raiseError(__METHOD__ ."(), trying to set an undeclared property {$name}!", true);
                 return;
@@ -1191,7 +1236,7 @@ abstract class DefaultModel
     /* override PHP's __get() function */
     final public function __get($name)
     {
-        if (!static::hasFields() && !static::isHavingItems()) {
+        if (!static::hasFields() && !static::hasModelItems()) {
             return isset($this->$name) ? $this->$name : null;
         }
 
@@ -2245,7 +2290,7 @@ abstract class DefaultModel
 
     public function getItemsKeys()
     {
-        if (!static::isHavingItems()) {
+        if (!static::hasModelItems()) {
             static::raiseError(__METHOD__ .'(), model '. __CLASS__ .' is not declared to have items!');
             return false;
         }
@@ -2260,7 +2305,7 @@ abstract class DefaultModel
 
     public function getItems($offset = null, $limit = null, $filter = null)
     {
-        if (!static::isHavingItems()) {
+        if (!static::hasModelItems()) {
             static::raiseError(__METHOD__ .'(), model '. __CLASS__ .' is not declared to have items!');
             return false;
         }
@@ -2413,6 +2458,14 @@ abstract class DefaultModel
 
     final public static function isHavingItems()
     {
+        error_log(__METHOD__ .'(), legacy isHavingItems() has been called, '
+            .'update your application to hasModelItems() to avoid this message.');
+
+        return static::hasModelItems();
+    }
+
+    final public static function hasModelItems()
+    {
         $called_class = get_called_class();
 
         if (!property_exists($called_class, 'model_has_items')) {
@@ -2432,7 +2485,7 @@ abstract class DefaultModel
     public function hasItems()
     {
         $called_class = get_called_class();
-        if (!$called_class::isHavingItems()) {
+        if (!$called_class::hasModelItems()) {
             static::raiseError(__METHOD__ ."(), model {$called_class} is not declared to have items!", true);
             return false;
         }
@@ -2449,7 +2502,7 @@ abstract class DefaultModel
 
     public function addItem($item)
     {
-        if (!static::isHavingItems()) {
+        if (!static::hasModelItems()) {
             static::raiseError(__METHOD__ .'(), model '. __CLASS__ .' is not declared to have items!');
             return false;
         }
@@ -2985,7 +3038,7 @@ abstract class DefaultModel
 
     public function flush()
     {
-        if (!static::isHavingItems()) {
+        if (!static::hasModelItems()) {
             return $this->flushTable();
         }
 
@@ -3350,7 +3403,7 @@ abstract class DefaultModel
         return true;
     }
 
-    protected static function hasModelLinks()
+    public static function hasModelLinks()
     {
         if (!isset(static::$model_links) ||
             empty(static::$model_links)
@@ -3361,11 +3414,30 @@ abstract class DefaultModel
         return true;
     }
 
+    public static function getModelLinks()
+    {
+        if (!static::hasModelLinks()) {
+            static::raiseError(__CLASS__ .'::hasModelLinks() returned false!');
+            return false;
+        }
+
+        return static::$model_links;
+    }
+
     protected function deleteModelLinks()
     {
         global $thallium;
 
-        foreach (static::$model_links as $link) {
+        if (!static::hasModelLinks()) {
+            return true;
+        }
+
+        if (($links = static::getModelLinks()) === false) {
+            static::raiseError(__CLASS__ .'::getModelLinks() returned false!');
+            return false;
+        }
+
+        foreach ($links as $link) {
             list($model, $field) = explode('/', $link);
 
             if (($model_name = $thallium->getFullModelName($model)) === false) {
@@ -3486,6 +3558,207 @@ abstract class DefaultModel
         }
 
         return true;
+    }
+
+    public static function getModelName($short = false)
+    {
+        if (!isset($short) || $short === false) {
+            return static::class;
+        }
+
+        $parts = explode('\\', static::class);
+
+        return array_pop($parts);
+    }
+
+    public function __toString()
+    {
+        if (($model_name = static::getModelName(true)) === false) {
+            static::raiseError(__CLASS__ .'::getModelName() returned false!');
+            return false;
+        }
+
+        if (($idx = $this->getIdx()) === false) {
+            static::raiseError(__CLASS__ .'::getIdx() returend false!');
+            return false;
+        }
+
+        if (($guid = $this->getGuid()) === false) {
+            static::raiseError(__CLASS__ .'::getGuid() returend false!');
+            return false;
+        }
+
+        if (method_exists($this, 'hasName') && $this->hasName()) {
+            if (($name = $this->getName()) === false) {
+                static::raiseError(__CLASS__ .'::getName() returned false!');
+                return false;
+            }
+        }
+
+        if (!isset($name)) {
+            return sprintf('%s_%s_%s', $model_name, $idx, $guid);
+        }
+
+        return sprintf('%s_%s_%s_%s', $model_name, $name, $idx, $guid);
+    }
+
+    public function getModelLinkedList($sorted = false, $unique = false)
+    {
+        global $thallium;
+
+        if (($model_links = static::getModelLinks()) === false) {
+            static::raiseError(__CLASS__ .'::getModelLinks() returned false!');
+            return false;
+        }
+
+        if (!is_array($model_links) || empty($model_links)) {
+            return true;
+        }
+
+        if (($model_idx = $this->getIdx()) === false) {
+            static::raiseError(__CLASS__ .'::getIdx() returned false!');
+            return false;
+        }
+
+        $links = array();
+
+        foreach ($model_links as $target => $field) {
+            if (!$this->hasFieldValue($field)) {
+                continue;
+            }
+
+            if (($field_value = $this->getFieldValue($field)) === false) {
+                static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+                return false;
+            }
+
+            if (($link_target = $this->getModelLinkTarget($target, $field_value)) === false) {
+                static::raiseError(__CLASS__ .'::getModelLinkTarget() returned false!');
+                return false;
+            }
+
+            if (!isset($link_target) || empty($link_target)) {
+                continue;
+            }
+
+            if (is_object($link_target)) {
+                array_push($links, $link_target);
+                continue;
+            }
+
+            if (!is_array($link_target)) {
+                static::raiseError(__CLASS__ .'::getModelLinkTarget() returned unexpected data!');
+                return false;
+            }
+
+            $links = array_merge($links, $link_target);
+        }
+
+        if (isset($sorted) && $sorted === true) {
+            sort($links);
+        }
+
+        if (isset($unique) && $unique === true) {
+            $links = array_unique($links);
+        }
+
+        return $links;
+    }
+
+    protected function getModelLinkTarget($link, $value)
+    {
+        global $thallium;
+
+        if (!isset($link) || empty($link) || !is_string($link)) {
+            static::raiseError(__METHOD__ .'(), $link parameter is invalid!');
+            return false;
+        }
+
+        if (!isset($value) ||
+            empty($value) ||
+            (!is_string($value) && !is_numeric($value))
+        ) {
+            static::raiseError(__METHOD__ .'(), $value parameter is invalid!');
+            return false;
+        }
+
+        if (($parts = explode('/', $link)) === false) {
+            static::raiseError(__METHOD__ .'(), explode() returned false!');
+            return false;
+        }
+
+        if (count($parts) != 2 ||
+            !isset($parts[0]) || empty($parts[0]) || !is_string($parts[0]) ||
+            !isset($parts[1]) || empty($parts[1]) || !is_string($parts[1])
+        ) {
+            static::raiseError(__METHOD__ .'(), link information incorrectly declared!');
+            return false;
+        }
+
+        $model = $parts[0];
+        $field = $parts[1];
+
+        if (($full_model = $thallium->getFullModelName($model)) === false) {
+            static::raiseError(get_class($thallium) .'::getFullModelName() returned false!');
+            return false;
+        }
+
+        try {
+            $obj = new $full_model(array(
+                $field => $value,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(sprintf('%s(), failed to load %s!', __METHOD__, $full_model), false, $e);
+            return false;
+        }
+
+        if (!$obj->hasModelItems() && $obj->isNew()) {
+            return;
+        } elseif ($obj->hasModelItems() && !$obj->hasItems()) {
+            return;
+        }
+
+        if (!$obj->hasModelItems()) {
+            return $obj;
+        }
+
+        if (($items = $obj->getItems()) === false) {
+            static::raiseError(get_class($obj) .'::getItems() returned false!');
+            return false;
+        }
+
+        return $items;
+    }
+
+    final public static function hasModelItemsModel()
+    {
+        $called_class = get_called_class();
+
+        if (!$called_class::hasModelItems()) {
+            static::raiseError(sprintf('%s(), %s::hasModelItems() returned false!', __METHOD__, $called_class));
+            return false;
+        }
+
+        if (!property_exists($called_class, 'model_items_model') ||
+            empty($called_class::$model_items_model) ||
+            !is_string($called_class::$model_items_model)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    final public static function getModelItemsModel()
+    {
+        if (!static::hasModelItemsModel()) {
+            static::raiseError(__CLASS__ .'::hasModelItemsModel() returned false!');
+            return false;
+        }
+
+        $called_class = get_called_class();
+
+        return $called_class::$model_items_model;
     }
 }
 

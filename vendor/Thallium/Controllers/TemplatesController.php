@@ -37,13 +37,13 @@ class TemplatesController extends DefaultController
         try {
             $this->smarty = new Smarty;
         } catch (\Exception $e) {
-            static::raiseError('Failed to load Smarty!', true);
-            return false;
+            static::raiseError(__METHOD__ .'(), failed to load Smarty!', true, $e);
+            return;
         }
 
-        if (!($prefix = $thallium->getNamespacePrefix())) {
+        if (($prefix = $thallium->getNamespacePrefix()) === false) {
             static::raiseError(get_class($thallium) .'::getNameSpacePrefix() returned false!', true);
-            return false;
+            return;
         }
 
         // disable template caching during development
@@ -58,26 +58,33 @@ class TemplatesController extends DefaultController
 
         if (!file_exists($this->config_compile_dir) && !is_writeable(self::CACHE_DIRECTORY)) {
             static::raiseError(
-                "Cache directory ". CACHE_DIRECTORY ." is not writeable"
-                ."for user (". $this->getuid() .").<br />\n"
-                ."Please check that permissions are set correctly to this directory.<br />\n",
+                sprintf(
+                    __METHOD__ .'(), cche directory ". CACHE_DIRECTORY ." is not writeable'
+                    .'for user (%s).<br />\n'
+                    .'Please check that permissions are set correctly to this directory.<br />\n',
+                    $this->getuid()
+                ),
                 true
             );
+            return;
         }
 
         if (!file_exists($this->config_compile_dir) && !mkdir($this->config_compile_dir, 0700)) {
-            static::raiseError("Failed to create directory ". $this->config_compile_dir, true);
-            return false;
+            static::raiseError(__METHOD__ .'(), failed to create directory '. $this->config_compile_dir, true);
+            return;
         }
 
         if (!is_writeable($this->config_compile_dir)) {
             static::raiseError(
-                "Error - Smarty compile directory {$this->config_compile_dir} is not "
-                ."writeable for the current user ({$this->getuid()}).<br />"
-                ."Please check that permissions are set correctly to this directory.<br />",
+                sprintf(
+                    __METHOD__ .'(), error - Smarty compile directory {$this->config_compile_dir} is not '
+                    .'writeable for the current user (%s).<br />'
+                    ."Please check that permissions are set correctly to this directory.<br />",
+                    $this->getuid()
+                ),
                 true
             );
-            return false;
+            return;
         }
 
         $this->smarty->setTemplateDir($this->config_template_dir);
@@ -85,16 +92,16 @@ class TemplatesController extends DefaultController
         $this->smarty->setConfigDir($this->config_config_dir);
         $this->smarty->setCacheDir($this->config_cache_dir);
 
-        if (!($app_web_path = $config->getWebPath())) {
-            static::raiseError("Web path is missing!", true);
-            return false;
+        if (($app_web_path = $config->getWebPath()) === false) {
+            static::raiseError(__METHOD__.'(), web path is missing!', true);
+            return;
         }
 
         if ($app_web_path == '/') {
             $app_web_path = '';
         }
 
-        if (!($page_title = $config->getPageTitle())) {
+        if (($page_title = $config->getPageTitle()) === false) {
             $page_title = 'Thallium v'. MainController::FRAMEWORK_VERSION;
         }
 
@@ -108,7 +115,8 @@ class TemplatesController extends DefaultController
             array(&$this, "getHumanReadableFilesize"),
             false
         );
-        return true;
+        $this->registerPlugin("function", "raise_error", array(&$this, "smartyRaiseError"), false);
+        return;
     }
 
     public function getuid()
@@ -133,7 +141,11 @@ class TemplatesController extends DefaultController
         $no_output_filter = false
     ) {
         if (!file_exists($this->config_template_dir ."/". $template)) {
-            static::raiseError("Unable to locate ". $template ." in directory ". $this->config_template_dir);
+            static::raiseError(sprintf(
+                __METHOD__ .'(), unable to locate %s in directory %s',
+                $template,
+                $this->config_template_dir
+            ));
             return false;
         }
 
@@ -149,10 +161,10 @@ class TemplatesController extends DefaultController
                 $no_output_filter
             );
         } catch (\SmartyException $e) {
-            static::raiseError("Smarty throwed an exception! ". $e->getMessage());
+            static::raiseError(__METHOD__ .'(), Smarty has thrown an exception!', false, $e);
             return false;
         } catch (\Exception $e) {
-            static::raiseError('An exception occured: '. $e->getMessage());
+            static::raiseError(__METHOD__ .'(), an exception occured!', false, $e);
             return false;
         }
 
@@ -164,7 +176,7 @@ class TemplatesController extends DefaultController
         global $query;
 
         if (!array_key_exists('page', $params)) {
-            static::raiseError("getMenuState: missing 'page' parameter", E_USER_WARNING);
+            static::raiseError(__METHOD__ .'(), missing "page" parameter!');
             $repeat = false;
             return false;
         }
@@ -181,7 +193,7 @@ class TemplatesController extends DefaultController
         global $query;
 
         if (!array_key_exists('size', $params)) {
-            static::raiseError("getMenuState: missing 'size' parameter", E_USER_WARNING);
+            static::raiseError(__METHOD__ .'(), missing "size" parameter!');
             $repeat = false;
             return false;
         }
@@ -203,9 +215,22 @@ class TemplatesController extends DefaultController
         return true;
     }
 
+    public function hasPlugin($type, $name)
+    {
+        if (!array_key_exists($type, $this->smarty->smarty->registered_plugins)) {
+            return false;
+        }
+
+        if (!array_key_exists($name, $this->smarty->smarty->registered_plugins[$type])) {
+            return false;
+        }
+
+        return true;
+    }
+
     public function registerPlugin($type, $name, $callback, $cacheable = true)
     {
-        if (isset($this->smarty->smarty->registered_plugins[$type][$name])) {
+        if ($this->hasPlugin($type, $name)) {
             return true;
         }
 
@@ -300,6 +325,34 @@ class TemplatesController extends DefaultController
         }
 
         return $url;
+    }
+
+    public static function smartyRaiseError($params)
+    {
+        if (array_key_exists('message', $params)) {
+            $message = $params['message'];
+        } else {
+            $message = 'unknown error';
+        }
+
+        if (array_key_exists('stop', $params)) {
+            $stop = $params['stop'];
+        } else {
+            $stop = false;
+        }
+
+        if (!isset($message) || empty($message) || !is_string($message)) {
+            static::raiseError(__METHOD__ .'(), $message parameter is invalid!');
+            return false;
+        }
+
+        if (!isset($stop) || !is_bool($stop)) {
+            static::raiseError(__METHOD__ .'(), $stop parameter is invalid!');
+            return false;
+        }
+
+        static::raiseError($message, $stop);
+        return;
     }
 }
 
