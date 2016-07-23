@@ -281,7 +281,7 @@ class NetworkPathModel extends DefaultModel
             return false;
         }
 
-        if (!$load) {
+        if (!isset($load) || $load === false) {
             return $if1;
         }
 
@@ -349,7 +349,7 @@ class NetworkPathModel extends DefaultModel
             return false;
         }
 
-        if (!$load) {
+        if (!isset($load) || $load === false) {
             return $if2;
         }
 
