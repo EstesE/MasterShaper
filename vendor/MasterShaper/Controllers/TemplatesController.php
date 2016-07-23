@@ -123,7 +123,6 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
             array(&$this, "smartyHostProfileSelectList"),
             false
         );
-        $this->registerPlugin("function", "get_item_name", array(&$this, "smartyGetItemName"), false);
         $this->registerPlugin("function", "get_menu_state", array(&$this, "getMenuState"), false);
 
         return true;
@@ -380,74 +379,6 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
 
         return $string;
 
-    }
-
-    public function smartyGetItemName($params, &$smarty)
-    {
-        global $ms, $db;
-
-        if (!array_key_exists('idx', $params)) {
-            $this->trigger_error("smarty_get_item_name: missing 'idx' parameter", E_USER_WARNING);
-            $repeat = false;
-            return;
-        }
-        if (!array_key_exists('type', $params)) {
-            $this->trigger_error("smarty_get_item_name: missing 'type' parameter", E_USER_WARNING);
-            $repeat = false;
-            return;
-        }
-
-        switch ($params['type']) {
-            case 'sl':
-                $table = 'service_levels';
-                $column_prefix = 'sl';
-                $zero = 'Ignore QoS';
-                break;
-
-            case 'fallsl':
-                $table = 'service_levels';
-                $column_prefix = 'sl';
-                $zero = 'No Fallback';
-                break;
-
-            case 'target':
-                $table = 'targets';
-                $column_prefix = 'target';
-                $zero = 'any';
-                break;
-
-            case 'direction':
-                switch ($params['idx']) {
-                    case 1:
-                        return "--&gt;";
-                        break;
-                    case 2:
-                        return "&lt;-&gt;";
-                        break;
-                }
-                break;
-        }
-
-        // if idx is zero, return immediately
-        if ($params['idx'] == 0) {
-            return $zero;
-        }
-
-        $result = $db->query(
-            "SELECT
-                ". $column_prefix ."_name
-            FROM
-                TABLEPREFIX{$table}
-            WHERE
-                ". $column_prefix ."_idx LIKE '". $params['idx'] ."'"
-        );
-
-        if ($row = $result->fetch(PDO::FETCH_NUM)) {
-            $db->db_sth_free($result);
-            return $row[0];
-        }
-
-        return $string;
     }
 }
 
