@@ -533,6 +533,45 @@ class ChainModel extends DefaultModel
 
         return true;
     }
+
+    public function getActivePipes()
+    {
+        if (($chain_idx = $this->getIdx()) === false) {
+            static::raiseError(__CLASS__ .'::getIdx() returned false!');
+            return false;
+        }
+
+        try {
+            $apcs = new \MasterShaper\Models\AssignPipeToChainsModel(array(
+                'chain_idx' => $chain_idx,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load AssignPipeToChainsModel!', false, $e);
+            return false;
+        }
+
+        if (!$apcs->hasItems()) {
+            return array();
+        }
+
+        if (($items = $apcs->getItems()) === false) {
+            static::raiseError(get_class($apcs) .'::getItems() returned false!');
+            return false;
+        }
+
+        $pipes = array();
+
+        foreach ($items as $apc) {
+            if (($pipe = $apc->getPipe(true)) === false) {
+                static::raiseError(get_class($apc) .'::getPipe() returned false!');
+                return false;
+            }
+
+            array_push($pipes, $pipe);
+        }
+
+        return $pipes;
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
