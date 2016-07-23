@@ -26,11 +26,6 @@ class NetworkPathModel extends DefaultModel
 {
     protected static $model_table_name = 'network_paths';
     protected static $model_column_prefix = 'netpath';
-    /*protected static $model_has_items = true;
-    protected static $model_item_models = array(
-        'chain',
-    );
-    protected static $model_ignore_child_on_clone = true;*/
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
@@ -397,6 +392,34 @@ class NetworkPathModel extends DefaultModel
         }
 
         return true;
+    }
+
+    public function getActiveChains()
+    {
+        if (($netpath_idx = $this->getIdx()) === false) {
+            static::raiseError(__CLASS__ .'::getIdx() returned false!');
+            return false;
+        }
+
+        try {
+            $chains = new \MasterShaper\Models\ChainsModel(array(
+                'netpath_idx' => $netpath_idx,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load ChainsModel!', false, $e);
+            return false;
+        }
+
+        if (!$chains->hasItems()) {
+            return array();
+        }
+
+        if (($items = $chains->getItems()) === false) {
+            static::raiseError(get_class($chains) .'::getItems() returned false!');
+            return false;
+        }
+
+        return $items;
     }
 }
 
