@@ -112,7 +112,7 @@ class AssignPipeToChainModel extends DefaultModel
             return false;
         }
 
-        if (!$load) {
+        if (!isset($load) || $load === false) {
             return $value;
         }
 
