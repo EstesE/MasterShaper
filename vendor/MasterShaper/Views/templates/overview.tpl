@@ -14,7 +14,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
 *}
-<form action="{$page->uri}" id="overview" method="post">
+<form id="overview" method="post">
 <input type="hidden" name="module" value="overview" />
 <input type="hidden" name="action" value="store" />
 {if !isset($edit_mode) || empty($edit_mode)}
@@ -23,24 +23,24 @@
  {start_table icon=$icon_home alt="home icon" title="MasterShaper Ruleset Overview (edit)"}
 {/if}
 <div>
-{if isset($netpath) && !empty($netpath)}
-{foreach from=$network_paths item=$netpath}
-<table style="width: 100%;" type="netpath" id="netpath{$netpath->netpath_idx}">
+{if isset($nps) && !empty($nps)}
+{foreach from=$nps->getItems() item=netpath}
+<table style="width: 100%;" type="netpath" id="netpath{$netpath->getIdx()}">
  <tr>
   <td style="height: 15px;" />
  </tr>
  <tr>
   <td style="width: 99%;">
-   &nbsp;<a href="javascript:#" title="Collapse all chains within network path" onclick="toggle_content('tr[np={$netpath->netpath_idx}]', '#togglenp{$netpath->netpath_idx}', '{$icon_menu_down}', '{$icon_menu_right}', 'img[np={$netpath->netpath_idx}]'); return false;"><img src="{$icon_menu_right}" id="togglenp{$netpath->netpath_idx}" state="hidden" /></a>
-   <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{get_url page='network-paths' mode='edit' id=$netpath->getSafeLink()}" title="Modify network path {$netpath->netpath_name}">Network Path {$netpath->netpath_name}</a>
-   <a class="move-down" type="netpath" idx="{$netpath->netpath_idx}"><img src="{$icon_pipes_arrow_down}" alt="Move netpath down" /></a>
-   <a class="move-up" type="netpath" idx="{$netpath->netpath_idx}"><img src="{$icon_pipes_arrow_up}" alt="Move netpath up" /></a>
+   &nbsp;<a href="javascript:#" title="Collapse all chains within network path" onclick="toggle_content('tr[np={$netpath->getIdx()}]', '#togglenp{$netpath->getIdx()}', '{$icon_menu_down}', '{$icon_menu_right}', 'img[np={$netpath->getIdx()}]'); return false;"><img src="{$icon_menu_right}" id="togglenp{$netpath->getIdx()}" state="hidden" /></a>
+   <img src="{$icon_interfaces}" alt="network path icon" />&nbsp;<a href="{get_url page='network-paths' mode='edit' id=$netpath->getSafeLink()}" title="Modify network path {$netpath->getName()}">Network Path {$netpath->getName()}</a>
+   <a class="move-down" type="netpath" idx="{$netpath->getIdx()}"><img src="{$icon_pipes_arrow_down}" alt="Move netpath down" /></a>
+   <a class="move-up" type="netpath" idx="{$netpath->getIdx()}"><img src="{$icon_pipes_arrow_up}" alt="Move netpath up" /></a>
   </td>
   <td style="width: 1%;">
 {if !isset($edit_mode) || empty($edit_mode)}
- <a href="{$page->self}?mode=edit" title="Switch to Edit-Mode">Edit-Mode</a>&nbsp;
+{* <a href="{$page->self}?mode=edit" title="Switch to Edit-Mode">Edit-Mode</a>&nbsp;*}
 {else}
- <a href="{$page->self}?mode=view" title="Switch to View-Mode">View-Mode</a>&nbsp;
+{* <a href="{$page->self}?mode=view" title="Switch to View-Mode">View-Mode</a>&nbsp;*}
 {/if}
   </td>
  </tr>
@@ -80,32 +80,32 @@
     <tbody>
  {foreach from=$netpath->getActiveChains() item=chain}
 
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain->chain_idx}" type="chain">
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="chain{$chain->getIdx()}" type="chain">
      <td colspan="2">
-      <a href="javascript:#" title="Collapse chain" onclick="toggle_content('#chain{$chain->chain_idx} ~ [chain={$chain->chain_idx}]', '#togglechn{$chain->chain_idx}', '{$icon_menu_down}', '{$icon_menu_right}'); return false;"><img src="{$icon_menu_right}" id="togglechn{$chain->chain_idx}" np="{$netpath->netpath_idx}" state="hidden" /></a>
+      <a href="javascript:#" title="Collapse chain" onclick="toggle_content('#chain{$chain->getIdx()} ~ [chain={$chain->getIdx()}]', '#togglechn{$chain->getIdx()}', '{$icon_menu_down}', '{$icon_menu_right}'); return false;"><img src="{$icon_menu_right}" id="togglechn{$chain->getIdx()}" np="{$netpath->getIdx()}" state="hidden" /></a>
       <img src="{$icon_chains}" alt="chain icon" />&nbsp;
-      <a href="{get_url page='chains' mode='edit' id=$chain->getIdx()}" title="Modify chain {$chain->chain_name}">{$chain->chain_name}</a>
+      <a href="{get_url page='chains' mode='edit' id=$chain->getIdx()}" title="Modify chain {$chain->getName()}">{$chain->getName()}</a>
      </td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
-      <select name="chain_sl_idx[{$chain->chain_idx}]">
+      <select name="chain_sl_idx[{$chain->getIdx()}]">
        <option value="0">--- Ignore QoS ---</option>
-       {service_level_select_list details=no sl_idx=$chain->chain_sl_idx}
+       {service_level_select_list details=no sl_idx=$chain->getServiceLevel()}
       </select>
       {else}
-       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='service-levels' mode='edit' id=$chain->getServiceLevel()}" title="Modify servicel level {get_item_name type=sl idx=$chain->chain_sl_idx}">{get_item_name type=sl idx=$chain->chain_sl_idx}</a>
+       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='service-levels' mode='edit' id=$chain->getServiceLevel()}" title="Modify servicel level {$chain->getServiceLevelName()}">{$chain->getServiceLevelName()}</a>
       {/if}
      </td>
 
-    {if isset($chain_has_sl) && $chain_has_sl}
+    {if $chain->hasFallbackServiceLevel()}
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
-      <select name="chain_fallback_idx[{$chain->chain_idx}]">
+      <select name="chain_fallback_idx[{$chain->getIdx()}]">
        <option value="0">--- No Fallback ---</option>
-       {service_level_select_list details=no sl_idx=$chain->chain_fallback_idx}
+       {service_level_select_list details=no sl_idx=$chain->getFallbackServiceLevel()}
       </select>
       {else}
-       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='service-levels' mode='edit' id=$chain->chain_sl_idx}" title="Modify servicel level {get_item_name type=fallsl idx=$chain->chain_fallback_idx}">{get_item_name type=fallsl idx=$chain->chain_fallback_idx}</a>
+       <img src="{$icon_servicelevels}" alt="service level icon" />&nbsp;<a href="{get_url page='service-levels' mode='edit' id=$chain->getFallbackServiceLevel()}" title="Modify servicel level {$chain->getFallbackServiceLevelName()}">{$chain->getFallbackServiceLevelName()}</a>
       {/if}
      </td>
     {else}
@@ -114,108 +114,110 @@
 
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
-      <select name="chain_src_target[{$chain->chain_idx}]">
+      <select name="chain_src_target[{$chain->getIdx()}]">
        <option value="0">any</option>
-       {target_select_list target_idx=$chain->chain_src_target}
+       {target_select_list target_idx=$chain->getSourceTarget()}
       </select>
       {else}
-       <img src="{$icon_targets}" alt="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$chain->chain_src_target}" title="Modify target {get_item_name type=target idx=$chain->chain_src_target}">{get_item_name type=target idx=$chain->chain_src_target}</a>
+       <img src="{$icon_targets}" alt="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$chain->getSourceTarget()}" title="Modify target {$chain->getSourceTargetName()}">{$chain->getSourceTargetName()}</a>
 
       {/if}
      </td>
      <td style="text-align: center;">
       {if isset($edit_mode) && !empty($edit_mode)}
-      <select name="chain_direction[{$chain->chain_idx}]">
-       <option value="1" {if $chain->chain_direction == 1} selected="selected" {/if}>--&gt;</option>
-       <option value="2" {if $chain->chain_direction == 2} selected="selected" {/if}>&lt;-&gt;</option>
+      <select name="chain_direction[{$chain->getIdx()}]">
+       <option value="1" {if $chain->getDirection() == 1} selected="selected" {/if}>--&gt;</option>
+       <option value="2" {if $chain->getDirection() == 2} selected="selected" {/if}>&lt;-&gt;</option>
       </select>
       {else}
-       {get_item_name type=direction idx=$chain->chain_direction}
+       {$chain->getDirection(true)}
       {/if}
      </td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
-      <select name="chain_dst_target[{$chain->chain_idx}]">
+      <select name="chain_dst_target[{$chain->getIdx()}]">
        <option value="0">any</option>
-       {target_select_list target_idx=$chain->chain_dst_target}
+       {target_select_list target_idx=$chain->getDestinationTarget()}
       </select>
       {else}
-       <img src="{$icon_targets}" alt="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$chain->chain_dst_target}" title="Modify target {get_item_name type=target idx=$chain->chain_dst_target}">{get_item_name type=target idx=$chain->chain_dst_target}</a>
+       <img src="{$icon_targets}" alt="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$chain->getDestinationTarget()}" title="Modify target {$chain->getDestinationTargetName()}">{$chain->getDestinationTargetName()}</a>
       {/if}
      </td>
      {* <!-- hide actions for now, not in use -->
      <td style="text-align: center;">
-      <select name="chain_action[{$chain->chain_idx}]">
-       <option value="accept" {if $chain->chain_action == "accept"} selected="selected" {/if}>Accept</option>
-       <option value="drop" {if $chain->chain_action == "drop"} selected="selected" {/if}>Drop</option>
-       <option value="reject" {if $chain->chain_action == "reject"} selected="selected" {/if}>Reject</option>
+      <select name="chain_action[{$chain->getIdx()}]">
+       <option value="accept" {if $chain->getAction() == "accept"} selected="selected" {/if}>Accept</option>
+       <option value="drop" {if $chain->getAction() == "drop"} selected="selected" {/if}>Drop</option>
+       <option value="reject" {if $chain->getAction() == "reject"} selected="selected" {/if}>Reject</option>
       </select>
      </td> *}
      <td style="text-align: center;">
-      <a class="move-down" type="chain" idx="{$chain->chain_idx}"><img src="{$icon_chains_arrow_down}" alt="Move chain down" /></a>
-      <a class="move-up" type="chain" idx="{$chain->chain_idx}"><img src="{$icon_chains_arrow_up}" alt="Move chain up" /></a>
+      <a class="move-down" type="chain" idx="{$chain->getIdx()}"><img src="{$icon_chains_arrow_down}" alt="Move chain down" /></a>
+      <a class="move-up" type="chain" idx="{$chain->getIdx()}"><img src="{$icon_chains_arrow_up}" alt="Move chain up" /></a>
      </td>
     </tr>
 
   <!-- pipes are only available if the chain DOES NOT ignore
        QoS or DOES NOT use fallback service level
   -->
-  {if $chain->chain_sl_idx != 0 && $chain->chain_fallback_idx != 0}
+  {if $chain->hasServiceLevel() && $chain->getServiceLevel() != 0 && $chain->hasFallbackServiceLevel() && $chain->getFallbackServiceLevel() != 0}
+   {$counter = 0}
    {foreach $chain->getActivePipes() item=pipe}
-    <input type="hidden" name="pipes[{$counter}]" value="{$pipe->pipe_idx}" />
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe->apc_idx}" chain="{$chain->chain_idx}" np="{$netpath->netpath_idx}" type="pipe" style="display: none;">
+    {counter start=1 print=false assign=counter}
+    <input type="hidden" name="pipes[{$counter}]" value="{$pipe->getIdx()}" />
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" id="pipe{$pipe->apc_idx}" chain="{$chain->getIdx()}" np="{$netpath->getIdx()}" type="pipe" style="display: none;">
      <td style="text-align: center;">{$counter}</td>
      <td>
       <img src="{$icon_pipes}" alt="pipes icon" />&nbsp;
-      <a href="{get_url page='Pipe Edit' id=$pipe->pipe_idx}" title="Modify pipe {$pipe->pipe_name}">{$pipe->pipe_name}</a>
+      <a href="{get_url page='Pipe Edit' id=$pipe->getIdx()}" title="Modify pipe {$pipe->getName()}">{$pipe->getName()}</a>
      </td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
       <select name="pipe_sl_idx[{$apc_idx}]">
        <option value="0">*** {$pipe_sl_name} ***</option>
-       {service_level_select_list details=no sl_idx=$pipe_sl_idx}
+       {service_level_select_list details=no sl_idx=$pipe->getServiceLevel()}
       </select>
       {else}
-       <img src="{$icon_pipes}" alt="pipe icon" />&nbsp;<a href="{get_url page='Service Level Edit' id=$pipe_sl_idx}" title="Modify service level {get_item_name type=sl idx=$pipe_sl_idx}">{get_item_name type=sl idx=$pipe_sl_idx}</a>
+       <img src="{$icon_pipes}" alt="pipe icon" />&nbsp;<a href="{get_url page='Service Level Edit' id=$pipe->getServiceLevel()}" title="Modify service level {$pipe->getServiceLevel(true)->getName()}">{$pipe->getServiceLevel(true)->getName()}</a>
       {/if}
      </td>
      <td>&nbsp;</td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
-      <select name="pipe_src_target[{$pipe->pipe_idx}]">
+      <select name="pipe_src_target[{$pipe->getIdx()}]">
        <option value="0">any</option>
-       {target_select_list target_idx=$pipe->pipe_src_target}
+       {target_select_list target_idx=$pipe->getSourceTarget()}
       </select>
       {else}
-       <img src="{$icon_targets}" alt ="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$pipe->pipe_src_target}" title="Modify target {get_item_name type=target idx=$pipe->pipe_src_target}">{get_item_name type=target idx=$pipe->pipe_src_target}</a>
+       <img src="{$icon_targets}" alt ="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$pipe->getSourceTarget()}" title="Modify target {$pipe->getSourceTargetName()}">{$pipe->getSourceTargetName()}</a>
       {/if}
      </td>
      <td style="text-align: center;">
       {if isset($edit_mode) && !empty($edit_mode)}
-      <select name="pipe_direction[{$pipe->pipe_idx}]">
-       <option value="1" {if $pipe->pipe_direction == 1} selected="selected" {/if}>--&gt;</option>
-       <option value="2" {if $pipe->pipe_direction == 2} selected="selected" {/if}>&lt;-&gt;</option>
+      <select name="pipe_direction[{$pipe->getIdx()}]">
+       <option value="1" {if $pipe->getDirection() == 1} selected="selected" {/if}>--&gt;</option>
+       <option value="2" {if $pipe->getDirection() == 2} selected="selected" {/if}>&lt;-&gt;</option>
       </select>
       {else}
-       {get_item_name type=direction idx=$pipe->pipe_direction}
+       {$pipe->getDirection(true)}
       {/if}
      </td>
      <td {if isset($edit_mode) && !empty($edit_mode)} style="text-align: center;" {/if}>
       {if isset($edit_mode) && !empty($edit_mode)}
-      <select name="pipe_dst_target[{$pipe->pipe_idx}]">
+      <select name="pipe_dst_target[{$pipe->getIdx()}]">
        <option value="0">any</option>
-       {target_select_list target_idx=$pipe->pipe_dst_target}
+       {target_select_list target_idx=$pipe->getDestinationTarget()}
       </select>
       {else}
-       <img src="{$icon_targets}" alt ="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$pipe->pipe_dst_target}" title="Modify target {get_item_name type=target idx=$pipe->pipe_dst_target}">{get_item_name type=target idx=$pipe->pipe_dst_target}</a>
+       <img src="{$icon_targets}" alt ="target icon" />&nbsp;<a href="{get_url page='Target Edit' id=$pipe->getDestinationTarget()}" title="Modify target {$pipe->getDestinationTargetName()}">{$pipe->getDestinationTargetName()}</a>
       {/if}
      </td>
      {*
       <td style="text-align: center;">
-      <select name="pipe_action[{$pipe->pipe_idx}]">
-       <option value="accept" {if $pipe->pipe_action == "accept"} selected="selected" {/if}>Accept</option>
-       <option value="drop" {if $pipe->pipe_action == "drop"} selected="selected" {/if}>Drop</option>
-       <option value="reject" {if $pipe->pipe_action == "reject"} selected="selected" {/if}>Reject</option>
+      <select name="pipe_action[{$pipe->getIdx()}]">
+       <option value="accept" {if $pipe->getAction() == "accept"} selected="selected" {/if}>Accept</option>
+       <option value="drop" {if $pipe->getAction() == "drop"} selected="selected" {/if}>Drop</option>
+       <option value="reject" {if $pipe->getAction() == "reject"} selected="selected" {/if}>Reject</option>
       </select>
      </td> *}
      <td style="text-align: center;">
@@ -223,13 +225,13 @@
       <a class="move-up" type="pipe" idx="{$pipe->apc_idx}"><img src="{$icon_pipes_arrow_up}" alt="Move pipe up" /></a>
      </td>
     </tr>
-    {foreach from=$pipe->getActiveFilters() item=$filter}
-    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" chain="{$chain->chain_idx}" np="{$netpath->netpath_idx}" pipe="{$pipe->apc_idx}" type="filter" style="display: none;">
+    {foreach from=$pipe->getActiveFilters() item=filter}
+    <tr onmouseover="setBackGrdColor(this, 'mouseover');" onmouseout="setBackGrdColor(this, 'mouseout');" chain="{$chain->getIdx()}" np="{$netpath->getIdx()}" pipe="{$pipe->apc_idx}" type="filter" style="display: none;">
      <td>&nbsp;</td>
      <td colspan="7">
       <img src="{$icon_treeend}" alt="tree" />
       <img src="{$icon_filters}" alt="filter icon" />&nbsp;
-      <a href="{get_url page='Filter Edit' id=$filter->filter_idx}" title="Modify filter {$filter->filter_name}">{$filter->filter_name}</a>
+      <a href="{get_url page='Filter Edit' id=$filter->getIdx()}" title="Modify filter {$filter->getName()}">{$filter->getName()}</a>
      </td>
      <td>&nbsp;</td>
     </tr>
