@@ -23,8 +23,6 @@
 
 namespace MasterShaper\Views;
 
-use MasterShaper\Models;
-
 class OverviewView extends DefaultView
 {
     protected static $view_default_mode = 'show';
@@ -42,9 +40,11 @@ class OverviewView extends DefaultView
     protected $pipes = array();
     protected $filters = array();
 
+    protected $rules = array();
+
     public function show()
     {
-        global $ms, $db, $session;
+        global $ms, $session, $tmpl;
 
         /* If authentication is enabled, check permissions */
         if ($ms->getOption("authentication") == "Y" &&
@@ -53,117 +53,150 @@ class OverviewView extends DefaultView
             return false;
         }
 
-        if (!($host_id = $session->getCurrentHostProfile())) {
+        if (($host_id = $session->getCurrentHostProfile()) === false) {
             static::raiseError('Do not know for which host I am working for!');
             return false;
         }
 
         try {
-            $np = new Models\NetworkPathsModel();
+            $nps = new \MasterShaper\Models\NetworkPathsModel(array(
+                'host_idx' => $host_id,
+                'active' => 'Y'
+            ));
         } catch (\Exception $e) {
-            static::raiseError('Failed to load NetworkPathsModel!');
+            static::raiseError(__METHOD__ .'(), failed to load NetworkPathsModel!', false, $e);
             return false;
         }
 
-        if ($np->hasItems()) {
-            if (($network_paths = $np->getNetworkPaths($host_id)) === false) {
-                static::raiseError(get_class($np) .'::getNetworkPaths() returned false!');
+        if (!$nps->hasItems()) {
+            return parent::show();
+        }
+
+        $tmpl->assign('nps', $nps);
+        return parent::show();
+
+        if (($network_paths = $nps->getItems()) === false) {
+            static::raiseError(get_class($nps) .'::getItems() returned false!');
+            return false;
+        }
+
+        foreach ($network_paths as $np) {
+            $id = array_push($this->rules, $np);
+
+            if (($netpath_idx = $np->getIdx()) === false) {
+                static::raiseError(get_class($np) .'::getIdx() returned false!');
                 return false;
             }
 
-            foreach ($network_paths as $network_path) {
-                if (($chains = $network_path->getActiveChains()) === false) {
-                    static::raiseError(get_class($network_path) .'::getActiveChains() returned false!');
+            if (($chains = $np->getActiveChains()) === false) {
+                static::raiseError(get_class($np) .'::getActiveChains() returned false!');
+                return false;
+            }
+
+            foreach ($chains as $chain) {
+                if (($chain_idx = $chain->getIdx()) === false) {
+                    static::raiseError(get_class($chain) .'::getIdx() returned false!');
                     return false;
                 }
 
-                foreach ($chains as $chain) {
-                    if (($pipes = $chain->getActivePipes()) === false) {
-                        static::raiseError(get_class($chain) .'::getActivePipes() returned false!');
+                if (($pipes = $chain->getActivePipes()) === false) {
+                    static::raiseError(get_class($chain) .'::getActivePipes() returned false!');
+                    return false;
+                }
+
+                foreach ($pipes as $pipe) {
+                    array_push($this->pipes[$chain_idx], $pipe);
+
+                    if (($pipe_idx = $pipe->getIdx()) === false) {
+                        static::raiseError(get_class($pipe) .'::getIdx() returned false!');
                         return false;
                     }
 
-                    foreach ($pipes as $pipe) {
-                        if (($filters = $pipe->getActiveFilters()) === false) {
-                                static::raiseError(get_class($pipe) .'::getActiveFilters() returned false!');
-                                return false;
-                        }
+                    if (!isset($this->filters[$pipe_idx]) || !is_array($this->filters[$pipe_idx])) {
+                        $this->filters[$pipe_idx] = array();
+                    }
+
+                    if (($filters = $pipe->getActiveFilters()) === false) {
+                            static::raiseError(get_class($pipe) .'::getActiveFilters() returned false!');
+                            return false;
+                    }
+
+                    foreach ($filters as $filter) {
+                        array_push($this->filters[$pipe_idx], $filter);
                     }
                 }
             }
         }
 
-        /*if (!isset($this->smarty->registered_plugins['block']['ov_netpath'])) {
-          $this->registerPlugin("block", "ov_netpath", array(&$this, "smartyOverviewNetpath"));
-          }
-          if (!isset($this->smarty->registered_plugins['block']['ov_chain'])) {
-          $this->registerPlugin("block", "ov_chain", array(&$this, "smartyOverviewChain"));
-          }
-          if (!isset($this->smarty->registered_plugins['block']['ov_pipe'])) {
-          $this->registerPlugin("block", "ov_pipe", array(&$this, "smartyOverviewPipe"));
-          }
-          if (!isset($this->smarty->registered_plugins['block']['ov_filter'])) {
-          $this->registerPlugin("block", "ov_filter", array(&$this, "smartyOverviewFilter"));
-          }*/
+        if (!$tmpl->registerPlugin("block", "ov_netpath", array(&$this, "smartyOverviewNetpath"))) {
+            static::raiseError(get_class($tmpl) .'::registerPlugin() returned false!');
+            return false;
+        }
+        if (!$tmpl->registerPlugin("block", "ov_chain", array(&$this, "smartyOverviewChain"))) {
+            static::raiseError(get_class($tmpl) .'::registerPlugin() returned false!');
+            return false;
+        }
+        if (!$tmpl->registerPlugin("block", "ov_pipe", array(&$this, "smartyOverviewPipe"))) {
+            static::raiseError(get_class($tmpl) .'::registerPlugin() returned false!');
+            return false;
+        }
+        if (!$tmpl->registerPlugin("block", "ov_filter", array(&$this, "smartyOverviewFilter"))) {
+            static::raiseError(get_class($tmpl) .'::registerPlugin() returned false!');
+            return false;
+        }
 
         return parent::show();
     }
 
     public function smartyOverviewNetpath($params, $content, &$smarty, &$repeat)
     {
-        return false;
-        $index = $smarty->getTemplateVars('smarty.IB.ov_netpath.index');
-        if (!$index) {
+        if (($index = $smarty->getTemplateVars('smarty.IB.ov_netpath.index')) === false ||
+            !isset($index) || !is_numeric($index)) {
             $index = 0;
         }
 
-        if ($index < count($this->avail_network_paths)) {
-            $np_idx = $this->avail_network_paths[$index];
-            $np =  $this->network_paths[$np_idx];
-            $smarty->assign('netpath', $np);
-
+        if ($index < count($this->network_paths)) {
+            $np = $this->network_paths[$index];
             $index++;
+            $smarty->assign('netpath', $np);
             $smarty->assign('smarty.IB.ov_netpath.index', $index);
             $repeat = true;
         } else {
             $repeat = false;
         }
-        return $content;
 
-    } // smart_ov_netpath()
+        return $content;
+    }
 
     public function smartyOverviewChain($params, $content, &$smarty, &$repeat)
     {
-        return false;
-
-        if (!array_key_exists('np_idx', $params)) {
-            static::raiseError("ov_netpath: missing 'np_idx' parameter", E_USER_WARNING);
+        if (!array_key_exists('np', $params)) {
+            static::raiseError(__METHOD__ .'(), missing "np" parameter');
             $repeat = false;
             return;
         }
 
-        $np_idx = $params['np_idx'];
+        $np = $params['np'];
 
-        $index = $smarty->getTemplateVars('smarty.IB.ov_chain.index-'. $np_idx);
-        if (!$index) {
+        if (!$np->hasItems()) {
+            $repeat = false;
+            return $content;
+        }
+
+        if (($index = $smarty->getTemplateVars('smarty.IB.ov_chain.index')) === false ||
+            !isset($index) || !is_numeric($index)) {
             $index = 0;
         }
 
-        if ($index < count($this->avail_chains[$np_idx])) {
-            $chain_idx = $this->avail_chains[$np_idx][$index];
-            $chain =  $this->chains[$np_idx][$chain_idx];
-
-            $smarty->assign('chain', $chain);
-
-            if ($chain->chain_sl_idx != 0) {
-                $smarty->assign('chain_has_sl', true);
-            } else {
-                $smarty->assign('chain_has_sl', false);
+        if ($index < $np->getItemsCount()) {
+            if (($chain = $np->getItem($index)) === false) {
+                static::raise(get_class($np) .'::getItem() returned false!');
+                $repeat = false;
+                return;
             }
-
             $index++;
-            $smarty->assign('smarty.IB.ov_chain.index-'. $np_idx, $index);
-
+            $smarty->assign('chain', $chain);
+            $smarty->assign('smarty.IB.ov_chain.index', $index);
             $repeat = true;
         } else {
             $repeat = false;
