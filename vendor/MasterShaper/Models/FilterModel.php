@@ -182,7 +182,7 @@ class FilterModel extends DefaultModel
             return false;
         }
 
-        if (!$load || intval($proto_idx) == -1) {
+        if (!isset($load) || $load === false || intval($proto_idx) == -1) {
             return $proto_idx;
         }
 
@@ -297,7 +297,7 @@ class FilterModel extends DefaultModel
             return false;
         }
 
-        if (!$load) {
+        if (!isset($load) || $laod === false) {
             return $ports;
         }
 
