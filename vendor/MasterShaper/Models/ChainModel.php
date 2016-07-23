@@ -276,7 +276,7 @@ class ChainModel extends DefaultModel
             return false;
         }
 
-        if (!$load) {
+        if (!isset($load) || $load === false) {
             return $sl_idx;
         }
 
@@ -307,6 +307,25 @@ class ChainModel extends DefaultModel
         return $sl;
     }
 
+    public function getServiceLevelName()
+    {
+        if (!$this->hasServiceLevel()) {
+            return "Ignore QoS";
+        }
+
+        if (($sl = $this->getServiceLevel(true)) == false) {
+            static::raiseError(__CLASS__ .'::getServiceLevel() returned false!');
+            return false;
+        }
+
+        if (($name = $sl->getName()) === false) {
+            static::raiseError(get_class($sl) .'::getName() returned false!');
+            return false;
+        }
+
+        return $name;
+    }
+
     public function hasFallbackServiceLevel()
     {
         if (!$this->hasFieldValue('fallback_idx')) {
@@ -330,7 +349,7 @@ class ChainModel extends DefaultModel
             return false;
         }
 
-        if (!$load) {
+        if (!isset($load) || $load === false) {
             return $sl_idx;
         }
 
@@ -359,6 +378,25 @@ class ChainModel extends DefaultModel
         }
 
         return $sl;
+    }
+
+    public function getFallbackServiceLevelName()
+    {
+        if (!$this->hasFallbackServiceLevel()) {
+            return "No fallback";
+        }
+
+        if (($sl = $this->getFallbackServiceLevel(true)) == false) {
+            static::raiseError(__CLASS__ .'::getFallbackServiceLevel() returned false!');
+            return false;
+        }
+
+        if (($name = $sl->getName()) === false) {
+            static::raiseError(get_class($sl) .'::getName() returned false!');
+            return false;
+        }
+
+        return $name;
     }
 
     public function hasNetworkPath()
@@ -394,19 +432,36 @@ class ChainModel extends DefaultModel
         return true;
     }
 
-    public function getSourceTarget()
+    public function getSourceTarget($load = false)
     {
         if (!$this->hasSourceTarget()) {
             static::raiseError(__CLASS__ .'::hasSourceTarget() returned false!');
             return false;
         }
 
-        if (($host_idx = $this->getFieldValue('src_target')) === false) {
+        if (($target_idx = $this->getFieldValue('src_target')) === false) {
             static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
-        return $host_idx;
+        if (!isset($load) || $load === false) {
+            return $target_idx;
+        }
+
+        if ($target_idx === "0") {
+            return "any";
+        }
+
+        try {
+            $target = new \MasterShaper\Models\TargetModel(array(
+                'idx' => $target_idx,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load TargetModel!', false, $e);
+            return false;
+        }
+
+        return $target;
     }
 
     public function setSourceTarget($src_idx)
@@ -431,6 +486,29 @@ class ChainModel extends DefaultModel
         return true;
     }
 
+    public function getSourceTargetName()
+    {
+        if (!$this->hasSourceTarget()) {
+            return "any";
+        }
+
+        if (($target = $this->getSourceTarget(true)) === false) {
+            static::raiseError(__CLASS__ .'::getSourceTarget() returned false!');
+            return false;
+        }
+
+        if (is_string($target) && $target === "any") {
+            return $target;
+        }
+
+        if (($name = $target->getName()) === false) {
+            static::raiseError(get_class($target) .'::getName() returned false!');
+            return false;
+        }
+
+        return $name;
+    }
+
     public function hasDestinationTarget()
     {
         if (!$this->hasFieldValue('dst_target')) {
@@ -440,19 +518,36 @@ class ChainModel extends DefaultModel
         return true;
     }
 
-    public function getDestinationTarget()
+    public function getDestinationTarget($load = false)
     {
         if (!$this->hasDestinationTarget()) {
             static::raiseError(__CLASS__ .'::hasDestinationTarget() returned false!');
             return false;
         }
 
-        if (($host_idx = $this->getFieldValue('dst_target')) === false) {
+        if (($target_idx = $this->getFieldValue('dst_target')) === false) {
             static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
-        return $host_idx;
+        if (!isset($load) || $load === false) {
+            return $target_idx;
+        }
+
+        if ($target_idx === "0") {
+            return "any";
+        }
+
+        try {
+            $target = new \MasterShaper\Models\TargetModel(array(
+                'idx' => $target_idx,
+            ));
+        } catch (\Exception $e) {
+            static::raiseError(__METHOD__ .'(), failed to load TargetModel!', false, $e);
+            return false;
+        }
+
+        return $target;
     }
 
     public function setDestinationTarget($dst_idx)
@@ -477,6 +572,29 @@ class ChainModel extends DefaultModel
         return true;
     }
 
+    public function getDestinationTargetName()
+    {
+        if (!$this->hasDestinationTarget()) {
+            return "any";
+        }
+
+        if (($target = $this->getDestinationTarget(true)) === false) {
+            static::raiseError(__CLASS__ .'::DestinationTarget() returned false!');
+            return false;
+        }
+
+        if (is_string($target) && $target === "any") {
+            return $target;
+        }
+
+        if (($name = $target->getName()) === false) {
+            static::raiseError(get_class($target) .'::getName() returned false!');
+            return false;
+        }
+
+        return $name;
+    }
+
     public function hasDirection()
     {
         if (!$this->hasFieldValue('direction')) {
@@ -486,19 +604,32 @@ class ChainModel extends DefaultModel
         return true;
     }
 
-    public function getDirection()
+    public function getDirection($text = false)
     {
         if (!$this->hasDirection()) {
             static::raiseError(__CLASS__ .'::hasDirection() returned false!');
             return false;
         }
 
-        if (($host_idx = $this->getFieldValue('direction')) === false) {
+        if (($direction = $this->getFieldValue('direction')) === false) {
             static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
             return false;
         }
 
-        return $host_idx;
+        if (!isset($text) || $text === false) {
+            return $direction;
+        }
+
+        switch ($direction) {
+            case 1:
+                return "--&gt;";
+                break;
+            case 2:
+                return "&lt;-&gt;";
+                break;
+        }
+
+        return false;
     }
 
     public function swapTargets()
