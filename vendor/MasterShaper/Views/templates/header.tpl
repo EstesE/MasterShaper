@@ -34,7 +34,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>{$page_title}</title>
   <!-- jQuery -->
-  <script type="text/javascript" src="{$app_web_path}/resources/jQuery/jquery-2.2.1.min.js"></script>
+  <script type="text/javascript" src="{$app_web_path}/resources/jQuery/jquery-3.1.0.min.js"></script>
   <script language="javascript" type="text/javascript" src="{$app_web_path}/resources/jQuery/plugins/jquery.color.js"></script>
   <!-- jquery.cookie -->
   <script type="text/javascript" src="{$app_web_path}/resources/jQuery/plugins/jquery.cookie-1.4.1.min.js">
