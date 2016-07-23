@@ -28,26 +28,60 @@ class NetworkPathsModel extends DefaultModel
     protected static $model_column_prefix = 'netpath';
     protected static $model_has_items = true;
     protected static $model_items_model = 'NetworkPathModel';
-    private $hostProfileId;
+    protected $hostProfileId;
 
-    public function getNetworkPaths()
+    public function getNetworkPaths($load = false)
     {
         global $ms;
 
         if (!$this->hasItems()) {
-            $ms->raiseError(__METHOD__ .'(), no items set!');
+            static::raiseError(__METHOD__ .'(), no items set!');
             return false;
         }
 
-        if (empty($this->items)) {
-            return array();
+        if (($paths = $this->getItems()) === false) {
+            static::raiseError(__CLASS__ .'::getItems() returned false!');
+            return false;
         }
 
-        $filtered = array_filter($this->items, function ($item) {
-            return false;
-        });
+        if (!$load) {
+            return $paths;
+        }
 
-        return $filtered;
+        $paths_loaded = array();
+
+        foreach ($paths as $path) {
+            if (isset($path) &&
+                is_object($path) &&
+                is_a($path, 'MasterShaper\Models\NetworkPathModel')) {
+                array_push($paths_loaded, $path);
+                continue;
+            }
+
+            if (!isset($path) ||
+                empty($path) ||
+                !is_array($path) ||
+                !array_key_exists(FIELD_IDX, $path) ||
+                !array_key_exists(FIELD_GUID, $path)
+            ) {
+                static::raiseError(__METHOD__ .'(), invalid network path found!');
+                return false;
+            }
+
+            try {
+                $path_obj = new \MasterShaper\Models\NetworkPathModel(array(
+                    FIELD_IDX => $path[FIELD_IDX],
+                    FIELD_GUID => $path[FIELD_GUID],
+                ));
+            } catch (\Exception $e) {
+                static::raiseError(__METHOD__ .'(), failed to load NetworkPathModel!', false, $e);
+                return false;
+            }
+
+            array_push($paths_loaded, $path_obj);
+        }
+
+        return $paths_loaded;
     }
 
     public function setHostProfile($host_id)
@@ -55,7 +89,7 @@ class NetworkPathsModel extends DefaultModel
         global $ms;
 
         if (!isset($host_id) || empty($host_id) || !is_string($host_id)) {
-            $ms->raiseError(__METHOD__ .'(), \$host_id is invalid!');
+            static::raiseError(__METHOD__ .'(), \$host_id is invalid!');
             return false;
         }
 
@@ -67,7 +101,7 @@ class NetworkPathsModel extends DefaultModel
         global $ms;
 
         if (!isset($this->hostProfileId)) {
-            $ms->raiseError(__METHOD__ .'(), hostProfileId has not been set yet!');
+            static::raiseError(__METHOD__ .'(), hostProfileId has not been set yet!');
             return false;
         }
 
@@ -79,7 +113,7 @@ class NetworkPathsModel extends DefaultModel
         global $session, $db;
 
         if (($host_idx = $session->getCurrentHostProfile()) === false) {
-            $this->raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
+            static::raiseError(get_class($session) .'::getCurrentHostProfile() returned false!');
             return false;
         }
 
@@ -117,7 +151,6 @@ class NetworkPathsModel extends DefaultModel
         );
 
         while ($np = $sth->fetch()) {
-
             $db->execute($sth_update, array(
                  $pos,
                  $np->netpath_idx,
