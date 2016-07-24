@@ -26,6 +26,7 @@ class SettingModel extends DefaultModel
 {
     protected static $model_table_name = 'settings';
     protected static $model_column_prefix = 'setting';
+    protected static $model_friendly_name = "Setting";
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
