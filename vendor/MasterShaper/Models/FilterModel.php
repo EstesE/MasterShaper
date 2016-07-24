@@ -71,6 +71,9 @@ class FilterModel extends DefaultModel
             FIELD_DEFAULT => 'Y',
         ),
     );
+    protected static $model_links = array(
+        'ProtocolModel/idx' => 'protocol_id',
+    );
     private $ports;
 
     protected function __init()
