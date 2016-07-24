@@ -26,6 +26,7 @@ class FilterModel extends DefaultModel
 {
     protected static $model_table_name = 'filters';
     protected static $model_column_prefix = 'filter';
+    protected static $model_icon = "icon_filters";
     protected static $model_friendly_name = "Filter";
     protected static $model_fields = array(
         'idx' => array(
