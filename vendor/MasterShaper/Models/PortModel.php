@@ -26,6 +26,7 @@ class PortModel extends DefaultModel
 {
     protected static $model_table_name = 'ports';
     protected static $model_column_prefix = 'port';
+    protected static $model_icon = "icon_ports";
     protected static $model_friendly_name = "Port";
     protected static $model_fields = array(
         'idx' => array(
