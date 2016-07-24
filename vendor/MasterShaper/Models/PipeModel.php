@@ -60,6 +60,11 @@ class PipeModel extends DefaultModel
             FIELD_TYPE => FIELD_STRING,
         ),
     );
+    protected static $model_links = array(
+        'ServiceLevelModel/idx' => 'sl_idx',
+        'TargetModel/idx/1' => 'src_target',
+        'TargetModel/idx/2' => 'dst_target',
+    );
 
     protected function __init()
     {
