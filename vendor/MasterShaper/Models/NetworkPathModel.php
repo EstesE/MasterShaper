@@ -62,6 +62,9 @@ class NetworkPathModel extends DefaultModel
             FIELD_TYPE => FIELD_INT,
         ),
     );
+    protected static $model_links = array(
+        'HostProfileModel/idx' => 'host_idx',
+    );
 
     protected function __init()
     {
