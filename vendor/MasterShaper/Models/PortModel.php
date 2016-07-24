@@ -52,7 +52,7 @@ class PortModel extends DefaultModel
         ),
     );
     protected static $model_links = array(
-        'AssignPortToFiltersModel/port_idx',
+        'AssignPortToFiltersModel/port_idx' => 'idx',
     );
 
     protected function __init()
