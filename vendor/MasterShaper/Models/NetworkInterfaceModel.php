@@ -55,6 +55,10 @@ class NetworkInterfaceModel extends DefaultModel
             FIELD_TYPE => FIELD_INT,
         ),
     );
+    protected static $model_links = array(
+        'ServiceLevelModel/idx' => 'fallback_idx',
+        'HostProfileModel/idx' => 'host_idx',
+    );
 
     protected function __init()
     {
