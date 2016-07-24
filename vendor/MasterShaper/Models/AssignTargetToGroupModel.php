@@ -40,6 +40,10 @@ class AssignTargetToGroupModel extends DefaultModel
             FIELD_TYPE => FIELD_INT,
         ),
     );
+    protected static $model_links = array(
+        'TargetModel/idx/1' => 'group_idx',
+        'TargetModel/idx/2' => 'target_idx',
+    );
 
     public function hasGroup()
     {
