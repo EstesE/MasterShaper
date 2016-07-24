@@ -26,6 +26,7 @@ class TargetModel extends DefaultModel
 {
     protected static $model_table_name = 'targets';
     protected static $model_column_prefix = 'target';
+    protected static $model_friendly_name = "Target";
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
