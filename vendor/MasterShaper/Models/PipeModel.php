@@ -26,6 +26,7 @@ class PipeModel extends DefaultModel
 {
     protected static $model_table_name = 'pipes';
     protected static $model_column_prefix = 'pipe';
+    protected static $model_friendly_name = "Pipe";
     protected static $model_fields = array(
         'idx'  => array(
             FIELD_TYPE => FIELD_INT,
