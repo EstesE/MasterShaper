@@ -156,6 +156,9 @@
  <div class="ui divider"></div>
  {form_buttons submit=1 discard=1 reset=1}
 </form>
+<p class="footnote">
+ {include file="link_list.tpl" link_source=$chain}
+</p>
 <script type="text/javascript">
 'use strict';
 
