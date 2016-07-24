@@ -39,8 +39,8 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
         parent::__construct();
 
         if (($base_web_path = $config->getWebPath()) === false) {
-            $this->raiseError(get_class($config) .'::getWebPath() returned false!');
-            return false;
+            $this->raiseError(get_class($config) .'::getWebPath() returned false!', true);
+            return;
         }
 
         $this->assign('icon_chains', $base_web_path .'/resources/icons/flag_blue.gif');
@@ -125,7 +125,7 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
         );
         $this->registerPlugin("function", "get_menu_state", array(&$this, "getMenuState"), false);
 
-        return true;
+        return;
     }
 
     public function smartyStartTable($params, &$smarty)
