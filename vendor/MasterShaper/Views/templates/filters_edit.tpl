@@ -136,12 +136,5 @@
  {form_buttons submit=1 discard=1 reset=1}
 </form>
 <p class="footnote">
-{if isset($pipe_use_filters) && !empty($pipe_use_filters)}
- This filter is assigned to the following pipes:<br />
- {foreach from=$pipe_use_filters key=pipe_idx item=pipe_name name=pipes}
-  <a href="{get_url page='filters' mode='edit' id=$pipe->getSafeLink()}" title="Edit pipe {$pipe_name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$pipe_name}</a>{if !isset($smarty.foreach.pipes.last)},{/if}
- {foreachelse}
-  none
- {/foreach}
-{/if}
+ {include file="link_list.tpl" link_source=$filter}
 </p>
