@@ -40,6 +40,10 @@ class AssignFilterToPipeModel extends DefaultModel
             FIELD_TYPE => FIELD_INT,
         ),
     );
+    protected static $model_links = array(
+        'FilterModel/idx' => 'filter_idx',
+        'PipeModel/idx' => 'pipe_idx',
+    );
 
     public function hasPipe()
     {
