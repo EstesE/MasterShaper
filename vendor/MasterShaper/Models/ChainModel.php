@@ -73,6 +73,14 @@ class ChainModel extends DefaultModel
             FIELD_TYPE => FIELD_INT,
         ),
     );
+    protected static $model_links = array(
+        'ServiceLevelModel/idx/1' => 'sl_idx',
+        'ServiceLevelModel/idx/2' => 'fallback_idx',
+        'TargetModel/idx/1' => 'src_target',
+        'TargetModel/idx/2' => 'dst_target',
+        'NetworkPathModel/idx' => 'netpath_idx',
+        'HostProfileModel/idx' => 'host_idx',
+    );
 
     protected function __init()
     {
