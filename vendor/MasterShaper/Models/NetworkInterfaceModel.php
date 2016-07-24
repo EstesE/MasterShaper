@@ -27,6 +27,7 @@ class NetworkInterfaceModel extends DefaultModel
 {
     protected static $model_table_name = 'interfaces';
     protected static $model_column_prefix = 'if';
+    protected static $model_icon = "icon_interfaces";
     protected static $model_friendly_name = "Network Interface";
     protected static $model_fields = array(
         'idx' => array(
