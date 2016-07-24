@@ -142,6 +142,12 @@ class ServiceLevelModel extends DefaultModel
             FIELD_TYPE => FIELD_STRING,
         )
     );
+    protected static $model_links = array(
+        'ChainsModel/sl_idx' => 'idx',
+        'ChainsModel/fallback_idx' => 'idx',
+        'PipesModel/sl_idx' => 'idx',
+        'NetworkInterfacesModel/fallback_idx' => 'idx',
+    );
 
     protected function __init()
     {
