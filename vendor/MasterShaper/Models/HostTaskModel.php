@@ -27,6 +27,7 @@ class HostTaskModel extends DefaultModel
 {
     protected static $model_table_name = 'tasks';
     protected static $model_column_prefix = 'task';
+    protected static $model_friendly_name = "Task";
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
