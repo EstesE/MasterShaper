@@ -27,6 +27,7 @@ class UserModel extends DefaultModel
     protected static $garbled_password = "**+*!!!*+**";
     protected static $model_table_name = 'users';
     protected static $model_column_prefix = 'user';
+    protected static $model_friendly_name = "User";
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
