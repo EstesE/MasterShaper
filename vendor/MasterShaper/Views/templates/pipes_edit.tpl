@@ -58,7 +58,9 @@
     <td>
      <select name="pipe_src_target">
       <option value="0">any</option>
-      {target_select_list target_idx=($pipe->hasSourceTarget()) ? $pipe->getSourceTarget() : null}
+      {select_list name="sourcetargets" what="TargetsModel" selected=($pipe->hasSourceTarget()) ? $pipe->getSourceTarget() : null}
+      <option value="{$data->getIdx()}" {if $data->getIdx() == $selected}selected="selected"{/if}>{if $data->hasName()}{$data->getName()}{else}{$data->getIdx()}{/if}</option>
+      {/select_list}
      </select>
     </td>
     <td>
@@ -70,7 +72,9 @@
     <td>
      <select name="pipe_dst_target">
       <option value="0">any</option>
-      {target_select_list target_idx=($pipe->hasDestinationTarget()) ? $pipe->getDestinationTarget() : null}
+      {select_list name="sourcetargets" what="TargetsModel" selected=($pipe->hasDestinationTarget()) ? $pipe->getDestinationTarget() : null}
+      <option value="{$data->getIdx()}" {if $data->getIdx() == $selected}selected="selected"{/if}>{if $data->hasName()}{$data->getName()}{else}{$data->getIdx()}{/if}</option>
+      {/select_list}
      </select>
     </td>
    </tr>
@@ -108,6 +112,9 @@
   <label>Service-Level:</label>
   <select name="pipe_sl_idx">
   {service_level_select_list sl_idx=($pipe->hasServiceLevel()) ? $pipe->getServiceLevel() : null}
+  {select_list name="servicelevel" what="ServiceLevelsModel" selected=($pipe->hasServiceLevel()) ? $pipe->getServiceLevel() : null}
+   <option value="{$data->getIdx()}" {if $data->getIdx() == $selected}selected="selected"{/if}>{if $data->hasName()}{$data->getName()}{else}{$data->getIdx()}{/if}</option>
+  {/select_list}
   </select>
   <img class="change_to" src="{$icon_arrow_right}" value="Go" onclick="change_to('{get_url page='service-levels' mode='edit' id=0}', $('select[name=pipe_sl_idx]').val());" />
   <div class="extra">Default bandwidth limit for this pipe. It can be overriden per chain as soon as you assigned this pipe to it.</div>
