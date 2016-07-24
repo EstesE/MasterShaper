@@ -41,7 +41,9 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('filter', 'FilterModel');
             $this->registerModel('filters', 'FiltersModel');
             $this->registerModel('host_profile', 'HostProfileModel');
+            $this->registerModel('host_profiles', 'HostProfilesModel');
             $this->registerModel('host_task', 'HostTaskModel');
+            $this->registerModel('host_tasks', 'HostTasksModel');
             $this->registerModel('network_interface', 'NetworkInterfaceModel');
             $this->registerModel('network_interfaces', 'NetworkInterfacesModel');
             $this->registerModel('network_path', 'NetworkPathModel');
