@@ -26,6 +26,7 @@ class ProtocolModel extends DefaultModel
 {
     protected static $model_table_name = 'protocols';
     protected static $model_column_prefix = 'proto';
+    protected static $model_friendly_name = "Protocol";
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
