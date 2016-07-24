@@ -402,9 +402,9 @@ abstract class DefaultView
             return false;
         }
 
-        if (!method_exists($data, 'isHavingItems') ||
-            !is_callable(array(&$data, 'isHavingItems')) ||
-            !$data->isHavingItems() ||
+        if (!method_exists($data, 'hasModelItems') ||
+            !is_callable(array(&$data, 'hasModelItems')) ||
+            !$data->hasModelItems() ||
             !method_exists($data, 'hasItems') ||
             !is_callable(array(&$data, 'hasItems'))
         ) {
