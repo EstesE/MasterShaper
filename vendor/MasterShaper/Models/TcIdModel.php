@@ -52,6 +52,11 @@ class TcIdModel extends DefaultModel
             FIELD_TYPE => FIELD_STRING,
         ),
     );
+    protected static $model_links = array(
+        'PipeModel/idx' => 'pipe_idx',
+        'ChainModel/idx' => 'chain_idx',
+        'HostProfileModel/idx' => 'host_idx',
+    );
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
