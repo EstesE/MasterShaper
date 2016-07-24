@@ -27,6 +27,7 @@ class HostProfileModel extends DefaultModel
 {
     protected static $model_table_name = 'host_profiles';
     protected static $model_column_prefix = 'host';
+    protected static $model_icon = "icon_hosts";
     protected static $model_friendly_name = "Host Profile";
     protected static $model_fields = array(
         'idx' => array(
