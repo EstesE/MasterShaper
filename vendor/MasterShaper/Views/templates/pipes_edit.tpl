@@ -116,12 +116,5 @@
  {form_buttons submit=1 discard=1 reset=1}
 </form>
 <p class="footnote">
-{if isset($chain_use_pipes) && !empty($chain_use_pipes)}
- This pipe is assigned to the following chains:<br />
- {foreach from=$chain_use_pipes key=chain_idx item=chain_name name=chains}
-  <a href="{get_url page='chains' id=$chain->getSafeLink()}" title="Edit chain {$chain_name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$chain_name}</a>{if !isset($smarty.foreach.chains.last) || empty($smarty.foreach.chains.last)},{/if}
- {foreachelse}
-  none
- {/foreach}
-{/if}
+ {include file="link_list.tpl" link_source=$pipe}
 </p>
