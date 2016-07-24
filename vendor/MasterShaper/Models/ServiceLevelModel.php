@@ -26,6 +26,7 @@ class ServiceLevelModel extends DefaultModel
 {
     protected static $model_table_name = 'service_levels';
     protected static $model_column_prefix = 'sl';
+    protected static $model_friendly_name = "Service Level";
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
