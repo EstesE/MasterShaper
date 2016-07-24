@@ -21,6 +21,8 @@ namespace MasterShaper\Models;
 
 abstract class DefaultModel extends \Thallium\Models\DefaultModel
 {
+    protected static $model_icon;
+
     public function hasName()
     {
         if (!isset(static::$model_column_prefix) || empty(static::$model_column_prefix)) {
@@ -121,6 +123,32 @@ abstract class DefaultModel extends \Thallium\Models\DefaultModel
             $this->getIdx(),
             $this->getGuid()
         );
+    }
+
+    public static function hasModelIcon()
+    {
+        $called_class = get_called_class();
+
+        if (!property_exists($called_class, 'model_icon') ||
+            !isset($called_class::$model_icon) ||
+            empty($called_class::$model_icon) ||
+            !is_string($called_class::$model_icon)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function getModelIcon()
+    {
+        if (!static::hasModelIcon()) {
+            static::raiseError(__CLASS__ .'::hasModelIcon() returned false!');
+        }
+
+        $called_class = get_called_class();
+
+        return $called_class::$model_icon;
     }
 }
 
