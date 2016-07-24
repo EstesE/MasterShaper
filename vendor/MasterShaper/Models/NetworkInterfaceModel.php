@@ -60,6 +60,8 @@ class NetworkInterfaceModel extends DefaultModel
     protected static $model_links = array(
         'ServiceLevelModel/idx' => 'fallback_idx',
         'HostProfileModel/idx' => 'host_idx',
+        'NetworkPathsModel/if1' => 'idx',
+        'NetworkPathsModel/if2' => 'idx',
     );
 
     protected function __init()
