@@ -71,14 +71,6 @@
  <div class="ui divider"></div>
  {form_buttons submit=1 discard=1 reset=1}
 </form>
-
 <p class="footnote">
-This interface is assigned to the following network paths:<br />
-{if isset($np_use_if) && !empty($np_use_if)}
- {foreach from=$np_use_if key=np_idx item=np_name name=networkpaths}
-  <a href="{get_url page='network-paths' mode='edit' id=$netpath->getSafeLink()}" title="Edit network path  $np_name}"><img src="{$icon_interfaces}" alt="interface icon" />&nbsp;{$np_name}</a>{if !isset($smarty.foreach.networkpaths.last) || empty($smarty.foreach.networkpaths.last)},{/if}
- {foreachelse}
-  none
- {/foreach}
-{/if}
+ {include file="link_list.tpl" link_source=$if}
 </p>
