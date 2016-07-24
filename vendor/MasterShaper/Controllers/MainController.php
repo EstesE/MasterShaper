@@ -57,7 +57,9 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('service_level', 'ServiceLevelModel');
             $this->registerModel('service_levels', 'ServiceLevelsModel');
             $this->registerModel('target', 'TargetModel');
+            $this->registerModel('targets', 'TargetsModel');
             $this->registerModel('user', 'UserModel');
+            $this->registerModel('users', 'UsersModel');
             $this->registerModel('atg', 'AssignTargetToGroupModel');
             $this->registerModel('atgs', 'AssignTargetToGroupsModel');
             $this->registerModel('apf', 'AssignPortToFilterModel');
