@@ -26,6 +26,7 @@ class NetworkPathModel extends DefaultModel
 {
     protected static $model_table_name = 'network_paths';
     protected static $model_column_prefix = 'netpath';
+    protected static $model_friendly_name = "Network Path";
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
