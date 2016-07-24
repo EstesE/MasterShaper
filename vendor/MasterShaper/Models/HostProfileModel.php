@@ -47,6 +47,11 @@ class HostProfileModel extends DefaultModel
             FIELD_TYPE => FIELD_TIMESTAMP,
         ),
     );
+    protected static $model_links = array(
+        'ChainsModel/host_idx' => 'idx',
+        'NetworkInterfacesModel/host_idx' => 'idx',
+        'NetworkPathsModel/host_idx' => 'idx',
+    );
 
     protected function __init()
     {
