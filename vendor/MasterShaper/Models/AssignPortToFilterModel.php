@@ -40,6 +40,10 @@ class AssignPortToFilterModel extends DefaultModel
             FIELD_TYPE => FIELD_INT,
         ),
     );
+    protected static $model_links = array(
+        'FilterModel/idx' => 'filter_idx',
+        'PortModel/idx' => 'port_idx',
+    );
 
     public function hasFilter()
     {
