@@ -109,20 +109,5 @@
  {form_buttons submit=1 discard=1 reset=1}
 </form>
 <p class="footnote">
-{if isset($obj_use_target) && !empty($obj_use_target)}
- This target is assigned to the following objects:<br />
- {foreach from=$obj_use_target key=obj_idx item=obj name=objects}
-  {if $obj->type == 'group'}
-   <a href="{get_url page='targets' mode='edit' id=$obj->getSafeLink()}" title="Edit target {$obj->name}"><img src="{$icon_targets}" alt="target icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
-  {/if}
-  {if $obj->type == 'pipe'}
-   <a href="{get_url page='pipes' mode='edit' id=$obj->getSafeLink()}" title="Edit pipe {$obj->name}"><img src="{$icon_pipes}" alt="pipe icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
-  {/if}
-  {if $obj->type == 'chain'}
-   <a href="{get_url page='chains' mode='edit' id=$obj->getSafeLink()}" title="Edit chain {$obj->name}"><img src="{$icon_chains}" alt="chain icon" />&nbsp;{$obj->name}</a>{if !isset($smarty.foreach.objects.last) || empty($smarty.foreach.objects.last)},{/if}
-  {/if}
- {foreachelse}
-  none
- {/foreach}
-{/if}
+ {include file="link_list.tpl" link_source=$target}
 </p>
