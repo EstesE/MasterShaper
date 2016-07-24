@@ -142,6 +142,21 @@ class NetworkInterfaceModel extends DefaultModel
 
         return true;
     }
+
+    public function getFallback()
+    {
+        if (!$this->hasFieldValue('fallback_idx')) {
+            static::raiseError(__CLASS__ .'::hasFieldValue() returned false!');
+            return false;
+        }
+
+        if (($value = $this->getFieldValue('fallback_idx')) === false) {
+            static::raiseError(__CLASS__ .'::getFieldValue() returned false!');
+            return false;
+        }
+
+        return $value;
+    }
 }
 
 // vim: set filetype=php expandtab softtabstop=4 tabstop=4 shiftwidth=4:
