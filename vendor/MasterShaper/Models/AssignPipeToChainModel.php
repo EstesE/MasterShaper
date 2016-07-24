@@ -49,6 +49,11 @@ class AssignPipeToChainModel extends DefaultModel
             FIELD_TYPE => FIELD_YESNO,
         ),
     );
+    protected static $model_links = array(
+        'PipeModel/idx' => 'pipe_idx',
+        'ChainModel/idx' => 'chain_idx',
+        'ServiceLevelModel/idx' => 'sl_idx',
+    );
 
     public function hasChain()
     {
