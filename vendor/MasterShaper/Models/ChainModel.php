@@ -27,6 +27,7 @@ class ChainModel extends DefaultModel
     protected static $model_table_name = "chains";
     protected static $model_column_prefix = "chain";
     protected static $model_friendly_name = "Chain";
+    protected static $model_icon = "icon_chains";
     protected static $model_fields = array(
         'idx' => array(
             FIELD_TYPE => FIELD_INT,
