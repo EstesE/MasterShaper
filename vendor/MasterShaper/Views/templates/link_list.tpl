@@ -4,9 +4,9 @@
 {if $link_source->hasModelLinks()}
  This {if $link_source->hasModelFriendlyName()}{$link_source->getModelFriendlyName()}{else}object{/if} is linked to the following objects:<br />
  {foreach from=$link_source->getModelLinkedList(true, true) item=obj name=objects}
-  {if $obj->isHavingItems() && $obj->hasItems()}
+  {if $obj->hasModelItems() && $obj->hasItems()}
    {$objects = $obj->getItems()}
-  {elseif !$obj->isHavingItems()}
+  {elseif !$obj->hasModelItems()}
    {$objects = array($obj)}
   {/if}
   {foreach from=$objects item=link name=links}
