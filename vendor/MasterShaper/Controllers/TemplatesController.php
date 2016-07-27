@@ -89,7 +89,7 @@ class TemplatesController extends \Thallium\Controllers\TemplatesController
         $this->assign('icon_process', $base_web_path .'/resources/icons/task.png');
         $this->assign('web_path', $base_web_path);
 
-        if (!$ms->isZendOpcacheAvailable()) {
+        if ($ms->isZendOpcacheAvailable()) {
             $this->assign('zend_opcache_available', true);
         } else {
             $this->assign('zend_opcache_available', false);
