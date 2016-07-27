@@ -24,7 +24,7 @@ class MainController extends \Thallium\Controllers\MainController
     const VERSION = "1.0";
 
     protected $ms_settings = array();
-    protected $zend_opcache_available = true;
+    protected $zend_opcache_available = false;
 
     public function __construct($mode = null)
     {
@@ -73,8 +73,12 @@ class MainController extends \Thallium\Controllers\MainController
             $this->registerModel('tcid', 'TcIdModel');
             $this->registerModel('tcids', 'TcIdsModel');
         } catch (\Exception $e) {
-            static::raiseError(__CLASS__ .'::__construct(), error on registering models!"', true);
+            static::raiseError(__CLASS__ .'::__construct(), error on registering models!', true, $e);
             return;
+        }
+
+        if (extension_loaded('Zend OPcache')) {
+            $this->zend_opcache_available = true;
         }
 
         $GLOBALS['ms'] =& $this;
@@ -89,10 +93,6 @@ class MainController extends \Thallium\Controllers\MainController
         if (!$this->loadSettings()) {
             static::raiseError(__CLASS__ .'::loadSettings() returned false!', true);
             return false;
-        }
-
-        if (!extension_loaded('Zend OPcache')) {
-            $this->zend_opcache_available = false;
         }
 
         return;
@@ -211,7 +211,7 @@ class MainController extends \Thallium\Controllers\MainController
         if (!isset($this->zend_opcache_available) ||
             empty($this->zend_opcache_available) ||
             !is_bool($this->zend_opcache_available) ||
-            !$this->zend_opcache_available
+            $this->zend_opcache_available !== true
         ) {
             return false;
         }
